@@ -1,0 +1,22 @@
+{
+  "frames": {
+    "ground.png": {
+      "frame": {"x": 0, "y": 0, "w": 64, "h": 64}
+    },
+    "wall.png": {
+      "frame": {"x": 64, "y": 0, "w": 64, "h": 64}
+    },
+    "sand.png": {
+      "frame": {"x": 128, "y": 0, "w": 64, "h": 64}
+    },
+    "grass.png": {
+      "frame": {"x": 192, "y": 0, "w": 64, "h": 64}
+    }
+  },
+  "meta": {
+    "image": "terrain.png",
+    "format": "RGBA8888",
+    "size": {"w": 256, "h": 64},
+    "scale": "1"
+  }
+}

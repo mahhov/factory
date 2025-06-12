@@ -10,8 +10,7 @@ class Vector {
 	}
 
 	get copy() {
-		let v = new Vector(this.x, this.y);
-		return v;
+		return new Vector(this.x, this.y);
 	}
 
 	add(v: Vector) {

@@ -1,7 +1,9 @@
-import {AnimatedSprite, Application, Assets, TextureStyle} from 'pixi.js';
+import {Application, TextureStyle} from 'pixi.js';
 import Camera from './Camera.js';
 import Input from './Input.js';
+import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
+import World from './World.js';
 
 (async () => {
 	let app = new Application();
@@ -14,6 +16,8 @@ import Vector from './Vector.js';
 
 	document.body.appendChild(app.canvas);
 
+	await spriteLoader.preload();
+
 	let camera = new Camera(app);
 	let container = camera.container;
 
@@ -25,15 +29,14 @@ import Vector from './Vector.js';
 	input.bindings.cameraZoomOut.setListener(() => camera.zoom(.03));
 	input.bindings.cameraZoomIn.setListener(() => camera.zoom(-.03));
 
+	let world = new World(World.randomGrid(100, 100), container);
+
 	setInterval(() => {
 		input.tick();
 		camera.tick();
 	}, 10);
 
-  let path = `../resources/conveyor/conveyor.json`;
-  const sheet = await Assets.load(path);
-
-	const anim = new AnimatedSprite(sheet.animations['move']);
+	let anim = spriteLoader.animation(spriteLoader.Resource.CONVEYOR, 'move');
 	anim.x = .5;
 	anim.y = .5;
 	anim.width = .1;
@@ -42,18 +45,3 @@ import Vector from './Vector.js';
 	anim.play();
 	container.addChild(anim);
 })();
-
-// let $ = q => document.querySelector(q);
-// let $$ = q => document.querySelectorAll(q);
-//
-// let canvas = $('canvas');
-//
-// class Painter {
-//   private canvas: HTMLCanvasElement;
-//
-//   constructor(canvas) {
-//     this.canvas = canvas;
-//   }
-// }
-//
-// console.log('yo2');

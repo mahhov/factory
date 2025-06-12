@@ -20,7 +20,7 @@
     "move": ["conveyor1.png", "conveyor2.png", "conveyor3.png", "conveyor4.png", "conveyor5.png"]
   },
   "meta": {
-    "image": "conveyor-white.png",
+    "image": "conveyor.png",
     "format": "RGBA8888",
     "size": {"w": 50, "h": 10},
     "scale": "1"
