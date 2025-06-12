@@ -24,8 +24,10 @@ import Vector from './Vector.js';
 	input.bindings.cameraDown.setListener(() => camera.move(new Vector(0, .01)));
 	input.bindings.cameraZoomOut.setListener(() => camera.zoom(.03));
 	input.bindings.cameraZoomIn.setListener(() => camera.zoom(-.03));
+
 	setInterval(() => {
 		input.tick();
+		camera.tick();
 	}, 10);
 
   let path = `../resources/conveyor/conveyor.json`;

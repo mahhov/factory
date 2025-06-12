@@ -9,6 +9,11 @@ class Vector {
 		this.y = y;
 	}
 
+	get copy() {
+		let v = new Vector(this.x, this.y);
+		return v;
+	}
+
 	add(v: Vector) {
 		this.x += v.x;
 		this.y += v.y;

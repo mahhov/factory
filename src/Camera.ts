@@ -3,7 +3,9 @@ import util from './util.js';
 import Vector from './Vector.js';
 
 class Camera {
-	private canvasWidth: number;
+	private readonly canvasWidth: number;
+	private targetLeftTop: Vector = new Vector();
+	private targetWidth: number = 1;
 	private leftTop: Vector = new Vector();
 	private width: number = 1;
 	container: Container = new Container();
@@ -11,21 +13,17 @@ class Camera {
 	constructor(app: Application) {
 		this.canvasWidth = app.renderer.width;
 		app.stage.addChild(this.container);
-		this.updateContainer();
 	}
 
 	move(delta: Vector) {
-		this.leftTop.add(delta.scale(this.width));
+		this.targetLeftTop.add(delta.scale(this.targetWidth));
 		// todo clamp
-		// todo smooth
-		this.updateContainer();
 	}
 
 	zoom(delta: number) {
 		let centerWorld = this.canvasToWorld(new Vector(this.canvasWidth / 2, this.canvasWidth / 2));
-		this.width = util.clamp(this.width + delta, .1, 1.5);
-		this.leftTop = centerWorld.subtract(new Vector(this.width / 2));
-		this.updateContainer();
+		this.targetWidth = util.clamp(this.targetWidth + delta, .1, 1.5);
+		this.targetLeftTop = centerWorld.subtract(new Vector(this.targetWidth / 2));
 	}
 
 	private worldToCanvas(world: Vector) {
@@ -40,7 +38,11 @@ class Camera {
 			.add(this.leftTop);
 	}
 
-	private updateContainer() {
+	tick() {
+		let lazy = .85;
+		this.width = this.width * lazy + this.targetWidth * (1 - lazy);
+		this.leftTop = this.leftTop.scale(lazy).add(this.targetLeftTop.copy.scale(1 - lazy));
+
 		this.container.scale = this.canvasWidth / this.width;
 		this.container.position = this.worldToCanvas(new Vector());
 	}
