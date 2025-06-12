@@ -1,0 +1,28 @@
+{
+  "frames": {
+    "conveyor1.png": {
+      "frame": {"x": 0, "y": 0, "w": 10, "h": 10}
+    },
+    "conveyor2.png": {
+      "frame": {"x": 10, "y": 0, "w": 10, "h": 10}
+    },
+    "conveyor3.png": {
+      "frame": {"x": 20, "y": 0, "w": 10, "h": 10}
+    },
+    "conveyor4.png": {
+      "frame": {"x": 30, "y": 0, "w": 10, "h": 10}
+    },
+    "conveyor5.png": {
+      "frame": {"x": 40, "y": 0, "w": 10, "h": 10}
+    }
+  },
+  "animations": {
+    "move": ["conveyor1.png", "conveyor2.png", "conveyor3.png", "conveyor4.png", "conveyor5.png"]
+  },
+  "meta": {
+    "image": "conveyor-white.png",
+    "format": "RGBA8888",
+    "size": {"w": 50, "h": 10},
+    "scale": "1"
+  }
+}

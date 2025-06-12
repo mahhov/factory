@@ -1,0 +1,17 @@
+{
+  "name": "factory",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "main": "src/script.ts",
+  "scripts": {
+    "build": "copy src\\index.html out\\index.html && tsc -w"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "pixi.js": "^8.10.1"
+  }
+}
