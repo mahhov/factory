@@ -29,19 +29,49 @@ import World from './World.js';
 	input.bindings.cameraZoomOut.setListener(() => camera.zoom(.03));
 	input.bindings.cameraZoomIn.setListener(() => camera.zoom(-.03));
 
-	let world = new World(World.randomGrid(100, 100), container);
+	let world = new World(World.emptyGrid(100, 100), container);
 
 	setInterval(() => {
 		input.tick();
 		camera.tick();
 	}, 10);
-
-	let anim = spriteLoader.animation(spriteLoader.Resource.CONVEYOR, 'move');
-	anim.x = .5;
-	anim.y = .5;
-	anim.width = .1;
-	anim.height = anim.width;
-	anim.animationSpeed = 0.1;
-	anim.play();
-	container.addChild(anim);
 })();
+
+// todo
+//   buildings:
+//    - extractor
+//    - transport
+//    - factory
+//    - towers
+//    - wall
+//    - power
+//    - radar, purifier, storage, unloader
+//   resources:
+//    - deposit
+//    - wall mining
+//    - liquid pools
+//    - air
+//   dynamic:
+//    - resources deplete
+//    - new resources emerge
+//    - enemy spawn points, rogue armadas, creepers
+//   spread:
+//    - localized resources
+//    - costly local outpost safe zones
+//    - pollution or limit on outpost size
+//    - limited building space
+//    - weapons cover area instead of perimeter
+//    - easier to transport outputs than bulk inputs
+//   dangers:
+//    - weather
+//    - storm
+//    - sunlight
+//    - flood
+//    - asteroid
+//   enemies:
+//    - self-destruct bugs
+//    - small ships
+//    - big ships that fire artillery and spawn smaller ships
+//    - piercing lasers
+//    - aoe attacks
+//    - stationary towers
