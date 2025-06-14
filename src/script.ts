@@ -21,13 +21,17 @@ import World from './World.js';
 	let camera = new Camera(app);
 	let container = camera.container;
 
-	let input = new Input();
-	input.bindings.cameraLeft.setListener(() => camera.move(new Vector(-.01, 0)));
-	input.bindings.cameraRight.setListener(() => camera.move(new Vector(.01, 0)));
-	input.bindings.cameraUp.setListener(() => camera.move(new Vector(0, -.01)));
-	input.bindings.cameraDown.setListener(() => camera.move(new Vector(0, .01)));
-	input.bindings.cameraZoomOut.setListener(() => camera.zoom(.03));
-	input.bindings.cameraZoomIn.setListener(() => camera.zoom(-.03));
+	let input = new Input(app.canvas);
+	input.keyBindings.cameraLeft.setListener(() => camera.move(new Vector(-.01, 0)));
+	input.keyBindings.cameraRight.setListener(() => camera.move(new Vector(.01, 0)));
+	input.keyBindings.cameraUp.setListener(() => camera.move(new Vector(0, -.01)));
+	input.keyBindings.cameraDown.setListener(() => camera.move(new Vector(0, .01)));
+	input.keyBindings.cameraZoomOut.setListener(() => camera.zoom(.03));
+	input.keyBindings.cameraZoomIn.setListener(() => camera.zoom(-.03));
+
+	input.mouseBindings.left.setListener(() => console.log(
+		camera.canvasToWorld(input.mousePosition.copy),
+		camera.canvasToWorld(input.mouseDownPosition.copy)));
 
 	let world = new World(World.emptyGrid(100, 100), container);
 

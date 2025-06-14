@@ -26,13 +26,14 @@ class Camera {
 		this.targetLeftTop = centerWorld.subtract(new Vector(this.targetWidth / 2));
 	}
 
+	// world [0, 1]; canvas [0, 1400px]
 	private worldToCanvas(world: Vector) {
 		return world
 			.subtract(this.leftTop)
 			.scale(1 / this.width * this.canvasWidth);
 	}
 
-	private canvasToWorld(canvas: Vector) {
+	canvasToWorld(canvas: Vector) {
 		return canvas
 			.scale(1 / this.canvasWidth * this.width)
 			.add(this.leftTop);

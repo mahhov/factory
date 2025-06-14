@@ -1,16 +1,20 @@
 import util from './util.js';
 
 class Vector {
-	x: number;
-	y: number;
+	x!: number;
+	y!: number;
 
 	constructor(x: number = 0, y: number = x) {
-		this.x = x;
-		this.y = y;
+		this.set(x, y);
 	}
 
 	get copy() {
 		return new Vector(this.x, this.y);
+	}
+
+	set(x: number, y: number) {
+		this.x = x;
+		this.y = y;
 	}
 
 	add(v: Vector) {
