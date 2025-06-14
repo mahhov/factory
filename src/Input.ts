@@ -25,11 +25,13 @@ abstract class Binding {
 	}
 
 	press() {
-		this.state = State.PRESSED;
+		if (this.state === State.UP)
+			this.state = State.PRESSED;
 	}
 
 	release() {
-		this.state = State.RELEASED;
+		if (this.state === State.DOWN)
+			this.state = State.RELEASED;
 	}
 
 	setListener(listener: () => void) {
@@ -101,6 +103,12 @@ class Input {
 	mousePosition = new Vector();
 
 	constructor(mouseTarget: HTMLCanvasElement) {
+		window.addEventListener('blur', () => {
+			[Object.values(this.keyBindings), Object.values(this.mouseBindings)]
+				.flat()
+				.forEach(binding => binding.release());
+		});
+
 		document.addEventListener('keydown', e => {
 			if (!e.repeat)
 				Object.values(this.keyBindings).forEach(binding => binding.keyDown(e.key));
@@ -109,6 +117,7 @@ class Input {
 			if (!e.repeat)
 				Object.values(this.keyBindings).forEach(binding => binding.keyUp(e.key));
 		});
+		
 		document.addEventListener('mousedown', e => {
 			Object.values(this.mouseBindings).forEach(binding => binding.mouseDown(e.button));
 			this.mouseDownPosition = this.mousePosition.copy;
