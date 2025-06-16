@@ -29,9 +29,11 @@ import World from './World.js';
 	input.keyBindings.cameraZoomOut.setListener(() => camera.zoom(.03));
 	input.keyBindings.cameraZoomIn.setListener(() => camera.zoom(-.03));
 
-	input.mouseBindings.left.setListener(() => console.log(
-		camera.canvasToWorld(input.mousePosition.copy),
-		camera.canvasToWorld(input.mouseDownPosition.copy)));
+	input.mouseBindings.placeBuilding.setListener(() => {
+		console.log(
+			camera.canvasToWorld(input.mousePosition.copy),
+			camera.canvasToWorld(input.mouseDownPosition.copy));
+	});
 
 	let world = new World(World.emptyGrid(100, 100), container);
 
