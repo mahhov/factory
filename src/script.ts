@@ -1,6 +1,6 @@
 import {Application, TextureStyle} from 'pixi.js';
 import Camera from './Camera.js';
-import Input from './Input.js';
+import {Input, KeyBinding, MouseBinding} from './Input.js';
 import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
 import World from './World.js';
@@ -22,18 +22,18 @@ import World from './World.js';
 	let container = camera.container;
 
 	let input = new Input(app.canvas);
-	input.keyBindings.cameraLeft.setListener(() => camera.move(new Vector(-.01, 0)));
-	input.keyBindings.cameraRight.setListener(() => camera.move(new Vector(.01, 0)));
-	input.keyBindings.cameraUp.setListener(() => camera.move(new Vector(0, -.01)));
-	input.keyBindings.cameraDown.setListener(() => camera.move(new Vector(0, .01)));
-	input.keyBindings.cameraZoomOut.setListener(() => camera.zoom(.03));
-	input.keyBindings.cameraZoomIn.setListener(() => camera.zoom(-.03));
+	input.addBinding(new KeyBinding('a', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(-.01, 0))));
+	input.addBinding(new KeyBinding('d', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(.01, 0))));
+	input.addBinding(new KeyBinding('w', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(0, -.01))));
+	input.addBinding(new KeyBinding('s', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(0, .01))));
+	input.addBinding(new KeyBinding('q', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(.03)));
+	input.addBinding(new KeyBinding('e', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(-.03)));
 
-	input.mouseBindings.placeBuilding.setListener(() => {
+	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => {
 		console.log(
 			camera.canvasToWorld(input.mousePosition.copy),
 			camera.canvasToWorld(input.mouseDownPosition.copy));
-	});
+	}));
 
 	let world = new World(World.emptyGrid(100, 100), container);
 

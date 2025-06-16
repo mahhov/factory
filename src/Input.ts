@@ -6,11 +6,12 @@ enum State {
 
 abstract class Binding {
 	private readonly listenerStates: State[] = [];
+	private readonly listener = () => { };
 	private state: State = State.UP;
-	private listener = () => { };
 
-	constructor(listenerStates: State[]) {
+	protected constructor(listenerStates: State[], listener: () => void) {
 		this.listenerStates = listenerStates;
+		this.listener = listener;
 	}
 
 	static updateState(state: State) {
@@ -34,9 +35,13 @@ abstract class Binding {
 			this.state = State.RELEASED;
 	}
 
-	setListener(listener: () => void) {
-		this.listener = listener;
-	}
+	keyDown(key: string) {}
+
+	keyUp(key: string) {}
+
+	mouseDown(button: MouseButton) {}
+
+	mouseUp(button: MouseButton) {}
 
 	tick() {
 		if (this.listenerStates.includes(this.state))
@@ -48,8 +53,8 @@ abstract class Binding {
 class KeyBinding extends Binding {
 	private readonly key: string;
 
-	constructor(listenerStates: State[], key: string) {
-		super(listenerStates);
+	constructor(key: string, listenerStates: State[], listener: () => void) {
+		super(listenerStates, listener);
 		this.key = key;
 	}
 
@@ -69,10 +74,11 @@ enum MouseButton {
 }
 
 class MouseBinding extends Binding {
+	static MouseButton = MouseButton;
 	private readonly button: MouseButton;
 
-	constructor(listenerStates: State[], button: MouseButton) {
-		super(listenerStates);
+	constructor(button: MouseButton, listenerStates: State[], listener: () => void) {
+		super(listenerStates, listener);
 		this.button = button;
 	}
 
@@ -90,51 +96,41 @@ class MouseBinding extends Binding {
 class Input {
 	static State = State;
 
-	keyBindings = {
-		cameraLeft: new KeyBinding([State.DOWN, State.PRESSED], 'a'),
-		cameraRight: new KeyBinding([State.DOWN, State.PRESSED], 'd'),
-		cameraUp: new KeyBinding([State.DOWN, State.PRESSED], 'w'),
-		cameraDown: new KeyBinding([State.DOWN, State.PRESSED], 's'),
-		cameraZoomOut: new KeyBinding([State.DOWN, State.PRESSED], 'q'),
-		cameraZoomIn: new KeyBinding([State.DOWN, State.PRESSED], 'e'),
-	};
-	mouseBindings = {
-		placeBuildingStart: new MouseBinding([State.PRESSED], MouseButton.LEFT),
-		placeBuilding: new MouseBinding([State.RELEASED], MouseButton.LEFT),
-	};
+	private bindings: Binding[] = [];
 	mouseDownPosition = new Vector();
 	mousePosition = new Vector();
 
 	constructor(mouseTarget: HTMLCanvasElement) {
 		window.addEventListener('blur', () => {
-			[Object.values(this.keyBindings), Object.values(this.mouseBindings)]
-				.flat()
-				.forEach(binding => binding.release());
+			Object.values(this.bindings).forEach(binding => binding.release());
 		});
 
 		document.addEventListener('keydown', e => {
 			if (!e.repeat)
-				Object.values(this.keyBindings).forEach(binding => binding.keyDown(e.key));
+				Object.values(this.bindings).forEach(binding => binding.keyDown(e.key));
 		});
 		document.addEventListener('keyup', e => {
 			if (!e.repeat)
-				Object.values(this.keyBindings).forEach(binding => binding.keyUp(e.key));
+				Object.values(this.bindings).forEach(binding => binding.keyUp(e.key));
 		});
 
 		mouseTarget.addEventListener('mousedown', e => {
-			Object.values(this.mouseBindings).forEach(binding => binding.mouseDown(e.button));
+			Object.values(this.bindings).forEach(binding => binding.mouseDown(e.button));
 			this.mouseDownPosition = this.mousePosition.copy;
 		});
 		window.addEventListener('mouseup', e =>
-			Object.values(this.mouseBindings).forEach(binding => binding.mouseUp(e.button)));
+			Object.values(this.bindings).forEach(binding => binding.mouseUp(e.button)));
 		mouseTarget.addEventListener('mousemove', e =>
 			this.mousePosition.set((e.x - mouseTarget.offsetLeft), e.y - mouseTarget.offsetTop));
 	}
 
+	addBinding(binding: Binding) {
+		this.bindings.push(binding);
+	}
+
 	tick() {
-		Object.values(this.keyBindings).forEach(binding => binding.tick());
-		Object.values(this.mouseBindings).forEach(binding => binding.tick());
+		Object.values(this.bindings).forEach(binding => binding.tick());
 	}
 }
 
-export default Input;
+export {Input, KeyBinding, MouseBinding};
