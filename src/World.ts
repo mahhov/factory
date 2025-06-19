@@ -1,6 +1,7 @@
 import {Container, Sprite} from 'pixi.js';
 import spriteLoader from './spriteLoader.js';
 import util from './util.js';
+import Vector from './Vector.js';
 
 abstract class Entity {
 	sprite?: Sprite;
@@ -12,7 +13,13 @@ abstract class Entity {
 
 class Empty extends Entity {
 	constructor() {
-		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'sand.png'));
+		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'ground.png'));
+	}
+}
+
+class Wall extends Entity {
+	constructor() {
+		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'wall.png'));
 	}
 }
 
@@ -47,7 +54,7 @@ class ConveyorBelt extends Building {
 }
 
 class World {
-	grid: Entity[][] = [];
+	private grid: Entity[][] = [];
 	private container: Container;
 
 	constructor(grid: Entity[][], container: Container) {
@@ -55,12 +62,8 @@ class World {
 		this.container = container;
 		this.grid.forEach((column, x) => column
 			.forEach((cell, y) => {
-				if (!cell.sprite) return;
-				cell.sprite.x = x / grid.length;
-				cell.sprite.y = y / grid[0].length;
-				cell.sprite.width = 1 / grid.length;
-				cell.sprite.height = 1 / grid[0].length;
-				container.addChild(cell.sprite);
+				if (cell.sprite)
+					this.addSprite(new Vector(x, y), cell.sprite);
 			}));
 	}
 
@@ -74,6 +77,35 @@ class World {
 			return new clazz();
 		}));
 	}
+
+	get size() {
+		return new Vector(this.width, this.height);
+	}
+
+	get width() {
+		return this.grid.length;
+	}
+
+	get height() {
+		return this.grid[0].length;
+	}
+
+	private addSprite(position: Vector, sprite: Sprite) {
+		sprite.x = position.x / this.grid.length;
+		sprite.y = position.y / this.grid[0].length;
+		sprite.width = 1 / this.grid.length;
+		sprite.height = 1 / this.grid[0].length;
+		this.container.addChild(sprite);
+	}
+
+	updateEntity(position: Vector, entity: Entity) {
+		let old = this.grid[position.x][position.y];
+		if (old.sprite)
+			this.container.removeChild(old.sprite);
+		this.grid[position.x][position.y] = entity;
+		if (entity.sprite)
+			this.addSprite(position, entity.sprite);
+	}
 }
 
-export default World;
+export {Empty, Wall, World};

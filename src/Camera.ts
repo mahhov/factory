@@ -16,7 +16,7 @@ class Camera {
 	}
 
 	move(delta: Vector) {
-		this.targetLeftTop.add(delta.scale(this.targetWidth));
+		this.targetLeftTop.add(delta.scale(new Vector(this.targetWidth)));
 		// todo clamp
 	}
 
@@ -30,19 +30,21 @@ class Camera {
 	private worldToCanvas(world: Vector) {
 		return world
 			.subtract(this.leftTop)
-			.scale(1 / this.width * this.canvasWidth);
+			.scale(new Vector(1 / this.width * this.canvasWidth));
 	}
 
 	canvasToWorld(canvas: Vector) {
 		return canvas
-			.scale(1 / this.canvasWidth * this.width)
+			.scale(new Vector(1 / this.canvasWidth * this.width))
 			.add(this.leftTop);
 	}
 
 	tick() {
 		let lazy = .85;
 		this.width = this.width * lazy + this.targetWidth * (1 - lazy);
-		this.leftTop = this.leftTop.scale(lazy).add(this.targetLeftTop.copy.scale(1 - lazy));
+		this.leftTop = this.leftTop
+			.scale(new Vector(lazy))
+			.add(this.targetLeftTop.copy.scale(new Vector(1 - lazy)));
 
 		this.container.scale = this.canvasWidth / this.width;
 		this.container.position = this.worldToCanvas(new Vector());

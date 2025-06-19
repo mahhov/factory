@@ -12,9 +12,24 @@ class Vector {
 		return new Vector(this.x, this.y);
 	}
 
+	atLeast(v: Vector) {
+		return this.x >= v.x && this.y >= v.y;
+	}
+
+	lessThan(v: Vector) {
+		return this.x < v.x && this.y < v.y;
+	}
+
 	set(x: number, y: number) {
 		this.x = x;
 		this.y = y;
+		return this;
+	}
+
+	floor() {
+		this.x = Math.floor(this.x);
+		this.y = Math.floor(this.y);
+		return this;
 	}
 
 	add(v: Vector) {
@@ -29,9 +44,9 @@ class Vector {
 		return this;
 	}
 
-	scale(s: number) {
-		this.x *= s;
-		this.y *= s;
+	scale(v: Vector) {
+		this.x *= v.x;
+		this.y *= v.y;
 		return this;
 	}
 

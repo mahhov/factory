@@ -3,7 +3,7 @@ import Camera from './Camera.js';
 import {Input, KeyBinding, MouseBinding} from './Input.js';
 import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
-import World from './World.js';
+import {Empty, Wall, World} from './World.js';
 
 (async () => {
 	let app = new Application();
@@ -29,10 +29,14 @@ import World from './World.js';
 	input.addBinding(new KeyBinding('q', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(.03)));
 	input.addBinding(new KeyBinding('e', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(-.03)));
 
+	let selectedEntityClass = Wall;
+	input.addBinding(new KeyBinding('1', [Input.State.PRESSED], () => selectedEntityClass = Empty));
+	input.addBinding(new KeyBinding('2', [Input.State.PRESSED], () => selectedEntityClass = Wall));
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => {
-		console.log(
-			camera.canvasToWorld(input.mousePosition.copy),
-			camera.canvasToWorld(input.mouseDownPosition.copy));
+		let position = camera.canvasToWorld(input.mousePosition.copy).scale(world.size).floor();
+		if (position.atLeast(new Vector()) && position.lessThan(world.size)) {
+			world.updateEntity(position, new selectedEntityClass());
+		}
 	}));
 
 	let world = new World(World.emptyGrid(100, 100), container);
