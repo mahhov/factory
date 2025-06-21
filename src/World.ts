@@ -3,7 +3,7 @@ import spriteLoader from './spriteLoader.js';
 import util from './util.js';
 import Vector from './Vector.js';
 
-abstract class Entity {
+class Entity {
 	sprite?: Sprite;
 
 	constructor(sprite?: Sprite) {
@@ -108,4 +108,4 @@ class World {
 	}
 }
 
-export {Empty, Wall, World};
+export {Entity, Empty, Wall, World};

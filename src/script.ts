@@ -1,6 +1,7 @@
 import {Application, TextureStyle} from 'pixi.js';
 import Camera from './Camera.js';
 import {Input, KeyBinding, MouseBinding} from './Input.js';
+import Placer from './Placer.js';
 import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
 import {Empty, Wall, World} from './World.js';
@@ -13,15 +14,14 @@ import {Empty, Wall, World} from './World.js';
 		height: 1400,
 	});
 	TextureStyle.defaultOptions.scaleMode = 'nearest';
-
 	document.body.appendChild(app.canvas);
-
 	await spriteLoader.preload();
-
 	let camera = new Camera(app);
 	let container = camera.container;
-
 	let input = new Input(app.canvas);
+	let world = new World(World.emptyGrid(100, 100), container);
+	let placer = new Placer(camera, input, world);
+
 	input.addBinding(new KeyBinding('a', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(-.01, 0))));
 	input.addBinding(new KeyBinding('d', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(.01, 0))));
 	input.addBinding(new KeyBinding('w', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(0, -.01))));
@@ -29,17 +29,11 @@ import {Empty, Wall, World} from './World.js';
 	input.addBinding(new KeyBinding('q', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(.03)));
 	input.addBinding(new KeyBinding('e', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(-.03)));
 
-	let selectedEntityClass = Wall;
-	input.addBinding(new KeyBinding('1', [Input.State.PRESSED], () => selectedEntityClass = Empty));
-	input.addBinding(new KeyBinding('2', [Input.State.PRESSED], () => selectedEntityClass = Wall));
-	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => {
-		let position = camera.canvasToWorld(input.mousePosition.copy).scale(world.size).floor();
-		if (position.atLeast(new Vector()) && position.lessThan(world.size)) {
-			world.updateEntity(position, new selectedEntityClass());
-		}
-	}));
 
-	let world = new World(World.emptyGrid(100, 100), container);
+	input.addBinding(new KeyBinding('1', [Input.State.PRESSED], () => placer.selectEntity(Empty)));
+	input.addBinding(new KeyBinding('2', [Input.State.PRESSED], () => placer.selectEntity(Wall)));
+	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => placer.start()));
+	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.DOWN, Input.State.PRESSED], () => placer.move()));
 
 	setInterval(() => {
 		input.tick();

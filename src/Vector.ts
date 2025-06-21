@@ -12,6 +12,10 @@ class Vector {
 		return new Vector(this.x, this.y);
 	}
 
+	get magnitude2() {
+		return this.x ** 2 + this.y ** 2;
+	}
+
 	atLeast(v: Vector) {
 		return this.x >= v.x && this.y >= v.y;
 	}
