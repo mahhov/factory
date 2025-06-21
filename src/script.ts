@@ -4,7 +4,7 @@ import {Input, KeyBinding, MouseBinding} from './Input.js';
 import Placer from './Placer.js';
 import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
-import {Empty, Wall, World} from './World.js';
+import {Conveyor, Empty, Source, Void, Wall, World} from './World.js';
 
 (async () => {
 	let app = new Application();
@@ -29,9 +29,8 @@ import {Empty, Wall, World} from './World.js';
 	input.addBinding(new KeyBinding('q', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(.03)));
 	input.addBinding(new KeyBinding('e', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(-.03)));
 
-
-	input.addBinding(new KeyBinding('1', [Input.State.PRESSED], () => placer.selectEntity(Empty)));
-	input.addBinding(new KeyBinding('2', [Input.State.PRESSED], () => placer.selectEntity(Wall)));
+	[Empty, Wall, Conveyor, Source, Void].forEach((clazz, i) =>
+		input.addBinding(new KeyBinding(String(i + 1), [Input.State.PRESSED], () => placer.selectEntity(clazz))));
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => placer.start()));
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.DOWN, Input.State.PRESSED], () => placer.move()));
 

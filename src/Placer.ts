@@ -1,21 +1,18 @@
 import Camera from './Camera.js';
 import {Input} from './Input.js';
 import Vector from './Vector.js';
-import {Entity, Wall, World} from './World.js';
-
-enum Rotation { LEFT, UP, RIGHT, DOWN }
+import {Conveyor, Entity, SimpleEntityCtor, World} from './World.js';
 
 class Placer {
 	private camera: Camera;
 	private input: Input;
 	private world: World;
 
-	private selectedEntityClass: typeof Entity = Wall;
+	private selectedEntityClass: SimpleEntityCtor = Conveyor;
 	private lastPosition = new Vector();
 	private position = new Vector();
-	private rotation = Rotation.RIGHT;
+	private rotation = Entity.Rotation.RIGHT;
 	private first = false;
-
 
 	constructor(camera: Camera, input: Input, world: World) {
 		this.camera = camera;
@@ -23,7 +20,7 @@ class Placer {
 		this.world = world;
 	}
 
-	selectEntity(clazz: typeof Entity) {
+	selectEntity(clazz: SimpleEntityCtor) {
 		this.selectedEntityClass = clazz;
 	}
 
@@ -37,12 +34,10 @@ class Placer {
 		let delta = this.position.copy.subtract(this.lastPosition);
 		if (!this.first && delta.magnitude2)
 			this.rotation = Math.abs(delta.y) > Math.abs(delta.x) ?
-				delta.y > 0 ? Rotation.DOWN : Rotation.UP :
-				delta.x > 0 ? Rotation.RIGHT : Rotation.LEFT;
-		if ((this.first || delta.magnitude2) && this.position.atLeast(new Vector()) && this.position.lessThan(this.world.size)) {
-			console.log(this.rotation);
-			this.world.updateEntity(this.position, new this.selectedEntityClass());
-		}
+				delta.y > 0 ? Entity.Rotation.DOWN : Entity.Rotation.UP :
+				delta.x > 0 ? Entity.Rotation.RIGHT : Entity.Rotation.LEFT;
+		if ((this.first || delta.magnitude2) && this.position.atLeast(new Vector()) && this.position.lessThan(this.world.size))
+			this.world.updateEntity(this.position, new this.selectedEntityClass(this.rotation));
 		this.first = false;
 	}
 }

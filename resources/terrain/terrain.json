@@ -1,22 +1,25 @@
 {
   "frames": {
-    "ground.png": {
+    "empty.png": {
       "frame": {"x": 0, "y": 0, "w": 16, "h": 16}
     },
     "wall.png": {
       "frame": {"x": 16, "y": 0, "w": 16, "h": 16}
     },
-    "sand.png": {
+    "conveyor.png": {
       "frame": {"x": 32, "y": 0, "w": 16, "h": 16}
     },
-    "grass.png": {
+    "source.png": {
       "frame": {"x": 48, "y": 0, "w": 16, "h": 16}
+    },
+    "void.png": {
+      "frame": {"x": 64, "y": 0, "w": 16, "h": 16}
     }
   },
   "meta": {
     "image": "terrain.png",
     "format": "RGBA8888",
-    "size": {"w": 64, "h": 16},
+    "size": {"w": 128, "h": 16},
     "scale": "1"
   }
 }

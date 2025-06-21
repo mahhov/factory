@@ -3,23 +3,30 @@ import spriteLoader from './spriteLoader.js';
 import util from './util.js';
 import Vector from './Vector.js';
 
-class Entity {
-	sprite?: Sprite;
+enum Rotation { RIGHT, DOWN, LEFT, UP }
 
-	constructor(sprite?: Sprite) {
+class Entity {
+	static Rotation = Rotation;
+	sprite?: Sprite;
+	rotation: Rotation;
+
+	constructor(sprite?: Sprite, rotation: Rotation = Rotation.RIGHT) {
 		this.sprite = sprite;
+		this.rotation = rotation;
+		if (this.sprite) {
+			this.sprite.anchor.set(.5);
+			this.sprite.rotation = Entity.rotationToAngle(rotation);
+		}
+	}
+
+	static rotationToAngle(rotation: Rotation) {
+		return [...Array(4)].map((_, i) => i * Math.PI / 2)[rotation];
 	}
 }
 
 class Empty extends Entity {
 	constructor() {
-		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'ground.png'));
-	}
-}
-
-class Wall extends Entity {
-	constructor() {
-		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'wall.png'));
+		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'empty.png'));
 	}
 }
 
@@ -28,21 +35,45 @@ enum BuildingState {
 }
 
 class Building extends Entity {
-	state: BuildingState = BuildingState.QUEUED;
 	stateProgress: number = 0;
 	health: number;
 	maxHealth: number;
 
-	constructor(sprite: Sprite, maxHealth: number) {
-		super(sprite);
+	constructor(sprite: Sprite, rotation: Rotation, maxHealth: number) {
+		super(sprite, rotation);
 		this.maxHealth = maxHealth;
 		this.health = maxHealth;
 	}
 }
 
-class ConveyorBelt extends Building {
-	constructor() {
-		super(ConveyorBelt.sprite, 10);
+
+class Wall extends Building {
+	constructor(rotation: Rotation) {
+		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'wall.png'), rotation, 10);
+	}
+}
+
+class Conveyor extends Building {
+	constructor(rotation: Rotation) {
+		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor.png'), rotation, 10);
+	}
+}
+
+class Source extends Building {
+	constructor(rotation: Rotation) {
+		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'source.png'), rotation, 10);
+	}
+}
+
+class Void extends Building {
+	constructor(rotation: Rotation) {
+		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'void.png'), rotation, 10);
+	}
+}
+
+class AnimatedConveyor extends Building {
+	constructor(rotation: Rotation) {
+		super(AnimatedConveyor.sprite, rotation, 10);
 	}
 
 	private static get sprite() {
@@ -71,13 +102,6 @@ class World {
 		return util.arr(width).map(_ => util.arr(height).map(_ => new Empty()));
 	}
 
-	static randomGrid(width: number, height: number) {
-		return util.arr(width).map(_ => util.arr(height).map(_ => {
-			let clazz = util.randPick([[Empty, .5], [ConveyorBelt, .01]]);
-			return new clazz();
-		}));
-	}
-
 	get size() {
 		return new Vector(this.width, this.height);
 	}
@@ -91,6 +115,7 @@ class World {
 	}
 
 	private addSprite(position: Vector, sprite: Sprite) {
+		position = position.copy.add(new Vector(.5));
 		sprite.x = position.x / this.grid.length;
 		sprite.y = position.y / this.grid[0].length;
 		sprite.width = 1 / this.grid.length;
@@ -108,4 +133,6 @@ class World {
 	}
 }
 
-export {Entity, Empty, Wall, World};
+type SimpleEntityCtor = (new () => Entity) | (new (rotation: Rotation) => Entity);
+
+export {Entity, Empty, Building, Wall, Conveyor, Source, Void, World, SimpleEntityCtor};
