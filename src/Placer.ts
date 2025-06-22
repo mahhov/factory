@@ -37,7 +37,7 @@ class Placer {
 				delta.y > 0 ? Entity.Rotation.DOWN : Entity.Rotation.UP :
 				delta.x > 0 ? Entity.Rotation.RIGHT : Entity.Rotation.LEFT;
 		if ((this.first || delta.magnitude2) && this.position.atLeast(new Vector()) && this.position.lessThan(this.world.size))
-			this.world.updateEntity(this.position, new this.selectedEntityClass(this.rotation));
+			this.world.setEntity(this.position, new this.selectedEntityClass(this.rotation));
 		this.first = false;
 	}
 }

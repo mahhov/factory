@@ -9,11 +9,14 @@
     "conveyor.png": {
       "frame": {"x": 32, "y": 0, "w": 16, "h": 16}
     },
-    "source.png": {
+    "conveyor-full.png": {
       "frame": {"x": 48, "y": 0, "w": 16, "h": 16}
     },
-    "void.png": {
+    "source.png": {
       "frame": {"x": 64, "y": 0, "w": 16, "h": 16}
+    },
+    "void.png": {
+      "frame": {"x": 80, "y": 0, "w": 16, "h": 16}
     }
   },
   "meta": {

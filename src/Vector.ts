@@ -54,6 +54,12 @@ class Vector {
 		return this;
 	}
 
+	invert() {
+		this.x = 1 / this.x;
+		this.y = 1 / this.y;
+		return this;
+	}
+
 	clamp(min: Vector, max: Vector) {
 		this.x = util.clamp(this.x, min.x, max.x);
 		this.y = util.clamp(this.y, min.y, max.y);

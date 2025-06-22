@@ -35,8 +35,9 @@ import {Conveyor, Empty, Source, Void, Wall, World} from './World.js';
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.DOWN, Input.State.PRESSED], () => placer.move()));
 
 	setInterval(() => {
-		input.tick();
 		camera.tick();
+		input.tick();
+		world.tick();
 	}, 10);
 })();
 

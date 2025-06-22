@@ -5,28 +5,39 @@ import Vector from './Vector.js';
 
 enum Rotation { RIGHT, DOWN, LEFT, UP }
 
-class Entity {
+abstract class Entity {
 	static Rotation = Rotation;
-	sprite?: Sprite;
+	container = new Container();
 	rotation: Rotation;
 
-	constructor(sprite?: Sprite, rotation: Rotation = Rotation.RIGHT) {
-		this.sprite = sprite;
+	protected constructor(rotation: Rotation = Rotation.RIGHT) {
 		this.rotation = rotation;
-		if (this.sprite) {
-			this.sprite.anchor.set(.5);
-			this.sprite.rotation = Entity.rotationToAngle(rotation);
-		}
+		this.container.rotation = Entity.rotationToAngle(rotation);
 	}
 
 	static rotationToAngle(rotation: Rotation) {
 		return [...Array(4)].map((_, i) => i * Math.PI / 2)[rotation];
 	}
+
+	set sprite(sprite: Sprite) {
+		this.container.removeChildren();
+		this.container.addChild(sprite);
+		sprite.anchor.set(.5);
+	}
+
+	hasMaterialCapacity(): boolean {
+		return false;
+	}
+
+	addMaterial() {}
+
+	tick(world: World, position: Vector) {}
 }
 
 class Empty extends Entity {
 	constructor() {
-		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'empty.png'));
+		super();
+		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'empty.png');
 	}
 }
 
@@ -39,53 +50,85 @@ class Building extends Entity {
 	health: number;
 	maxHealth: number;
 
-	constructor(sprite: Sprite, rotation: Rotation, maxHealth: number) {
-		super(sprite, rotation);
+	constructor(rotation: Rotation, maxHealth: number) {
+		super(rotation);
 		this.maxHealth = maxHealth;
 		this.health = maxHealth;
 	}
 }
 
-
 class Wall extends Building {
 	constructor(rotation: Rotation) {
-		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'wall.png'), rotation, 10);
+		super(rotation, 10);
+		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'wall.png');
 	}
 }
 
 class Conveyor extends Building {
+	private readonly capacity = 10;
+	private count = 0;
+
 	constructor(rotation: Rotation) {
-		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor.png'), rotation, 10);
+		super(rotation, 10);
+		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor.png');
+	}
+
+	hasMaterialCapacity(): boolean {
+		return this.count < this.capacity;
+	}
+
+	addMaterial() {
+		this.count++;
+		// this.sprite  =
 	}
 }
 
 class Source extends Building {
 	constructor(rotation: Rotation) {
-		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'source.png'), rotation, 10);
+		super(rotation, 10);
+		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'source.png');
+	}
+
+	tick(world: World, position: Vector) {
+		[
+			new Vector(1, 0),
+			new Vector(0, 1),
+			new Vector(-1, 0),
+			new Vector(0, -1),
+		]
+			.map(shift => position.copy.add(shift))
+			.map(position => world.gridAt(position))
+			.filter(entity => entity?.hasMaterialCapacity())
+			.forEach(entity => entity!.addMaterial());
 	}
 }
 
 class Void extends Building {
 	constructor(rotation: Rotation) {
-		super(spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'void.png'), rotation, 10);
+		super(rotation, 10);
+		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'void.png');
+	}
+
+	hasMaterialCapacity(): boolean {
+		return true;
 	}
 }
 
-class AnimatedConveyor extends Building {
-	constructor(rotation: Rotation) {
-		super(AnimatedConveyor.sprite, rotation, 10);
-	}
-
-	private static get sprite() {
-		let animation = spriteLoader.animation(spriteLoader.Resource.CONVEYOR, 'move');
-		animation.animationSpeed = .1;
-		animation.play();
-		return animation;
-	}
-}
+// class AnimatedConveyor extends Building {
+// 	constructor(rotation: Rotation) {
+// 		super(AnimatedConveyor.sprite, rotation, 10);
+// 	}
+//
+// 	private static get sprite() {
+// 		let animation = spriteLoader.animation(spriteLoader.Resource.CONVEYOR, 'move');
+// 		animation.animationSpeed = .1;
+// 		animation.play();
+// 		return animation;
+// 	}
+// }
 
 class World {
-	private grid: Entity[][] = [];
+	private readonly grid: Entity[][] = [];
 	private container: Container;
 
 	constructor(grid: Entity[][], container: Container) {
@@ -93,17 +136,13 @@ class World {
 		this.container = container;
 		this.grid.forEach((column, x) => column
 			.forEach((cell, y) => {
-				if (cell.sprite)
-					this.addSprite(new Vector(x, y), cell.sprite);
+				if (cell.container)
+					this.addEntityContainer(new Vector(x, y), cell.container);
 			}));
 	}
 
 	static emptyGrid(width: number, height: number) {
 		return util.arr(width).map(_ => util.arr(height).map(_ => new Empty()));
-	}
-
-	get size() {
-		return new Vector(this.width, this.height);
 	}
 
 	get width() {
@@ -114,22 +153,34 @@ class World {
 		return this.grid[0].length;
 	}
 
-	private addSprite(position: Vector, sprite: Sprite) {
-		position = position.copy.add(new Vector(.5));
-		sprite.x = position.x / this.grid.length;
-		sprite.y = position.y / this.grid[0].length;
-		sprite.width = 1 / this.grid.length;
-		sprite.height = 1 / this.grid[0].length;
-		this.container.addChild(sprite);
+	get size() {
+		return new Vector(this.width, this.height);
 	}
 
-	updateEntity(position: Vector, entity: Entity) {
+	setEntity(position: Vector, entity: Entity) {
 		let old = this.grid[position.x][position.y];
-		if (old.sprite)
-			this.container.removeChild(old.sprite);
+		this.container.removeChild(old.container);
 		this.grid[position.x][position.y] = entity;
-		if (entity.sprite)
-			this.addSprite(position, entity.sprite);
+		this.addEntityContainer(position, entity.container);
+	}
+
+	private addEntityContainer(position: Vector, container: Container) {
+		position = position.copy.add(new Vector(.5)).scale(this.size.invert());
+		container.x = position.x;
+		container.y = position.y;
+		container.width = 1 / this.width;
+		container.height = 1 / this.height;
+		this.container.addChild(container);
+	}
+
+	gridAt(position: Vector): Entity | null {
+		return position.atLeast(new Vector()) && position.lessThan(this.size) ?
+			this.grid[position.x][position.y] :
+			null;
+	}
+
+	tick() {
+		this.grid.forEach((column, x) => column.forEach((cell, y) => cell.tick(this, new Vector(x, y))));
 	}
 }
 
