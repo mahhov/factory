@@ -1,9 +1,23 @@
 import {Container, Sprite} from 'pixi.js';
+import Counter from './Counter.js';
 import spriteLoader from './spriteLoader.js';
 import util from './util.js';
 import Vector from './Vector.js';
 
 enum Rotation { RIGHT, DOWN, LEFT, UP }
+
+let rotationToPositionShift = (rotation: Rotation) => {
+	switch (rotation) {
+		case Rotation.RIGHT:
+			return new Vector(1, 0);
+		case Rotation.DOWN:
+			return new Vector(0, 1);
+		case Rotation.LEFT:
+			return new Vector(-1, 0);
+		case Rotation.UP:
+			return new Vector(0, -1);
+	}
+};
 
 abstract class Entity {
 	static Rotation = Rotation;
@@ -65,8 +79,9 @@ class Wall extends Building {
 }
 
 class Conveyor extends Building {
-	private readonly capacity = 10;
+	private readonly capacity = 1;
 	private count = 0;
+	private counter = new Counter(50);
 
 	constructor(rotation: Rotation) {
 		super(rotation, 10);
@@ -79,7 +94,17 @@ class Conveyor extends Building {
 
 	addMaterial() {
 		this.count++;
-		// this.sprite  =
+		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor-full.png');
+	}
+
+	tick(world: World, position: Vector) {
+		let destination = position.copy.add(rotationToPositionShift(this.rotation));
+		if (this.count && world.hasMaterialCapacity(destination) && this.counter.tick()) {
+			world.gridAt(destination)!.addMaterial();
+			this.count--;
+			if (!this.count)
+				this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor.png');
+		}
 	}
 }
 
@@ -90,15 +115,11 @@ class Source extends Building {
 	}
 
 	tick(world: World, position: Vector) {
-		[
-			new Vector(1, 0),
-			new Vector(0, 1),
-			new Vector(-1, 0),
-			new Vector(0, -1),
-		]
+		[Rotation.RIGHT, Rotation.DOWN, Rotation.LEFT, Rotation.UP]
+			.map(rotationToPositionShift)
 			.map(shift => position.copy.add(shift))
-			.map(position => world.gridAt(position))
-			.filter(entity => entity?.hasMaterialCapacity())
+			.filter(destination => world.hasMaterialCapacity(destination))
+			.map(destination => world.gridAt(destination))
 			.forEach(entity => entity!.addMaterial());
 	}
 }
@@ -181,6 +202,11 @@ class World {
 
 	tick() {
 		this.grid.forEach((column, x) => column.forEach((cell, y) => cell.tick(this, new Vector(x, y))));
+	}
+
+	hasMaterialCapacity(position: Vector) {
+		let entity = this.gridAt(position);
+		return entity && entity.hasMaterialCapacity();
 	}
 }
 
