@@ -99,11 +99,13 @@ class Conveyor extends Building {
 
 	tick(world: World, position: Vector) {
 		let destination = position.copy.add(rotationToPositionShift(this.rotation));
-		if (this.count && world.hasMaterialCapacity(destination) && this.counter.tick()) {
-			world.gridAt(destination)!.addMaterial();
-			this.count--;
-			if (!this.count)
-				this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor.png');
+		if (this.count) {
+			if (this.counter.tick() && world.hasMaterialCapacity(destination)) {
+				world.gridAt(destination)!.addMaterial();
+				this.count--;
+				if (!this.count)
+					this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor.png');
+			}
 		}
 	}
 }
