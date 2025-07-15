@@ -1,7 +1,8 @@
 import Camera from './Camera.js';
+import {Conveyor, Entity, SimpleEntityCtor} from './Entity.js';
 import {Input} from './Input.js';
 import Vector from './Vector.js';
-import {Conveyor, Entity, SimpleEntityCtor, World} from './World.js';
+import World from './World.js';
 
 class Placer {
 	private camera: Camera;
@@ -75,3 +76,4 @@ export default Placer;
 //  - add after build time & cost
 //  - mouse wheel to rotate
 //  - display queue
+//  - display entity selection shortcuts

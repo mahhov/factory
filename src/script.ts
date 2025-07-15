@@ -1,10 +1,11 @@
 import {Application, TextureStyle} from 'pixi.js';
 import Camera from './Camera.js';
+import {Conveyor, Empty, Source, Void, Wall} from './Entity.js';
 import {Input, KeyBinding, MouseBinding} from './Input.js';
 import Placer from './Placer.js';
 import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
-import {Conveyor, Empty, Source, Void, Wall, World} from './World.js';
+import World from './World.js';
 
 (async () => {
 	let app = new Application();
