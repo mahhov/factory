@@ -32,7 +32,8 @@ import {Conveyor, Empty, Source, Void, Wall, World} from './World.js';
 	[Empty, Wall, Conveyor, Source, Void].forEach((clazz, i) =>
 		input.addBinding(new KeyBinding(String(i + 1), [Input.State.PRESSED], () => placer.selectEntity(clazz))));
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => placer.start()));
-	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.DOWN, Input.State.PRESSED], () => placer.move()));
+	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.DOWN], () => placer.move()));
+	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.RELEASED], () => placer.end()));
 
 	setInterval(() => {
 		camera.tick();
