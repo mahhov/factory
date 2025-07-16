@@ -1,7 +1,7 @@
 import {Application, TextureStyle} from 'pixi.js';
 import Camera from './Camera.js';
 import {Conveyor, Empty, Source, Void, Wall} from './Entity.js';
-import {Input, KeyBinding, MouseBinding} from './Input.js';
+import {Input, KeyBinding, MouseBinding, MouseWheelBinding} from './Input.js';
 import Placer from './Placer.js';
 import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
@@ -9,7 +9,6 @@ import {World, WorldLayer} from './World.js';
 
 (async () => {
 	let app = new Application();
-	window.app = app;
 	await app.init({
 		background: 'black',
 		width: 1400,
@@ -36,6 +35,8 @@ import {World, WorldLayer} from './World.js';
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => placer.start()));
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.DOWN], () => placer.move()));
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.RELEASED], () => placer.end()));
+	input.addBinding(new MouseWheelBinding(false, [Input.State.PRESSED], () => placer.rotate(-1)));
+	input.addBinding(new MouseWheelBinding(true, [Input.State.PRESSED], () => placer.rotate(1)));
 
 	setInterval(() => {
 		camera.tick();

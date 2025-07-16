@@ -9,9 +9,11 @@ class Placer {
 	private input: Input;
 	private world: World;
 
+	private started = false;
 	private rotation = Entity.Rotation.RIGHT;
 	private entityClass: SimpleEntityCtor = Conveyor;
 	private startPosition = new Vector();
+	private endPosition = new Vector();
 
 	constructor(camera: Camera, input: Input, world: World) {
 		this.camera = camera;
@@ -20,14 +22,23 @@ class Placer {
 	}
 
 	private get position() {
-		return this.camera.canvasToWorld(this.input.mousePosition.copy);
+		return this.camera.canvasToWorld(this.input.mousePosition.copy)
+			.scale(this.world.size).floor();
 	}
 
 	selectEntity(clazz: SimpleEntityCtor) {
 		this.entityClass = clazz;
 	}
 
+	rotate(delta: number) {
+		if (this.started) {
+			this.rotation = (this.rotation + delta + 4) % 4;
+			this.place(this.world.queue);
+		}
+	}
+
 	start() {
+		this.started = true;
 		this.startPosition = this.position;
 	}
 
@@ -37,23 +48,26 @@ class Placer {
 	}
 
 	end() {
+		this.started = false;
 		this.world.queue.clearAllEntities();
 		this.place(this.world.live);
 	}
 
 	private place(worldLayer: WorldLayer) {
 		let endPosition = this.position;
-		let gridStartPosition = this.startPosition.copy.scale(this.world.size).floor();
-		let gridEndPosition = endPosition.copy.scale(this.world.size).floor();
-		let gridDelta = gridEndPosition.copy.subtract(gridStartPosition);
-		if (gridDelta.x || gridDelta.y)
-			this.rotation =
-				Math.abs(gridDelta.y) > Math.abs(gridDelta.x) ?
-					gridDelta.y > 0 ? Entity.Rotation.DOWN : Entity.Rotation.UP :
-					gridDelta.x > 0 ? Entity.Rotation.RIGHT : Entity.Rotation.LEFT;
-		let n = Math.max(Math.abs(gridDelta.x), Math.abs(gridDelta.y));
+		let delta = endPosition.copy.subtract(this.startPosition);
+		let rotation = Math.abs(delta.y) > Math.abs(delta.x) ?
+			delta.y > 0 ? Entity.Rotation.DOWN : Entity.Rotation.UP :
+			delta.x > 0 ? Entity.Rotation.RIGHT : Entity.Rotation.LEFT;
+		let n = Math.max(Math.abs(delta.x), Math.abs(delta.y));
+
+		if (endPosition.x !== this.endPosition.x || endPosition.y !== this.endPosition.y) {
+			this.endPosition = endPosition;
+			this.rotation = rotation;
+		}
+
 		let iterDelta: Vector;
-		switch (this.rotation) {
+		switch (rotation) {
 			case Entity.Rotation.RIGHT:
 				iterDelta = new Vector(1, 0);
 				break;
@@ -68,10 +82,10 @@ class Placer {
 				break;
 		}
 
-		let gridPosition = gridStartPosition.copy;
+		let position = this.startPosition.copy;
 		for (let i = 0; i <= n; i++) {
-			worldLayer.setEntity(gridPosition, new this.entityClass(this.rotation));
-			gridPosition.add(iterDelta);
+			worldLayer.setEntity(position, new this.entityClass(this.rotation));
+			position.add(iterDelta);
 		}
 	}
 }
@@ -81,5 +95,4 @@ export default Placer;
 // todo:
 //  - only add if word empty or replaceable
 //  - add after build time & cost
-//  - mouse wheel to rotate
 //  - display entity selection shortcuts
