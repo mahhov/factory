@@ -43,6 +43,8 @@ abstract class Binding {
 
 	mouseUp(button: MouseButton) {}
 
+	mouseWheel(down: boolean) { }
+
 	tick() {
 		if (this.listenerStates.includes(this.state))
 			this.listener();
@@ -93,6 +95,25 @@ class MouseBinding extends Binding {
 	}
 }
 
+class MouseWheelBinding extends Binding {
+	private readonly down: boolean;
+
+	constructor(down: boolean, listenerStates: State[], listener: () => void) {
+		super(listenerStates, listener);
+		this.down = down;
+	}
+
+	mouseWheel(down: boolean) {
+		if (this.down === down)
+			this.press();
+	}
+
+	tick() {
+		super.tick();
+		this.release();
+	}
+}
+
 class Input {
 	static State = State;
 
@@ -101,9 +122,8 @@ class Input {
 	mousePosition = new Vector();
 
 	constructor(mouseTarget: HTMLCanvasElement) {
-		window.addEventListener('blur', () => {
-			Object.values(this.bindings).forEach(binding => binding.release());
-		});
+		window.addEventListener('blur', () =>
+			Object.values(this.bindings).forEach(binding => binding.release()));
 
 		document.addEventListener('keydown', e => {
 			if (!e.repeat)
@@ -122,6 +142,12 @@ class Input {
 			Object.values(this.bindings).forEach(binding => binding.mouseUp(e.button)));
 		mouseTarget.addEventListener('mousemove', e =>
 			this.mousePosition.set((e.x - mouseTarget.offsetLeft), e.y - mouseTarget.offsetTop));
+		mouseTarget.addEventListener('wheel', e => {
+			if (e.deltaY < 0)
+				Object.values(this.bindings).forEach(binding => binding.mouseWheel(false));
+			else
+				Object.values(this.bindings).forEach(binding => binding.mouseWheel(true));
+		});
 	}
 
 	addBinding(binding: Binding) {
@@ -133,4 +159,4 @@ class Input {
 	}
 }
 
-export {Input, KeyBinding, MouseBinding};
+export {Input, KeyBinding, MouseBinding, MouseWheelBinding};
