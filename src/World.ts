@@ -79,7 +79,7 @@ class World {
 		container.addChild(this.live.container);
 		this.queue = new WorldLayer(WorldLayer.emptyGrid(grid.length, grid[0].length));
 		container.addChild(this.queue.container);
-		this.queue.container.alpha = .5;
+		this.queue.container.alpha = .3;
 	}
 
 	get width() {
