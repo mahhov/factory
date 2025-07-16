@@ -2,7 +2,7 @@ import {Container, Sprite} from 'pixi.js';
 import Counter from './Counter.js';
 import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
-import World from './World.js';
+import {WorldLayer} from './World.js';
 
 enum Rotation { RIGHT, DOWN, LEFT, UP }
 
@@ -21,8 +21,8 @@ let rotationToPositionShift = (rotation: Rotation) => {
 
 abstract class Entity {
 	static Rotation = Rotation;
-	container = new Container();
 	rotation: Rotation;
+	container = new Container();
 
 	protected constructor(rotation: Rotation = Rotation.RIGHT) {
 		this.rotation = rotation;
@@ -45,13 +45,13 @@ abstract class Entity {
 
 	addMaterial() {}
 
-	tick(world: World, position: Vector) {}
+	tick(worldLayer: WorldLayer, position: Vector) {}
 }
 
 class Empty extends Entity {
 	constructor() {
 		super();
-		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'empty.png');
+		// this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'empty.png');
 	}
 }
 
@@ -97,11 +97,11 @@ class Conveyor extends Building {
 		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor-full.png');
 	}
 
-	tick(world: World, position: Vector) {
+	tick(worldLayer: WorldLayer, position: Vector) {
 		let destination = position.copy.add(rotationToPositionShift(this.rotation));
 		if (this.count) {
-			if (this.counter.tick() && world.hasMaterialCapacity(destination)) {
-				world.gridAt(destination)!.addMaterial();
+			if (this.counter.tick() && worldLayer.hasMaterialCapacity(destination)) {
+				worldLayer.getEntity(destination)!.addMaterial();
 				this.count--;
 				if (!this.count)
 					this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor.png');
@@ -116,12 +116,12 @@ class Source extends Building {
 		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'source.png');
 	}
 
-	tick(world: World, position: Vector) {
+	tick(worldLayer: WorldLayer, position: Vector) {
 		[Rotation.RIGHT, Rotation.DOWN, Rotation.LEFT, Rotation.UP]
 			.map(rotationToPositionShift)
 			.map(shift => position.copy.add(shift))
-			.filter(destination => world.hasMaterialCapacity(destination))
-			.map(destination => world.gridAt(destination))
+			.filter(destination => worldLayer.hasMaterialCapacity(destination))
+			.map(destination => worldLayer.getEntity(destination))
 			.forEach(entity => entity!.addMaterial());
 	}
 }

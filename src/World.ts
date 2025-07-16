@@ -3,17 +3,16 @@ import {Empty, Entity} from './Entity.js';
 import util from './util.js';
 import Vector from './Vector.js';
 
-class World {
-	private readonly grid: Entity[][] = [];
-	private container: Container;
+class WorldLayer {
+	protected grid: Entity[][] = [];
+	container = new Container();
 
-	constructor(grid: Entity[][], container: Container) {
+	constructor(grid: Entity[][]) {
 		this.grid = grid;
-		this.container = container;
 		this.grid.forEach((column, x) => column
-			.forEach((cell, y) => {
-				if (cell.container)
-					this.addEntityContainer(new Vector(x, y), cell.container);
+			.forEach((entity, y) => {
+				if (entity.container)
+					this.addEntityContainer(new Vector(x, y), entity.container);
 			}));
 	}
 
@@ -49,20 +48,55 @@ class World {
 		this.container.addChild(container);
 	}
 
-	gridAt(position: Vector): Entity | null {
+	getEntity(position: Vector): Entity | null {
 		return position.atLeast(new Vector()) && position.lessThan(this.size) ?
 			this.grid[position.x][position.y] :
 			null;
 	}
 
-	tick() {
-		this.grid.forEach((column, x) => column.forEach((cell, y) => cell.tick(this, new Vector(x, y))));
+	clearAllEntities() {
+		this.grid = WorldLayer.emptyGrid(this.grid.length, this.grid[0].length);
+		this.container.removeChildren();
 	}
 
 	hasMaterialCapacity(position: Vector) {
-		let entity = this.gridAt(position);
+		let entity = this.getEntity(position);
 		return entity && entity.hasMaterialCapacity();
+	}
+
+	tick() {
+		this.grid.forEach((column, x) => column.forEach((entity, y) =>
+			entity.tick(this, new Vector(x, y))));
 	}
 }
 
-export default World;
+class World {
+	live: WorldLayer;
+	queue: WorldLayer;
+
+	constructor(grid: Entity[][], container: Container) {
+		this.live = new WorldLayer(grid);
+		container.addChild(this.live.container);
+		this.queue = new WorldLayer(WorldLayer.emptyGrid(grid.length, grid[0].length));
+		container.addChild(this.queue.container);
+		this.queue.container.alpha = .5;
+	}
+
+	get width() {
+		return this.live.width;
+	}
+
+	get height() {
+		return this.live.height;
+	}
+
+	get size() {
+		return this.live.size;
+	}
+
+	tick() {
+		this.live.tick();
+	}
+}
+
+export {WorldLayer, World};

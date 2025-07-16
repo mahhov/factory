@@ -2,7 +2,7 @@ import Camera from './Camera.js';
 import {Conveyor, Entity, SimpleEntityCtor} from './Entity.js';
 import {Input} from './Input.js';
 import Vector from './Vector.js';
-import World from './World.js';
+import {World} from './World.js';
 
 class Placer {
 	private camera: Camera;
@@ -63,7 +63,7 @@ class Placer {
 
 		let gridPosition = gridStartPosition.copy;
 		for (let i = 0; i <= n; i++) {
-			this.world.setEntity(gridPosition, new this.entityClass(rotation));
+			this.world.live.setEntity(gridPosition, new this.entityClass(rotation));
 			gridPosition.add(iterDelta);
 		}
 	}

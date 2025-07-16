@@ -5,10 +5,11 @@ import {Input, KeyBinding, MouseBinding} from './Input.js';
 import Placer from './Placer.js';
 import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
-import World from './World.js';
+import {World, WorldLayer} from './World.js';
 
 (async () => {
 	let app = new Application();
+	window.app = app;
 	await app.init({
 		background: 'black',
 		width: 1400,
@@ -20,7 +21,7 @@ import World from './World.js';
 	let camera = new Camera(app);
 	let container = camera.container;
 	let input = new Input(app.canvas);
-	let world = new World(World.emptyGrid(100, 100), container);
+	let world = new World(WorldLayer.emptyGrid(100, 100), container);
 	let placer = new Placer(camera, input, world);
 
 	input.addBinding(new KeyBinding('a', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(-.01, 0))));
