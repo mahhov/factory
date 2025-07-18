@@ -41,12 +41,6 @@ class Entity {
 		return [...Array(4)].map((_, i) => i * Math.PI / 2)[rotation];
 	}
 
-	hasMaterialCapacity(): boolean {
-		return false;
-	}
-
-	addMaterial() {}
-
 	tick(worldLayer: WorldLayer, position: Vector) {}
 }
 
@@ -63,9 +57,9 @@ enum BuildingState {
 }
 
 abstract class Building extends Entity {
-	stateProgress: number = 0;
-	health: number;
-	maxHealth: number;
+	private stateProgress: number = 0;
+	private health: number;
+	private maxHealth: number;
 
 	constructor(rotation: Rotation, maxHealth: number) {
 		super(rotation);
@@ -83,13 +77,57 @@ class Wall extends Building {
 	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'wall.png');}
 }
 
-class Conveyor extends Building {
-	private readonly capacity = 1;
-	private count = 0;
-	private counter = new Counter(50);
+enum ResourceType {
+	COPPER, LEAD, SAND
+}
 
+abstract class Factory extends Building {
+	private readonly capacity: number;
+	private readonly counts: Record<ResourceType, number>;
+	protected readonly counter: Counter;
+	private readonly materials: ResourceType[] = [];
+
+	protected constructor(rotation: Rotation, maxHealth: number, capacity: number, counterDuration: number) {
+		super(rotation, maxHealth);
+		this.capacity = capacity;
+		this.counts = Object.fromEntries(
+			Object.values(ResourceType)
+				.filter(value => typeof value === 'number')
+				.map(type => [type, 0])) as Record<ResourceType, number>;
+		this.counter = new Counter(counterDuration);
+	}
+
+	get empty() {return Object.values(this.counts).every(count => !count);}
+
+	hasMaterialCapacity(type: ResourceType): boolean {
+		return this.counts[type] < this.capacity;
+	}
+
+	addMaterial(type: ResourceType) {
+		this.counts[type]++;
+		this.materials.push(type);
+	}
+
+	removeMaterial(type: ResourceType) {
+		this.counts[type]--;
+		let index = this.materials.lastIndexOf(type);
+		this.materials.splice(index, 1);
+	}
+
+	get peekNextMaterial() {
+		return this.materials[this.materials.length - 1];
+	}
+
+	popNextMaterial() {
+		let type = this.peekNextMaterial;
+		this.removeMaterial(type);
+		return type;
+	}
+}
+
+class Conveyor extends Factory {
 	constructor(rotation: Rotation) {
-		super(rotation, 10);
+		super(rotation, 10, 1, 50);
 		this.sprite = Conveyor.sprite;
 	}
 
@@ -97,57 +135,57 @@ class Conveyor extends Building {
 
 	static get spriteFull() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor-full.png');}
 
-	hasMaterialCapacity(): boolean {
-		return this.count < this.capacity;
-	}
-
-	addMaterial() {
-		this.count++;
+	addMaterial(type: ResourceType) {
+		super.addMaterial(type);
 		this.sprite = Conveyor.spriteFull;
 	}
 
+	removeMaterial(type: ResourceType) {
+		super.removeMaterial(type);
+		if (this.empty)
+			this.sprite = Conveyor.sprite;
+	}
+
 	tick(worldLayer: WorldLayer, position: Vector) {
-		let destination = position.copy.add(rotationToPositionShift(this.rotation));
-		if (this.count) {
-			if (this.counter.tick() && worldLayer.hasMaterialCapacity(destination)) {
-				worldLayer.getEntity(destination)!.addMaterial();
-				this.count--;
-				if (!this.count)
-					this.sprite = Conveyor.sprite;
-			}
+		if (this.empty)
+			return;
+		let destination = worldLayer.getEntity(position.copy.add(rotationToPositionShift(this.rotation)));
+		this.counter.prepare();
+		if (this.counter.isReady() && destination instanceof Factory && destination.hasMaterialCapacity(this.peekNextMaterial)) {
+			this.counter.reset();
+			destination.addMaterial(this.popNextMaterial());
 		}
 	}
 }
 
-class Source extends Building {
+class Source extends Factory {
+	protected readonly type = ResourceType.COPPER;
+
 	constructor(rotation: Rotation) {
-		super(rotation, 10);
+		super(rotation, 10, 0, 200);
 		this.sprite = Source.sprite;
 	}
 
 	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'source.png');}
 
 	tick(worldLayer: WorldLayer, position: Vector) {
-		[Rotation.RIGHT, Rotation.DOWN, Rotation.LEFT, Rotation.UP]
-			.map(rotationToPositionShift)
-			.map(shift => position.copy.add(shift))
-			.filter(destination => worldLayer.hasMaterialCapacity(destination))
-			.map(destination => worldLayer.getEntity(destination))
-			.forEach(entity => entity!.addMaterial());
+		if (this.counter.tick())
+			[Rotation.RIGHT, Rotation.DOWN, Rotation.LEFT, Rotation.UP]
+				.map(rotationToPositionShift)
+				.map(shift => position.copy.add(shift))
+				.map(destinationPosition => worldLayer.getEntity(destinationPosition))
+				.filter(destination => destination instanceof Factory && destination.hasMaterialCapacity(this.type))
+				.forEach(destination => (destination as Factory).addMaterial(this.type));
 	}
 }
 
-class Void extends Building {
+class Void extends Factory {
 	constructor(rotation: Rotation) {
-		super(rotation, 10);
+		super(rotation, 10, Infinity, 1);
 		this.sprite = Void.sprite;
 	}
 
 	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'void.png');}
-
-	hasMaterialCapacity(): boolean {
-		return true;
-	}
 }
 
 // class AnimatedConveyor extends Building {
@@ -165,4 +203,8 @@ class Void extends Building {
 
 type SimpleEntityCtor = (new () => Entity) | (new (rotation: Rotation) => Entity);
 
-export {Entity, Empty, Building, Wall, Conveyor, Source, Void, SimpleEntityCtor};
+export {Entity, Empty, Building, Wall, Conveyor, Source, Void, SimpleEntityCtor, ResourceType};
+
+// todo
+//   larger entities
+//   factories

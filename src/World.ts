@@ -59,11 +59,6 @@ class WorldLayer {
 		this.container.removeChildren();
 	}
 
-	hasMaterialCapacity(position: Vector) {
-		let entity = this.getEntity(position);
-		return entity && entity.hasMaterialCapacity();
-	}
-
 	tick() {
 		this.grid.forEach((column, x) => column.forEach((entity, y) =>
 			entity.tick(this, new Vector(x, y))));
