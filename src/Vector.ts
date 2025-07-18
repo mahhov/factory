@@ -16,6 +16,10 @@ class Vector {
 		return this.x ** 2 + this.y ** 2;
 	}
 
+	equals(v: Vector) {
+		return this.x === v.x && this.y === v.y;
+	}
+
 	atLeast(v: Vector) {
 		return this.x >= v.x && this.y >= v.y;
 	}

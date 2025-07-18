@@ -90,20 +90,16 @@ class Placer {
 	}
 
 	private place(worldLayer: WorldLayer) {
-		let endPosition = this.position;
-		let delta = endPosition.copy.subtract(this.startPosition);
-		let rotation = Math.abs(delta.y) > Math.abs(delta.x) ?
-			delta.y > 0 ? Entity.Rotation.DOWN : Entity.Rotation.UP :
-			delta.x > 0 ? Entity.Rotation.RIGHT : Entity.Rotation.LEFT;
+		this.endPosition = this.position;
+		let delta = this.endPosition.copy.subtract(this.startPosition);
+		if (delta.magnitude2)
+			this.rotation = Math.abs(delta.y) > Math.abs(delta.x) ?
+				delta.y > 0 ? Entity.Rotation.DOWN : Entity.Rotation.UP :
+				delta.x > 0 ? Entity.Rotation.RIGHT : Entity.Rotation.LEFT;
 		let n = Math.max(Math.abs(delta.x), Math.abs(delta.y));
 
-		if (endPosition.x !== this.endPosition.x || endPosition.y !== this.endPosition.y) {
-			this.endPosition = endPosition;
-			this.rotation = rotation;
-		}
-
 		let iterDelta: Vector;
-		switch (rotation) {
+		switch (this.rotation) {
 			case Entity.Rotation.RIGHT:
 				iterDelta = new Vector(1, 0);
 				break;
