@@ -9,6 +9,7 @@ import {World, WorldLayer} from './World.js';
 class Placer {
 	static entityClasses = [Empty, Wall, Conveyor, Source, Void];
 
+	private painter: Painter;
 	private camera: Camera;
 	private input: Input;
 	private world: World;
@@ -20,13 +21,24 @@ class Placer {
 	private endPosition = new Vector();
 
 	constructor(painter: Painter, camera: Camera, input: Input, world: World) {
+		this.painter = painter;
 		this.camera = camera;
 		this.input = input;
 		this.world = world;
+
+		Placer.entityClasses.forEach((clazz, i) => {
+			let sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'wall.png');
+			sprite.x = i * 100 / 1400;
+			sprite.y = i * 100 / 1400;
+			sprite.width = 50 / 1400;
+			sprite.height = 50 / 1400;
+			painter.uiContainer.addChild(sprite);
+		});
 	}
 
 	private get position() {
-		return this.camera.canvasToWorld(this.input.mousePosition.copy)
+		let canvasPosition = this.input.mousePosition.copy.scale(new Vector(1 / this.painter.canvasWidth));
+		return this.camera.canvasToWorld(canvasPosition)
 			.scale(this.world.size).floor();
 	}
 

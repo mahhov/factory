@@ -7,6 +7,8 @@ class Painter {
 
 	constructor(canvasWidth: number, container: Container) {
 		this.canvasWidth = canvasWidth;
+		this.foregroundContainer.scale = canvasWidth;
+		this.uiContainer.scale = canvasWidth;
 		container.addChild(this.foregroundContainer);
 		container.addChild(this.uiContainer);
 	}

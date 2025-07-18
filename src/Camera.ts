@@ -22,21 +22,20 @@ class Camera {
 	}
 
 	zoom(delta: number) {
-		let centerWorld = this.canvasToWorld(new Vector(this.painter.canvasWidth / 2, this.painter.canvasWidth / 2));
+		let centerWorld = this.canvasToWorld(new Vector(.5));
 		this.targetWidth = util.clamp(this.targetWidth + delta, .1, 1.5);
 		this.targetLeftTop = centerWorld.subtract(new Vector(this.targetWidth / 2));
 	}
 
-	// world [0, 1]; canvas [0, 1400px]
 	private worldToCanvas(world: Vector) {
 		return world
 			.subtract(this.leftTop)
-			.scale(new Vector(1 / this.width * this.painter.canvasWidth));
+			.scale(new Vector(1 / this.width));
 	}
 
 	canvasToWorld(canvas: Vector) {
 		return canvas
-			.scale(new Vector(1 / this.painter.canvasWidth * this.width))
+			.scale(new Vector(this.width))
 			.add(this.leftTop);
 	}
 
@@ -47,7 +46,7 @@ class Camera {
 			.scale(new Vector(lazy))
 			.add(this.targetLeftTop.copy.scale(new Vector(1 - lazy)));
 
-		this.container.scale = this.painter.canvasWidth / this.width;
+		this.container.scale = 1 / this.width;
 		this.container.position = this.worldToCanvas(new Vector());
 	}
 }
