@@ -33,7 +33,9 @@ class WorldLayer {
 	}
 
 	setEntity(position: Vector, entity: Entity) {
-		let old = this.grid[position.x][position.y];
+		let old = this.getEntity(position);
+		if (!old)
+			return;
 		this.container.removeChild(old.container);
 		this.grid[position.x][position.y] = entity;
 		this.addEntityContainer(position, entity.container);
