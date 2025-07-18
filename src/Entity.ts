@@ -19,12 +19,12 @@ let rotationToPositionShift = (rotation: Rotation) => {
 	}
 };
 
-abstract class Entity {
+class Entity {
 	static Rotation = Rotation;
 	rotation: Rotation;
 	container = new Container();
 
-	protected constructor(rotation: Rotation = Rotation.RIGHT) {
+	constructor(rotation: Rotation = Rotation.RIGHT) {
 		this.rotation = rotation;
 		this.container.rotation = Entity.rotationToAngle(rotation);
 	}

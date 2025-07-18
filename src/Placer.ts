@@ -75,7 +75,7 @@ class Placer {
 
 	start() {
 		this.started = true;
-		this.startPosition = this.position;
+		this.endPosition = this.startPosition = this.position;
 	}
 
 	move() {
