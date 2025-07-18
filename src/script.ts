@@ -1,7 +1,7 @@
-import {Application, TextureStyle} from 'pixi.js';
+import {Application, Container, TextureStyle} from 'pixi.js';
 import Camera from './Camera.js';
-import {Conveyor, Empty, Source, Void, Wall} from './Entity.js';
 import {Input, KeyBinding, MouseBinding, MouseWheelBinding} from './Input.js';
+import Painter from './Painter.js';
 import Placer from './Placer.js';
 import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
@@ -17,11 +17,13 @@ import {World, WorldLayer} from './World.js';
 	TextureStyle.defaultOptions.scaleMode = 'nearest';
 	document.body.appendChild(app.canvas);
 	await spriteLoader.preload();
-	let camera = new Camera(app);
-	let container = camera.container;
+	let painter = new Painter(app.renderer.width, app.stage);
+	let camera = new Camera(painter);
+	let uiContainer = new Container();
+	app.stage.addChild(uiContainer);
 	let input = new Input(app.canvas);
-	let world = new World(WorldLayer.emptyGrid(100, 100), container);
-	let placer = new Placer(camera, input, world);
+	let world = new World(WorldLayer.emptyGrid(100, 100), camera.container);
+	let placer = new Placer(painter, camera, input, world);
 
 	input.addBinding(new KeyBinding('a', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(-.01, 0))));
 	input.addBinding(new KeyBinding('d', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(.01, 0))));
@@ -30,8 +32,7 @@ import {World, WorldLayer} from './World.js';
 	input.addBinding(new KeyBinding('q', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(.03)));
 	input.addBinding(new KeyBinding('e', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(-.03)));
 
-	[Empty, Wall, Conveyor, Source, Void].forEach((clazz, i) =>
-		input.addBinding(new KeyBinding(String(i + 1), [Input.State.PRESSED], () => placer.selectEntity(clazz))));
+	Placer.entityClasses.forEach((clazz, i) => input.addBinding(new KeyBinding(String(i + 1), [Input.State.PRESSED], () => placer.selectEntity(clazz))));
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => placer.start()));
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.DOWN], () => placer.move()));
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.RELEASED], () => placer.end()));

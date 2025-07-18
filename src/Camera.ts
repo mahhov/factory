@@ -1,18 +1,19 @@
-import {Application, Container} from 'pixi.js';
+import {Container} from 'pixi.js';
+import Painter from './Painter.js';
 import util from './util.js';
 import Vector from './Vector.js';
 
 class Camera {
-	private readonly canvasWidth: number;
 	private targetLeftTop: Vector = new Vector();
 	private targetWidth: number = 1;
 	private leftTop: Vector = new Vector();
 	private width: number = 1;
-	container: Container = new Container();
+	readonly container: Container = new Container();
+	private readonly painter: Painter;
 
-	constructor(app: Application) {
-		this.canvasWidth = app.renderer.width;
-		app.stage.addChild(this.container);
+	constructor(painter: Painter) {
+		this.painter = painter;
+		painter.foregroundContainer.addChild(this.container);
 	}
 
 	move(delta: Vector) {
@@ -21,7 +22,7 @@ class Camera {
 	}
 
 	zoom(delta: number) {
-		let centerWorld = this.canvasToWorld(new Vector(this.canvasWidth / 2, this.canvasWidth / 2));
+		let centerWorld = this.canvasToWorld(new Vector(this.painter.canvasWidth / 2, this.painter.canvasWidth / 2));
 		this.targetWidth = util.clamp(this.targetWidth + delta, .1, 1.5);
 		this.targetLeftTop = centerWorld.subtract(new Vector(this.targetWidth / 2));
 	}
@@ -30,12 +31,12 @@ class Camera {
 	private worldToCanvas(world: Vector) {
 		return world
 			.subtract(this.leftTop)
-			.scale(new Vector(1 / this.width * this.canvasWidth));
+			.scale(new Vector(1 / this.width * this.painter.canvasWidth));
 	}
 
 	canvasToWorld(canvas: Vector) {
 		return canvas
-			.scale(new Vector(1 / this.canvasWidth * this.width))
+			.scale(new Vector(1 / this.painter.canvasWidth * this.width))
 			.add(this.leftTop);
 	}
 
@@ -46,7 +47,7 @@ class Camera {
 			.scale(new Vector(lazy))
 			.add(this.targetLeftTop.copy.scale(new Vector(1 - lazy)));
 
-		this.container.scale = this.canvasWidth / this.width;
+		this.container.scale = this.painter.canvasWidth / this.width;
 		this.container.position = this.worldToCanvas(new Vector());
 	}
 }

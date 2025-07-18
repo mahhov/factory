@@ -1,10 +1,14 @@
 import Camera from './Camera.js';
-import {Conveyor, Entity, SimpleEntityCtor} from './Entity.js';
+import {Conveyor, Empty, Entity, SimpleEntityCtor, Source, Void, Wall} from './Entity.js';
 import {Input} from './Input.js';
+import Painter from './Painter.js';
+import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
 import {World, WorldLayer} from './World.js';
 
 class Placer {
+	static entityClasses = [Empty, Wall, Conveyor, Source, Void];
+
 	private camera: Camera;
 	private input: Input;
 	private world: World;
@@ -15,7 +19,7 @@ class Placer {
 	private startPosition = new Vector();
 	private endPosition = new Vector();
 
-	constructor(camera: Camera, input: Input, world: World) {
+	constructor(painter: Painter, camera: Camera, input: Input, world: World) {
 		this.camera = camera;
 		this.input = input;
 		this.world = world;
