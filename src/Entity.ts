@@ -29,14 +29,16 @@ abstract class Entity {
 		this.container.rotation = Entity.rotationToAngle(rotation);
 	}
 
-	static rotationToAngle(rotation: Rotation) {
-		return [...Array(4)].map((_, i) => i * Math.PI / 2)[rotation];
-	}
+	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'empty.png');}
 
 	set sprite(sprite: Sprite) {
 		this.container.removeChildren();
 		this.container.addChild(sprite);
 		sprite.anchor.set(.5);
+	}
+
+	static rotationToAngle(rotation: Rotation) {
+		return [...Array(4)].map((_, i) => i * Math.PI / 2)[rotation];
 	}
 
 	hasMaterialCapacity(): boolean {
@@ -51,15 +53,16 @@ abstract class Entity {
 class Empty extends Entity {
 	constructor() {
 		super();
-		// this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'empty.png');
 	}
+
+	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'empty.png');}
 }
 
 enum BuildingState {
 	QUEUED, BUILDING, BUILT, DESTROYED
 }
 
-class Building extends Entity {
+abstract class Building extends Entity {
 	stateProgress: number = 0;
 	health: number;
 	maxHealth: number;
@@ -74,8 +77,10 @@ class Building extends Entity {
 class Wall extends Building {
 	constructor(rotation: Rotation) {
 		super(rotation, 10);
-		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'wall.png');
+		this.sprite = Wall.sprite;
 	}
+
+	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'wall.png');}
 }
 
 class Conveyor extends Building {
@@ -85,8 +90,12 @@ class Conveyor extends Building {
 
 	constructor(rotation: Rotation) {
 		super(rotation, 10);
-		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor.png');
+		this.sprite = Conveyor.sprite;
 	}
+
+	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor.png');}
+
+	static get spriteFull() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor-full.png');}
 
 	hasMaterialCapacity(): boolean {
 		return this.count < this.capacity;
@@ -94,7 +103,7 @@ class Conveyor extends Building {
 
 	addMaterial() {
 		this.count++;
-		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor-full.png');
+		this.sprite = Conveyor.spriteFull;
 	}
 
 	tick(worldLayer: WorldLayer, position: Vector) {
@@ -104,7 +113,7 @@ class Conveyor extends Building {
 				worldLayer.getEntity(destination)!.addMaterial();
 				this.count--;
 				if (!this.count)
-					this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor.png');
+					this.sprite = Conveyor.sprite;
 			}
 		}
 	}
@@ -113,8 +122,10 @@ class Conveyor extends Building {
 class Source extends Building {
 	constructor(rotation: Rotation) {
 		super(rotation, 10);
-		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'source.png');
+		this.sprite = Source.sprite;
 	}
+
+	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'source.png');}
 
 	tick(worldLayer: WorldLayer, position: Vector) {
 		[Rotation.RIGHT, Rotation.DOWN, Rotation.LEFT, Rotation.UP]
@@ -129,8 +140,10 @@ class Source extends Building {
 class Void extends Building {
 	constructor(rotation: Rotation) {
 		super(rotation, 10);
-		this.sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'void.png');
+		this.sprite = Void.sprite;
 	}
+
+	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'void.png');}
 
 	hasMaterialCapacity(): boolean {
 		return true;

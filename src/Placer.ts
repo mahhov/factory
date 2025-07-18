@@ -1,22 +1,24 @@
+import {Container, Graphics} from 'pixi.js';
 import Camera from './Camera.js';
-import {Conveyor, Empty, Entity, SimpleEntityCtor, Source, Void, Wall} from './Entity.js';
+import {Conveyor, Empty, Entity, Source, Void, Wall} from './Entity.js';
 import {Input} from './Input.js';
 import Painter from './Painter.js';
-import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
 import {World, WorldLayer} from './World.js';
 
 class Placer {
-	static entityClasses = [Empty, Wall, Conveyor, Source, Void];
+	static readonly entityClasses: typeof Entity[] = [Empty, Wall, Conveyor, Source, Void];
 
-	private painter: Painter;
-	private camera: Camera;
-	private input: Input;
-	private world: World;
+	private readonly painter: Painter;
+	private readonly camera: Camera;
+	private readonly input: Input;
+	private readonly world: World;
+
+	private entityClassRect = new Container();
 
 	private started = false;
 	private rotation = Entity.Rotation.RIGHT;
-	private entityClass: SimpleEntityCtor = Conveyor;
+	private entityClass!: typeof Entity;
 	private startPosition = new Vector();
 	private endPosition = new Vector();
 
@@ -27,13 +29,28 @@ class Placer {
 		this.world = world;
 
 		Placer.entityClasses.forEach((clazz, i) => {
-			let sprite = spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'wall.png');
-			sprite.x = i * 100 / 1400;
-			sprite.y = i * 100 / 1400;
-			sprite.width = 50 / 1400;
-			sprite.height = 50 / 1400;
+			let sprite = clazz.sprite;
+			[sprite.x, sprite.y, sprite.width, sprite.height] = Placer.entityClassUiCoordinates(i).flat();
 			painter.uiContainer.addChild(sprite);
 		});
+
+		this.entityClassRect.addChild(new Graphics()
+			.rect(0, 0, ...Placer.entityClassUiCoordinates(0)[1])
+			.stroke({width: 3 / painter.canvasWidth, color: 0xffff00}));
+		painter.uiContainer.addChild(this.entityClassRect);
+
+		this.selectEntity(Conveyor);
+	}
+
+	private static entityClassUiCoordinates(i: number): [number, number][] {
+		let size = .035, margin = .005;
+		return [[
+			i * (size + margin) + margin,
+			1 - margin - size,
+		], [
+			size,
+			size,
+		]];
 	}
 
 	private get position() {
@@ -42,8 +59,11 @@ class Placer {
 			.scale(this.world.size).floor();
 	}
 
-	selectEntity(clazz: SimpleEntityCtor) {
+	selectEntity(clazz: typeof Entity) {
 		this.entityClass = clazz;
+
+		let index = Placer.entityClasses.indexOf(clazz);
+		[this.entityClassRect.x, this.entityClassRect.y] = Placer.entityClassUiCoordinates(index)[0];
 	}
 
 	rotate(delta: number) {
