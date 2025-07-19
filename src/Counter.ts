@@ -12,6 +12,7 @@ class Counter {
 	prepare() {
 		if (this.i < this.n - 1)
 			this.i++;
+		return this.isReady();
 	}
 
 	// return what the next call to tick()

@@ -17,6 +17,9 @@
     },
     "void.png": {
       "frame": {"x": 80, "y": 0, "w": 16, "h": 16}
+    },
+    "glassFactory.png": {
+      "frame": {"x": 96, "y": 0, "w": 16, "h": 16}
     }
   },
   "meta": {
