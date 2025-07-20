@@ -32,6 +32,22 @@ enum ResourceType {
 	COPPER, LEAD, SAND, GLASS
 }
 
+// type ResourceCount = [ResourceType, number];
+
+class ResourceCount {
+	readonly resourceType: ResourceType;
+	readonly quantity: number;
+
+	constructor(resourceType: ResourceType, quantity: number) {
+		this.resourceType = resourceType;
+		this.quantity = quantity;
+	}
+
+	static fromTuples(tuples: [ResourceType, number][]): ResourceCount[] {
+		return tuples.map(tuple => new ResourceCount(...tuple));
+	}
+}
+
 abstract class EntityAttribute {
 	tick(worldLayer: WorldLayer, position: Vector) {}
 }
@@ -47,41 +63,38 @@ class EntityContainerAttribute extends EntityAttribute {
 		this.counts = Object.fromEntries(
 			Object.values(ResourceType)
 				.filter(value => typeof value === 'number')
-				.map(type => [type, 0])) as Record<ResourceType, number>;
+				.map(resourceType => [resourceType, 0])) as Record<ResourceType, number>;
 	}
 
 	get empty() {return Object.values(this.counts).every(count => !count);}
 
-	get peekNextMaterial(): ResourceType {
-		return this.materials[this.materials.length - 1];
+	get peek(): ResourceCount {
+		return new ResourceCount(this.materials[this.materials.length - 1], 1);
 	}
 
-	hasMaterialCapacity(type: ResourceType): boolean {
-		return this.counts[type] < this.capacity;
+	hasCapacity(resourceCount: ResourceCount): boolean {
+		return this.counts[resourceCount.resourceType] + resourceCount.quantity <= this.capacity;
 	}
 
-	hasMaterialQuantity(type: ResourceType, quantity: number): boolean {
-		return this.counts[type] > quantity;
+	hasQuantity(resourceCount: ResourceCount): boolean {
+		return this.counts[resourceCount.resourceType] > resourceCount.quantity;
 	}
 
-	addMaterial(type: ResourceType) {
-		this.counts[type]++;
-		this.materials.push(type);
+	add(resourceCount: ResourceCount) {
+		this.counts[resourceCount.resourceType]++;
+		this.materials.push(resourceCount.resourceType);
 	}
 
-	removeMaterial(type: ResourceType): boolean {
-		if (!this.counts[type])
-			return false;
-		this.counts[type]--;
-		let index = this.materials.lastIndexOf(type);
-		this.materials.splice(index, 1);
-		return true;
+	remove(resourceCount: ResourceCount) {
+		this.counts[resourceCount.resourceType] -= resourceCount.quantity;
+		for (let i = 0; i < resourceCount.quantity; i++)
+			this.materials.splice(this.materials.lastIndexOf(resourceCount.resourceType), 1);
 	}
 
-	popNextMaterial(): ResourceType {
-		let type = this.peekNextMaterial;
-		this.removeMaterial(type);
-		return type;
+	pop(): ResourceCount {
+		let resourceCount = this.peek;
+		this.remove(resourceCount);
+		return resourceCount;
 	}
 }
 
@@ -125,8 +138,8 @@ class EntityTransportAttribute extends EntityTimedAttribute {
 	maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
 		let destination = worldLayer.getEntity(position.copy.add(rotationToPositionShift(this.rotation)));
 		let destinationContainerAttribute = destination?.getAttribute(EntityContainerAttribute);
-		if (destinationContainerAttribute?.hasMaterialCapacity(this.containerAttribute.peekNextMaterial)) {
-			destinationContainerAttribute.addMaterial(this.containerAttribute.popNextMaterial());
+		if (destinationContainerAttribute?.hasCapacity(this.containerAttribute.peek)) {
+			destinationContainerAttribute.add(this.containerAttribute.pop());
 			return true;
 		}
 		return false;
@@ -134,11 +147,11 @@ class EntityTransportAttribute extends EntityTimedAttribute {
 }
 
 class EntitySourceAttribute extends EntityTimedAttribute {
-	private readonly type: ResourceType;
+	private readonly resourceType: ResourceType;
 
-	constructor(counterDuration: number, type: ResourceType) {
+	constructor(counterDuration: number, resourceType: ResourceType) {
 		super(counterDuration);
-		this.type = type;
+		this.resourceType = resourceType;
 	}
 
 	canProgress(worldLayer: WorldLayer, position: Vector): boolean {
@@ -146,15 +159,44 @@ class EntitySourceAttribute extends EntityTimedAttribute {
 	}
 
 	maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
+		let resourceCount = new ResourceCount(this.resourceType, 1);
 		[Rotation.RIGHT, Rotation.DOWN, Rotation.LEFT, Rotation.UP]
 			.map(rotationToPositionShift)
 			.map(shift => position.copy.add(shift))
 			.map(destinationPosition => worldLayer.getEntity(destinationPosition))
 			.map(destination => destination?.getAttribute(EntityContainerAttribute))
-			.filter(containerAttribute => containerAttribute?.hasMaterialCapacity(this.type))
-			.forEach(containerAttribute => containerAttribute!.addMaterial(this.type));
+			.filter(containerAttribute => containerAttribute?.hasCapacity(resourceCount))
+			.forEach(containerAttribute => containerAttribute!.add(resourceCount));
 		return true;
 	}
 }
 
-export {Rotation, rotationToPositionShift, ResourceType, EntityAttribute, EntityContainerAttribute, EntityTransportAttribute, EntitySourceAttribute};
+class EntityProduceAttribute extends EntityTimedAttribute {
+	private readonly containerAttribute: EntityContainerAttribute;
+	private readonly inputs: ResourceCount[];
+	private readonly outputs: ResourceCount[];
+
+	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, inputs: ResourceCount[], outputs: ResourceCount[]) {
+		super(counterDuration);
+		this.containerAttribute = containerAttribute;
+		this.inputs = inputs;
+		this.outputs = outputs;
+	}
+
+	canProgress(worldLayer: WorldLayer, position: Vector): boolean {
+		return this.inputs.every(resourceCount =>
+			this.containerAttribute.hasQuantity(resourceCount));
+	}
+
+	maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
+		if (this.outputs.every(resourceCount =>
+			this.containerAttribute.hasCapacity(resourceCount))) {
+			this.inputs.forEach(resourceCount => this.containerAttribute.remove(resourceCount));
+			this.outputs.forEach(resourceCount => this.containerAttribute.add(resourceCount));
+			return true;
+		}
+		return false;
+	}
+}
+
+export {Rotation, rotationToPositionShift, ResourceType, ResourceCount, EntityAttribute, EntityContainerAttribute, EntityTransportAttribute, EntitySourceAttribute, EntityProduceAttribute};
