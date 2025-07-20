@@ -20,4 +20,6 @@ let frame = (resource: Resource, frame: string) => {
 	return new Sprite(sheet.textures[frame]);
 };
 
+// todo cache
+
 export default {Resource, preload, animation, frame};

@@ -1,5 +1,5 @@
 import {Container, Sprite} from 'pixi.js';
-import Counter from './Counter.js';
+import {EntityAttribute, EntityContainerAttribute, EntitySourceAttribute, EntityTransportAttribute, ResourceType} from './EntityProcess.js';
 import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
 import {WorldLayer} from './World.js';
@@ -21,8 +21,9 @@ let rotationToPositionShift = (rotation: Rotation) => {
 
 class Entity {
 	static Rotation = Rotation;
-	rotation: Rotation;
-	container = new Container();
+	protected readonly rotation: Rotation;
+	protected readonly attributes: EntityAttribute[] = [];
+	readonly container = new Container();
 
 	constructor(rotation: Rotation = Rotation.RIGHT) {
 		this.rotation = rotation;
@@ -41,113 +42,35 @@ class Entity {
 		return [...Array(4)].map((_, i) => i * Math.PI / 2)[rotation];
 	}
 
-	tick(worldLayer: WorldLayer, position: Vector) {}
+	getAttribute<T extends EntityAttribute>(attributeClass: new (...args: any[]) => T): T | undefined {
+		return this.attributes.find(attribute => attribute instanceof attributeClass) as T;
+	}
+
+	tick(worldLayer: WorldLayer, position: Vector) {
+		this.attributes.forEach(attribute => attribute.tick(worldLayer, position));
+	}
 }
 
 class Empty extends Entity {
-	constructor() {
-		super();
-	}
-
-	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'empty.png');}
 }
 
-enum BuildingState {
-	QUEUED, BUILDING, BUILT, DESTROYED
-}
-
-abstract class Building extends Entity {
-	private stateProgress: number = 0;
-	private health: number;
-	private maxHealth: number;
-
-	constructor(rotation: Rotation, maxHealth: number) {
-		super(rotation);
-		this.maxHealth = maxHealth;
-		this.health = maxHealth;
-	}
-}
-
-class Wall extends Building {
+class Wall extends Entity {
 	constructor(rotation: Rotation) {
-		super(rotation, 10);
+		super(rotation);
 		this.sprite = Wall.sprite;
 	}
 
 	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'wall.png');}
 }
 
-enum ResourceType {
-	COPPER, LEAD, SAND, GLASS
-}
+class Conveyor extends Entity {
+	private readonly containerAttribute: EntityContainerAttribute;
 
-abstract class Factory extends Building {
-	private readonly capacity: number;
-	private readonly counts: Record<ResourceType, number>;
-	protected readonly counter: Counter;
-	private readonly materials: ResourceType[] = [];
-
-	protected constructor(rotation: Rotation, maxHealth: number, capacity: number, counterDuration: number) {
-		super(rotation, maxHealth);
-		this.capacity = capacity;
-		this.counts = Object.fromEntries(
-			Object.values(ResourceType)
-				.filter(value => typeof value === 'number')
-				.map(type => [type, 0])) as Record<ResourceType, number>;
-		this.counter = new Counter(counterDuration);
-	}
-
-	get empty() {return Object.values(this.counts).every(count => !count);}
-
-	get peekNextMaterial(): ResourceType {
-		return this.materials[this.materials.length - 1];
-	}
-
-	hasMaterialCapacity(type: ResourceType): boolean {
-		return this.counts[type] < this.capacity;
-	}
-
-	hasMaterialQuantity(type: ResourceType, quantity: number): boolean {
-		return this.counts[type] > quantity;
-	}
-
-	addMaterial(type: ResourceType) {
-		this.counts[type]++;
-		this.materials.push(type);
-	}
-
-	removeMaterial(type: ResourceType): boolean {
-		if (!this.counts[type])
-			return false;
-		this.counts[type]--;
-		let index = this.materials.lastIndexOf(type);
-		this.materials.splice(index, 1);
-		return true;
-	}
-
-	popNextMaterial(): ResourceType {
-		let type = this.peekNextMaterial;
-		this.removeMaterial(type);
-		return type;
-	}
-
-	tick(worldLayer: WorldLayer, position: Vector) {
-		if (!this.canProgress(worldLayer, position))
-			return;
-		if (!this.counter.prepare())
-			return;
-		if (this.maybeComplete)
-			this.counter.reset(worldLayer, position);
-	}
-
-	abstract canProgress(worldLayer: WorldLayer, position: Vector): boolean ;
-
-	abstract maybeComplete(worldLayer: WorldLayer, position: Vector): boolean ;
-}
-
-class Conveyor extends Factory {
 	constructor(rotation: Rotation) {
-		super(rotation, 10, 1, 10);
+		super(rotation);
+		this.containerAttribute = new EntityContainerAttribute(1);
+		this.attributes.push(this.containerAttribute);
+		this.attributes.push(new EntityTransportAttribute(this.containerAttribute, 10, rotation));
 		this.sprite = Conveyor.sprite;
 	}
 
@@ -155,109 +78,67 @@ class Conveyor extends Factory {
 
 	static get spriteFull() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor-full.png');}
 
-	addMaterial(type: ResourceType) {
-		super.addMaterial(type);
-		this.sprite = Conveyor.spriteFull;
-	}
-
-	removeMaterial(type: ResourceType): boolean {
-		let ret = super.removeMaterial(type);
-		if (this.empty)
-			this.sprite = Conveyor.sprite;
-		return ret;
-	}
-
-	canProgress(worldLayer: WorldLayer, position: Vector) {
-		return !this.empty;
-	}
-
-	maybeComplete(worldLayer: WorldLayer, position: Vector) {
-		let destination = worldLayer.getEntity(position.copy.add(rotationToPositionShift(this.rotation)));
-		if (destination instanceof Factory && destination.hasMaterialCapacity(this.peekNextMaterial)) {
-			destination.addMaterial(this.popNextMaterial());
-			return true;
-		}
-		return false;
+	tick(worldLayer: WorldLayer, position: Vector) {
+		super.tick(worldLayer, position);
+		this.sprite = this.containerAttribute.empty ? Conveyor.sprite : Conveyor.spriteFull;
 	}
 }
 
-class Source extends Factory {
-	protected readonly type = ResourceType.COPPER;
-
+class Source extends Entity {
 	constructor(rotation: Rotation) {
-		super(rotation, 10, 0, 40);
+		super(rotation);
+		this.attributes.push(new EntitySourceAttribute(40, ResourceType.COPPER));
 		this.sprite = Source.sprite;
 	}
 
 	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'source.png');}
-
-	canProgress(worldLayer: WorldLayer, position: Vector) {
-		return true;
-	}
-
-	maybeComplete(worldLayer: WorldLayer, position: Vector) {
-		[Rotation.RIGHT, Rotation.DOWN, Rotation.LEFT, Rotation.UP]
-			.map(rotationToPositionShift)
-			.map(shift => position.copy.add(shift))
-			.map(destinationPosition => worldLayer.getEntity(destinationPosition))
-			.filter(destination => destination instanceof Factory && destination.hasMaterialCapacity(this.type))
-			.forEach(destination => (destination as Factory).addMaterial(this.type));
-		return true;
-	}
 }
 
-class Void extends Factory {
+class Void extends Entity {
 	constructor(rotation: Rotation) {
-		super(rotation, 10, Infinity, 1);
+		super(rotation);
+		this.attributes.push(new EntityContainerAttribute(Infinity));
 		this.sprite = Void.sprite;
 	}
 
 	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'void.png');}
-
-	canProgress(worldLayer: WorldLayer, position: Vector) {
-		return false;
-	}
-
-	maybeComplete(worldLayer: WorldLayer, position: Vector) {
-		return false;
-	}
 }
 
-class GlassFactory extends Factory {
-	constructor(rotation: Rotation) {
-		super(rotation, 10, 10, 100);
-		this.sprite = GlassFactory.sprite;
-	}
+// class GlassFactory extends Entity {
+// 	constructor(rotation: Rotation) {
+// 		super(rotation, 10, 100);
+// 		this.sprite = GlassFactory.sprite;
+// 	}
+//
+// 	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'glassFactory.png');}
+//
+// 	tick(worldLayer: WorldLayer, position: Vector) {
+// 		let destination = worldLayer.getEntity(position.copy.add(rotationToPositionShift(this.rotation)));
+// 		if (destination instanceof Factory && destination.hasMaterialCapacity(this.peekNextMaterial))
+// 			destination.addMaterial(this.popNextMaterial());
+//
+// 		if (this.counter.isReady() && destination instanceof Factory && destination.hasMaterialCapacity(this.peekNextMaterial)) {
+// 			this.counter.reset();
+// 			destination.addMaterial(this.popNextMaterial());
+// 		}
+// 	}
+//
+// 	canProgress(worldLayer: WorldLayer, position: Vector) {
+// 		return this.hasMaterialQuantity(ResourceType.LEAD, 1) && this.hasMaterialQuantity(ResourceType.SAND, 1);
+// 	}
+//
+// 	maybeComplete(worldLayer: WorldLayer, position: Vector) {
+// 		if (this.hasMaterialCapacity(ResourceType.GLASS)) {
+// 			this.removeMaterial(ResourceType.LEAD);
+// 			this.removeMaterial(ResourceType.SAND);
+// 			this.addMaterial(ResourceType.GLASS);
+// 			return true;
+// 		}
+// 		return false;
+// 	}
+// }
 
-	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'glassFactory.png');}
-
-	tick(worldLayer: WorldLayer, position: Vector) {
-		let destination = worldLayer.getEntity(position.copy.add(rotationToPositionShift(this.rotation)));
-		if (destination instanceof Factory && destination.hasMaterialCapacity(this.peekNextMaterial))
-			destination.addMaterial(this.popNextMaterial());
-
-		if (this.counter.isReady() && destination instanceof Factory && destination.hasMaterialCapacity(this.peekNextMaterial)) {
-			this.counter.reset();
-			destination.addMaterial(this.popNextMaterial());
-		}
-	}
-
-	canProgress(worldLayer: WorldLayer, position: Vector) {
-		return this.hasMaterialQuantity(ResourceType.LEAD, 1) && this.hasMaterialQuantity(ResourceType.SAND, 1);
-	}
-
-	maybeComplete(worldLayer: WorldLayer, position: Vector) {
-		if (this.hasMaterialCapacity(ResourceType.GLASS)) {
-			this.removeMaterial(ResourceType.LEAD);
-			this.removeMaterial(ResourceType.SAND);
-			this.addMaterial(ResourceType.GLASS);
-			return true;
-		}
-		return false;
-	}
-}
-
-// class AnimatedConveyor extends Building {
+// class AnimatedConveyor extends Entity {
 // 	constructor(rotation: Rotation) {
 // 		super(AnimatedConveyor.sprite, rotation, 10);
 // 	}
@@ -270,7 +151,7 @@ class GlassFactory extends Factory {
 // 	}
 // }
 
-export {Entity, Empty, Building, Wall, Conveyor, Source, Void, GlassFactory, ResourceType};
+export {Entity, Empty, Wall, Conveyor, Source, Void/*, GlassFactory*/};
 
 // todo
 //   larger entities
