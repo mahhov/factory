@@ -52,6 +52,12 @@ class Entity {
 }
 
 class Empty extends Entity {
+	constructor() {
+		super();
+		this.sprite = Empty.sprite;
+	}
+
+	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'empty.png');}
 }
 
 class Wall extends Entity {

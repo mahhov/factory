@@ -29,9 +29,20 @@ class Placer {
 		this.world = world;
 
 		Placer.entityClasses.forEach((clazz, i) => {
+			let coordinates = Placer.entityClassUiCoordinates(i);
+
+			let container = new Container();
+			[container.x, container.y] = coordinates[0];
+			painter.uiContainer.addChild(container);
+
 			let sprite = clazz.sprite;
-			[sprite.x, sprite.y, sprite.width, sprite.height] = Placer.entityClassUiCoordinates(i).flat();
-			painter.uiContainer.addChild(sprite);
+			[sprite.width, sprite.height] = coordinates[1];
+			container.addChild(sprite);
+
+			let rect = new Graphics()
+				.rect(0, 0, ...coordinates[1])
+				.stroke({width: 1 / painter.canvasWidth, color: 0xffffff});
+			container.addChild(rect);
 		});
 
 		this.entityClassRect.addChild(new Graphics()
