@@ -15,7 +15,7 @@ let randPick = <T>(valueWeightPairs: [T, number][]) => {
 	return pick[0];
 };
 
-export default {
-	arr, clamp,
-	rand, randPick,
-};
+let enumKeys = (enumm: object): number[] =>
+	Object.values(enumm).filter(value => typeof value === 'number');
+
+export default {arr, clamp, rand, randPick, enumKeys};

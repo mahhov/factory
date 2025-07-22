@@ -1,5 +1,5 @@
 import {Container, Sprite} from 'pixi.js';
-import {EntityAttribute, EntityContainerAttribute, EntityProduceAttribute, EntitySourceAttribute, EntityTransportAttribute, ResourceCount, ResourceType} from './EntityAttribute.js';
+import {EntityAttribute, EntityContainerAttribute, EntityConveyorTransportAttribute, EntityProduceAttribute, EntitySourceAttribute, ResourceCount, ResourceType} from './EntityAttribute.js';
 import spriteLoader from './spriteLoader.js';
 import Vector from './Vector.js';
 import {WorldLayer} from './World.js';
@@ -76,7 +76,7 @@ class Conveyor extends Entity {
 		super(rotation);
 		this.containerAttribute = new EntityContainerAttribute(1);
 		this.attributes.push(this.containerAttribute);
-		this.attributes.push(new EntityTransportAttribute(this.containerAttribute, 10, rotation));
+		this.attributes.push(new EntityConveyorTransportAttribute(this.containerAttribute, 10, rotation));
 		this.sprite = Conveyor.sprite;
 	}
 
@@ -120,7 +120,7 @@ class GlassFactory extends Entity {
 		this.attributes.push(new EntityProduceAttribute(this.containerAttribute, 40,
 			ResourceCount.fromTuples([[ResourceType.LEAD, 1], [ResourceType.SAND, 1]]),
 			ResourceCount.fromTuples([[ResourceType.GLASS, 1]])));
-		this.attributes.push(new EntityTransportAttribute(this.containerAttribute, 10, rotation));
+		this.attributes.push(new EntityConveyorTransportAttribute(this.containerAttribute, 10, rotation));
 		this.sprite = GlassFactory.sprite;
 	}
 

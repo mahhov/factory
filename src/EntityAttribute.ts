@@ -1,4 +1,5 @@
 import Counter from './Counter.js';
+import util from './util.js';
 import Vector from './Vector.js';
 import {WorldLayer} from './World.js';
 
@@ -60,10 +61,8 @@ class EntityContainerAttribute extends EntityAttribute {
 	constructor(capacity: number) {
 		super();
 		this.capacity = capacity;
-		this.counts = Object.fromEntries(
-			Object.values(ResourceType)
-				.filter(value => typeof value === 'number')
-				.map(resourceType => [resourceType, 0])) as Record<ResourceType, number>;
+		this.counts = Object.fromEntries(util.enumKeys(ResourceType)
+			.map(resourceType => [resourceType, 0])) as Record<ResourceType, number>;
 	}
 
 	get empty() {return Object.values(this.counts).every(count => !count);}
@@ -77,7 +76,7 @@ class EntityContainerAttribute extends EntityAttribute {
 	}
 
 	hasQuantity(resourceCount: ResourceCount): boolean {
-		return this.counts[resourceCount.resourceType] > resourceCount.quantity;
+		return this.counts[resourceCount.resourceType] >= resourceCount.quantity;
 	}
 
 	add(resourceCount: ResourceCount) {
@@ -116,35 +115,65 @@ abstract class EntityTimedAttribute extends EntityAttribute {
 			this.counter.reset();
 	}
 
-	abstract canProgress(worldLayer: WorldLayer, position: Vector): boolean;
+	protected abstract canProgress(worldLayer: WorldLayer, position: Vector): boolean;
 
-	abstract maybeComplete(worldLayer: WorldLayer, position: Vector): boolean;
+	protected abstract maybeComplete(worldLayer: WorldLayer, position: Vector): boolean;
 }
 
-class EntityTransportAttribute extends EntityTimedAttribute {
-	private readonly containerAttribute: EntityContainerAttribute;
-	private readonly rotation: Rotation;
+abstract class EntityTransportAttribute extends EntityTimedAttribute {
+	protected readonly containerAttribute: EntityContainerAttribute;
 
-	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, rotation: Rotation) {
+	protected constructor(containerAttribute: EntityContainerAttribute, counterDuration: number) {
 		super(counterDuration);
 		this.containerAttribute = containerAttribute;
-		this.rotation = rotation;
 	}
 
 	canProgress(worldLayer: WorldLayer, position: Vector): boolean {
-		return !this.containerAttribute.empty;
+		return this.resourceCounts().some(resourceCount =>
+			this.containerAttribute.hasQuantity(resourceCount));
 	}
 
-	maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
-		let destination = worldLayer.getEntity(position.copy.add(rotationToPositionShift(this.rotation)));
-		let destinationContainerAttribute = destination?.getAttribute(EntityContainerAttribute);
-		if (destinationContainerAttribute?.hasCapacity(this.containerAttribute.peek)) {
-			destinationContainerAttribute.add(this.containerAttribute.pop());
-			return true;
-		}
-		return false;
+	protected maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
+		let resourceCounts = this.resourceCounts();
+		return this.rotations().some(rotation =>
+			resourceCounts.some(resourceCount => {
+				let destination = worldLayer.getEntity(position.copy.add(rotationToPositionShift(rotation)));
+				let destinationContainerAttribute = destination?.getAttribute(EntityContainerAttribute);
+				if (destinationContainerAttribute?.hasCapacity(resourceCount)) {
+					this.containerAttribute.remove(resourceCount);
+					destinationContainerAttribute.add(resourceCount);
+					return true;
+				}
+				return false;
+			}));
+	}
+
+	protected abstract rotations(): Rotation[];
+
+	protected abstract resourceCounts(): ResourceCount[];
+}
+
+class EntityConveyorTransportAttribute extends EntityTransportAttribute {
+	private readonly rotation: Rotation;
+
+	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, rotation: Rotation) {
+		super(containerAttribute, counterDuration);
+		this.rotation = rotation;
+	}
+
+	protected rotations(): Rotation[] {
+		return [this.rotation];
+	}
+
+	protected resourceCounts(): ResourceCount[] {
+		return this.containerAttribute.empty ? [] : [this.containerAttribute.peek];
 	}
 }
+
+// class EntityFilteredTransportAttribute extends EntityTransportAttribute {
+// 	private readonly outputs: ResourceCount[];
+//
+// }
 
 class EntitySourceAttribute extends EntityTimedAttribute {
 	private readonly resourceType: ResourceType;
@@ -154,11 +183,11 @@ class EntitySourceAttribute extends EntityTimedAttribute {
 		this.resourceType = resourceType;
 	}
 
-	canProgress(worldLayer: WorldLayer, position: Vector): boolean {
+	protected canProgress(worldLayer: WorldLayer, position: Vector): boolean {
 		return true;
 	}
 
-	maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
+	protected maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
 		let resourceCount = new ResourceCount(this.resourceType, 1);
 		[Rotation.RIGHT, Rotation.DOWN, Rotation.LEFT, Rotation.UP]
 			.map(rotationToPositionShift)
@@ -183,12 +212,12 @@ class EntityProduceAttribute extends EntityTimedAttribute {
 		this.outputs = outputs;
 	}
 
-	canProgress(worldLayer: WorldLayer, position: Vector): boolean {
+	protected canProgress(worldLayer: WorldLayer, position: Vector): boolean {
 		return this.inputs.every(resourceCount =>
 			this.containerAttribute.hasQuantity(resourceCount));
 	}
 
-	maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
+	protected maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
 		if (this.outputs.every(resourceCount =>
 			this.containerAttribute.hasCapacity(resourceCount))) {
 			this.inputs.forEach(resourceCount => this.containerAttribute.remove(resourceCount));
@@ -199,4 +228,4 @@ class EntityProduceAttribute extends EntityTimedAttribute {
 	}
 }
 
-export {Rotation, rotationToPositionShift, ResourceType, ResourceCount, EntityAttribute, EntityContainerAttribute, EntityTransportAttribute, EntitySourceAttribute, EntityProduceAttribute};
+export {Rotation, rotationToPositionShift, ResourceType, ResourceCount, EntityAttribute, EntityContainerAttribute, EntityConveyorTransportAttribute, EntitySourceAttribute, EntityProduceAttribute};
