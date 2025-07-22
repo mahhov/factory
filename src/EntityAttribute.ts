@@ -29,6 +29,8 @@ let rotationToPositionShift = (rotation: Rotation) => {
 	}
 };
 
+let oppositeRotation = (rotation: Rotation) => (rotation + 2) % 4;
+
 enum ResourceType {
 	COPPER, LEAD, SAND, GLASS
 }
@@ -57,12 +59,14 @@ class EntityContainerAttribute extends EntityAttribute {
 	private readonly capacity: number;
 	private readonly counts: Record<ResourceType, number>;
 	private readonly materials: ResourceType[] = [];
+	private readonly inputRotations: Rotation[] = [];
 
-	constructor(capacity: number) {
+	constructor(capacity: number, inputRotations: Rotation[]) {
 		super();
 		this.capacity = capacity;
 		this.counts = Object.fromEntries(util.enumKeys(ResourceType)
 			.map(resourceType => [resourceType, 0])) as Record<ResourceType, number>;
+		this.inputRotations = inputRotations;
 	}
 
 	get empty() {return Object.values(this.counts).every(count => !count);}
@@ -94,6 +98,10 @@ class EntityContainerAttribute extends EntityAttribute {
 		let resourceCount = this.peek;
 		this.remove(resourceCount);
 		return resourceCount;
+	}
+
+	acceptsRotation(rotation: Rotation) {
+		return this.inputRotations.includes(rotation);
 	}
 }
 
@@ -134,12 +142,13 @@ abstract class EntityTransportAttribute extends EntityTimedAttribute {
 	}
 
 	protected maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
-		let resourceCounts = this.resourceCounts();
+		let resourceCounts = this.resourceCounts().filter(resourceCount =>
+			this.containerAttribute.hasQuantity(resourceCount));
 		return this.rotations().some(rotation =>
 			resourceCounts.some(resourceCount => {
 				let destination = worldLayer.getEntity(position.copy.add(rotationToPositionShift(rotation)));
 				let destinationContainerAttribute = destination?.getAttribute(EntityContainerAttribute);
-				if (destinationContainerAttribute?.hasCapacity(resourceCount)) {
+				if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute?.hasCapacity(resourceCount)) {
 					this.containerAttribute.remove(resourceCount);
 					destinationContainerAttribute.add(resourceCount);
 					return true;
@@ -170,10 +179,22 @@ class EntityConveyorTransportAttribute extends EntityTransportAttribute {
 	}
 }
 
-// class EntityFilteredTransportAttribute extends EntityTransportAttribute {
-// 	private readonly outputs: ResourceCount[];
-//
-// }
+class EntityFilteredTransportAttribute extends EntityTransportAttribute {
+	private readonly outputs: ResourceCount[];
+
+	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, outputs: ResourceCount[]) {
+		super(containerAttribute, counterDuration);
+		this.outputs = outputs;
+	}
+
+	protected rotations(): Rotation[] {
+		return util.shuffle(util.enumKeys(Rotation));
+	}
+
+	protected resourceCounts(): ResourceCount[] {
+		return util.shuffle(this.outputs);
+	}
+}
 
 class EntitySourceAttribute extends EntityTimedAttribute {
 	private readonly resourceType: ResourceType;
@@ -189,13 +210,12 @@ class EntitySourceAttribute extends EntityTimedAttribute {
 
 	protected maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
 		let resourceCount = new ResourceCount(this.resourceType, 1);
-		[Rotation.RIGHT, Rotation.DOWN, Rotation.LEFT, Rotation.UP]
-			.map(rotationToPositionShift)
-			.map(shift => position.copy.add(shift))
-			.map(destinationPosition => worldLayer.getEntity(destinationPosition))
-			.map(destination => destination?.getAttribute(EntityContainerAttribute))
-			.filter(containerAttribute => containerAttribute?.hasCapacity(resourceCount))
-			.forEach(containerAttribute => containerAttribute!.add(resourceCount));
+		util.enumKeys(Rotation).forEach(rotation => {
+			let destination = worldLayer.getEntity(position.copy.add(rotationToPositionShift(rotation)));
+			let destinationContainerAttribute = destination?.getAttribute(EntityContainerAttribute);
+			if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute?.hasCapacity(resourceCount))
+				destinationContainerAttribute.add(resourceCount);
+		});
 		return true;
 	}
 }
@@ -228,4 +248,11 @@ class EntityProduceAttribute extends EntityTimedAttribute {
 	}
 }
 
-export {Rotation, rotationToPositionShift, ResourceType, ResourceCount, EntityAttribute, EntityContainerAttribute, EntityConveyorTransportAttribute, EntitySourceAttribute, EntityProduceAttribute};
+export {
+	Rotation, rotationToPositionShift, oppositeRotation,
+	ResourceType, ResourceCount,
+	EntityAttribute,
+	EntityContainerAttribute,
+	EntityConveyorTransportAttribute, EntityFilteredTransportAttribute,
+	EntitySourceAttribute, EntityProduceAttribute,
+};

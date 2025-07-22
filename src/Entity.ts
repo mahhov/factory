@@ -1,6 +1,17 @@
 import {Container, Sprite} from 'pixi.js';
-import {EntityAttribute, EntityContainerAttribute, EntityConveyorTransportAttribute, EntityProduceAttribute, EntitySourceAttribute, ResourceCount, ResourceType} from './EntityAttribute.js';
+import {
+	EntityAttribute,
+	EntityContainerAttribute,
+	EntityConveyorTransportAttribute,
+	EntityFilteredTransportAttribute,
+	EntityProduceAttribute,
+	EntitySourceAttribute,
+	oppositeRotation,
+	ResourceCount,
+	ResourceType,
+} from './EntityAttribute.js';
 import spriteLoader from './spriteLoader.js';
+import util from './util.js';
 import Vector from './Vector.js';
 import {WorldLayer} from './World.js';
 
@@ -74,7 +85,7 @@ class Conveyor extends Entity {
 
 	constructor(rotation: Rotation) {
 		super(rotation);
-		this.containerAttribute = new EntityContainerAttribute(1);
+		this.containerAttribute = new EntityContainerAttribute(1, util.enumKeys(Rotation).filter(r => r !== oppositeRotation(rotation)));
 		this.attributes.push(this.containerAttribute);
 		this.attributes.push(new EntityConveyorTransportAttribute(this.containerAttribute, 10, rotation));
 		this.sprite = Conveyor.sprite;
@@ -103,7 +114,7 @@ class Source extends Entity {
 class Void extends Entity {
 	constructor(rotation: Rotation) {
 		super(rotation);
-		this.attributes.push(new EntityContainerAttribute(Infinity));
+		this.attributes.push(new EntityContainerAttribute(Infinity, util.enumKeys(Rotation)));
 		this.sprite = Void.sprite;
 	}
 
@@ -115,19 +126,17 @@ class GlassFactory extends Entity {
 
 	constructor(rotation: Rotation) {
 		super(rotation);
-		this.containerAttribute = new EntityContainerAttribute(10);
+		this.containerAttribute = new EntityContainerAttribute(10, util.enumKeys(Rotation));
 		this.attributes.push(this.containerAttribute);
+		let outputs = ResourceCount.fromTuples([[ResourceType.GLASS, 1]]);
 		this.attributes.push(new EntityProduceAttribute(this.containerAttribute, 40,
 			ResourceCount.fromTuples([[ResourceType.LEAD, 1], [ResourceType.SAND, 1]]),
-			ResourceCount.fromTuples([[ResourceType.GLASS, 1]])));
-		this.attributes.push(new EntityConveyorTransportAttribute(this.containerAttribute, 10, rotation));
+			outputs));
+		this.attributes.push(new EntityFilteredTransportAttribute(this.containerAttribute, 10, outputs));
 		this.sprite = GlassFactory.sprite;
 	}
 
 	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'glassFactory.png');}
-
-	// todo output in all directions
-	// todo check resource types
 }
 
 // class AnimatedConveyor extends Entity {
