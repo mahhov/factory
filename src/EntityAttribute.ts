@@ -1,4 +1,6 @@
 import Counter from './Counter.js';
+import Resource from './Resource.js';
+import Rotation from './Rotation.js';
 import util from './util.js';
 import Vector from './Vector.js';
 import {WorldLayer} from './World.js';
@@ -12,89 +14,50 @@ import {WorldLayer} from './World.js';
 // 	QUEUED, BUILDING, BUILT, DESTROYED
 // }
 
-// type Tick<R> = (worldLayer: WorldLayer, position: Vector) => R;
-
-enum Rotation { RIGHT, DOWN, LEFT, UP }
-
-let rotationToPositionShift = (rotation: Rotation) => {
-	switch (rotation) {
-		case Rotation.RIGHT:
-			return new Vector(1, 0);
-		case Rotation.DOWN:
-			return new Vector(0, 1);
-		case Rotation.LEFT:
-			return new Vector(-1, 0);
-		case Rotation.UP:
-			return new Vector(0, -1);
-	}
-};
-
-let oppositeRotation = (rotation: Rotation) => (rotation + 2) % 4;
-
-enum ResourceType {
-	COPPER, LEAD, SAND, GLASS
-}
-
-// type ResourceCount = [ResourceType, number];
-
-class ResourceCount {
-	readonly resourceType: ResourceType;
-	readonly quantity: number;
-
-	constructor(resourceType: ResourceType, quantity: number) {
-		this.resourceType = resourceType;
-		this.quantity = quantity;
-	}
-
-	static fromTuples(tuples: [ResourceType, number][]): ResourceCount[] {
-		return tuples.map(tuple => new ResourceCount(...tuple));
-	}
-}
-
 abstract class EntityAttribute {
 	tick(worldLayer: WorldLayer, position: Vector) {}
 }
 
 class EntityContainerAttribute extends EntityAttribute {
 	private readonly capacity: number;
-	private readonly counts: Record<ResourceType, number>;
-	private readonly materials: ResourceType[] = [];
+	private readonly counts: Record<Resource, number>;
+	private readonly materials: Resource[] = [];
 	private readonly inputRotations: Rotation[] = [];
 
 	constructor(capacity: number, inputRotations: Rotation[]) {
 		super();
 		this.capacity = capacity;
-		this.counts = Object.fromEntries(util.enumKeys(ResourceType)
-			.map(resourceType => [resourceType, 0])) as Record<ResourceType, number>;
+		this.counts = Object.fromEntries(util.enumKeys(Resource)
+			.map(resource => [resource, 0])) as Record<Resource, number>;
 		this.inputRotations = inputRotations;
 	}
 
 	get empty() {return Object.values(this.counts).every(count => !count);}
 
-	get peek(): ResourceCount {
-		return new ResourceCount(this.materials[this.materials.length - 1], 1);
+	get peek(): Resource.Count {
+		return new Resource.Count(this.materials[this.materials.length - 1], 1);
 	}
 
-	hasCapacity(resourceCount: ResourceCount): boolean {
-		return this.counts[resourceCount.resourceType] + resourceCount.quantity <= this.capacity;
+	hasCapacity(resourceCount: Resource.Count): boolean {
+		return this.counts[resourceCount.resource] + resourceCount.quantity <= this.capacity;
 	}
 
-	hasQuantity(resourceCount: ResourceCount): boolean {
-		return this.counts[resourceCount.resourceType] >= resourceCount.quantity;
+	hasQuantity(resourceCount: Resource.Count): boolean {
+		return this.counts[resourceCount.resource] >= resourceCount.quantity;
 	}
 
-	add(resourceCount: ResourceCount) {
-		this.counts[resourceCount.resourceType]++;
-		this.materials.push(resourceCount.resourceType);
+	add(resourceCount: Resource.Count) {
+		this.counts[resourceCount.resource]++;
+		this.materials.push(resourceCount.resource);
 	}
 
-	remove(resourceCount: ResourceCount) {
-		this.counts[resourceCount.resourceType] -= resourceCount.quantity;
+	remove(resourceCount: Resource.Count) {
+		this.counts[resourceCount.resource] -= resourceCount.quantity;
 		for (let i = 0; i < resourceCount.quantity; i++)
-			this.materials.splice(this.materials.lastIndexOf(resourceCount.resourceType), 1);
+			this.materials.splice(this.materials.lastIndexOf(resourceCount.resource), 1);
 	}
 
-	pop(): ResourceCount {
+	pop(): Resource.Count {
 		let resourceCount = this.peek;
 		this.remove(resourceCount);
 		return resourceCount;
@@ -146,7 +109,7 @@ abstract class EntityTransportAttribute extends EntityTimedAttribute {
 			this.containerAttribute.hasQuantity(resourceCount));
 		return this.rotations().some(rotation =>
 			resourceCounts.some(resourceCount => {
-				let destination = worldLayer.getEntity(position.copy.add(rotationToPositionShift(rotation)));
+				let destination = worldLayer.getEntity(position.copy.add(Rotation.positionShift(rotation)));
 				let destinationContainerAttribute = destination?.getAttribute(EntityContainerAttribute);
 				if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute?.hasCapacity(resourceCount)) {
 					this.containerAttribute.remove(resourceCount);
@@ -159,7 +122,7 @@ abstract class EntityTransportAttribute extends EntityTimedAttribute {
 
 	protected abstract rotations(): Rotation[];
 
-	protected abstract resourceCounts(): ResourceCount[];
+	protected abstract resourceCounts(): Resource.Count[];
 }
 
 class EntityConveyorTransportAttribute extends EntityTransportAttribute {
@@ -174,15 +137,15 @@ class EntityConveyorTransportAttribute extends EntityTransportAttribute {
 		return [this.rotation];
 	}
 
-	protected resourceCounts(): ResourceCount[] {
+	protected resourceCounts(): Resource.Count[] {
 		return this.containerAttribute.empty ? [] : [this.containerAttribute.peek];
 	}
 }
 
 class EntityFilteredTransportAttribute extends EntityTransportAttribute {
-	private readonly outputs: ResourceCount[];
+	private readonly outputs: Resource.Count[];
 
-	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, outputs: ResourceCount[]) {
+	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, outputs: Resource.Count[]) {
 		super(containerAttribute, counterDuration);
 		this.outputs = outputs;
 	}
@@ -191,17 +154,17 @@ class EntityFilteredTransportAttribute extends EntityTransportAttribute {
 		return util.shuffle(util.enumKeys(Rotation));
 	}
 
-	protected resourceCounts(): ResourceCount[] {
+	protected resourceCounts(): Resource.Count[] {
 		return util.shuffle(this.outputs);
 	}
 }
 
 class EntitySourceAttribute extends EntityTimedAttribute {
-	private readonly resourceType: ResourceType;
+	private readonly resource: Resource;
 
-	constructor(counterDuration: number, resourceType: ResourceType) {
+	constructor(counterDuration: number, resource: Resource) {
 		super(counterDuration);
-		this.resourceType = resourceType;
+		this.resource = resource;
 	}
 
 	protected canProgress(worldLayer: WorldLayer, position: Vector): boolean {
@@ -209,9 +172,9 @@ class EntitySourceAttribute extends EntityTimedAttribute {
 	}
 
 	protected maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
-		let resourceCount = new ResourceCount(this.resourceType, 1);
+		let resourceCount = new Resource.Count(this.resource, 1);
 		util.enumKeys(Rotation).forEach(rotation => {
-			let destination = worldLayer.getEntity(position.copy.add(rotationToPositionShift(rotation)));
+			let destination = worldLayer.getEntity(position.copy.add(Rotation.positionShift(rotation)));
 			let destinationContainerAttribute = destination?.getAttribute(EntityContainerAttribute);
 			if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute?.hasCapacity(resourceCount))
 				destinationContainerAttribute.add(resourceCount);
@@ -222,10 +185,10 @@ class EntitySourceAttribute extends EntityTimedAttribute {
 
 class EntityProduceAttribute extends EntityTimedAttribute {
 	private readonly containerAttribute: EntityContainerAttribute;
-	private readonly inputs: ResourceCount[];
-	private readonly outputs: ResourceCount[];
+	private readonly inputs: Resource.Count[];
+	private readonly outputs: Resource.Count[];
 
-	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, inputs: ResourceCount[], outputs: ResourceCount[]) {
+	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, inputs: Resource.Count[], outputs: Resource.Count[]) {
 		super(counterDuration);
 		this.containerAttribute = containerAttribute;
 		this.inputs = inputs;
@@ -249,8 +212,6 @@ class EntityProduceAttribute extends EntityTimedAttribute {
 }
 
 export {
-	Rotation, rotationToPositionShift, oppositeRotation,
-	ResourceType, ResourceCount,
 	EntityAttribute,
 	EntityContainerAttribute,
 	EntityConveyorTransportAttribute, EntityFilteredTransportAttribute,
