@@ -71,6 +71,12 @@ class EntityContainerAttribute extends EntityAttribute {
 	acceptsRotation(rotation: Rotation) {
 		return this.inputRotations.includes(rotation);
 	}
+
+	get tooltip(): TooltipLine[] {
+		return Object.entries(this.counts)
+			.filter(([resource, count]) => count)
+			.map(([resource, count]) => new TooltipLine(`${Resource.string(resource)} ${count} / ${this.capacity}`));
+	}
 }
 
 abstract class EntityTimedAttribute extends EntityAttribute {

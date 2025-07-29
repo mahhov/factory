@@ -5,7 +5,7 @@ class TooltipLine {
 	readonly size: number;
 	readonly color: FillInput;
 
-	constructor(string: String, size: number, color: FillInput) {
+	constructor(string: String, size: number = 14, color: FillInput = '#ffffff') {
 		this.string = string;
 		this.size = size;
 		this.color = color;

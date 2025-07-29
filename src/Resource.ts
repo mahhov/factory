@@ -2,7 +2,7 @@ enum Resource {
 	COPPER, LEAD, SAND, GLASS,
 }
 
-namespace Resource{
+namespace Resource {
 	export class Count {
 		readonly resource: Resource;
 		readonly quantity: number;
@@ -16,6 +16,10 @@ namespace Resource{
 			return tuples.map(tuple => new Count(...tuple));
 		}
 	}
+
+	export let string = (value: string): string => {
+		return Resource[value];
+	};
 }
 
 export default Resource;
