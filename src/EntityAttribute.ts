@@ -1,6 +1,7 @@
 import Counter from './Counter.js';
 import Resource from './Resource.js';
 import Rotation from './Rotation.js';
+import TooltipLine from './TooltipLine.js';
 import util from './util.js';
 import Vector from './Vector.js';
 import {WorldLayer} from './World.js';
@@ -16,6 +17,10 @@ import {WorldLayer} from './World.js';
 
 abstract class EntityAttribute {
 	tick(worldLayer: WorldLayer, position: Vector) {}
+
+	get tooltip(): TooltipLine[] {
+		return [];
+	}
 }
 
 class EntityContainerAttribute extends EntityAttribute {

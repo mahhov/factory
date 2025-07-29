@@ -4,6 +4,7 @@ import {Input, KeyBinding, MouseBinding, MouseWheelBinding} from './Input.js';
 import Painter from './Painter.js';
 import Placer from './Placer.js';
 import spriteLoader from './spriteLoader.js';
+import Tooltip from './Tooltip.js';
 import Vector from './Vector.js';
 import {World, WorldLayer} from './World.js';
 
@@ -24,6 +25,7 @@ import {World, WorldLayer} from './World.js';
 	let input = new Input(app.canvas);
 	let world = new World(WorldLayer.emptyGrid(100, 100), camera.container);
 	let placer = new Placer(painter, camera, input, world);
+	let tooltip = new Tooltip(painter, camera, input, world.live);
 
 	input.addBinding(new KeyBinding('a', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(-.01, 0))));
 	input.addBinding(new KeyBinding('d', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(.01, 0))));
@@ -38,6 +40,8 @@ import {World, WorldLayer} from './World.js';
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.RELEASED], () => placer.end()));
 	input.addBinding(new MouseWheelBinding(false, [Input.State.PRESSED], () => placer.rotate(-1)));
 	input.addBinding(new MouseWheelBinding(true, [Input.State.PRESSED], () => placer.rotate(1)));
+
+	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.UP], () => tooltip.reposition()));
 
 	setInterval(() => {
 		camera.tick();

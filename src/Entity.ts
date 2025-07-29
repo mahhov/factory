@@ -3,6 +3,7 @@ import {EntityAttribute, EntityContainerAttribute, EntityConveyorTransportAttrib
 import Resource from './Resource.js';
 import Rotation from './Rotation.js';
 import spriteLoader from './spriteLoader.js';
+import TooltipLine from './TooltipLine.js';
 import util from './util.js';
 import Vector from './Vector.js';
 import {WorldLayer} from './World.js';
@@ -36,6 +37,10 @@ class Entity {
 
 	tick(worldLayer: WorldLayer, position: Vector) {
 		this.attributes.forEach(attribute => attribute.tick(worldLayer, position));
+	}
+
+	get tooltip(): TooltipLine[] {
+		return this.attributes.map(attribute => attribute.tooltip).flat();
 	}
 }
 
