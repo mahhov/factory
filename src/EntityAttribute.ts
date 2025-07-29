@@ -24,6 +24,7 @@ abstract class EntityAttribute {
 }
 
 class EntityContainerAttribute extends EntityAttribute {
+	// todo limit capacity per resource type
 	private readonly capacity: number;
 	private readonly counts: Record<Resource, number>;
 	private readonly materials: Resource[] = [];
@@ -75,7 +76,7 @@ class EntityContainerAttribute extends EntityAttribute {
 	get tooltip(): TooltipLine[] {
 		return Object.entries(this.counts)
 			.filter(([resource, count]) => count)
-			.map(([resource, count]) => new TooltipLine(`${Resource.string(resource)} ${count} / ${this.capacity}`));
+			.map(([resource, count]) => new TooltipLine(`${Resource.string(resource as unknown as Resource)} ${count} / ${this.capacity}`));
 	}
 }
 

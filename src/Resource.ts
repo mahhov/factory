@@ -17,7 +17,7 @@ namespace Resource {
 		}
 	}
 
-	export let string = (value: string): string => {
+	export let string = (value: Resource): string => {
 		return Resource[value];
 	};
 }
