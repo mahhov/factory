@@ -1,4 +1,5 @@
-import {AnimatedSprite, Assets, Sprite} from 'pixi.js';
+import {ColorReplaceFilter} from 'pixi-filters';
+import {AnimatedSprite, Assets, ColorSource, Sprite} from 'pixi.js';
 
 enum Resource {
 	CONVEYOR = 'conveyor',
@@ -20,6 +21,16 @@ let frame = (resource: Resource, frame: string) => {
 	return new Sprite(sheet.textures[frame]);
 };
 
+let coloredFrame = (resource: Resource, framee: string, oldColor: ColorSource, newColor: ColorSource) => {
+	let sprite = frame(resource, framee);
+	sprite.filters = [new ColorReplaceFilter({
+		originalColor: oldColor,
+		targetColor: newColor,
+		tolerance: 0.001,
+	})];
+	return sprite;
+};
+
 // todo cache
 
-export default {Resource, preload, animation, frame};
+export default {Resource, preload, animation, frame, coloredFrame};

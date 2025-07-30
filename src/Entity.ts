@@ -73,13 +73,34 @@ class Conveyor extends Entity {
 		this.sprite = Conveyor.sprite;
 	}
 
-	static get sprite() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor.png');}
+	static get sprite() {
+		return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor.png');
+	}
 
-	static get spriteFull() {return spriteLoader.frame(spriteLoader.Resource.TERRAIN, 'conveyor-full.png');}
+	static spriteFull(resource: Resource) {
+		let spriteName = 'conveyor-full.png';
+		switch (resource) {
+			case Resource.COPPER:
+				spriteName = 'conveyor-green.png';
+				break;
+			case Resource.LEAD:
+				spriteName = 'conveyor-blue.png';
+				break;
+			case Resource.SAND:
+				spriteName = 'conveyor-brown.png';
+				break;
+			case Resource.GLASS:
+				spriteName = 'conveyor-light-blue.png';
+				break;
+		}
+		return spriteLoader.frame(spriteLoader.Resource.TERRAIN, spriteName);
+	}
 
 	tick(worldLayer: WorldLayer, position: Vector) {
 		super.tick(worldLayer, position);
-		this.sprite = this.containerAttribute.empty ? Conveyor.sprite : Conveyor.spriteFull;
+		this.sprite = this.containerAttribute.empty ?
+			Conveyor.sprite :
+			Conveyor.spriteFull(this.containerAttribute.peek.resource);
 	}
 }
 
