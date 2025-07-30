@@ -1,4 +1,4 @@
-import {ColorReplaceFilter} from 'pixi-filters';
+import {MultiColorReplaceFilter} from 'pixi-filters';
 import {AnimatedSprite, Assets, ColorSource, Sprite} from 'pixi.js';
 
 namespace SpriteLoader {
@@ -22,11 +22,12 @@ namespace SpriteLoader {
 		return new Sprite(sheet.textures[frame]);
 	};
 
-	export let getColoredSprite = (resource: Resource, frame: string, oldColor: ColorSource, newColor: ColorSource): Sprite => {
+	export let getColoredSprite = (resource: Resource, frame: string, newColors: ColorSource[]): Sprite => {
 		let sprite = getSprite(resource, frame);
-		sprite.filters = [new ColorReplaceFilter({
-			originalColor: oldColor,
-			targetColor: newColor,
+		let oldColors = ['#ff0000', '#00ff00', '#0000ff'];
+		let replacements = newColors.map((newColor, i) => [oldColors[i], newColor] as [ColorSource, ColorSource]);
+		sprite.filters = [new MultiColorReplaceFilter({
+			replacements,
 			tolerance: 0.001,
 		})];
 		return sprite;

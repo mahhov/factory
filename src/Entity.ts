@@ -2,7 +2,7 @@ import {Container, Sprite} from 'pixi.js';
 import {EntityAttribute, EntityContainerAttribute, EntityConveyorTransportAttribute, EntityFilteredTransportAttribute, EntityProduceAttribute, EntitySourceAttribute} from './EntityAttribute.js';
 import Resource from './Resource.js';
 import Rotation from './Rotation.js';
-import SpriteLoader from './spriteLoader.js';
+import SpriteLoader from './SpriteLoader.js';
 import TooltipLine from './TooltipLine.js';
 import util from './util.js';
 import Vector from './Vector.js';
@@ -19,7 +19,7 @@ class Entity {
 		this.container.rotation = Entity.rotationToAngle(rotation);
 	}
 
-	static get sprite() {return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'empty.png');}
+	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', ['#ffffff']);}
 
 	set sprite(sprite: Sprite) {
 		this.container.removeChildren();
@@ -59,7 +59,7 @@ class Wall extends Entity {
 		this.sprite = Wall.sprite;
 	}
 
-	static get sprite() {return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'wall.png');}
+	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', ['#347743']);}
 }
 
 class Conveyor extends Entity {
@@ -78,22 +78,7 @@ class Conveyor extends Entity {
 	}
 
 	static spriteFull(resource: Resource) {
-		let spriteName = 'conveyor-full.png';
-		switch (resource) {
-			case Resource.COPPER:
-				spriteName = 'conveyor-green.png';
-				break;
-			case Resource.LEAD:
-				spriteName = 'conveyor-blue.png';
-				break;
-			case Resource.SAND:
-				spriteName = 'conveyor-brown.png';
-				break;
-			case Resource.GLASS:
-				spriteName = 'conveyor-light-blue.png';
-				break;
-		}
-		return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, spriteName);
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'conveyor-full.png', [Resource.color(resource)]);
 	}
 
 	tick(worldLayer: WorldLayer, position: Vector) {
@@ -111,7 +96,7 @@ class Source extends Entity {
 		this.sprite = Source.sprite;
 	}
 
-	static get sprite() {return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'source.png');}
+	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'source.png', ['#5f773c']);}
 }
 
 class Void extends Entity {
@@ -121,7 +106,7 @@ class Void extends Entity {
 		this.sprite = Void.sprite;
 	}
 
-	static get sprite() {return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'void.png');}
+	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'void.png', ['#cf3939']);}
 }
 
 class GlassFactory extends Entity {
@@ -139,7 +124,10 @@ class GlassFactory extends Entity {
 		this.sprite = GlassFactory.sprite;
 	}
 
-	static get sprite() {return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'glassFactory.png');}
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
+			[Resource.color(Resource.GLASS), Resource.color(Resource.LEAD), Resource.color(Resource.SAND)]);
+	}
 }
 
 // class AnimatedConveyor extends Entity {

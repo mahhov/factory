@@ -1,56 +1,28 @@
 {
   "frames": {
-    "empty.png": {
+    "square.png": {
       "frame": {"x": 0, "y": 0, "w": 16, "h": 16}
     },
-    "wall.png": {
+    "conveyor.png": {
       "frame": {"x": 16, "y": 0, "w": 16, "h": 16}
     },
-    "conveyor.png": {
+    "conveyor-full.png": {
       "frame": {"x": 32, "y": 0, "w": 16, "h": 16}
     },
-    "conveyor-full.png": {
+    "source.png": {
       "frame": {"x": 48, "y": 0, "w": 16, "h": 16}
     },
-    "source.png": {
+    "void.png": {
       "frame": {"x": 64, "y": 0, "w": 16, "h": 16}
     },
-    "void.png": {
+    "factory-2.png": {
       "frame": {"x": 80, "y": 0, "w": 16, "h": 16}
-    },
-    "glassFactory.png": {
-      "frame": {"x": 96, "y": 0, "w": 16, "h": 16}
-    },
-
-    "conveyor-green.png": {
-      "frame": {"x": 0, "y": 16, "w": 16, "h": 16}
-    },
-    "conveyor-yellow.png": {
-      "frame": {"x": 16, "y": 16, "w": 16, "h": 16}
-    },
-    "conveyor-light-blue.png": {
-      "frame": {"x": 32, "y": 16, "w": 16, "h": 16}
-    },
-    "conveyor-blue.png": {
-      "frame": {"x": 48, "y": 16, "w": 16, "h": 16}
-    },
-    "conveyor-pink.png": {
-      "frame": {"x": 64, "y": 16, "w": 16, "h": 16}
-    },
-    "conveyor-orange.png": {
-      "frame": {"x": 80, "y": 16, "w": 16, "h": 16}
-    },
-    "conveyor-red.png": {
-      "frame": {"x": 96, "y": 16, "w": 16, "h": 16}
-    },
-    "conveyor-brown.png": {
-      "frame": {"x": 112, "y": 16, "w": 16, "h": 16}
     }
   },
   "meta": {
     "image": "terrain.png",
     "format": "RGBA8888",
-    "size": {"w": 128, "h": 32},
+    "size": {"w": 96, "h": 16},
     "scale": "1"
   }
 }
