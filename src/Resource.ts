@@ -1,4 +1,5 @@
 import {ColorSource} from 'pixi.js';
+import Color from './Color.js';
 
 enum Resource {
 	COPPER, LEAD, SAND, GLASS,
@@ -26,13 +27,13 @@ namespace Resource {
 	export let color = (resource: Resource): ColorSource => {
 		switch (resource) {
 			case Resource.COPPER:
-				return '#4db856';
+				return Color.RESOURCE_COPPER;
 			case Resource.LEAD:
-				return '#aa4db8';
+				return Color.RESOURCE_LEAD;
 			case Resource.SAND:
-				return '#b8764d';
+				return Color.RESOURCE_SAND;
 			case Resource.GLASS:
-				return '#4db898';
+				return Color.RESOURCE_GLASS;
 		}
 	};
 }

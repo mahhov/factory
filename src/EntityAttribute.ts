@@ -1,3 +1,4 @@
+import Color from './Color.js';
 import Counter from './Counter.js';
 import Resource from './Resource.js';
 import Rotation from './Rotation.js';
@@ -15,7 +16,7 @@ import {WorldLayer} from './World.js';
 // 	QUEUED, BUILDING, BUILT, DESTROYED
 // }
 
-abstract class EntityAttribute {
+export abstract class EntityAttribute {
 	tick(worldLayer: WorldLayer, position: Vector) {}
 
 	get tooltip(): TooltipLine[] {
@@ -23,7 +24,7 @@ abstract class EntityAttribute {
 	}
 }
 
-class EntityContainerAttribute extends EntityAttribute {
+export class EntityContainerAttribute extends EntityAttribute {
 	// todo limit capacity per resource type
 	private readonly capacity: number;
 	private readonly counts: Record<Resource, number>;
@@ -137,7 +138,7 @@ abstract class EntityTransportAttribute extends EntityTimedAttribute {
 	protected abstract resourceCounts(): Resource.Count[];
 }
 
-class EntityConveyorTransportAttribute extends EntityTransportAttribute {
+export class EntityConveyorTransportAttribute extends EntityTransportAttribute {
 	private readonly rotation: Rotation;
 
 	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, rotation: Rotation) {
@@ -154,7 +155,7 @@ class EntityConveyorTransportAttribute extends EntityTransportAttribute {
 	}
 }
 
-class EntityFilteredTransportAttribute extends EntityTransportAttribute {
+export class EntityFilteredTransportAttribute extends EntityTransportAttribute {
 	private readonly outputs: Resource.Count[];
 
 	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, outputs: Resource.Count[]) {
@@ -171,7 +172,7 @@ class EntityFilteredTransportAttribute extends EntityTransportAttribute {
 	}
 }
 
-class EntitySourceAttribute extends EntityTimedAttribute {
+export class EntitySourceAttribute extends EntityTimedAttribute {
 	private readonly resource: Resource;
 
 	constructor(counterDuration: number, resource: Resource) {
@@ -195,7 +196,7 @@ class EntitySourceAttribute extends EntityTimedAttribute {
 	}
 }
 
-class EntityProduceAttribute extends EntityTimedAttribute {
+export class EntityProduceAttribute extends EntityTimedAttribute {
 	private readonly containerAttribute: EntityContainerAttribute;
 	private readonly inputs: Resource.Count[];
 	private readonly outputs: Resource.Count[];
@@ -223,9 +224,13 @@ class EntityProduceAttribute extends EntityTimedAttribute {
 	}
 }
 
-export {
-	EntityAttribute,
-	EntityContainerAttribute,
-	EntityConveyorTransportAttribute, EntityFilteredTransportAttribute,
-	EntitySourceAttribute, EntityProduceAttribute,
-};
+export class EntityResourcePickerAttribute extends EntityAttribute {
+	private resource: Resource = Resource.COPPER;
+
+	get tooltip(): TooltipLine[] {
+		return util.enumKeys(Resource).map(resource => {
+			let color = resource === this.resource ? Color.SELECTED_TEXT : undefined;
+			return new TooltipLine(Resource.string(resource), undefined, color);
+		});
+	}
+}

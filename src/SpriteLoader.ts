@@ -1,6 +1,7 @@
 import {MultiColorReplaceFilter} from 'pixi-filters';
 import {Assets, ColorSource, RenderTexture, Sprite, Texture} from 'pixi.js';
 import type {Renderer} from 'pixi.js/lib/rendering/renderers/types.js';
+import Color from './Color.js';
 
 namespace SpriteLoader {
 	export enum Resource {
@@ -28,7 +29,7 @@ namespace SpriteLoader {
 
 	let createColoredSprite = (resource: Resource, frame: string, newColors: ColorSource[]): Sprite => {
 		let sprite = getSprite(resource, frame);
-		let oldColors = ['#ff0000', '#00ff00', '#0000ff'];
+		let oldColors = [Color.SPRITE_REPLACEMENT_1, Color.SPRITE_REPLACEMENT_2, Color.SPRITE_REPLACEMENT_3];
 		let replacements = newColors.map((newColor, i) => [oldColors[i], newColor] as [ColorSource, ColorSource]);
 		sprite.filters = [new MultiColorReplaceFilter({
 			replacements,

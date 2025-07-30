@@ -1,0 +1,21 @@
+enum Color {
+	SELECTED_TEXT = '#567cc1',
+	DEFAULT_TEXT = '#ffffff',
+
+	ENTITY_UNDEFINED = '#ffffff',
+	ENTITY_EMPTY = '#000000',
+	ENTITY_WALL = '#347743',
+	ENTITY_SOURCE = '#5f773c',
+	ENTITY_VOID = '#cf3939',
+
+	RESOURCE_COPPER = '#4db856',
+	RESOURCE_LEAD = '#aa4db8',
+	RESOURCE_SAND = '#b8764d',
+	RESOURCE_GLASS = '#4db898',
+
+	SPRITE_REPLACEMENT_1 = '#ff0000',
+	SPRITE_REPLACEMENT_2 = '#00ff00',
+	SPRITE_REPLACEMENT_3 = '#0000ff',
+}
+
+export default Color;

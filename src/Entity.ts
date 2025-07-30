@@ -1,5 +1,14 @@
 import {Container, Sprite} from 'pixi.js';
-import {EntityAttribute, EntityContainerAttribute, EntityConveyorTransportAttribute, EntityFilteredTransportAttribute, EntityProduceAttribute, EntitySourceAttribute} from './EntityAttribute.js';
+import Color from './Color.js';
+import {
+	EntityAttribute,
+	EntityContainerAttribute,
+	EntityConveyorTransportAttribute,
+	EntityFilteredTransportAttribute,
+	EntityProduceAttribute,
+	EntityResourcePickerAttribute,
+	EntitySourceAttribute,
+} from './EntityAttribute.js';
 import Resource from './Resource.js';
 import Rotation from './Rotation.js';
 import SpriteLoader from './SpriteLoader.js';
@@ -19,7 +28,7 @@ class Entity {
 		this.container.rotation = Entity.rotationToAngle(rotation);
 	}
 
-	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', ['#ffffff']);}
+	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_UNDEFINED]);}
 
 	set sprite(sprite: Sprite) {
 		this.container.removeChildren();
@@ -50,7 +59,7 @@ class Empty extends Entity {
 		this.sprite = Empty.sprite;
 	}
 
-	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', ['#000000']);}
+	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_EMPTY]);}
 }
 
 class Wall extends Entity {
@@ -59,7 +68,7 @@ class Wall extends Entity {
 		this.sprite = Wall.sprite;
 	}
 
-	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', ['#347743']);}
+	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_WALL]);}
 }
 
 class Conveyor extends Entity {
@@ -93,10 +102,11 @@ class Source extends Entity {
 	constructor(rotation: Rotation) {
 		super(rotation);
 		this.attributes.push(new EntitySourceAttribute(40, Resource.COPPER));
+		this.attributes.push(new EntityResourcePickerAttribute());
 		this.sprite = Source.sprite;
 	}
 
-	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'source.png', ['#5f773c']);}
+	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'source.png', [Color.ENTITY_SOURCE]);}
 }
 
 class Void extends Entity {
@@ -106,7 +116,7 @@ class Void extends Entity {
 		this.sprite = Void.sprite;
 	}
 
-	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'void.png', ['#cf3939']);}
+	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'void.png', [Color.ENTITY_VOID]);}
 }
 
 class GlassFactory extends Entity {
