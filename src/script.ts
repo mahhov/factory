@@ -17,7 +17,7 @@ import {World, WorldLayer} from './World.js';
 	});
 	TextureStyle.defaultOptions.scaleMode = 'nearest';
 	document.body.appendChild(app.canvas);
-	await SpriteLoader.preload();
+	await SpriteLoader.init(app.renderer);
 	let painter = new Painter(app.renderer.width, app.stage);
 	let camera = new Camera(painter);
 	let uiContainer = new Container();

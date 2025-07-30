@@ -1,5 +1,6 @@
 import {MultiColorReplaceFilter} from 'pixi-filters';
-import {AnimatedSprite, Assets, ColorSource, Sprite} from 'pixi.js';
+import {Assets, ColorSource, RenderTexture, Sprite, Texture} from 'pixi.js';
+import type {Renderer} from 'pixi.js/lib/rendering/renderers/types.js';
 
 namespace SpriteLoader {
 	export enum Resource {
@@ -7,22 +8,25 @@ namespace SpriteLoader {
 		TERRAIN = 'terrain',
 	}
 
-	export let path = (resource: Resource) => `../resources/${resource}/${resource}.json`;
+	let path = (resource: Resource) => `../resources/${resource}/${resource}.json`;
 
-	export let preload = () =>
-		Promise.all(Object.values(Resource).map(resource => Assets.load(path(resource))));
-
-	export let animation = (resource: Resource, animation: string) => {
-		let sheet = Assets.get(path(resource));
-		return new AnimatedSprite(sheet.animations[animation]);
+	let savedRenderer: Renderer | undefined = undefined;
+	export let init = (renderer: Renderer) => {
+		savedRenderer = renderer;
+		return Promise.all(Object.values(Resource).map(resource => Assets.load(path(resource))));
 	};
+
+	// export let animation = (resource: Resource, animation: string) => {
+	// 	let sheet = Assets.get(path(resource));
+	// 	return new AnimatedSprite(sheet.animations[animation]);
+	// };
 
 	export let getSprite = (resource: Resource, frame: string): Sprite => {
 		let sheet = Assets.get(path(resource));
 		return new Sprite(sheet.textures[frame]);
 	};
 
-	export let getColoredSprite = (resource: Resource, frame: string, newColors: ColorSource[]): Sprite => {
+	let createColoredSprite = (resource: Resource, frame: string, newColors: ColorSource[]): Sprite => {
 		let sprite = getSprite(resource, frame);
 		let oldColors = ['#ff0000', '#00ff00', '#0000ff'];
 		let replacements = newColors.map((newColor, i) => [oldColors[i], newColor] as [ColorSource, ColorSource]);
@@ -32,8 +36,20 @@ namespace SpriteLoader {
 		})];
 		return sprite;
 	};
-}
 
-// todo cache
+	let createColoredTexture = (resource: Resource, frame: string, newColors: ColorSource[]): Texture => {
+		let sprite = createColoredSprite(resource, frame, newColors);
+		let renderTexture = RenderTexture.create({width: sprite.width, height: sprite.height});
+		savedRenderer!.render({container: sprite, target: renderTexture});
+		return renderTexture;
+	};
+
+	let coloredTextureCache: Record<string, Texture> = {};
+	export let getColoredSprite = (resource: Resource, frame: string, newColors: ColorSource[]): Sprite => {
+		let key = [resource, frame, ...newColors].join();
+		coloredTextureCache[key] ||= createColoredTexture(resource, frame, newColors);
+		return new Sprite(coloredTextureCache[key]);
+	};
+}
 
 export default SpriteLoader;

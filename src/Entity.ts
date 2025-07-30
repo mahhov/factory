@@ -50,7 +50,7 @@ class Empty extends Entity {
 		this.sprite = Empty.sprite;
 	}
 
-	static get sprite() {return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'empty.png');}
+	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', ['#000000']);}
 }
 
 class Wall extends Entity {
