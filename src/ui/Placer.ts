@@ -1,10 +1,10 @@
 import {Container, Graphics} from 'pixi.js';
 import Camera from '../Camera.js';
-import {Conveyor, Empty, Entity, GlassFactory, Source, Void, Wall} from '../world/Entity.js';
-import {Input} from './Input.js';
 import Painter from '../graphics/Painter.js';
 import Vector from '../util/Vector.js';
+import {Conveyor, Empty, Entity, GlassFactory, Source, Void, Wall} from '../world/Entity.js';
 import {World, WorldLayer} from '../world/World.js';
+import {Input} from './Input.js';
 
 export default class Placer {
 	static readonly entityClasses: typeof Entity[] = [Empty, Wall, Conveyor, Source, Void, GlassFactory];
@@ -16,9 +16,9 @@ export default class Placer {
 
 	private entityClassRect = new Container();
 
-	private started = false;
+	started = false;
 	private rotation = Entity.Rotation.RIGHT;
-	private entityClass!: typeof Entity;
+	private entityClass: typeof Entity | null = null;
 	private startPosition = new Vector();
 	private endPosition = new Vector();
 
@@ -48,9 +48,6 @@ export default class Placer {
 		this.entityClassRect.addChild(new Graphics()
 			.rect(0, 0, ...Placer.entityClassUiCoordinates(0)[1])
 			.stroke({width: 3 / painter.canvasWidth, color: 0xffff00}));
-		painter.uiContainer.addChild(this.entityClassRect);
-
-		this.selectEntity(Conveyor);
 	}
 
 	private static entityClassUiCoordinates(i: number): [number, number][] {
@@ -70,11 +67,18 @@ export default class Placer {
 			.scale(this.world.size).floor();
 	}
 
-	selectEntity(clazz: typeof Entity) {
-		this.entityClass = clazz;
+	selectEntity(clazz: typeof Entity | null) {
+		this.entityClass = this.entityClass === clazz ? null : clazz;
 
-		let index = Placer.entityClasses.indexOf(clazz);
-		[this.entityClassRect.x, this.entityClassRect.y] = Placer.entityClassUiCoordinates(index)[0];
+		if (this.entityClass) {
+			let index = Placer.entityClasses.indexOf(this.entityClass);
+			[this.entityClassRect.x, this.entityClassRect.y] = Placer.entityClassUiCoordinates(index)[0];
+			this.painter.uiContainer.addChild(this.entityClassRect);
+		} else {
+			this.painter.uiContainer.removeChild(this.entityClassRect);
+			this.started = false;
+			this.world.queue.clearAllEntities();
+		}
 	}
 
 	rotate(delta: number) {
@@ -85,19 +89,25 @@ export default class Placer {
 	}
 
 	start() {
-		this.started = true;
-		this.endPosition = this.startPosition = this.position;
+		if (this.entityClass) {
+			this.started = true;
+			this.endPosition = this.startPosition = this.position;
+		}
 	}
 
 	move() {
-		this.world.queue.clearAllEntities();
-		this.place(this.world.queue);
+		if (this.started) {
+			this.world.queue.clearAllEntities();
+			this.place(this.world.queue);
+		}
 	}
 
 	end() {
-		this.started = false;
-		this.world.queue.clearAllEntities();
-		this.place(this.world.live);
+		if (this.started) {
+			this.started = false;
+			this.world.queue.clearAllEntities();
+			this.place(this.world.live);
+		}
 	}
 
 	private place(worldLayer: WorldLayer) {
@@ -127,7 +137,7 @@ export default class Placer {
 
 		let position = this.startPosition.copy;
 		for (let i = 0; i <= n; i++) {
-			worldLayer.setEntity(position, new this.entityClass(this.rotation));
+			worldLayer.setEntity(position, new this.entityClass!(this.rotation));
 			position.add(iterDelta);
 		}
 	}

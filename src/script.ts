@@ -1,10 +1,11 @@
 import {Application, Container, TextureStyle} from 'pixi.js';
 import Camera from './Camera.js';
-import {Input, KeyBinding, MouseBinding, MouseWheelBinding} from './ui/Input.js';
 import Painter from './graphics/Painter.js';
-import Placer from './ui/Placer.js';
 import SpriteLoader from './graphics/SpriteLoader.js';
+import {Input, KeyBinding, MouseBinding, MouseWheelBinding} from './ui/Input.js';
+import Placer from './ui/Placer.js';
 import Tooltip from './ui/Tooltip.js';
+import util from './util/util.js';
 import Vector from './util/Vector.js';
 import {World, WorldLayer} from './world/World.js';
 
@@ -34,14 +35,23 @@ import {World, WorldLayer} from './world/World.js';
 	input.addBinding(new KeyBinding('q', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(.03)));
 	input.addBinding(new KeyBinding('e', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(-.03)));
 
-	Placer.entityClasses.forEach((clazz, i) => input.addBinding(new KeyBinding(String(i + 1), [Input.State.PRESSED], () => placer.selectEntity(clazz))));
+	util.arr(10)
+		.map((_, i) => Placer.entityClasses[i])
+		.forEach((clazz, i) => input.addBinding(new KeyBinding(String(i + 1), [Input.State.PRESSED], () => placer.selectEntity(clazz))));
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => placer.start()));
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.DOWN], () => placer.move()));
 	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.RELEASED], () => placer.end()));
 	input.addBinding(new MouseWheelBinding(false, [Input.State.PRESSED], () => placer.rotate(-1)));
 	input.addBinding(new MouseWheelBinding(true, [Input.State.PRESSED], () => placer.rotate(1)));
 
-	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.UP], () => tooltip.reposition()));
+	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.UP], () => {
+		if (!placer.started)
+			tooltip.hover();
+	}));
+	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => {
+		if (!placer.started)
+			tooltip.toggleSelect();
+	}));
 
 	setInterval(() => {
 		camera.tick();
