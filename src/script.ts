@@ -2,11 +2,10 @@ import {Application, Container, TextureStyle} from 'pixi.js';
 import Camera from './Camera.js';
 import Painter from './graphics/Painter.js';
 import SpriteLoader from './graphics/SpriteLoader.js';
-import {Input, KeyBinding, MouseBinding, MouseWheelBinding} from './ui/Input.js';
+import Controller from './ui/Controller.js';
+import {Input} from './ui/Input.js';
 import Placer from './ui/Placer.js';
 import Tooltip from './ui/Tooltip.js';
-import util from './util/util.js';
-import Vector from './util/Vector.js';
 import {World, WorldLayer} from './world/World.js';
 
 (async () => {
@@ -27,31 +26,7 @@ import {World, WorldLayer} from './world/World.js';
 	let world = new World(WorldLayer.emptyGrid(100, 100), camera.container);
 	let placer = new Placer(painter, camera, input, world);
 	let tooltip = new Tooltip(painter, camera, input, world.live);
-
-	input.addBinding(new KeyBinding('a', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(-.01, 0))));
-	input.addBinding(new KeyBinding('d', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(.01, 0))));
-	input.addBinding(new KeyBinding('w', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(0, -.01))));
-	input.addBinding(new KeyBinding('s', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(0, .01))));
-	input.addBinding(new KeyBinding('q', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(.03)));
-	input.addBinding(new KeyBinding('e', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(-.03)));
-
-	util.arr(10)
-		.map((_, i) => Placer.entityClasses[i])
-		.forEach((clazz, i) => input.addBinding(new KeyBinding(String(i + 1), [Input.State.PRESSED], () => placer.selectEntity(clazz))));
-	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => placer.start()));
-	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.DOWN], () => placer.move()));
-	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.RELEASED], () => placer.end()));
-	input.addBinding(new MouseWheelBinding(false, [Input.State.PRESSED], () => placer.rotate(-1)));
-	input.addBinding(new MouseWheelBinding(true, [Input.State.PRESSED], () => placer.rotate(1)));
-
-	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.UP], () => {
-		if (!placer.started)
-			tooltip.hover();
-	}));
-	input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => {
-		if (!placer.started)
-			tooltip.toggleSelect();
-	}));
+	let controller = new Controller(camera, placer, tooltip, input);
 
 	setInterval(() => {
 		camera.tick();
