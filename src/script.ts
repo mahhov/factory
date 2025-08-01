@@ -1,12 +1,12 @@
 import {Application, Container, TextureStyle} from 'pixi.js';
 import Camera from './Camera.js';
-import {Input, KeyBinding, MouseBinding, MouseWheelBinding} from './Input.js';
-import Painter from './Painter.js';
-import Placer from './Placer.js';
-import SpriteLoader from './SpriteLoader.js';
-import Tooltip from './Tooltip.js';
-import Vector from './Vector.js';
-import {World, WorldLayer} from './World.js';
+import {Input, KeyBinding, MouseBinding, MouseWheelBinding} from './ui/Input.js';
+import Painter from './graphics/Painter.js';
+import Placer from './ui/Placer.js';
+import SpriteLoader from './graphics/SpriteLoader.js';
+import Tooltip from './ui/Tooltip.js';
+import Vector from './util/Vector.js';
+import {World, WorldLayer} from './world/World.js';
 
 (async () => {
 	let app = new Application();

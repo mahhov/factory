@@ -1,9 +1,9 @@
 import {Container, Text} from 'pixi.js';
-import Camera from './Camera.js';
+import Camera from '../Camera.js';
 import {Input} from './Input.js';
-import Painter from './Painter.js';
-import Vector from './Vector.js';
-import {WorldLayer} from './World.js';
+import Painter from '../graphics/Painter.js';
+import Vector from '../util/Vector.js';
+import {WorldLayer} from '../world/World.js';
 
 class Tooltip {
 	private readonly painter: Painter;

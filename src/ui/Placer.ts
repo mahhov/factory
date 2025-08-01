@@ -1,10 +1,10 @@
 import {Container, Graphics} from 'pixi.js';
-import Camera from './Camera.js';
-import {Conveyor, Empty, Entity, GlassFactory, Source, Void, Wall} from './Entity.js';
+import Camera from '../Camera.js';
+import {Conveyor, Empty, Entity, GlassFactory, Source, Void, Wall} from '../world/Entity.js';
 import {Input} from './Input.js';
-import Painter from './Painter.js';
-import Vector from './Vector.js';
-import {World, WorldLayer} from './World.js';
+import Painter from '../graphics/Painter.js';
+import Vector from '../util/Vector.js';
+import {World, WorldLayer} from '../world/World.js';
 
 class Placer {
 	static readonly entityClasses: typeof Entity[] = [Empty, Wall, Conveyor, Source, Void, GlassFactory];

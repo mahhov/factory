@@ -1,5 +1,5 @@
 import {ColorSource} from 'pixi.js';
-import Color from './Color.js';
+import Color from '../graphics/Color.js';
 
 enum Resource {
 	COPPER, LEAD, SAND, GLASS,

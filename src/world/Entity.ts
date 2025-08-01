@@ -1,5 +1,5 @@
 import {Container, Sprite} from 'pixi.js';
-import Color from './Color.js';
+import Color from '../graphics/Color.js';
 import {
 	EntityAttribute,
 	EntityContainerAttribute,
@@ -11,10 +11,10 @@ import {
 } from './EntityAttribute.js';
 import Resource from './Resource.js';
 import Rotation from './Rotation.js';
-import SpriteLoader from './SpriteLoader.js';
-import TooltipLine from './TooltipLine.js';
-import util from './util.js';
-import Vector from './Vector.js';
+import SpriteLoader from '../graphics/SpriteLoader.js';
+import TooltipLine from '../ui/TooltipLine.js';
+import util from '../util/util.js';
+import Vector from '../util/Vector.js';
 import {WorldLayer} from './World.js';
 
 class Entity {

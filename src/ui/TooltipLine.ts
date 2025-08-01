@@ -1,5 +1,5 @@
 import {FillInput} from 'pixi.js';
-import Color from './Color.js';
+import Color from '../graphics/Color.js';
 
 class TooltipLine {
 	readonly string: String;

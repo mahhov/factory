@@ -1,7 +1,7 @@
 import {Container} from 'pixi.js';
-import Painter from './Painter.js';
-import util from './util.js';
-import Vector from './Vector.js';
+import Painter from './graphics/Painter.js';
+import util from './util/util.js';
+import Vector from './util/Vector.js';
 
 class Camera {
 	private targetLeftTop: Vector = new Vector();

@@ -1,7 +1,7 @@
 import {Container} from 'pixi.js';
 import {Empty, Entity} from './Entity.js';
-import util from './util.js';
-import Vector from './Vector.js';
+import util from '../util/util.js';
+import Vector from '../util/Vector.js';
 
 class WorldLayer {
 	protected grid: Entity[][] = [];
