@@ -1,4 +1,4 @@
-class Counter {
+export default class Counter {
 	private readonly n: number;
 	private i = 0; // valid values are [0, n). tick() returns true if i == n - 1
 
@@ -32,5 +32,3 @@ class Counter {
 		return !this.i;
 	}
 }
-
-export default Counter;

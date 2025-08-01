@@ -3,7 +3,7 @@ import Painter from './graphics/Painter.js';
 import util from './util/util.js';
 import Vector from './util/Vector.js';
 
-class Camera {
+export default class Camera {
 	private targetLeftTop: Vector = new Vector();
 	private targetWidth: number = 1;
 	private leftTop: Vector = new Vector();
@@ -50,5 +50,3 @@ class Camera {
 		this.container.position = this.worldToCanvas(new Vector());
 	}
 }
-
-export default Camera;

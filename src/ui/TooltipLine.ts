@@ -1,7 +1,7 @@
 import {FillInput} from 'pixi.js';
 import Color from '../graphics/Color.js';
 
-class TooltipLine {
+export default class TooltipLine {
 	readonly string: String;
 	readonly size: number;
 	readonly color: FillInput;
@@ -12,5 +12,3 @@ class TooltipLine {
 		this.color = color;
 	}
 }
-
-export default TooltipLine;

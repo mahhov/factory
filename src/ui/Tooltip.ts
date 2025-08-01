@@ -5,7 +5,7 @@ import Painter from '../graphics/Painter.js';
 import Vector from '../util/Vector.js';
 import {WorldLayer} from '../world/World.js';
 
-class Tooltip {
+export default class Tooltip {
 	private readonly painter: Painter;
 	private readonly camera: Camera;
 	private readonly input: Input;
@@ -47,5 +47,3 @@ class Tooltip {
 			.add(new Vector(10, 0));
 	}
 }
-
-export default Tooltip;

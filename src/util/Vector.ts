@@ -1,6 +1,6 @@
 import util from './util.js';
 
-class Vector {
+export default class Vector {
 	x!: number;
 	y!: number;
 
@@ -70,5 +70,3 @@ class Vector {
 		return this;
 	}
 }
-
-export default Vector;

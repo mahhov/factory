@@ -1,6 +1,6 @@
 import {Container} from 'pixi.js';
 
-class Painter {
+export default class Painter {
 	readonly canvasWidth: number;
 	readonly foregroundContainer: Container = new Container();
 	readonly uiContainer: Container = new Container();
@@ -16,5 +16,3 @@ class Painter {
 		container.addChild(this.textUiContainer);
 	}
 }
-
-export default Painter;

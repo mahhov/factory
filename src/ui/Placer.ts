@@ -6,7 +6,7 @@ import Painter from '../graphics/Painter.js';
 import Vector from '../util/Vector.js';
 import {World, WorldLayer} from '../world/World.js';
 
-class Placer {
+export default class Placer {
 	static readonly entityClasses: typeof Entity[] = [Empty, Wall, Conveyor, Source, Void, GlassFactory];
 
 	private readonly painter: Painter;
@@ -132,8 +132,6 @@ class Placer {
 		}
 	}
 }
-
-export default Placer;
 
 // todo:
 //  - only add if word empty or replaceable
