@@ -76,7 +76,7 @@ enum MouseButton {
 }
 
 class MouseBinding extends Binding {
-	static MouseButton = MouseButton;
+	static readonly MouseButton = MouseButton;
 	private readonly button: MouseButton;
 
 	constructor(button: MouseButton, listenerStates: State[], listener: () => void) {
@@ -115,7 +115,7 @@ class MouseWheelBinding extends Binding {
 }
 
 class Input {
-	static State = State;
+	static readonly State = State;
 
 	private bindings: Binding[] = [];
 	mouseDownPosition = new Vector();
@@ -148,6 +148,8 @@ class Input {
 			else
 				Object.values(this.bindings).forEach(binding => binding.mouseWheel(true));
 		});
+
+		document.addEventListener('contextmenu', e => e.preventDefault());
 	}
 
 	addBinding(binding: Binding) {

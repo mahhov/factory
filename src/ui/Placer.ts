@@ -6,7 +6,12 @@ import {Conveyor, Empty, Entity, GlassFactory, Source, Void, Wall} from '../worl
 import {World, WorldLayer} from '../world/World.js';
 import {Input} from './Input.js';
 
+enum State {
+	NONE, ENTITY_SELECTED, STARTED
+}
+
 export default class Placer {
+	static readonly State = State;
 	static readonly entityClasses: typeof Entity[] = [Empty, Wall, Conveyor, Source, Void, GlassFactory];
 
 	private readonly painter: Painter;
@@ -16,7 +21,7 @@ export default class Placer {
 
 	private entityClassRect = new Container();
 
-	started = false;
+	private started = false;
 	private rotation = Entity.Rotation.RIGHT;
 	private entityClass: typeof Entity | null = null;
 	private startPosition = new Vector();
@@ -84,7 +89,7 @@ export default class Placer {
 	rotate(delta: number) {
 		if (this.started) {
 			this.rotation = (this.rotation + delta + 4) % 4;
-			this.place(this.world.queue);
+			this.place(this.world.queue, false);
 		}
 	}
 
@@ -96,31 +101,37 @@ export default class Placer {
 	}
 
 	move() {
-		if (this.started) {
-			this.world.queue.clearAllEntities();
-			this.place(this.world.queue);
-		}
+		if (!this.entityClass)
+			return;
+		let position = this.position;
+		if (position.equals(this.endPosition))
+			return;
+
+		if (!this.started)
+			this.startPosition = position;
+		this.endPosition = position;
+
+		this.place(this.world.queue, this.started);
 	}
 
 	end() {
 		if (this.started) {
 			this.started = false;
-			this.world.queue.clearAllEntities();
-			this.place(this.world.live);
+			this.place(this.world.live, false);
 		}
 	}
 
-	private place(worldLayer: WorldLayer) {
-		this.endPosition = this.position;
+	private place(worldLayer: WorldLayer, updateRotation: boolean) {
 		let delta = this.endPosition.copy.subtract(this.startPosition);
-		if (delta.magnitude2)
-			this.rotation = Math.abs(delta.y) > Math.abs(delta.x) ?
-				delta.y > 0 ? Entity.Rotation.DOWN : Entity.Rotation.UP :
-				delta.x > 0 ? Entity.Rotation.RIGHT : Entity.Rotation.LEFT;
+		let rotation = Math.abs(delta.y) > Math.abs(delta.x) ?
+			delta.y > 0 ? Entity.Rotation.DOWN : Entity.Rotation.UP :
+			delta.x > 0 ? Entity.Rotation.RIGHT : Entity.Rotation.LEFT;
+		if (updateRotation)
+			this.rotation = rotation;
 		let n = Math.max(Math.abs(delta.x), Math.abs(delta.y));
 
 		let iterDelta: Vector;
-		switch (this.rotation) {
+		switch (rotation) {
 			case Entity.Rotation.RIGHT:
 				iterDelta = new Vector(1, 0);
 				break;
@@ -135,11 +146,20 @@ export default class Placer {
 				break;
 		}
 
+		this.world.queue.clearAllEntities();
 		let position = this.startPosition.copy;
 		for (let i = 0; i <= n; i++) {
 			worldLayer.setEntity(position, new this.entityClass!(this.rotation));
 			position.add(iterDelta);
 		}
+	}
+
+	get state() {
+		if (this.started)
+			return State.STARTED;
+		if (this.entityClass)
+			return State.ENTITY_SELECTED;
+		return State.NONE;
 	}
 }
 

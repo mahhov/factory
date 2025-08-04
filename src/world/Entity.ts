@@ -18,7 +18,7 @@ import Vector from '../util/Vector.js';
 import {WorldLayer} from './World.js';
 
 class Entity {
-	static Rotation = Rotation;
+	static readonly Rotation = Rotation;
 	protected readonly rotation: Rotation;
 	protected readonly attributes: EntityAttribute[] = [];
 	readonly container = new Container();
