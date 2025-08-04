@@ -9,10 +9,8 @@ export default class Camera {
 	private leftTop: Vector = new Vector();
 	private width: number = 1;
 	readonly container: Container = new Container();
-	private readonly painter: Painter;
 
 	constructor(painter: Painter) {
-		this.painter = painter;
 		painter.foregroundContainer.addChild(this.container);
 	}
 
@@ -27,7 +25,7 @@ export default class Camera {
 		this.targetLeftTop = centerWorld.subtract(new Vector(this.targetWidth / 2));
 	}
 
-	private worldToCanvas(world: Vector) {
+	worldToCanvas(world: Vector) {
 		return world
 			.subtract(this.leftTop)
 			.scale(new Vector(1 / this.width));

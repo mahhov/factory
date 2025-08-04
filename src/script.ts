@@ -32,6 +32,7 @@ import {World, WorldLayer} from './world/World.js';
 		camera.tick();
 		input.tick();
 		world.tick();
+		tooltip.tick();
 	}, 10);
 })();
 

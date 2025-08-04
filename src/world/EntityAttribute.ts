@@ -1,10 +1,10 @@
 import Color from '../graphics/Color.js';
-import Counter from '../util/Counter.js';
-import Resource from './Resource.js';
-import Rotation from './Rotation.js';
 import TooltipLine from '../ui/TooltipLine.js';
+import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
+import Resource from './Resource.js';
+import Rotation from './Rotation.js';
 import {WorldLayer} from './World.js';
 
 // todo add attributes for:
@@ -21,6 +21,10 @@ export abstract class EntityAttribute {
 
 	get tooltip(): TooltipLine[] {
 		return [];
+	}
+
+	get selectable(): boolean {
+		return false;
 	}
 }
 
@@ -78,6 +82,10 @@ export class EntityContainerAttribute extends EntityAttribute {
 		return Object.entries(this.counts)
 			.filter(([resource, count]) => count)
 			.map(([resource, count]) => new TooltipLine(`${Resource.string(resource as unknown as Resource)} ${count} / ${this.capacity}`));
+	}
+
+	get selectable(): boolean {
+		return true;
 	}
 }
 
@@ -232,5 +240,9 @@ export class EntityResourcePickerAttribute extends EntityAttribute {
 			let color = resource === this.resource ? Color.SELECTED_TEXT : undefined;
 			return new TooltipLine(Resource.string(resource), undefined, color);
 		});
+	}
+
+	get selectable(): boolean {
+		return true;
 	}
 }

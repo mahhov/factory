@@ -1,5 +1,6 @@
 import {Container, Graphics} from 'pixi.js';
 import Camera from '../Camera.js';
+import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import Vector from '../util/Vector.js';
 import {Conveyor, Empty, Entity, GlassFactory, Source, Void, Wall} from '../world/Entity.js';
@@ -19,7 +20,7 @@ export default class Placer {
 	private readonly input: Input;
 	private readonly world: World;
 
-	private entityClassRect = new Container();
+	private readonly entityClassRect = new Container();
 
 	private started = false;
 	private rotation = Entity.Rotation.RIGHT;
@@ -46,13 +47,13 @@ export default class Placer {
 
 			let rect = new Graphics()
 				.rect(0, 0, ...coordinates[1])
-				.stroke({width: 1 / painter.canvasWidth, color: 0xffffff});
+				.stroke({width: 1 / painter.canvasWidth, color: Color.RECT_OUTLINE});
 			container.addChild(rect);
 		});
 
 		this.entityClassRect.addChild(new Graphics()
 			.rect(0, 0, ...Placer.entityClassUiCoordinates(0)[1])
-			.stroke({width: 3 / painter.canvasWidth, color: 0xffff00}));
+			.stroke({width: 3 / painter.canvasWidth, color: Color.SELECTED_RECT_OUTLINE}));
 	}
 
 	private static entityClassUiCoordinates(i: number): [number, number][] {

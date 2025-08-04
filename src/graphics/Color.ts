@@ -2,6 +2,9 @@ enum Color {
 	SELECTED_TEXT = '#567cc1',
 	DEFAULT_TEXT = '#ffffff',
 
+	RECT_OUTLINE = '#ffffff',
+	SELECTED_RECT_OUTLINE = '#ffff00',
+
 	ENTITY_UNDEFINED = '#ffffff',
 	ENTITY_EMPTY = '#000000',
 	ENTITY_WALL = '#347743',

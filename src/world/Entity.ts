@@ -1,5 +1,9 @@
 import {Container, Sprite} from 'pixi.js';
 import Color from '../graphics/Color.js';
+import SpriteLoader from '../graphics/SpriteLoader.js';
+import TooltipLine from '../ui/TooltipLine.js';
+import util from '../util/util.js';
+import Vector from '../util/Vector.js';
 import {
 	EntityAttribute,
 	EntityContainerAttribute,
@@ -11,10 +15,6 @@ import {
 } from './EntityAttribute.js';
 import Resource from './Resource.js';
 import Rotation from './Rotation.js';
-import SpriteLoader from '../graphics/SpriteLoader.js';
-import TooltipLine from '../ui/TooltipLine.js';
-import util from '../util/util.js';
-import Vector from '../util/Vector.js';
 import {WorldLayer} from './World.js';
 
 class Entity {
@@ -50,6 +50,10 @@ class Entity {
 
 	get tooltip(): TooltipLine[] {
 		return this.attributes.map(attribute => attribute.tooltip).flat();
+	}
+
+	get selectable(): boolean {
+		return this.attributes.some(attribute => attribute.selectable);
 	}
 }
 
