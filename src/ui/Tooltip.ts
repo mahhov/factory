@@ -6,13 +6,15 @@ import Vector from '../util/Vector.js';
 import {Entity} from '../world/Entity.js';
 import {WorldLayer} from '../world/World.js';
 import {Input} from './Input.js';
+import uiUtil from './uiUtil.js';
+import mouseInContainer = uiUtil.mouseInContainer;
 
 class Selection {
 	readonly worldPosition: Vector;
-	readonly entity: Entity | null;
+	readonly entity: Entity;
 	selected = false;
 
-	constructor(worldPosition: Vector, entity: Entity | null) {
+	constructor(worldPosition: Vector, entity: Entity) {
 		this.worldPosition = worldPosition;
 		this.entity = entity;
 	}
@@ -49,11 +51,17 @@ export default class Tooltip {
 	}
 
 	toggleSelect() {
+		if (mouseInContainer(this.input.mousePosition, this.textContainer)) return;
 		let selection = this.createInputSelection;
 		if (!selection || !this.selection || !this.selection.worldPosition.equals(selection.worldPosition))
 			this.selection = selection;
 		if (this.selection)
 			this.selection.selected = !this.selection.selected;
+		this.update();
+	}
+
+	unselect() {
+		this.selection = null;
 		this.update();
 	}
 
@@ -65,23 +73,24 @@ export default class Tooltip {
 
 	update() {
 		this.textContainer.removeChildren();
-		if (!this.selection?.entity) return;
+		if (!this.selection) return;
 
 		let y = 0;
-		this.selection.entity.tooltip
-			.map(tooltipLine => new Text({
+		this.selection.entity.tooltip.forEach(tooltipLine => {
+			let text = new Text({
 				text: tooltipLine.string,
 				style: {
 					fontFamily: 'Arial',
 					fontSize: tooltipLine.size,
 					fill: tooltipLine.color,
 				},
-			}))
-			.forEach(text => {
-				text.y = y;
-				y += text.height;
-				this.textContainer.addChild(text);
+				eventMode: 'static',
+				y,
 			});
+			y += text.height;
+			this.textContainer.addChild(text);
+			text.on('pointertap', tooltipLine.callback);
+		});
 	}
 
 	tick() {

@@ -8,6 +8,10 @@ export default class Vector {
 		this.set(x, y);
 	}
 
+	static fromObj({x, y}: { x: number, y: number }) {
+		return new Vector(x, y);
+	}
+
 	get copy() {
 		return new Vector(this.x, this.y);
 	}

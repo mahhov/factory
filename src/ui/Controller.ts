@@ -48,6 +48,8 @@ export default class Controller {
 		input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.UP], () => {
 			if (placer.state === Placer.State.NONE)
 				tooltip.hover();
+			else
+				tooltip.unselect();
 		}));
 		input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => {
 			if (placer.state === Placer.State.NONE)

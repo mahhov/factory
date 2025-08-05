@@ -238,7 +238,7 @@ export class EntityResourcePickerAttribute extends EntityAttribute {
 	get tooltip(): TooltipLine[] {
 		return util.enumKeys(Resource).map(resource => {
 			let color = resource === this.resource ? Color.SELECTED_TEXT : undefined;
-			return new TooltipLine(Resource.string(resource), undefined, color);
+			return new TooltipLine(Resource.string(resource), () => console.log(Resource.string(resource)), undefined, color);
 		});
 	}
 
