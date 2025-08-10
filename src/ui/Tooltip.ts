@@ -2,10 +2,12 @@ import {Container, Graphics, Text} from 'pixi.js';
 import Camera from '../Camera.js';
 import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
+import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Entity} from '../world/Entity.js';
 import {WorldLayer} from '../world/World.js';
 import {Input} from './Input.js';
+import TooltipLine from './TooltipLine.js';
 import uiUtil from './uiUtil.js';
 import mouseInContainer = uiUtil.mouseInContainer;
 
@@ -69,26 +71,31 @@ export default class Tooltip {
 	}
 
 	tick() {
-		this.textContainer.removeChildren();
 		this.selectionRect.removeChildren();
-		if (!this.selection) return;
+		if (!this.selection) {
+			this.textContainer.removeChildren();
+			return;
+		}
 
 		let y = 0;
-		this.selection.entity.tooltip.forEach(tooltipLine => {
-			let text = new Text({
-				text: tooltipLine.string,
-				style: {
+		util.replace<TooltipLine, Text>(this.textContainer.children as Text[], this.selection.entity.tooltip,
+			(i: number, tooltipLines: TooltipLine[]) => {
+				let text = new Text({eventMode: 'static'});
+				this.textContainer.addChild(text);
+				text.on('pointertap', tooltipLines[i].callback);
+			},
+			(text: Text, i: number, tooltipLine: TooltipLine) => {
+				text.text = tooltipLine.string;
+				text.style = {
 					fontFamily: 'Arial',
 					fontSize: tooltipLine.size,
 					fill: tooltipLine.color,
-				},
-				eventMode: 'static',
-				y,
-			});
-			y += text.height;
-			this.textContainer.addChild(text);
-			text.on('pointertap', tooltipLine.callback);
-		});
+				};
+				text.y = y;
+				y += text.height;
+			},
+			() =>
+				this.textContainer.removeChildAt(this.textContainer.children.length - 1));
 
 		let topLeft = this.camera.worldToCanvas(this.selection.worldPosition.copy.scale(this.worldLayer.size.invert()));
 		let bottomRight = this.camera.worldToCanvas(this.selection.worldPosition.copy.add(new Vector(1)).scale(this.worldLayer.size.invert()));
