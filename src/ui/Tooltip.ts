@@ -57,22 +57,20 @@ export default class Tooltip {
 			this.selection = selection;
 		if (this.selection)
 			this.selection.selected = !this.selection.selected;
-		this.update();
 	}
 
 	unselect() {
 		this.selection = null;
-		this.update();
 	}
 
 	hover() {
 		if (this.selection?.selected) return;
 		this.selection = this.createInputSelection;
-		this.update();
 	}
 
-	update() {
+	tick() {
 		this.textContainer.removeChildren();
+		this.selectionRect.removeChildren();
 		if (!this.selection) return;
 
 		let y = 0;
@@ -91,11 +89,6 @@ export default class Tooltip {
 			this.textContainer.addChild(text);
 			text.on('pointertap', tooltipLine.callback);
 		});
-	}
-
-	tick() {
-		this.selectionRect.removeChildren();
-		if (!this.selection) return;
 
 		let topLeft = this.camera.worldToCanvas(this.selection.worldPosition.copy.scale(this.worldLayer.size.invert()));
 		let bottomRight = this.camera.worldToCanvas(this.selection.worldPosition.copy.add(new Vector(1)).scale(this.worldLayer.size.invert()));

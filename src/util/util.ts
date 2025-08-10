@@ -29,6 +29,14 @@ namespace util {
 
 	export let enumKeys = (enumm: object): number[] =>
 		Object.values(enumm).filter(value => typeof value === 'number');
+
+	export let replace = <S, V>(values: V[], sources: S[], creator: (i: number, sources: S[]) => V, updater: (value: V, i: number, source: S) => V): V[] => {
+		while (values.length < sources.length)
+			values.push(creator(values.length, sources));
+		values.splice(sources.length);
+		sources.forEach((source, i) => updater(values[i], i, source));
+		return values;
+	};
 }
 
 export default util;
