@@ -127,7 +127,7 @@ export default class Placer {
 		let rotation = Math.abs(delta.y) > Math.abs(delta.x) ?
 			delta.y > 0 ? Entity.Rotation.DOWN : Entity.Rotation.UP :
 			delta.x > 0 ? Entity.Rotation.RIGHT : Entity.Rotation.LEFT;
-		if (updateRotation)
+		if (updateRotation && (delta.y || delta.x))
 			this.rotation = rotation;
 		let n = Math.max(Math.abs(delta.x), Math.abs(delta.y));
 
