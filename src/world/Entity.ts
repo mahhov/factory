@@ -80,7 +80,7 @@ class Conveyor extends Entity {
 
 	constructor(rotation: Rotation) {
 		super(rotation);
-		this.containerAttribute = new EntityContainerAttribute(1, util.enumKeys(Rotation).filter(r => r !== Rotation.opposite(rotation)));
+		this.containerAttribute = new EntityContainerAttribute(1, util.enumKeys(Rotation).filter(r => r !== Rotation.opposite(rotation))); // todo allow 1 total resource, not 1 of each
 		this.attributes.push(this.containerAttribute);
 		this.attributes.push(new EntityConveyorTransportAttribute(this.containerAttribute, 10, rotation));
 		this.sprite = Conveyor.sprite;
@@ -105,8 +105,9 @@ class Conveyor extends Entity {
 class Source extends Entity {
 	constructor(rotation: Rotation) {
 		super(rotation);
-		this.attributes.push(new EntitySourceAttribute(40, Resource.COPPER));
-		this.attributes.push(new EntityResourcePickerAttribute());
+		let entityResourcePickerAttribute = new EntityResourcePickerAttribute();
+		this.attributes.push(entityResourcePickerAttribute);
+		this.attributes.push(new EntitySourceAttribute(40, entityResourcePickerAttribute));
 		this.sprite = Source.sprite;
 	}
 
@@ -124,17 +125,15 @@ class Void extends Entity {
 }
 
 class GlassFactory extends Entity {
-	private readonly containerAttribute: EntityContainerAttribute;
-
 	constructor(rotation: Rotation) {
 		super(rotation);
-		this.containerAttribute = new EntityContainerAttribute(10, util.enumKeys(Rotation));
-		this.attributes.push(this.containerAttribute);
+		let containerAttribute = new EntityContainerAttribute(10, util.enumKeys(Rotation));
+		this.attributes.push(containerAttribute);
 		let outputs = Resource.Count.fromTuples([[Resource.GLASS, 1]]);
-		this.attributes.push(new EntityProduceAttribute(this.containerAttribute, 40,
+		this.attributes.push(new EntityProduceAttribute(containerAttribute, 40,
 			Resource.Count.fromTuples([[Resource.LEAD, 1], [Resource.SAND, 1]]),
 			outputs));
-		this.attributes.push(new EntityFilteredTransportAttribute(this.containerAttribute, 10, outputs));
+		this.attributes.push(new EntityFilteredTransportAttribute(containerAttribute, 10, outputs));
 		this.sprite = GlassFactory.sprite;
 	}
 

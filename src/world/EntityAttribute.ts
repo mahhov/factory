@@ -181,11 +181,11 @@ export class EntityFilteredTransportAttribute extends EntityTransportAttribute {
 }
 
 export class EntitySourceAttribute extends EntityTimedAttribute {
-	private readonly resource: Resource;
+	private readonly entityResourcePickerAttribute: EntityResourcePickerAttribute;
 
-	constructor(counterDuration: number, resource: Resource) {
+	constructor(counterDuration: number, entityResourcePickerAttribute: EntityResourcePickerAttribute) {
 		super(counterDuration);
-		this.resource = resource;
+		this.entityResourcePickerAttribute = entityResourcePickerAttribute;
 	}
 
 	protected canProgress(worldLayer: WorldLayer, position: Vector): boolean {
@@ -193,7 +193,7 @@ export class EntitySourceAttribute extends EntityTimedAttribute {
 	}
 
 	protected maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
-		let resourceCount = new Resource.Count(this.resource, 1);
+		let resourceCount = new Resource.Count(this.entityResourcePickerAttribute.resource, 1);
 		util.enumKeys(Rotation).forEach(rotation => {
 			let destination = worldLayer.getEntity(position.copy.add(Rotation.positionShift(rotation)));
 			let destinationContainerAttribute = destination?.getAttribute(EntityContainerAttribute);
@@ -233,7 +233,7 @@ export class EntityProduceAttribute extends EntityTimedAttribute {
 }
 
 export class EntityResourcePickerAttribute extends EntityAttribute {
-	private resource: Resource = Resource.COPPER;
+	resource: Resource = Resource.COPPER;
 
 	get tooltip(): TooltipLine[] {
 		return util.enumKeys(Resource).map(resource => {
