@@ -82,7 +82,6 @@ export default class Tooltip {
 			(i: number, tooltipLines: TooltipLine[]) => {
 				let text = new Text({eventMode: 'static'});
 				this.textContainer.addChild(text);
-				text.on('pointertap', tooltipLines[i].callback);
 			},
 			(text: Text, i: number, tooltipLine: TooltipLine) => {
 				text.text = tooltipLine.string;
@@ -93,6 +92,7 @@ export default class Tooltip {
 				};
 				text.y = y;
 				y += text.height;
+				text.onpointertap = tooltipLine.callback;
 			},
 			() =>
 				this.textContainer.removeChildAt(this.textContainer.children.length - 1));
