@@ -8,12 +8,12 @@ import {World, WorldLayer} from '../world/World.js';
 import {Input} from './Input.js';
 
 enum State {
-	NONE, ENTITY_SELECTED, STARTED
+	EMPTY, ENTITY_SELECTED, STARTED
 }
 
 export default class Placer {
 	static readonly State = State;
-	static readonly entityClasses: typeof Entity[] = [Empty, Wall, Conveyor, Source, Void, GlassFactory];
+	static readonly entityClasses: typeof Entity[] = [Wall, Conveyor, Source, Void, GlassFactory];
 
 	private readonly painter: Painter;
 	private readonly camera: Camera;
@@ -24,7 +24,7 @@ export default class Placer {
 
 	private started = false;
 	private rotation = Entity.Rotation.RIGHT;
-	private entityClass: typeof Entity | null = null;
+	private entityClass: typeof Entity = Empty;
 	private startPosition = new Vector();
 	private endPosition = new Vector();
 
@@ -67,16 +67,20 @@ export default class Placer {
 		]];
 	}
 
-	private get position() {
+	private get position(): Vector {
 		let canvasPosition = this.input.mousePosition.copy.scale(new Vector(1 / this.painter.canvasWidth));
 		return this.camera.canvasToWorld(canvasPosition)
 			.scale(this.world.size).floor();
 	}
 
-	selectEntity(clazz: typeof Entity | null) {
-		this.entityClass = this.entityClass === clazz ? null : clazz;
+	toggleEntity(clazz: typeof Entity) {
+		this.setEntity(this.entityClass === clazz ? Empty : clazz);
+	}
 
-		if (this.entityClass) {
+	setEntity(clazz: typeof Entity) {
+		this.entityClass = clazz;
+
+		if (this.state !== State.EMPTY) {
 			let index = Placer.entityClasses.indexOf(this.entityClass);
 			[this.entityClassRect.x, this.entityClassRect.y] = Placer.entityClassUiCoordinates(index)[0];
 			this.painter.uiContainer.addChild(this.entityClassRect);
@@ -95,15 +99,11 @@ export default class Placer {
 	}
 
 	start() {
-		if (this.entityClass) {
-			this.started = true;
-			this.endPosition = this.startPosition = this.position;
-		}
+		this.started = true;
+		this.endPosition = this.startPosition = this.position;
 	}
 
 	move() {
-		if (!this.entityClass)
-			return;
 		let position = this.position;
 		if (position.equals(this.endPosition))
 			return;
@@ -112,7 +112,8 @@ export default class Placer {
 			this.startPosition = position;
 		this.endPosition = position;
 
-		this.place(this.world.queue, this.started);
+		if (this.state !== State.EMPTY || this.started)
+			this.place(this.world.queue, this.started);
 	}
 
 	end() {
@@ -120,6 +121,11 @@ export default class Placer {
 			this.started = false;
 			this.place(this.world.live, false);
 		}
+	}
+
+	pick() {
+		let entity = this.world.live.getEntity(this.position);
+		this.setEntity(entity ? entity.constructor as typeof Entity : Empty);
 	}
 
 	private place(worldLayer: WorldLayer, updateRotation: boolean) {
@@ -150,7 +156,7 @@ export default class Placer {
 		this.world.queue.clearAllEntities();
 		let position = this.startPosition.copy;
 		for (let i = 0; i <= n; i++) {
-			worldLayer.setEntity(position, new this.entityClass!(this.rotation));
+			worldLayer.setEntity(position, new this.entityClass(this.rotation));
 			position.add(iterDelta);
 		}
 	}
@@ -158,9 +164,9 @@ export default class Placer {
 	get state() {
 		if (this.started)
 			return State.STARTED;
-		if (this.entityClass)
+		if (this.entityClass !== Empty)
 			return State.ENTITY_SELECTED;
-		return State.NONE;
+		return State.EMPTY;
 	}
 }
 

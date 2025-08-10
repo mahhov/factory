@@ -27,32 +27,33 @@ export default class Controller {
 		// placer
 		util.arr(10)
 			.map((_, i) => Placer.entityClasses[i])
-			.forEach((clazz, i) => input.addBinding(new KeyBinding(String(i + 1), [Input.State.PRESSED], () => placer.selectEntity(clazz))));
+			.forEach((clazz, i) => input.addBinding(new KeyBinding(String(i + 1), [Input.State.PRESSED], () => placer.toggleEntity(clazz))));
 		// todo middle click to select class
-		input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => placer.start()));
+		input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => {
+			if (placer.state !== Placer.State.EMPTY)
+				placer.start();
+		}));
 		input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.DOWN, Input.State.UP], () => placer.move()));
 		input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.RELEASED], () => placer.end()));
+		input.addBinding(new MouseBinding(MouseBinding.MouseButton.MIDDLE, [Input.State.RELEASED], () => placer.pick()));
 		input.addBinding(new MouseBinding(MouseBinding.MouseButton.RIGHT, [Input.State.PRESSED], () => {
-			placer.selectEntity(Empty);
+			placer.setEntity(Empty);
 			placer.start();
 		}));
 		input.addBinding(new MouseBinding(MouseBinding.MouseButton.RIGHT, [Input.State.DOWN, Input.State.UP], () => placer.move()));
-		input.addBinding(new MouseBinding(MouseBinding.MouseButton.RIGHT, [Input.State.RELEASED], () => {
-			placer.end();
-			placer.selectEntity(null);
-		}));
+		input.addBinding(new MouseBinding(MouseBinding.MouseButton.RIGHT, [Input.State.RELEASED], () => placer.end()));
 		input.addBinding(new MouseWheelBinding(false, [Input.State.PRESSED], () => placer.rotate(-1)));
 		input.addBinding(new MouseWheelBinding(true, [Input.State.PRESSED], () => placer.rotate(1)));
 
 		// tooltip
 		input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.UP], () => {
-			if (placer.state === Placer.State.NONE)
+			if (placer.state === Placer.State.EMPTY)
 				tooltip.hover();
 			else
 				tooltip.unselect();
 		}));
 		input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => {
-			if (placer.state === Placer.State.NONE)
+			if (placer.state === Placer.State.EMPTY)
 				tooltip.toggleSelect();
 		}));
 	}
