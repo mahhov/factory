@@ -3,6 +3,8 @@ import Painter from './graphics/Painter.js';
 import util from './util/util.js';
 import Vector from './util/Vector.js';
 
+let padding = .25;
+
 export default class Camera {
 	private targetLeftTop: Vector = new Vector();
 	private targetWidth: number = 1;
@@ -16,13 +18,18 @@ export default class Camera {
 
 	move(delta: Vector) {
 		this.targetLeftTop.add(delta.scale(new Vector(this.targetWidth)));
-		// todo clamp
+		this.clamp();
 	}
 
 	zoom(delta: number) {
 		let centerWorld = this.canvasToWorld(new Vector(.5));
-		this.targetWidth = util.clamp(this.targetWidth + delta, .1, 1.5);
+		this.targetWidth = util.clamp(this.targetWidth + delta, .1, 1 + padding * 2);
 		this.targetLeftTop = centerWorld.subtract(new Vector(this.targetWidth / 2));
+		this.clamp();
+	}
+
+	clamp() {
+		this.targetLeftTop.clamp(new Vector(-padding), new Vector(1 + padding).subtract(new Vector(this.targetWidth)));
 	}
 
 	worldToCanvas(world: Vector) {
