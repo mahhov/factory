@@ -19,7 +19,7 @@ import Resource from './Resource.js';
 import Rotation from './Rotation.js';
 import {WorldLayer} from './World.js';
 
-class Entity {
+export class Entity {
 	static readonly Rotation = Rotation;
 	protected readonly rotation: Rotation;
 	protected readonly attributes: EntityAttribute[] = [];
@@ -59,7 +59,7 @@ class Entity {
 	}
 }
 
-class Empty extends Entity {
+export class Empty extends Entity {
 	constructor() {
 		super();
 		this.sprite = Empty.sprite;
@@ -68,7 +68,7 @@ class Empty extends Entity {
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_EMPTY]);}
 }
 
-class Wall extends Entity {
+export class Wall extends Entity {
 	constructor(rotation: Rotation) {
 		super(rotation);
 		this.sprite = Wall.sprite;
@@ -77,7 +77,7 @@ class Wall extends Entity {
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_WALL]);}
 }
 
-class Conveyor extends Entity {
+export class Conveyor extends Entity {
 	private readonly containerAttribute: EntityLineContainerAttribute;
 
 	constructor(rotation: Rotation) {
@@ -104,7 +104,7 @@ class Conveyor extends Entity {
 	}
 }
 
-class Source extends Entity {
+export class Source extends Entity {
 	constructor(rotation: Rotation) {
 		super(rotation);
 		let entityResourcePickerAttribute = new EntityResourcePickerAttribute();
@@ -116,7 +116,7 @@ class Source extends Entity {
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'source.png', [Color.ENTITY_SOURCE]);}
 }
 
-class Void extends Entity {
+export class Void extends Entity {
 	constructor(rotation: Rotation) {
 		super(rotation);
 		this.attributes.push(new EntityVoidContainerAttribute());
@@ -126,7 +126,7 @@ class Void extends Entity {
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'void.png', [Color.ENTITY_VOID]);}
 }
 
-class GlassFactory extends Entity {
+export class GlassFactory extends Entity {
 	constructor(rotation: Rotation) {
 		super(rotation);
 		let containerAttribute = new EntityBoxContainerAttribute({
@@ -149,6 +149,30 @@ class GlassFactory extends Entity {
 	}
 }
 
+export class MegaFactory extends Entity {
+	constructor(rotation: Rotation) {
+		super(rotation);
+		let containerAttribute = new EntityBoxContainerAttribute({
+			[Resource.A]: 10,
+			[Resource.B]: 10,
+			[Resource.X]: 10,
+			[Resource.Y]: 10,
+		});
+		this.attributes.push(containerAttribute);
+		let outputs = Resource.Count.fromTuples([[Resource.X, 2], [Resource.Y, 1]]);
+		this.attributes.push(new EntityProduceAttribute(containerAttribute, 40,
+			Resource.Count.fromTuples([[Resource.A, 2], [Resource.B, 1]]),
+			outputs));
+		this.attributes.push(new EntityFilteredTransportAttribute(containerAttribute, 10, outputs));
+		this.sprite = MegaFactory.sprite;
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
+			[Resource.color(Resource.X), Resource.color(Resource.A), Resource.color(Resource.B)]);
+	}
+}
+
 // class AnimatedConveyor extends Entity {
 // 	constructor(rotation: Rotation) {
 // 		super(AnimatedConveyor.sprite, rotation, 10);
@@ -162,12 +186,4 @@ class GlassFactory extends Entity {
 // 	}
 // }
 
-export {Entity, Empty, Wall, Conveyor, Source, Void, GlassFactory};
-
-// todo
-//   larger entities
-//   factories
-//   source select resource type
-//   different sprites for different resource types
-//   glass factory to emit glass
-//   show material quantity on hover
+// todo larger entities

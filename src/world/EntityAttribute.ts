@@ -51,8 +51,9 @@ export abstract class EntityContainerAttribute extends EntityAttribute {
 	}
 
 	add(resourceCount: Resource.Count) {
-		this.counts[resourceCount.resource]++;
-		this.materials.push(resourceCount.resource);
+		this.counts[resourceCount.resource] += resourceCount.quantity;
+		util.arr(resourceCount.quantity).forEach(() =>
+			this.materials.push(resourceCount.resource));
 	}
 
 	remove(resourceCount: Resource.Count) {

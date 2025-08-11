@@ -3,6 +3,7 @@ import Color from '../graphics/Color.js';
 
 enum Resource {
 	COPPER, LEAD, SAND, GLASS,
+	A, B, X, Y
 }
 
 namespace Resource {
@@ -25,17 +26,10 @@ namespace Resource {
 	};
 
 	export let color = (resource: Resource): ColorSource => {
-		switch (resource) {
-			case Resource.COPPER:
-				return Color.RESOURCE_COPPER;
-			case Resource.LEAD:
-				return Color.RESOURCE_LEAD;
-			case Resource.SAND:
-				return Color.RESOURCE_SAND;
-			case Resource.GLASS:
-				return Color.RESOURCE_GLASS;
-		}
+		let key = `RESOURCE_${Resource[resource]}` as unknown as keyof typeof Color;
+		return Color[key];
 	};
+
 }
 
 export default Resource;

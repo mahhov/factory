@@ -28,7 +28,6 @@ export default class Controller {
 		util.arr(10)
 			.map((_, i) => Placer.entityClasses[i])
 			.forEach((clazz, i) => input.addBinding(new KeyBinding(String(i + 1), [Input.State.PRESSED], () => placer.toggleEntity(clazz))));
-		// todo middle click to select class
 		input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => {
 			if (placer.state !== Placer.State.EMPTY)
 				placer.start();
