@@ -28,19 +28,14 @@ export abstract class EntityAttribute {
 	}
 }
 
-export class EntityContainerAttribute extends EntityAttribute {
-	// todo limit capacity per resource type
-	private readonly capacity: number;
-	private readonly counts: Record<Resource, number>;
-	private readonly materials: Resource[] = [];
-	private readonly inputRotations: Rotation[] = [];
+export abstract class EntityContainerAttribute extends EntityAttribute {
+	protected readonly counts: Record<Resource, number>;
+	protected readonly materials: Resource[] = [];
 
-	constructor(capacity: number, inputRotations: Rotation[]) {
+	constructor() {
 		super();
-		this.capacity = capacity;
 		this.counts = Object.fromEntries(util.enumKeys(Resource)
 			.map(resource => [resource, 0])) as Record<Resource, number>;
-		this.inputRotations = inputRotations;
 	}
 
 	get empty() {return Object.values(this.counts).every(count => !count);}
@@ -49,9 +44,7 @@ export class EntityContainerAttribute extends EntityAttribute {
 		return new Resource.Count(this.materials[this.materials.length - 1], 1);
 	}
 
-	hasCapacity(resourceCount: Resource.Count): boolean {
-		return this.counts[resourceCount.resource] + resourceCount.quantity <= this.capacity;
-	}
+	abstract hasCapacity(resourceCount: Resource.Count): boolean;
 
 	hasQuantity(resourceCount: Resource.Count): boolean {
 		return this.counts[resourceCount.resource] >= resourceCount.quantity;
@@ -68,23 +61,78 @@ export class EntityContainerAttribute extends EntityAttribute {
 			this.materials.splice(this.materials.lastIndexOf(resourceCount.resource), 1);
 	}
 
-	pop(): Resource.Count {
-		let resourceCount = this.peek;
-		this.remove(resourceCount);
-		return resourceCount;
+	abstract acceptsRotation(rotation: Rotation): boolean;
+}
+
+export class EntityLineContainerAttribute extends EntityContainerAttribute {
+	private readonly totalCapacity: number;
+	private readonly inputRotations: Rotation[] = [];
+
+	constructor(totalCapacity: number, inputRotations: Rotation[]) {
+		super();
+		this.totalCapacity = totalCapacity;
+		this.inputRotations = inputRotations;
 	}
 
-	acceptsRotation(rotation: Rotation) {
+	private get total() {
+		return Object.values(this.counts).reduce((sum, count) => sum + count);
+	}
+
+	hasCapacity(resourceCount: Resource.Count): boolean {
+		return this.total < this.totalCapacity;
+	}
+
+	acceptsRotation(rotation: Rotation): boolean {
 		return this.inputRotations.includes(rotation);
 	}
 
 	get tooltip(): TooltipLine[] {
-		return Object.entries(this.counts)
-			.filter(([resource, count]) => count)
-			.map(([resource, count]) => new TooltipLine(`${Resource.string(resource as unknown as Resource)} ${count} / ${this.capacity}`));
+		return [
+			...(Object.entries(this.counts) as unknown as [Resource, number][])
+				.filter(([resource, count]) => count)
+				.map(([resource, count]) => new TooltipLine(`${Resource.string(resource)} ${count}`)),
+			new TooltipLine(`${this.total} / ${this.totalCapacity}`),
+		];
 	}
 
-	get selectable(): boolean {
+	get selectable() {
+		return true;
+	}
+}
+
+export class EntityBoxContainerAttribute extends EntityContainerAttribute {
+	private readonly capacity: Partial<Record<Resource, number>>;
+
+	constructor(capacity: Partial<Record<Resource, number>>) {
+		super();
+		this.capacity = capacity;
+	}
+
+	hasCapacity(resourceCount: Resource.Count): boolean {
+		return this.counts[resourceCount.resource] + resourceCount.quantity <= (this.capacity[resourceCount.resource] || 0);
+	}
+
+	acceptsRotation(rotation: Rotation): boolean {
+		return true;
+	}
+
+	get tooltip(): TooltipLine[] {
+		return (Object.entries(this.counts) as unknown as [Resource, number][])
+			.filter(([resource, count]) => count)
+			.map(([resource, count]) => new TooltipLine(`${Resource.string(resource)} ${count} / ${this.capacity[resource]}`));
+	}
+
+	get selectable() {
+		return true;
+	}
+}
+
+export class EntityVoidContainerAttribute extends EntityContainerAttribute {
+	hasCapacity(resourceCount: Resource.Count): boolean {
+		return true;
+	}
+
+	acceptsRotation(rotation: Rotation): boolean {
 		return true;
 	}
 }
@@ -131,7 +179,7 @@ abstract class EntityTransportAttribute extends EntityTimedAttribute {
 		return this.rotations().some(rotation =>
 			resourceCounts.some(resourceCount => {
 				let destination = worldLayer.getEntity(position.copy.add(Rotation.positionShift(rotation)));
-				let destinationContainerAttribute = destination?.getAttribute(EntityContainerAttribute);
+				let destinationContainerAttribute = destination?.getAttribute<EntityContainerAttribute>(EntityContainerAttribute);
 				if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute?.hasCapacity(resourceCount)) {
 					this.containerAttribute.remove(resourceCount);
 					destinationContainerAttribute.add(resourceCount);
@@ -196,7 +244,7 @@ export class EntitySourceAttribute extends EntityTimedAttribute {
 		let resourceCount = new Resource.Count(this.entityResourcePickerAttribute.resource, 1);
 		util.enumKeys(Rotation).forEach(rotation => {
 			let destination = worldLayer.getEntity(position.copy.add(Rotation.positionShift(rotation)));
-			let destinationContainerAttribute = destination?.getAttribute(EntityContainerAttribute);
+			let destinationContainerAttribute = destination?.getAttribute<EntityContainerAttribute>(EntityContainerAttribute);
 			if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute?.hasCapacity(resourceCount))
 				destinationContainerAttribute.add(resourceCount);
 		});
