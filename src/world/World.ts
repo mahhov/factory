@@ -31,11 +31,14 @@ class WorldLayer {
 	}
 
 	setEntity(position: Vector, entity: Entity) {
-		let old = this.getEntity(position);
-		if (old)
-			this.container.removeChild(old.container);
-
 		let entitySize = (entity.constructor as typeof Entity).size;
+
+		if (!this.inBounds(position, entitySize))
+			return;
+
+		let oldEntity = this.getEntity(position)!;
+		this.container.removeChild(oldEntity.container);
+
 		this.grid[position.x][position.y] = entity;
 
 		let sizeInv = this.size.invert();
@@ -48,8 +51,12 @@ class WorldLayer {
 		this.container.addChild(entity.container);
 	}
 
+	private inBounds(position: Vector, size: Vector) {
+		return position.atLeast(new Vector()) && position.lessThan(this.size.subtract(size).add(new Vector(1)));
+	}
+
 	getEntity(position: Vector): Entity | null {
-		return position.atLeast(new Vector()) && position.lessThan(this.size) ?
+		return this.inBounds(position, new Vector(1)) ?
 			this.grid[position.x][position.y] :
 			null;
 	}
