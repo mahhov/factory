@@ -28,6 +28,12 @@ export class Entity {
 	constructor(rotation: Rotation = Rotation.RIGHT) {
 		this.rotation = rotation;
 		this.container.rotation = Entity.rotationToAngle(rotation);
+		let constructor = this.constructor as typeof Entity;
+		this.sprite = constructor.sprite;
+	}
+
+	static get size() {
+		return new Vector(1);
 	}
 
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_UNDEFINED]);}
@@ -35,7 +41,6 @@ export class Entity {
 	set sprite(sprite: Sprite) {
 		this.container.removeChildren();
 		this.container.addChild(sprite);
-		sprite.anchor.set(.5);
 	}
 
 	static rotationToAngle(rotation: Rotation) {
@@ -60,20 +65,10 @@ export class Entity {
 }
 
 export class Empty extends Entity {
-	constructor() {
-		super();
-		this.sprite = Empty.sprite;
-	}
-
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_EMPTY]);}
 }
 
 export class Wall extends Entity {
-	constructor() {
-		super();
-		this.sprite = Wall.sprite;
-	}
-
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_WALL]);}
 }
 
@@ -85,7 +80,6 @@ export class Conveyor extends Entity {
 		this.containerAttribute = new EntityLineContainerAttribute(1, util.enumKeys(Rotation).filter(r => r !== Rotation.opposite(rotation)));
 		this.attributes.push(this.containerAttribute);
 		this.attributes.push(new EntityConveyorTransportAttribute(this.containerAttribute, 10, rotation));
-		this.sprite = Conveyor.sprite;
 	}
 
 	static get sprite() {
@@ -110,7 +104,6 @@ export class Source extends Entity {
 		let entityResourcePickerAttribute = new EntityResourcePickerAttribute();
 		this.attributes.push(entityResourcePickerAttribute);
 		this.attributes.push(new EntitySourceAttribute(40, entityResourcePickerAttribute));
-		this.sprite = Source.sprite;
 	}
 
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'source.png', [Color.ENTITY_SOURCE]);}
@@ -120,7 +113,6 @@ export class Void extends Entity {
 	constructor() {
 		super();
 		this.attributes.push(new EntityVoidContainerAttribute());
-		this.sprite = Void.sprite;
 	}
 
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'void.png', [Color.ENTITY_VOID]);}
@@ -140,7 +132,6 @@ export class GlassFactory extends Entity {
 			Resource.Count.fromTuples([[Resource.LEAD, 1], [Resource.SAND, 1]]),
 			outputs));
 		this.attributes.push(new EntityFilteredTransportAttribute(containerAttribute, 10, outputs));
-		this.sprite = GlassFactory.sprite;
 	}
 
 	static get sprite() {
@@ -164,7 +155,11 @@ export class MegaFactory extends Entity {
 			Resource.Count.fromTuples([[Resource.A, 2], [Resource.B, 1]]),
 			outputs));
 		this.attributes.push(new EntityFilteredTransportAttribute(containerAttribute, 10, outputs));
-		this.sprite = MegaFactory.sprite;
+	}
+
+	static get size() {
+		// todo make rotate-able
+		return new Vector(4, 4);
 	}
 
 	static get sprite() {

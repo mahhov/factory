@@ -1,7 +1,7 @@
 import {Container} from 'pixi.js';
-import {Empty, Entity} from './Entity.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
+import {Empty, Entity} from './Entity.js';
 
 class WorldLayer {
 	protected grid: Entity[][] = [];
@@ -9,11 +9,9 @@ class WorldLayer {
 
 	constructor(grid: Entity[][]) {
 		this.grid = grid;
-		this.grid.forEach((column, x) => column
-			.forEach((entity, y) => {
-				if (entity.container)
-					this.addEntityContainer(new Vector(x, y), entity.container);
-			}));
+		this.grid.forEach((column, x) =>
+			column.forEach((entity, y) =>
+				this.setEntity(new Vector(x, y), entity)));
 	}
 
 	static emptyGrid(width: number, height: number) {
@@ -34,20 +32,20 @@ class WorldLayer {
 
 	setEntity(position: Vector, entity: Entity) {
 		let old = this.getEntity(position);
-		if (!old)
-			return;
-		this.container.removeChild(old.container);
-		this.grid[position.x][position.y] = entity;
-		this.addEntityContainer(position, entity.container);
-	}
+		if (old)
+			this.container.removeChild(old.container);
 
-	private addEntityContainer(position: Vector, container: Container) {
-		position = position.copy.add(new Vector(.5)).scale(this.size.invert());
-		container.x = position.x;
-		container.y = position.y;
-		container.width = 1 / this.width;
-		container.height = 1 / this.height;
-		this.container.addChild(container);
+		let entitySize = (entity.constructor as typeof Entity).size;
+		this.grid[position.x][position.y] = entity;
+
+		let sizeInv = this.size.invert();
+		position = position.copy.scale(sizeInv);
+		entity.container.x = position.x;
+		entity.container.y = position.y;
+		let size = sizeInv.copy.scale(entitySize);
+		entity.container.width = size.x;
+		entity.container.height = size.y;
+		this.container.addChild(entity.container);
 	}
 
 	getEntity(position: Vector): Entity | null {
