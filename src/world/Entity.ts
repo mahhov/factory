@@ -69,8 +69,8 @@ export class Empty extends Entity {
 }
 
 export class Wall extends Entity {
-	constructor(rotation: Rotation) {
-		super(rotation);
+	constructor() {
+		super();
 		this.sprite = Wall.sprite;
 	}
 
@@ -105,8 +105,8 @@ export class Conveyor extends Entity {
 }
 
 export class Source extends Entity {
-	constructor(rotation: Rotation) {
-		super(rotation);
+	constructor() {
+		super();
 		let entityResourcePickerAttribute = new EntityResourcePickerAttribute();
 		this.attributes.push(entityResourcePickerAttribute);
 		this.attributes.push(new EntitySourceAttribute(40, entityResourcePickerAttribute));
@@ -117,8 +117,8 @@ export class Source extends Entity {
 }
 
 export class Void extends Entity {
-	constructor(rotation: Rotation) {
-		super(rotation);
+	constructor() {
+		super();
 		this.attributes.push(new EntityVoidContainerAttribute());
 		this.sprite = Void.sprite;
 	}
@@ -127,8 +127,8 @@ export class Void extends Entity {
 }
 
 export class GlassFactory extends Entity {
-	constructor(rotation: Rotation) {
-		super(rotation);
+	constructor() {
+		super();
 		let containerAttribute = new EntityBoxContainerAttribute({
 			[Resource.LEAD]: 10,
 			[Resource.SAND]: 10,
@@ -150,8 +150,8 @@ export class GlassFactory extends Entity {
 }
 
 export class MegaFactory extends Entity {
-	constructor(rotation: Rotation) {
-		super(rotation);
+	constructor() {
+		super();
 		let containerAttribute = new EntityBoxContainerAttribute({
 			[Resource.A]: 10,
 			[Resource.B]: 10,
