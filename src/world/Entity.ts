@@ -28,8 +28,7 @@ export class Entity {
 	constructor(rotation: Rotation = Rotation.RIGHT) {
 		this.rotation = rotation;
 		this.container.rotation = Entity.rotationToAngle(rotation);
-		let constructor = this.constructor as typeof Entity;
-		this.sprite = constructor.sprite;
+		this.sprite = (this.constructor as typeof Entity).sprite;
 	}
 
 	static get size() {
@@ -45,6 +44,10 @@ export class Entity {
 
 	static rotationToAngle(rotation: Rotation) {
 		return [...Array(4)].map((_, i) => i * Math.PI / 2)[rotation];
+	}
+
+	get size() {
+		return (this.constructor as typeof Entity).size;
 	}
 
 	getAttribute<T extends EntityAttribute>(attributeClass: typeof EntityAttribute): T | undefined {

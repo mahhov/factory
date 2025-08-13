@@ -1,6 +1,7 @@
 enum Color {
 	SELECTED_TEXT = '#567cc1',
 	DEFAULT_TEXT = '#ffffff',
+	TEXT_RECT_BACKGROUND = '#000000',
 
 	RECT_OUTLINE = '#ffffff',
 	SELECTED_RECT_OUTLINE = '#ffff00',

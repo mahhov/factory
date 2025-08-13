@@ -29,6 +29,7 @@ export default class Tooltip {
 	private readonly worldLayer: WorldLayer;
 
 	private readonly textContainer = new Container();
+	private readonly textBackground = new Container();
 	private readonly selectionRect = new Container();
 
 	private selection: Selection | null = null;
@@ -40,6 +41,7 @@ export default class Tooltip {
 		this.worldLayer = worldLayer;
 		painter.textUiContainer.addChild(this.textContainer);
 		painter.uiContainer.addChild(this.selectionRect);
+		painter.uiContainer.addChild(this.textBackground);
 	}
 
 	private get createInputSelection(): Selection | null {
@@ -71,6 +73,7 @@ export default class Tooltip {
 	}
 
 	tick() {
+		this.textBackground.removeChildren();
 		this.selectionRect.removeChildren();
 		if (!this.selection) {
 			this.textContainer.removeChildren();
@@ -98,13 +101,16 @@ export default class Tooltip {
 				this.textContainer.removeChildAt(this.textContainer.children.length - 1));
 
 		let topLeft = this.camera.worldToCanvas(this.selection.worldPosition.copy.scale(this.worldLayer.size.invert()));
-		let bottomRight = this.camera.worldToCanvas(this.selection.worldPosition.copy.add(new Vector(1)).scale(this.worldLayer.size.invert()));
+		let bottomRight = this.camera.worldToCanvas(this.selection.worldPosition.copy.add(this.selection.entity.size).scale(this.worldLayer.size.invert()));
+		let bottomRightShift = bottomRight.copy.add(new Vector(3 / 1000));
 		let size = bottomRight.copy.subtract(topLeft);
 
-		this.textContainer.position =
-			bottomRight
-				.scale(new Vector(1000))
-				.add(new Vector(3));
+		this.textContainer.position = bottomRightShift.copy.scale(new Vector(1000));
+		let textContainerSize = new Vector(this.textContainer.width / 1000, this.textContainer.height / 1000);
+
+		this.textBackground.addChild(new Graphics()
+			.rect(bottomRightShift.x, bottomRightShift.y, textContainerSize.x, textContainerSize.y)
+			.fill({color: Color.TEXT_RECT_BACKGROUND}));
 
 		this.selectionRect.addChild(new Graphics()
 			.rect(topLeft.x, topLeft.y, size.x, size.y)
@@ -112,5 +118,4 @@ export default class Tooltip {
 	}
 }
 
-// todo text background rect & outline
 // todo rect to scale with entity size

@@ -31,12 +31,10 @@ class WorldLayer {
 	}
 
 	setEntity(position: Vector, entity: Entity) {
-		let entitySize = (entity.constructor as typeof Entity).size;
-
-		if (!this.inBounds(position, entitySize))
+		if (!this.inBounds(position, entity.size))
 			return;
 
-		position.iterate(entitySize).forEach(subPosition => {
+		position.iterate(entity.size).forEach(subPosition => {
 			let oldEntity = this.getEntity(subPosition)!;
 			this.container.removeChild(oldEntity.container);
 			this.grid[subPosition.x][subPosition.y] = entity;
@@ -46,7 +44,7 @@ class WorldLayer {
 		position = position.copy.scale(sizeInv);
 		entity.container.x = position.x;
 		entity.container.y = position.y;
-		let size = sizeInv.copy.scale(entitySize);
+		let size = sizeInv.copy.scale(entity.size);
 		entity.container.width = size.x;
 		entity.container.height = size.y;
 		this.container.addChild(entity.container);

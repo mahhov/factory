@@ -38,7 +38,9 @@ export abstract class EntityContainerAttribute extends EntityAttribute {
 			.map(resource => [resource, 0])) as Record<Resource, number>;
 	}
 
-	get empty() {return Object.values(this.counts).every(count => !count);}
+	get empty() {
+		return Object.values(this.counts).every(count => !count);
+	}
 
 	get peek(): Resource.Count {
 		return new Resource.Count(this.materials[this.materials.length - 1], 1);
