@@ -36,10 +36,11 @@ class WorldLayer {
 		if (!this.inBounds(position, entitySize))
 			return;
 
-		let oldEntity = this.getEntity(position)!;
-		this.container.removeChild(oldEntity.container);
-
-		this.grid[position.x][position.y] = entity;
+		position.iterate(entitySize).forEach(subPosition => {
+			let oldEntity = this.getEntity(subPosition)!;
+			this.container.removeChild(oldEntity.container);
+			this.grid[subPosition.x][subPosition.y] = entity;
+		});
 
 		let sizeInv = this.size.invert();
 		position = position.copy.scale(sizeInv);

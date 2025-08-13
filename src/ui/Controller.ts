@@ -26,7 +26,7 @@ export default class Controller {
 
 		// placer
 		util.arr(10)
-			.map((_, i) => Placer.entityClasses[i])
+			.map(i => Placer.entityClasses[i])
 			.forEach((clazz, i) => input.addBinding(new KeyBinding(String(i + 1), [Input.State.PRESSED], () => placer.toggleEntity(clazz))));
 		input.addBinding(new MouseBinding(MouseBinding.MouseButton.LEFT, [Input.State.PRESSED], () => {
 			if (placer.state !== Placer.State.EMPTY)

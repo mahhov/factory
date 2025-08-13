@@ -12,6 +12,8 @@ export default class Vector {
 		return new Vector(x, y);
 	}
 
+	// non-self-mutation
+
 	get copy() {
 		return new Vector(this.x, this.y);
 	}
@@ -31,6 +33,14 @@ export default class Vector {
 	lessThan(v: Vector) {
 		return this.x < v.x && this.y < v.y;
 	}
+
+	iterate(delta: Vector) {
+		return util.arr(delta.x).flatMap(x =>
+			util.arr(delta.y).flatMap(y =>
+				new Vector(x, y).add(this)));
+	}
+
+	// self-mutating
 
 	set(x: number, y: number) {
 		this.x = x;

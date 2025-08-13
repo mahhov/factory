@@ -182,3 +182,5 @@ export class MegaFactory extends Entity {
 // }
 
 // todo larger entities
+//   updated once per tick
+//   output tiles all around

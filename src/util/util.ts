@@ -1,5 +1,5 @@
 namespace util {
-	export let arr = (n: number) => [...Array(n)];
+	export let arr = (n: number) => [...Array(n)].map((_, i) => i);
 
 	export let clamp = (v: number, min: number, max: number) =>
 		Math.min(Math.max(v, min), max);
