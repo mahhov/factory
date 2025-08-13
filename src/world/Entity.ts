@@ -27,7 +27,6 @@ export class Entity {
 
 	constructor(rotation: Rotation = Rotation.RIGHT) {
 		this.rotation = rotation;
-		this.container.rotation = Entity.rotationToAngle(rotation);
 		this.sprite = (this.constructor as typeof Entity).sprite;
 	}
 
@@ -38,6 +37,10 @@ export class Entity {
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_UNDEFINED]);}
 
 	set sprite(sprite: Sprite) {
+		let halfSize = new Vector(sprite.width, sprite.height).scale(new Vector(.5));
+		sprite.pivot = halfSize;
+		sprite.position = halfSize;
+		sprite.rotation = Entity.rotationToAngle(this.rotation);
 		this.container.removeChildren();
 		this.container.addChild(sprite);
 	}
@@ -68,10 +71,18 @@ export class Entity {
 }
 
 export class Empty extends Entity {
+	constructor() {
+		super();
+	}
+
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_EMPTY]);}
 }
 
 export class Wall extends Entity {
+	constructor() {
+		super();
+	}
+
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_WALL]);}
 }
 

@@ -1,13 +1,19 @@
 namespace util {
 	export let arr = (n: number) => [...Array(n)].map((_, i) => i);
+	export let shuffle = <T>(array: T[]): T[] => {
+		array = [...array];
+		for (let i = 0; i < array.length; i++) {
+			let r = randInt(i, array.length - 1);
+			[array[i], array[r]] = [array[r], array[i]];
+		}
+		return array;
+	};
 
 	export let clamp = (v: number, min: number, max: number) =>
 		Math.min(Math.max(v, min), max);
 
 	export let rand = (n: number) => Math.random() * n;
-
 	export let randInt = (min: number, max: number) => Math.floor(rand(max - min + 1)) + min;
-
 	export let randPick = <T>(valueWeightPairs: [T, number][]) => {
 		let sum = valueWeightPairs.reduce((sum: number, pair: [T, number]) => sum + pair[1], 0);
 		let r = rand(sum);
@@ -16,15 +22,6 @@ namespace util {
 			return r < 0;
 		})!;
 		return pick[0];
-	};
-
-	export let shuffle = <T>(array: T[]): T[] => {
-		array = [...array];
-		for (let i = 0; i < array.length; i++) {
-			let r = randInt(i, array.length - 1);
-			[array[i], array[r]] = [array[r], array[i]];
-		}
-		return array;
 	};
 
 	export let enumKeys = (enumm: object): number[] =>

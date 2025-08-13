@@ -10,6 +10,10 @@ export class Tile {
 	terrain: Terrain = new Terrain();
 	entity: Entity = new Empty();
 	position: Vector = new Vector();
+
+	get emptyEntity() {
+		return this.entity instanceof Empty;
+	}
 }
 
 export class WorldLayer {
@@ -20,7 +24,7 @@ export class WorldLayer {
 		this.grid = grid;
 		this.grid.forEach((column, x) =>
 			column.forEach((tile, y) =>
-				this.setEntity(new Vector(x, y), tile.entity)));
+				this.addEntity(new Vector(x, y), tile.entity)));
 	}
 
 	static emptyGrid(width: number, height: number) {
@@ -39,16 +43,33 @@ export class WorldLayer {
 		return new Vector(this.width, this.height);
 	}
 
-	setEntity(position: Vector, entity: Entity) {
+	replaceEntity(position: Vector, entity: Entity) {
 		if (!this.inBounds(position, entity.size))
 			return;
 
-		position.iterate(entity.size).forEach(subPosition => {
-			let oldTile = this.getTile(subPosition)!;
-			this.container.removeChild(oldTile.entity.container);
-			this.grid[subPosition.x][subPosition.y].entity = entity;
-			this.grid[subPosition.x][subPosition.y].position = position;
-		});
+		let replaceTiles = position.iterate(entity.size).map(p => this.getTile(p)!);
+		replaceTiles.forEach(tile =>
+			tile.position.iterate(tile.entity.size)
+				.forEach(emptyPosition => {
+					let tile = this.getTile(emptyPosition)!;
+					if (replaceTiles.includes(tile))
+						this.container.removeChild(tile.entity.container);
+					else if (!tile.emptyEntity) {
+						this.container.removeChild(tile.entity.container);
+						this.addEntity(emptyPosition, new Empty());
+					}
+				}));
+
+		this.addEntity(position, entity);
+	}
+
+	private addEntity(position: Vector, entity: Entity) {
+		position.iterate(entity.size)
+			.map(subPosition => this.getTile(subPosition)!)
+			.forEach(tile => {
+				tile.entity = entity;
+				tile.position = position.copy;
+			});
 
 		let sizeInv = this.size.invert();
 		position = position.copy.scale(sizeInv);
@@ -71,7 +92,8 @@ export class WorldLayer {
 	}
 
 	clearAllEntities() {
-		this.grid = WorldLayer.emptyGrid(this.grid.length, this.grid[0].length);
+		// unlike `replaceEntity()`, this does not add the `Empty` sprites to `container`
+		this.grid = WorldLayer.emptyGrid(this.width, this.height);
 		this.container.removeChildren();
 	}
 
@@ -88,7 +110,7 @@ export class World {
 	constructor(grid: Tile[][], container: Container) {
 		this.live = new WorldLayer(grid);
 		container.addChild(this.live.container);
-		this.queue = new WorldLayer(WorldLayer.emptyGrid(grid.length, grid[0].length));
+		this.queue = new WorldLayer(WorldLayer.emptyGrid(this.width, this.height));
 		container.addChild(this.queue.container);
 		this.queue.container.alpha = .3;
 	}

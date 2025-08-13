@@ -78,6 +78,7 @@ export default class Placer {
 	}
 
 	setEntity(clazz: typeof Entity) {
+		// todo refresh queue layer
 		this.entityClass = clazz;
 
 		if (this.state !== State.EMPTY) {
@@ -156,7 +157,7 @@ export default class Placer {
 		this.world.queue.clearAllEntities();
 		let position = this.startPosition.copy;
 		for (let i = 0; i <= n; i++) {
-			worldLayer.setEntity(position, new this.entityClass(this.rotation));
+			worldLayer.replaceEntity(position, new this.entityClass(this.rotation));
 			position.add(iterDelta);
 		}
 	}
@@ -174,3 +175,4 @@ export default class Placer {
 //  - only add if world empty or replaceable
 //  - add after build time & cost
 //  - display entity selection shortcuts
+//  - row of large entities

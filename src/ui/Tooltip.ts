@@ -11,12 +11,10 @@ import uiUtil from './uiUtil.js';
 import mouseInContainer = uiUtil.mouseInContainer;
 
 class Selection {
-	readonly worldPosition: Vector;
 	readonly tile: Tile;
 	selected = false;
 
-	constructor(worldPosition: Vector, tile: Tile) {
-		this.worldPosition = worldPosition;
+	constructor(tile: Tile) {
 		this.tile = tile;
 	}
 }
@@ -50,13 +48,13 @@ export default class Tooltip {
 		let tile = this.worldLayer.getTile(worldPosition);
 		if (!tile?.entity.selectable)
 			return null;
-		return new Selection(worldPosition, tile);
+		return new Selection(tile);
 	}
 
 	toggleSelect() {
 		if (mouseInContainer(this.input.mousePosition, this.textContainer)) return;
 		let selection = this.createInputSelection;
-		if (!selection || !this.selection || !this.selection.worldPosition.equals(selection.worldPosition))
+		if (!selection || !this.selection || this.selection.tile !== selection.tile)
 			this.selection = selection;
 		if (this.selection)
 			this.selection.selected = !this.selection.selected;
@@ -99,8 +97,8 @@ export default class Tooltip {
 			() =>
 				this.textContainer.removeChildAt(this.textContainer.children.length - 1));
 
-		let topLeft = this.camera.worldToCanvas(this.selection.worldPosition.copy.scale(this.worldLayer.size.invert()));
-		let bottomRight = this.camera.worldToCanvas(this.selection.worldPosition.copy.add(this.selection.tile.entity.size).scale(this.worldLayer.size.invert()));
+		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.copy.scale(this.worldLayer.size.invert()));
+		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.copy.add(this.selection.tile.entity.size).scale(this.worldLayer.size.invert()));
 		let bottomRightShift = bottomRight.copy.add(new Vector(3 / 1000));
 		let size = bottomRight.copy.subtract(topLeft);
 
