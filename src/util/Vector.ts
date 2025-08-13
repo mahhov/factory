@@ -58,6 +58,12 @@ export default class Vector {
 		return this;
 	}
 
+	abs() {
+		this.x = Math.abs(this.x);
+		this.y = Math.abs(this.y);
+		return this;
+	}
+
 	add(v: Vector) {
 		this.x += v.x;
 		this.y += v.y;

@@ -131,7 +131,13 @@ export default class Placer {
 
 	private place(worldLayer: WorldLayer, updateRotation: boolean) {
 		let delta = this.endPosition.copy.subtract(this.startPosition);
-		let vertical = Math.abs(delta.y) > Math.abs(delta.x);
+		let iterations = delta
+			.copy
+			.scale(this.entityClass.size.invert())
+			.floor()
+			.abs()
+			.add(new Vector(1));
+		let vertical = Math.abs(iterations.y) > Math.abs(iterations.x);
 		let rotation = vertical ?
 			delta.y > 0 ? Entity.Rotation.DOWN : Entity.Rotation.UP :
 			delta.x > 0 ? Entity.Rotation.RIGHT : Entity.Rotation.LEFT;
@@ -140,9 +146,7 @@ export default class Placer {
 
 		this.world.queue.clearAllEntities();
 		let position = this.startPosition.copy;
-		delta.scale(this.entityClass.size.invert());
-		let n = vertical ? delta.y : delta.x;
-		n = Math.abs(Math.floor(n)) + 1;
+		let n = vertical ? iterations.y : iterations.x;
 		let iterDelta = Rotation.positionShift(rotation).scale(this.entityClass.size);
 		for (let i = 0; i < n; i++) {
 			worldLayer.replaceEntity(position, new this.entityClass(this.rotation));
