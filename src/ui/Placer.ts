@@ -78,18 +78,17 @@ export default class Placer {
 	}
 
 	setEntity(clazz: typeof Entity) {
-		// todo refresh queue layer
 		this.entityClass = clazz;
 
-		if (this.state !== State.EMPTY) {
-			let index = Placer.entityClasses.indexOf(this.entityClass);
+		let index = Placer.entityClasses.indexOf(this.entityClass);
+		if (index === -1)
+			this.painter.uiContainer.removeChild(this.entityClassRect);
+		else {
 			[this.entityClassRect.x, this.entityClassRect.y] = Placer.entityClassUiCoordinates(index)[0];
 			this.painter.uiContainer.addChild(this.entityClassRect);
-		} else {
-			this.painter.uiContainer.removeChild(this.entityClassRect);
-			this.started = false;
-			this.world.queue.clearAllEntities();
 		}
+
+		this.place(this.world.queue, false);
 	}
 
 	rotate(delta: number) {
@@ -175,4 +174,4 @@ export default class Placer {
 //  - only add if world empty or replaceable
 //  - add after build time & cost
 //  - display entity selection shortcuts
-//  - row of large entities
+// todo* row of large entities

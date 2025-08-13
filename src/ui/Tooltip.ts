@@ -114,5 +114,3 @@ export default class Tooltip {
 			.stroke({width: (this.selection.selected ? 3 : 1) / this.painter.canvasWidth, color: this.selection.selected ? Color.SELECTED_RECT_OUTLINE : Color.RECT_OUTLINE}));
 	}
 }
-
-// todo rect to scale with entity size
