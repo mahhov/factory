@@ -4,8 +4,7 @@ import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Entity} from '../world/Entity.js';
-import {WorldLayer} from '../world/World.js';
+import {Tile, WorldLayer} from '../world/World.js';
 import {Input} from './Input.js';
 import TooltipLine from './TooltipLine.js';
 import uiUtil from './uiUtil.js';
@@ -13,12 +12,12 @@ import mouseInContainer = uiUtil.mouseInContainer;
 
 class Selection {
 	readonly worldPosition: Vector;
-	readonly entity: Entity;
+	readonly tile: Tile;
 	selected = false;
 
-	constructor(worldPosition: Vector, entity: Entity) {
+	constructor(worldPosition: Vector, tile: Tile) {
 		this.worldPosition = worldPosition;
-		this.entity = entity;
+		this.tile = tile;
 	}
 }
 
@@ -48,10 +47,10 @@ export default class Tooltip {
 		let canvasPosition = this.input.mousePosition.copy.scale(new Vector(1 / this.painter.canvasWidth));
 		let worldPosition = this.camera.canvasToWorld(canvasPosition.copy)
 			.scale(this.worldLayer.size).floor();
-		let entity = this.worldLayer.getEntity(worldPosition);
-		if (!entity?.selectable)
+		let tile = this.worldLayer.getTile(worldPosition);
+		if (!tile?.entity.selectable)
 			return null;
-		return new Selection(worldPosition, entity);
+		return new Selection(worldPosition, tile);
 	}
 
 	toggleSelect() {
@@ -81,7 +80,7 @@ export default class Tooltip {
 		}
 
 		let y = 0;
-		util.replace<TooltipLine, Text>(this.textContainer.children as Text[], this.selection.entity.tooltip,
+		util.replace<TooltipLine, Text>(this.textContainer.children as Text[], this.selection.tile.entity.tooltip,
 			(i: number, tooltipLines: TooltipLine[]) => {
 				let text = new Text({eventMode: 'static'});
 				this.textContainer.addChild(text);
@@ -101,7 +100,7 @@ export default class Tooltip {
 				this.textContainer.removeChildAt(this.textContainer.children.length - 1));
 
 		let topLeft = this.camera.worldToCanvas(this.selection.worldPosition.copy.scale(this.worldLayer.size.invert()));
-		let bottomRight = this.camera.worldToCanvas(this.selection.worldPosition.copy.add(this.selection.entity.size).scale(this.worldLayer.size.invert()));
+		let bottomRight = this.camera.worldToCanvas(this.selection.worldPosition.copy.add(this.selection.tile.entity.size).scale(this.worldLayer.size.invert()));
 		let bottomRightShift = bottomRight.copy.add(new Vector(3 / 1000));
 		let size = bottomRight.copy.subtract(topLeft);
 

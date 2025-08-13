@@ -124,8 +124,8 @@ export default class Placer {
 	}
 
 	pick() {
-		let entity = this.world.live.getEntity(this.position);
-		this.setEntity(entity ? entity.constructor as typeof Entity : Empty);
+		let tile = this.world.live.getTile(this.position);
+		this.setEntity(tile ? tile.entity.constructor as typeof Entity : Empty);
 	}
 
 	private place(worldLayer: WorldLayer, updateRotation: boolean) {

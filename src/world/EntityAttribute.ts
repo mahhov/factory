@@ -181,8 +181,8 @@ abstract class EntityTransportAttribute extends EntityTimedAttribute {
 			this.containerAttribute.hasQuantity(resourceCount));
 		return this.rotations().some(rotation =>
 			resourceCounts.some(resourceCount => {
-				let destination = worldLayer.getEntity(position.copy.add(Rotation.positionShift(rotation)));
-				let destinationContainerAttribute = destination?.getAttribute<EntityContainerAttribute>(EntityContainerAttribute);
+				let destination = worldLayer.getTile(position.copy.add(Rotation.positionShift(rotation)));
+				let destinationContainerAttribute = destination?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute);
 				if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute?.hasCapacity(resourceCount)) {
 					this.containerAttribute.remove(resourceCount);
 					destinationContainerAttribute.add(resourceCount);
@@ -246,8 +246,8 @@ export class EntitySourceAttribute extends EntityTimedAttribute {
 	protected maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
 		let resourceCount = new Resource.Count(this.entityResourcePickerAttribute.resource, 1);
 		util.enumKeys(Rotation).forEach(rotation => {
-			let destination = worldLayer.getEntity(position.copy.add(Rotation.positionShift(rotation)));
-			let destinationContainerAttribute = destination?.getAttribute<EntityContainerAttribute>(EntityContainerAttribute);
+			let destination = worldLayer.getTile(position.copy.add(Rotation.positionShift(rotation)));
+			let destinationContainerAttribute = destination?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute);
 			if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute?.hasCapacity(resourceCount))
 				destinationContainerAttribute.add(resourceCount);
 		});

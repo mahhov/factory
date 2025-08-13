@@ -3,19 +3,28 @@ import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
 
-class WorldLayer {
-	protected grid: Entity[][] = [];
+class Terrain {
+}
+
+export class Tile {
+	terrain: Terrain = new Terrain();
+	entity: Entity = new Empty();
+	position: Vector = new Vector();
+}
+
+export class WorldLayer {
+	protected grid: Tile[][] = [];
 	container = new Container();
 
-	constructor(grid: Entity[][]) {
+	constructor(grid: Tile[][]) {
 		this.grid = grid;
 		this.grid.forEach((column, x) =>
-			column.forEach((entity, y) =>
-				this.setEntity(new Vector(x, y), entity)));
+			column.forEach((tile, y) =>
+				this.setEntity(new Vector(x, y), tile.entity)));
 	}
 
 	static emptyGrid(width: number, height: number) {
-		return util.arr(width).map(_ => util.arr(height).map(_ => new Empty()));
+		return util.arr(width).map(_ => util.arr(height).map(_ => new Tile()));
 	}
 
 	get width() {
@@ -35,9 +44,10 @@ class WorldLayer {
 			return;
 
 		position.iterate(entity.size).forEach(subPosition => {
-			let oldEntity = this.getEntity(subPosition)!;
-			this.container.removeChild(oldEntity.container);
-			this.grid[subPosition.x][subPosition.y] = entity;
+			let oldTile = this.getTile(subPosition)!;
+			this.container.removeChild(oldTile.entity.container);
+			this.grid[subPosition.x][subPosition.y].entity = entity;
+			this.grid[subPosition.x][subPosition.y].position = position;
 		});
 
 		let sizeInv = this.size.invert();
@@ -54,7 +64,7 @@ class WorldLayer {
 		return position.atLeast(new Vector()) && position.lessThan(this.size.subtract(size).add(new Vector(1)));
 	}
 
-	getEntity(position: Vector): Entity | null {
+	getTile(position: Vector): Tile | null {
 		return this.inBounds(position, new Vector(1)) ?
 			this.grid[position.x][position.y] :
 			null;
@@ -67,15 +77,15 @@ class WorldLayer {
 
 	tick() {
 		this.grid.forEach((column, x) => column.forEach((entity, y) =>
-			entity.tick(this, new Vector(x, y))));
+			entity.entity.tick(this, new Vector(x, y))));
 	}
 }
 
-class World {
+export class World {
 	live: WorldLayer;
 	queue: WorldLayer;
 
-	constructor(grid: Entity[][], container: Container) {
+	constructor(grid: Tile[][], container: Container) {
 		this.live = new WorldLayer(grid);
 		container.addChild(this.live.container);
 		this.queue = new WorldLayer(WorldLayer.emptyGrid(grid.length, grid[0].length));
@@ -99,5 +109,3 @@ class World {
 		this.live.tick();
 	}
 }
-
-export {WorldLayer, World};
