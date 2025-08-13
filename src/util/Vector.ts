@@ -34,6 +34,10 @@ export default class Vector {
 		return this.x < v.x && this.y < v.y;
 	}
 
+	boundBy(minInclusive: Vector, maxExclusive: Vector) {
+		return this.atLeast(minInclusive) && this.lessThan(maxExclusive);
+	}
+
 	iterate(delta: Vector) {
 		return util.arr(delta.x).flatMap(x =>
 			util.arr(delta.y).flatMap(y =>

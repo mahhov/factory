@@ -4,6 +4,7 @@ import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import Vector from '../util/Vector.js';
 import {Conveyor, Empty, Entity, GlassFactory, MegaFactory, Source, Void, Wall} from '../world/Entity.js';
+import Rotation from '../world/Rotation.js';
 import {World, WorldLayer} from '../world/World.js';
 import {Input} from './Input.js';
 
@@ -130,32 +131,20 @@ export default class Placer {
 
 	private place(worldLayer: WorldLayer, updateRotation: boolean) {
 		let delta = this.endPosition.copy.subtract(this.startPosition);
-		let rotation = Math.abs(delta.y) > Math.abs(delta.x) ?
+		let vertical = Math.abs(delta.y) > Math.abs(delta.x);
+		let rotation = vertical ?
 			delta.y > 0 ? Entity.Rotation.DOWN : Entity.Rotation.UP :
 			delta.x > 0 ? Entity.Rotation.RIGHT : Entity.Rotation.LEFT;
 		if (updateRotation && (delta.y || delta.x))
 			this.rotation = rotation;
-		let n = Math.max(Math.abs(delta.x), Math.abs(delta.y));
-
-		let iterDelta: Vector;
-		switch (rotation) {
-			case Entity.Rotation.RIGHT:
-				iterDelta = new Vector(1, 0);
-				break;
-			case Entity.Rotation.DOWN:
-				iterDelta = new Vector(0, 1);
-				break;
-			case Entity.Rotation.LEFT:
-				iterDelta = new Vector(-1, 0);
-				break;
-			case Entity.Rotation.UP:
-				iterDelta = new Vector(0, -1);
-				break;
-		}
 
 		this.world.queue.clearAllEntities();
 		let position = this.startPosition.copy;
-		for (let i = 0; i <= n; i++) {
+		delta.scale(this.entityClass.size.invert());
+		let n = vertical ? delta.y : delta.x;
+		n = Math.abs(Math.floor(n)) + 1;
+		let iterDelta = Rotation.positionShift(rotation).scale(this.entityClass.size);
+		for (let i = 0; i < n; i++) {
 			worldLayer.replaceEntity(position, new this.entityClass(this.rotation));
 			position.add(iterDelta);
 		}
@@ -174,4 +163,3 @@ export default class Placer {
 //  - only add if world empty or replaceable
 //  - add after build time & cost
 //  - display entity selection shortcuts
-// todo* row of large entities

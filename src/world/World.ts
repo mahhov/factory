@@ -82,7 +82,7 @@ export class WorldLayer {
 	}
 
 	private inBounds(position: Vector, size: Vector) {
-		return position.atLeast(new Vector()) && position.lessThan(this.size.subtract(size).add(new Vector(1)));
+		return position.boundBy(new Vector(), this.size.subtract(size).add(new Vector(1)));
 	}
 
 	getTile(position: Vector): Tile | null {
