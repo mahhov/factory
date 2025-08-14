@@ -17,12 +17,15 @@
     },
     "factory-2.png": {
       "frame": {"x": 80, "y": 0, "w": 16, "h": 16}
+    },
+    "extractor.png": {
+      "frame": {"x": 96, "y": 0, "w": 16, "h": 16}
     }
   },
   "meta": {
     "image": "terrain.png",
     "format": "RGBA8888",
-    "size": {"w": 96, "h": 16},
+    "size": {"w": 112, "h": 16},
     "scale": "1"
   }
 }

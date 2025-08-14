@@ -43,8 +43,10 @@ export default class Placer {
 			painter.uiContainer.addChild(container);
 
 			let sprite = clazz.sprite;
-			[sprite.width, sprite.height] = coordinates[1];
-			container.addChild(sprite);
+			if (sprite) {
+				[sprite.width, sprite.height] = coordinates[1];
+				container.addChild(sprite);
+			}
 
 			let rect = new Graphics()
 				.rect(0, 0, ...coordinates[1])

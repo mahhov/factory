@@ -6,9 +6,9 @@ enum Color {
 	RECT_OUTLINE = '#ffffff',
 	SELECTED_RECT_OUTLINE = '#ffff00',
 
-	ENTITY_UNDEFINED = '#ffffff',
 	ENTITY_EMPTY = '#000000',
 	ENTITY_WALL = '#347743',
+	ENTITY_EXTRACTOR = '#347743',
 	ENTITY_SOURCE = '#5f773c',
 	ENTITY_VOID = '#cf3939',
 

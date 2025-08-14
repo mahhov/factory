@@ -27,14 +27,16 @@ export class Entity {
 
 	constructor(rotation: Rotation = Rotation.RIGHT) {
 		this.rotation = rotation;
-		this.sprite = (this.constructor as typeof Entity).sprite;
+		let sprite = (this.constructor as typeof Entity).sprite;
+		if (sprite)
+			this.sprite = sprite;
 	}
 
 	static get size() {
 		return new Vector(1);
 	}
 
-	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_UNDEFINED]);}
+	static get sprite(): Sprite | null {return null;}
 
 	set sprite(sprite: Sprite) {
 		let halfSize = new Vector(sprite.width, sprite.height).scale(new Vector(.5));
@@ -109,6 +111,16 @@ export class Conveyor extends Entity {
 		this.sprite = this.containerAttribute.empty ?
 			Conveyor.sprite :
 			Conveyor.spriteFull(this.containerAttribute.peek.resource);
+	}
+}
+
+export class Extractor extends Entity {
+	constructor() {
+		super();
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'extractor.png', [Color.ENTITY_EXTRACTOR]);
 	}
 }
 

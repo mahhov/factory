@@ -3,11 +3,8 @@ import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
 
-class Terrain {
-}
-
 export class Tile {
-	terrain: Terrain = new Terrain();
+	terrain: Entity = new Empty();
 	entity: Entity = new Empty();
 	position: Vector = new Vector();
 
@@ -17,10 +14,12 @@ export class Tile {
 }
 
 export class WorldLayer {
+	private readonly showEmptyEntity: boolean;
 	protected grid: Tile[][] = [];
-	container = new Container();
+	readonly container = new Container();
 
-	constructor(grid: Tile[][]) {
+	constructor(showEmptyEntity: boolean, grid: Tile[][]) {
+		this.showEmptyEntity = showEmptyEntity;
 		this.grid = grid;
 		this.grid.forEach((column, x) =>
 			column.forEach((tile, y) =>
@@ -71,6 +70,8 @@ export class WorldLayer {
 				tile.position = position.copy;
 			});
 
+		if (!this.showEmptyEntity && entity instanceof Empty) return;
+
 		let sizeInv = this.size.invert();
 		position = position.copy.scale(sizeInv);
 		entity.container.x = position.x;
@@ -111,9 +112,9 @@ export class World {
 	queue: WorldLayer;
 
 	constructor(grid: Tile[][], container: Container) {
-		this.live = new WorldLayer(grid);
+		this.live = new WorldLayer(false, grid);
 		container.addChild(this.live.container);
-		this.queue = new WorldLayer(WorldLayer.emptyGrid(this.width, this.height));
+		this.queue = new WorldLayer(true, WorldLayer.emptyGrid(this.width, this.height));
 		container.addChild(this.queue.container);
 		this.queue.container.alpha = .3;
 	}
