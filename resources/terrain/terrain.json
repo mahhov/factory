@@ -9,17 +9,23 @@
     "conveyor-full.png": {
       "frame": {"x": 32, "y": 0, "w": 16, "h": 16}
     },
-    "source.png": {
+    "distributor.png": {
       "frame": {"x": 48, "y": 0, "w": 16, "h": 16}
     },
-    "void.png": {
+    "junction.png": {
       "frame": {"x": 64, "y": 0, "w": 16, "h": 16}
     },
-    "factory-2.png": {
+    "extractor.png": {
       "frame": {"x": 80, "y": 0, "w": 16, "h": 16}
     },
-    "extractor.png": {
+    "source.png": {
       "frame": {"x": 96, "y": 0, "w": 16, "h": 16}
+    },
+    "void.png": {
+      "frame": {"x": 112, "y": 0, "w": 16, "h": 16}
+    },
+    "factory-2.png": {
+      "frame": {"x": 128, "y": 0, "w": 16, "h": 16}
     },
     "resource-deposit.png": {
       "frame": {"x": 0, "y": 16, "w": 16, "h": 16}
@@ -28,7 +34,7 @@
   "meta": {
     "image": "terrain.png",
     "format": "RGBA8888",
-    "size": {"w": 112, "h": 32},
+    "size": {"w": 144, "h": 32},
     "scale": "1"
   }
 }

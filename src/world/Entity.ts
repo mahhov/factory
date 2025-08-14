@@ -118,6 +118,21 @@ export class Conveyor extends Entity {
 	}
 }
 
+export class Distributor extends Entity {
+	constructor() {super();
+	}
+
+	static get sprite() {
+		return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'distributor.png');
+	}
+}
+
+export class Junction extends Entity {
+	static get sprite() {
+		return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'junction.png');
+	}
+}
+
 export class Extractor extends Entity {
 	constructor() {
 		super();
