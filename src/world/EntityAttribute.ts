@@ -374,3 +374,21 @@ export class EntityResourcePickerAttribute extends EntityAttribute {
 		return true;
 	}
 }
+
+export class EntityResourceDisplayAttribute extends EntityAttribute {
+	resource: Resource;
+
+	constructor(resource: Resource) {
+		super();
+		this.resource = resource;
+	}
+
+
+	get tooltip(): TooltipLine[] {
+		return [new TooltipLine(Resource.string(this.resource))];
+	}
+
+	get selectable(): boolean {
+		return true;
+	}
+}

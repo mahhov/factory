@@ -13,9 +13,9 @@ enum Color {
 	ENTITY_VOID = '#cf3939',
 
 	RESOURCE_COPPER = '#68b84d',
-	RESOURCE_LEAD = '#aa4db8',
-	RESOURCE_SAND = '#b8724d',
-	RESOURCE_GLASS = '#4db898',
+	RESOURCE_IRON = '#aa4db8',
+	RESOURCE_CARBON = '#b8724d',
+	RESOURCE_STEEL = '#4db898',
 	RESOURCE_A = '#4d9bb8',
 	RESOURCE_B = '#4db893',
 	RESOURCE_X = '#a44db8',

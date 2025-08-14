@@ -4,7 +4,7 @@ import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Tile, WorldLayer} from '../world/World.js';
+import {Tile, World} from '../world/World.js';
 import {Input} from './Input.js';
 import TooltipLine from './TooltipLine.js';
 import uiUtil from './uiUtil.js';
@@ -23,7 +23,7 @@ export default class Tooltip {
 	private readonly painter: Painter;
 	private readonly camera: Camera;
 	private readonly input: Input;
-	private readonly worldLayer: WorldLayer;
+	private readonly world: World;
 
 	private readonly textContainer = new Container();
 	private readonly textBackground = new Container();
@@ -31,11 +31,11 @@ export default class Tooltip {
 
 	private selection: Selection | null = null;
 
-	constructor(painter: Painter, camera: Camera, input: Input, worldLayer: WorldLayer) {
+	constructor(painter: Painter, camera: Camera, input: Input, world: World) {
 		this.painter = painter;
 		this.camera = camera;
 		this.input = input;
-		this.worldLayer = worldLayer;
+		this.world = world;
 		painter.textUiContainer.addChild(this.textContainer);
 		painter.uiContainer.addChild(this.selectionRect);
 		painter.uiContainer.addChild(this.textBackground);
@@ -44,11 +44,14 @@ export default class Tooltip {
 	private get createInputSelection(): Selection | null {
 		let canvasPosition = this.input.mousePosition.copy.scale(new Vector(1 / this.painter.canvasWidth));
 		let worldPosition = this.camera.canvasToWorld(canvasPosition.copy)
-			.scale(this.worldLayer.size).floor();
-		let tile = this.worldLayer.getTile(worldPosition);
-		if (!tile?.entity.selectable)
-			return null;
-		return new Selection(tile);
+			.scale(this.world.size).floor();
+		let tile = this.world.live.getTile(worldPosition);
+		if (tile?.entity.selectable)
+			return new Selection(tile);
+		tile = this.world.terrain.getTile(worldPosition);
+		if (tile?.entity.selectable)
+			return new Selection(tile);
+		return null;
 	}
 
 	toggleSelect() {
@@ -97,8 +100,8 @@ export default class Tooltip {
 			() =>
 				this.textContainer.removeChildAt(this.textContainer.children.length - 1));
 
-		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.copy.scale(this.worldLayer.size.invert()));
-		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.copy.add(this.selection.tile.entity.size).scale(this.worldLayer.size.invert()));
+		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.copy.scale(this.world.size.invert()));
+		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.copy.add(this.selection.tile.entity.size).scale(this.world.size.invert()));
 		let bottomRightShift = bottomRight.copy.add(new Vector(3 / 1000));
 		let size = bottomRight.copy.subtract(topLeft);
 

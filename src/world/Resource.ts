@@ -2,8 +2,8 @@ import {ColorSource} from 'pixi.js';
 import Color from '../graphics/Color.js';
 
 enum Resource {
-	COPPER, LEAD, SAND, GLASS,
-	A, B, X, Y
+	COPPER, IRON, CARBON, STEEL,
+	A, B, X, Y,
 }
 
 namespace Resource {

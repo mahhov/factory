@@ -13,6 +13,7 @@ import {
 	EntityLineContainerAttribute,
 	EntityOutContainerAttribute,
 	EntityProduceAttribute,
+	EntityResourceDisplayAttribute,
 	EntityResourcePickerAttribute,
 	EntitySourceAttribute,
 	EntityUnfilteredTransportAttribute,
@@ -159,21 +160,21 @@ export class GlassFactory extends Entity {
 	constructor() {
 		super();
 		let containerAttribute = new EntityBoxContainerAttribute({
-			[Resource.LEAD]: 10,
-			[Resource.SAND]: 10,
-			[Resource.GLASS]: 10,
+			[Resource.IRON]: 10,
+			[Resource.CARBON]: 10,
+			[Resource.STEEL]: 10,
 		});
 		this.attributes.push(containerAttribute);
-		let outputs = Resource.Count.fromTuples([[Resource.GLASS, 1]]);
+		let outputs = Resource.Count.fromTuples([[Resource.STEEL, 1]]);
 		this.attributes.push(new EntityProduceAttribute(containerAttribute, 40,
-			Resource.Count.fromTuples([[Resource.LEAD, 1], [Resource.SAND, 1]]),
+			Resource.Count.fromTuples([[Resource.IRON, 1], [Resource.CARBON, 1]]),
 			outputs));
 		this.attributes.push(new EntityFilteredTransportAttribute(containerAttribute, 1, outputs));
 	}
 
 	static get sprite() {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[Resource.color(Resource.GLASS), Resource.color(Resource.LEAD), Resource.color(Resource.SAND)]);
+			[Resource.color(Resource.STEEL), Resource.color(Resource.IRON), Resource.color(Resource.CARBON)]);
 	}
 }
 
@@ -212,6 +213,7 @@ export class ResourceDeposit extends Entity {
 		super();
 		this.sprite = SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [Resource.color(resource)]);
 		this.resource = resource;
+		this.attributes.push(new EntityResourceDisplayAttribute(resource));
 	}
 }
 
