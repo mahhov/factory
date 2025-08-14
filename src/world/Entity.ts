@@ -145,7 +145,7 @@ export class GlassFactory extends Entity {
 		this.attributes.push(new EntityProduceAttribute(containerAttribute, 40,
 			Resource.Count.fromTuples([[Resource.LEAD, 1], [Resource.SAND, 1]]),
 			outputs));
-		this.attributes.push(new EntityFilteredTransportAttribute(containerAttribute, 10, outputs));
+		this.attributes.push(new EntityFilteredTransportAttribute(containerAttribute, 1, outputs));
 	}
 
 	static get sprite() {
@@ -168,7 +168,7 @@ export class MegaFactory extends Entity {
 		this.attributes.push(new EntityProduceAttribute(containerAttribute, 40,
 			Resource.Count.fromTuples([[Resource.A, 2], [Resource.B, 1]]),
 			outputs));
-		this.attributes.push(new EntityFilteredTransportAttribute(containerAttribute, 10, outputs));
+		this.attributes.push(new EntityFilteredTransportAttribute(containerAttribute, 1, outputs));
 	}
 
 	static get size() {
