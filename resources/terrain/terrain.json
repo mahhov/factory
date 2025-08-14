@@ -20,12 +20,15 @@
     },
     "extractor.png": {
       "frame": {"x": 96, "y": 0, "w": 16, "h": 16}
+    },
+    "resource-deposit.png": {
+      "frame": {"x": 0, "y": 16, "w": 16, "h": 16}
     }
   },
   "meta": {
     "image": "terrain.png",
     "format": "RGBA8888",
-    "size": {"w": 112, "h": 16},
+    "size": {"w": 112, "h": 32},
     "scale": "1"
   }
 }

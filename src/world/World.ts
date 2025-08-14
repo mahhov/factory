@@ -1,10 +1,11 @@
 import {Container} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Empty, Entity} from './Entity.js';
+import {Empty, Entity, ResourceDeposit} from './Entity.js';
+import Resource from './Resource.js';
+import randInt = util.randInt;
 
 export class Tile {
-	terrain: Entity = new Empty();
 	entity: Entity = new Empty();
 	position: Vector = new Vector();
 
@@ -15,7 +16,7 @@ export class Tile {
 
 export class WorldLayer {
 	private readonly showEmptyEntity: boolean;
-	protected grid: Tile[][] = [];
+	grid: Tile[][] = [];
 	readonly container = new Container();
 
 	constructor(showEmptyEntity: boolean, grid: Tile[][]) {
@@ -26,8 +27,8 @@ export class WorldLayer {
 				this.addEntity(new Vector(x, y), tile.entity)));
 	}
 
-	static emptyGrid(width: number, height: number) {
-		return util.arr(width).map(_ => util.arr(height).map(_ => new Tile()));
+	static emptyGrid(size: Vector) {
+		return util.arr(size.x).map(_ => util.arr(size.y).map(_ => new Tile()));
 	}
 
 	get width() {
@@ -94,29 +95,27 @@ export class WorldLayer {
 
 	clearAllEntities() {
 		// unlike `replaceEntity()`, this does not add the `Empty` sprites to `container`
-		this.grid = WorldLayer.emptyGrid(this.width, this.height);
+		this.grid = WorldLayer.emptyGrid(this.size);
 		this.container.removeChildren();
-	}
-
-	tick() {
-		this.grid.forEach((column, x) => column.forEach((tile, y) => {
-			let position = new Vector(x, y);
-			if (tile.position.equals(position))
-				tile.entity.tick(this, tile);
-		}));
 	}
 }
 
 export class World {
+	terrain: WorldLayer;
 	live: WorldLayer;
 	queue: WorldLayer;
 
-	constructor(grid: Tile[][], container: Container) {
-		this.live = new WorldLayer(false, grid);
+	constructor(size: Vector, container: Container) {
+		this.terrain = new WorldLayer(false, WorldLayer.emptyGrid(size));
+		container.addChild(this.terrain.container);
+		this.live = new WorldLayer(false, WorldLayer.emptyGrid(size));
 		container.addChild(this.live.container);
-		this.queue = new WorldLayer(true, WorldLayer.emptyGrid(this.width, this.height));
+		this.queue = new WorldLayer(true, WorldLayer.emptyGrid(size));
 		container.addChild(this.queue.container);
-		this.queue.container.alpha = .3;
+		this.queue.container.alpha = .5;
+
+		for (let i = 0; i < 100; i++)
+			this.terrain.replaceEntity(new Vector(randInt(0, this.width), randInt(0, this.height)), new ResourceDeposit(Resource.COPPER));
 	}
 
 	get width() {
@@ -132,6 +131,10 @@ export class World {
 	}
 
 	tick() {
-		this.live.tick();
+		this.live.grid.forEach((column, x) => column.forEach((tile, y) => {
+			let position = new Vector(x, y);
+			if (tile.position.equals(position))
+				tile.entity.tick(this, tile);
+		}));
 	}
 }

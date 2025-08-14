@@ -8,16 +8,19 @@ import {
 	EntityAttribute,
 	EntityBoxContainerAttribute,
 	EntityConveyorTransportAttribute,
+	EntityExtractorAttribute,
 	EntityFilteredTransportAttribute,
 	EntityLineContainerAttribute,
+	EntityOutContainerAttribute,
 	EntityProduceAttribute,
 	EntityResourcePickerAttribute,
 	EntitySourceAttribute,
+	EntityUnfilteredTransportAttribute,
 	EntityVoidContainerAttribute,
 } from './EntityAttribute.js';
 import Resource from './Resource.js';
 import Rotation from './Rotation.js';
-import {Tile, WorldLayer} from './World.js';
+import {Tile, World} from './World.js';
 
 export class Entity {
 	static readonly Rotation = Rotation;
@@ -59,8 +62,8 @@ export class Entity {
 		return this.attributes.find(attribute => attribute instanceof attributeClass) as T;
 	}
 
-	tick(worldLayer: WorldLayer, tile: Tile) {
-		this.attributes.forEach(attribute => attribute.tick(worldLayer, tile));
+	tick(world: World, tile: Tile) {
+		this.attributes.forEach(attribute => attribute.tick(world, tile));
 	}
 
 	get tooltip(): TooltipLine[] {
@@ -106,8 +109,8 @@ export class Conveyor extends Entity {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'conveyor-full.png', [Resource.color(resource)]);
 	}
 
-	tick(worldLayer: WorldLayer, tile: Tile) {
-		super.tick(worldLayer, tile);
+	tick(world: World, tile: Tile) {
+		super.tick(world, tile);
 		this.sprite = this.containerAttribute.empty ?
 			Conveyor.sprite :
 			Conveyor.spriteFull(this.containerAttribute.peek.resource);
@@ -117,6 +120,14 @@ export class Conveyor extends Entity {
 export class Extractor extends Entity {
 	constructor() {
 		super();
+		let containerAttribute = new EntityOutContainerAttribute(10);
+		this.attributes.push(containerAttribute);
+		this.attributes.push(new EntityExtractorAttribute(containerAttribute, 80));
+		this.attributes.push(new EntityUnfilteredTransportAttribute(containerAttribute, 1));
+	}
+
+	static get size() {
+		return new Vector(4, 4);
 	}
 
 	static get sprite() {
@@ -191,6 +202,19 @@ export class MegaFactory extends Entity {
 	static get sprite() {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
 			[Resource.color(Resource.X), Resource.color(Resource.A), Resource.color(Resource.B)]);
+	}
+}
+
+export class ResourceDeposit extends Entity {
+	readonly resource: Resource;
+
+	constructor(resource: Resource) {
+		super();
+		this.resource = resource;
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [Resource.color(Resource.X)]);
 	}
 }
 

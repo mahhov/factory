@@ -3,9 +3,10 @@ import TooltipLine from '../ui/TooltipLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
+import {ResourceDeposit} from './Entity.js';
 import Resource from './Resource.js';
 import Rotation from './Rotation.js';
-import {Tile, WorldLayer} from './World.js';
+import {Tile, World} from './World.js';
 
 // todo add attributes for:
 //   buildable
@@ -40,7 +41,7 @@ let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation)
 };
 
 export abstract class EntityAttribute {
-	tick(worldLayer: WorldLayer, tile: Tile) {}
+	tick(world: World, tile: Tile) {}
 
 	get tooltip(): TooltipLine[] {
 		return [];
@@ -90,6 +91,7 @@ export abstract class EntityContainerAttribute extends EntityAttribute {
 	abstract acceptsRotation(rotation: Rotation): boolean;
 }
 
+// contains any resource with shared capacity, accepts some rotations, in order
 export class EntityLineContainerAttribute extends EntityContainerAttribute {
 	private readonly totalCapacity: number;
 	private readonly inputRotations: Rotation[] = [];
@@ -126,6 +128,7 @@ export class EntityLineContainerAttribute extends EntityContainerAttribute {
 	}
 }
 
+// contains some resources with individual capacities, accepts all rotations
 export class EntityBoxContainerAttribute extends EntityContainerAttribute {
 	private readonly capacity: Partial<Record<Resource, number>>;
 
@@ -153,6 +156,18 @@ export class EntityBoxContainerAttribute extends EntityContainerAttribute {
 	}
 }
 
+// contains all resources with individual capacities, accepts no rotations
+export class EntityOutContainerAttribute extends EntityBoxContainerAttribute {
+	constructor(individualCapacity: number) {
+		super(Object.fromEntries(util.enumKeys(Resource).map(resource => [resource, individualCapacity])));
+	}
+
+	acceptsRotation(rotation: Rotation): boolean {
+		return false;
+	}
+}
+
+// contains all resources with no capacity limit, accepts all rotations
 export class EntityVoidContainerAttribute extends EntityContainerAttribute {
 	hasCapacity(resourceCount: Resource.Count): boolean {
 		return true;
@@ -171,40 +186,40 @@ abstract class EntityTimedAttribute extends EntityAttribute {
 		this.counter = new Counter(counterDuration);
 	}
 
-	tick(worldLayer: WorldLayer, tile: Tile) {
-		super.tick(worldLayer, tile);
-		if (!this.canProgress(worldLayer, tile))
+	tick(world: World, tile: Tile) {
+		super.tick(world, tile);
+		if (!this.canProgress(world, tile))
 			return;
 		if (!this.counter.prepare())
 			return;
-		if (this.maybeComplete(worldLayer, tile))
+		if (this.maybeComplete(world, tile))
 			this.counter.reset();
 	}
 
-	protected abstract canProgress(worldLayer: WorldLayer, tile: Tile): boolean;
+	protected abstract canProgress(world: World, tile: Tile): boolean;
 
-	protected abstract maybeComplete(worldLayer: WorldLayer, tile: Tile): boolean;
+	protected abstract maybeComplete(world: World, tile: Tile): boolean;
 }
 
 abstract class EntityTransportAttribute extends EntityTimedAttribute {
 	protected readonly containerAttribute: EntityContainerAttribute;
 
-	protected constructor(containerAttribute: EntityContainerAttribute, counterDuration: number) {
+	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number) {
 		super(counterDuration);
 		this.containerAttribute = containerAttribute;
 	}
 
-	canProgress(worldLayer: WorldLayer, tile: Tile): boolean {
+	canProgress(world: World, tile: Tile): boolean {
 		return this.resourceCounts().some(resourceCount =>
 			this.containerAttribute.hasQuantity(resourceCount));
 	}
 
-	protected maybeComplete(worldLayer: WorldLayer, tile: Tile): boolean {
+	protected maybeComplete(world: World, tile: Tile): boolean {
 		let resourceCounts = this.resourceCounts().filter(resourceCount =>
 			this.containerAttribute.hasQuantity(resourceCount));
 		return this.rotations().some(rotation =>
 			getAdjacentDestinations(tile.position, tile.entity.size, rotation)
-				.map(destination => worldLayer.getTile(destination)?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
+				.map(destination => world.live.getTile(destination)?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
 				.some(destinationContainerAttribute => resourceCounts.some(resourceCount => {
 					if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount)) {
 						this.containerAttribute.remove(resourceCount);
@@ -220,6 +235,7 @@ abstract class EntityTransportAttribute extends EntityTimedAttribute {
 	protected abstract resourceCounts(): Resource.Count[];
 }
 
+// transport all resources in 1 direction, in order
 export class EntityConveyorTransportAttribute extends EntityTransportAttribute {
 	private readonly rotation: Rotation;
 
@@ -237,6 +253,7 @@ export class EntityConveyorTransportAttribute extends EntityTransportAttribute {
 	}
 }
 
+// transport subset of resources in all directions
 export class EntityFilteredTransportAttribute extends EntityTransportAttribute {
 	private readonly outputs: Resource.Count[];
 
@@ -254,6 +271,39 @@ export class EntityFilteredTransportAttribute extends EntityTransportAttribute {
 	}
 }
 
+// transport all resources in all directions
+export class EntityUnfilteredTransportAttribute extends EntityTransportAttribute {
+	protected rotations(): Rotation[] {
+		return util.shuffle(util.enumKeys(Rotation));
+	}
+
+	protected resourceCounts(): Resource.Count[] {
+		return util.shuffle(util.enumKeys(Resource).map(resource => new Resource.Count(resource, 1)));
+	}
+}
+
+export class EntityExtractorAttribute extends EntityTimedAttribute {
+	private readonly containerAttribute: EntityContainerAttribute;
+
+	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number) {
+		super(counterDuration);
+		this.containerAttribute = containerAttribute;
+	}
+
+	protected canProgress(world: World, tile: Tile): boolean {
+		return true;
+	}
+
+	protected maybeComplete(world: World, tile: Tile): boolean {
+		tile.position.iterate(tile.entity.size).forEach(position => {
+			let tile = world.terrain.getTile(position);
+			if (tile?.entity instanceof ResourceDeposit)
+				this.containerAttribute.add(new Resource.Count(tile.entity.resource, 1));
+		});
+		return true;
+	}
+}
+
 export class EntitySourceAttribute extends EntityTimedAttribute {
 	private readonly entityResourcePickerAttribute: EntityResourcePickerAttribute;
 
@@ -262,15 +312,15 @@ export class EntitySourceAttribute extends EntityTimedAttribute {
 		this.entityResourcePickerAttribute = entityResourcePickerAttribute;
 	}
 
-	protected canProgress(worldLayer: WorldLayer, tile: Tile): boolean {
+	protected canProgress(world: World, tile: Tile): boolean {
 		return true;
 	}
 
-	protected maybeComplete(worldLayer: WorldLayer, tile: Tile): boolean {
+	protected maybeComplete(world: World, tile: Tile): boolean {
 		let resourceCount = new Resource.Count(this.entityResourcePickerAttribute.resource, 1);
 		util.enumKeys(Rotation).forEach(rotation =>
 			getAdjacentDestinations(tile.position, tile.entity.size, rotation)
-				.map(destination => worldLayer.getTile(destination)?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
+				.map(destination => world.live.getTile(destination)?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
 				.forEach(destinationContainerAttribute => {
 					if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount))
 						destinationContainerAttribute.add(resourceCount);
@@ -291,12 +341,12 @@ export class EntityProduceAttribute extends EntityTimedAttribute {
 		this.outputs = outputs;
 	}
 
-	protected canProgress(worldLayer: WorldLayer, tile: Tile): boolean {
+	protected canProgress(world: World, tile: Tile): boolean {
 		return this.inputs.every(resourceCount =>
 			this.containerAttribute.hasQuantity(resourceCount));
 	}
 
-	protected maybeComplete(worldLayer: WorldLayer, tile: Tile): boolean {
+	protected maybeComplete(world: World, tile: Tile): boolean {
 		if (this.outputs.every(resourceCount =>
 			this.containerAttribute.hasCapacity(resourceCount))) {
 			this.inputs.forEach(resourceCount => this.containerAttribute.remove(resourceCount));
