@@ -17,7 +17,7 @@ import {
 } from './EntityAttribute.js';
 import Resource from './Resource.js';
 import Rotation from './Rotation.js';
-import {WorldLayer} from './World.js';
+import {Tile, WorldLayer} from './World.js';
 
 export class Entity {
 	static readonly Rotation = Rotation;
@@ -57,8 +57,8 @@ export class Entity {
 		return this.attributes.find(attribute => attribute instanceof attributeClass) as T;
 	}
 
-	tick(worldLayer: WorldLayer, position: Vector) {
-		this.attributes.forEach(attribute => attribute.tick(worldLayer, position));
+	tick(worldLayer: WorldLayer, tile: Tile) {
+		this.attributes.forEach(attribute => attribute.tick(worldLayer, tile));
 	}
 
 	get tooltip(): TooltipLine[] {
@@ -104,8 +104,8 @@ export class Conveyor extends Entity {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'conveyor-full.png', [Resource.color(resource)]);
 	}
 
-	tick(worldLayer: WorldLayer, position: Vector) {
-		super.tick(worldLayer, position);
+	tick(worldLayer: WorldLayer, tile: Tile) {
+		super.tick(worldLayer, tile);
 		this.sprite = this.containerAttribute.empty ?
 			Conveyor.sprite :
 			Conveyor.spriteFull(this.containerAttribute.peek.resource);
@@ -194,7 +194,3 @@ export class MegaFactory extends Entity {
 // 		return animation;
 // 	}
 // }
-
-// todo* larger entities
-//   updated once per tick
-//   output tiles all around

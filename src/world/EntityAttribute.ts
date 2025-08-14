@@ -5,7 +5,7 @@ import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import Resource from './Resource.js';
 import Rotation from './Rotation.js';
-import {WorldLayer} from './World.js';
+import {Tile, WorldLayer} from './World.js';
 
 // todo add attributes for:
 //   buildable
@@ -16,8 +16,31 @@ import {WorldLayer} from './World.js';
 // 	QUEUED, BUILDING, BUILT, DESTROYED
 // }
 
+let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation) => {
+	origin = origin.copy;
+	size = size.copy;
+	switch (rotation) {
+		case Rotation.RIGHT:
+			origin.x += size.x - 1;
+			size.x = 1;
+			break;
+		case Rotation.DOWN:
+			origin.y += size.y - 1;
+			size.y = 1;
+			break;
+		case Rotation.LEFT:
+			size.x = 1;
+			break;
+		case Rotation.UP:
+			size.y = 1;
+			break;
+	}
+	let shift = Rotation.positionShift(rotation);
+	return origin.iterate(size).map(border => border.add(shift));
+};
+
 export abstract class EntityAttribute {
-	tick(worldLayer: WorldLayer, position: Vector) {}
+	tick(worldLayer: WorldLayer, tile: Tile) {}
 
 	get tooltip(): TooltipLine[] {
 		return [];
@@ -148,19 +171,19 @@ abstract class EntityTimedAttribute extends EntityAttribute {
 		this.counter = new Counter(counterDuration);
 	}
 
-	tick(worldLayer: WorldLayer, position: Vector) {
-		super.tick(worldLayer, position);
-		if (!this.canProgress(worldLayer, position))
+	tick(worldLayer: WorldLayer, tile: Tile) {
+		super.tick(worldLayer, tile);
+		if (!this.canProgress(worldLayer, tile))
 			return;
 		if (!this.counter.prepare())
 			return;
-		if (this.maybeComplete(worldLayer, position))
+		if (this.maybeComplete(worldLayer, tile))
 			this.counter.reset();
 	}
 
-	protected abstract canProgress(worldLayer: WorldLayer, position: Vector): boolean;
+	protected abstract canProgress(worldLayer: WorldLayer, tile: Tile): boolean;
 
-	protected abstract maybeComplete(worldLayer: WorldLayer, position: Vector): boolean;
+	protected abstract maybeComplete(worldLayer: WorldLayer, tile: Tile): boolean;
 }
 
 abstract class EntityTransportAttribute extends EntityTimedAttribute {
@@ -171,25 +194,25 @@ abstract class EntityTransportAttribute extends EntityTimedAttribute {
 		this.containerAttribute = containerAttribute;
 	}
 
-	canProgress(worldLayer: WorldLayer, position: Vector): boolean {
+	canProgress(worldLayer: WorldLayer, tile: Tile): boolean {
 		return this.resourceCounts().some(resourceCount =>
 			this.containerAttribute.hasQuantity(resourceCount));
 	}
 
-	protected maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
+	protected maybeComplete(worldLayer: WorldLayer, tile: Tile): boolean {
 		let resourceCounts = this.resourceCounts().filter(resourceCount =>
 			this.containerAttribute.hasQuantity(resourceCount));
 		return this.rotations().some(rotation =>
-			resourceCounts.some(resourceCount => {
-				let destination = worldLayer.getTile(position.copy.add(Rotation.positionShift(rotation)));
-				let destinationContainerAttribute = destination?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute);
-				if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute?.hasCapacity(resourceCount)) {
-					this.containerAttribute.remove(resourceCount);
-					destinationContainerAttribute.add(resourceCount);
-					return true;
-				}
-				return false;
-			}));
+			getAdjacentDestinations(tile.position, tile.entity.size, rotation)
+				.map(destination => worldLayer.getTile(destination)?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
+				.some(destinationContainerAttribute => resourceCounts.some(resourceCount => {
+					if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount)) {
+						this.containerAttribute.remove(resourceCount);
+						destinationContainerAttribute.add(resourceCount);
+						return true;
+					}
+					return false;
+				})));
 	}
 
 	protected abstract rotations(): Rotation[];
@@ -239,18 +262,19 @@ export class EntitySourceAttribute extends EntityTimedAttribute {
 		this.entityResourcePickerAttribute = entityResourcePickerAttribute;
 	}
 
-	protected canProgress(worldLayer: WorldLayer, position: Vector): boolean {
+	protected canProgress(worldLayer: WorldLayer, tile: Tile): boolean {
 		return true;
 	}
 
-	protected maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
+	protected maybeComplete(worldLayer: WorldLayer, tile: Tile): boolean {
 		let resourceCount = new Resource.Count(this.entityResourcePickerAttribute.resource, 1);
-		util.enumKeys(Rotation).forEach(rotation => {
-			let destination = worldLayer.getTile(position.copy.add(Rotation.positionShift(rotation)));
-			let destinationContainerAttribute = destination?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute);
-			if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute?.hasCapacity(resourceCount))
-				destinationContainerAttribute.add(resourceCount);
-		});
+		util.enumKeys(Rotation).forEach(rotation =>
+			getAdjacentDestinations(tile.position, tile.entity.size, rotation)
+				.map(destination => worldLayer.getTile(destination)?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
+				.forEach(destinationContainerAttribute => {
+					if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount))
+						destinationContainerAttribute.add(resourceCount);
+				}));
 		return true;
 	}
 }
@@ -267,12 +291,12 @@ export class EntityProduceAttribute extends EntityTimedAttribute {
 		this.outputs = outputs;
 	}
 
-	protected canProgress(worldLayer: WorldLayer, position: Vector): boolean {
+	protected canProgress(worldLayer: WorldLayer, tile: Tile): boolean {
 		return this.inputs.every(resourceCount =>
 			this.containerAttribute.hasQuantity(resourceCount));
 	}
 
-	protected maybeComplete(worldLayer: WorldLayer, position: Vector): boolean {
+	protected maybeComplete(worldLayer: WorldLayer, tile: Tile): boolean {
 		if (this.outputs.every(resourceCount =>
 			this.containerAttribute.hasCapacity(resourceCount))) {
 			this.inputs.forEach(resourceCount => this.containerAttribute.remove(resourceCount));

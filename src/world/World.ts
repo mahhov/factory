@@ -98,8 +98,11 @@ export class WorldLayer {
 	}
 
 	tick() {
-		this.grid.forEach((column, x) => column.forEach((entity, y) =>
-			entity.entity.tick(this, new Vector(x, y))));
+		this.grid.forEach((column, x) => column.forEach((tile, y) => {
+			let position = new Vector(x, y);
+			if (tile.position.equals(position))
+				tile.entity.tick(this, tile);
+		}));
 	}
 }
 
