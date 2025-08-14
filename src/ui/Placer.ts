@@ -1,4 +1,4 @@
-import {Container, Graphics} from 'pixi.js';
+import {Container, Graphics, Text} from 'pixi.js';
 import Camera from '../Camera.js';
 import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
@@ -50,6 +50,22 @@ export default class Placer {
 				.rect(0, 0, ...coordinates[1])
 				.stroke({width: 1 / painter.canvasWidth, color: Color.RECT_OUTLINE});
 			container.addChild(rect);
+
+			let textContainer = new Container();
+			[textContainer.x, textContainer.y] = coordinates[0].map(v => v * 1000);
+			painter.textUiContainer.addChild(textContainer);
+
+			let text = new Text({
+				text: i + 1,
+				style: {
+					fontFamily: 'Arial',
+					fontSize: 14,
+					fill: Color.DEFAULT_TEXT,
+				},
+				x: 3,
+				y: 1,
+			});
+			textContainer.addChild(text);
 		});
 
 		this.entityClassRect.addChild(new Graphics()
@@ -166,4 +182,3 @@ export default class Placer {
 // todo:
 //  - only add if world empty or replaceable
 //  - add after build time & cost
-//  - display entity selection shortcuts
