@@ -14,6 +14,7 @@ import {
 	EntityOutContainerAttribute,
 	EntityProduceAttribute,
 	EntityResourceDisplayAttribute,
+	EntityResourceFullSpriteAttribute,
 	EntityResourcePickerAttribute,
 	EntitySourceAttribute,
 	EntityUnfilteredTransportAttribute,
@@ -100,6 +101,8 @@ export class Conveyor extends Entity {
 		this.containerAttribute = new EntityLineContainerAttribute(1, util.enumKeys(Rotation).filter(r => r !== Rotation.opposite(rotation)));
 		this.attributes.push(this.containerAttribute);
 		this.attributes.push(new EntityConveyorTransportAttribute(this.containerAttribute, 10, rotation));
+		this.attributes.push(new EntityResourceFullSpriteAttribute(this.containerAttribute,
+			Conveyor.sprite, resource => Conveyor.spriteFull(resource)));
 	}
 
 	static get sprite() {
@@ -109,27 +112,29 @@ export class Conveyor extends Entity {
 	static spriteFull(resource: Resource) {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'conveyor-full.png', [Resource.color(resource)]);
 	}
-
-	tick(world: World, tile: Tile) {
-		super.tick(world, tile);
-		this.sprite = this.containerAttribute.empty ?
-			Conveyor.sprite :
-			Conveyor.spriteFull(this.containerAttribute.peek.resource);
-	}
 }
 
 export class Distributor extends Entity {
-	constructor() {super();
+	constructor() {
+		super();
 	}
 
 	static get sprite() {
 		return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'distributor.png');
+	}
+
+	static spriteFull(resource: Resource) {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'distributor-full.png', [Resource.color(resource)]);
 	}
 }
 
 export class Junction extends Entity {
 	static get sprite() {
 		return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'junction.png');
+	}
+
+	static spriteFull(resource: Resource) {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'junction-full.png', [Resource.color(resource)]);
 	}
 }
 

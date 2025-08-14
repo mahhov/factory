@@ -1,3 +1,4 @@
+import {Sprite} from 'pixi.js';
 import Color from '../graphics/Color.js';
 import TooltipLine from '../ui/TooltipLine.js';
 import Counter from '../util/Counter.js';
@@ -383,12 +384,28 @@ export class EntityResourceDisplayAttribute extends EntityAttribute {
 		this.resource = resource;
 	}
 
-
 	get tooltip(): TooltipLine[] {
 		return [new TooltipLine(Resource.string(this.resource))];
 	}
 
 	get selectable(): boolean {
 		return true;
+	}
+}
+
+export class EntityResourceFullSpriteAttribute extends EntityAttribute {
+	private readonly containerAttribute: EntityContainerAttribute;
+	private readonly sprite: Sprite;
+	private readonly spriteFull: (resource: Resource) => Sprite;
+
+	constructor(containerAttribute: EntityContainerAttribute, sprite: Sprite, spriteFull: (resource: Resource) => Sprite) {
+		super();
+		this.containerAttribute = containerAttribute;
+		this.sprite = sprite;
+		this.spriteFull = spriteFull;
+	}
+
+	tick(world: World, tile: Tile) {
+		tile.entity.sprite = this.containerAttribute.empty ? this.sprite : this.spriteFull(this.containerAttribute.peek.resource);
 	}
 }

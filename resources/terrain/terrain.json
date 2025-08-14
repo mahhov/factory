@@ -6,35 +6,41 @@
     "conveyor.png": {
       "frame": {"x": 16, "y": 0, "w": 16, "h": 16}
     },
-    "conveyor-full.png": {
+    "distributor.png": {
       "frame": {"x": 32, "y": 0, "w": 16, "h": 16}
     },
-    "distributor.png": {
+    "junction.png": {
       "frame": {"x": 48, "y": 0, "w": 16, "h": 16}
     },
-    "junction.png": {
+    "extractor.png": {
       "frame": {"x": 64, "y": 0, "w": 16, "h": 16}
     },
-    "extractor.png": {
+    "source.png": {
       "frame": {"x": 80, "y": 0, "w": 16, "h": 16}
     },
-    "source.png": {
+    "void.png": {
       "frame": {"x": 96, "y": 0, "w": 16, "h": 16}
     },
-    "void.png": {
+    "factory-2.png": {
       "frame": {"x": 112, "y": 0, "w": 16, "h": 16}
     },
-    "factory-2.png": {
-      "frame": {"x": 128, "y": 0, "w": 16, "h": 16}
+    "conveyor-full.png": {
+      "frame": {"x": 16, "y": 16, "w": 16, "h": 16}
+    },
+    "distributor-full.png": {
+      "frame": {"x": 32, "y": 16, "w": 16, "h": 16}
+    },
+    "junction-full.png": {
+      "frame": {"x": 48, "y": 16, "w": 16, "h": 16}
     },
     "resource-deposit.png": {
-      "frame": {"x": 0, "y": 16, "w": 16, "h": 16}
+      "frame": {"x": 0, "y": 32, "w": 16, "h": 16}
     }
   },
   "meta": {
     "image": "terrain.png",
     "format": "RGBA8888",
-    "size": {"w": 144, "h": 32},
+    "size": {"w": 128, "h": 48},
     "scale": "1"
   }
 }
