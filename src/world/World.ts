@@ -116,6 +116,10 @@ export class World {
 
 		for (let i = 0; i < 100; i++)
 			this.terrain.replaceEntity(new Vector(randInt(0, this.width), randInt(0, this.height)), new ResourceDeposit(Resource.COPPER));
+		for (let i = 0; i < 100; i++)
+			this.terrain.replaceEntity(new Vector(randInt(0, this.width), randInt(0, this.height)), new ResourceDeposit(Resource.LEAD));
+		for (let i = 0; i < 100; i++)
+			this.terrain.replaceEntity(new Vector(randInt(0, this.width), randInt(0, this.height)), new ResourceDeposit(Resource.SAND));
 	}
 
 	get width() {

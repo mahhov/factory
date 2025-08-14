@@ -210,11 +210,8 @@ export class ResourceDeposit extends Entity {
 
 	constructor(resource: Resource) {
 		super();
+		this.sprite = SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [Resource.color(resource)]);
 		this.resource = resource;
-	}
-
-	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [Resource.color(Resource.X)]);
 	}
 }
 
