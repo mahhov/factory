@@ -297,8 +297,11 @@ export class EntityExtractorAttribute extends EntityTimedAttribute {
 	protected maybeComplete(world: World, tile: Tile): boolean {
 		tile.position.iterate(tile.entity.size).forEach(position => {
 			let tile = world.terrain.getTile(position);
-			if (tile?.entity instanceof ResourceDeposit)
-				this.containerAttribute.add(new Resource.Count(tile.entity.resource, 1));
+			if (tile?.entity instanceof ResourceDeposit) {
+				let resourceCount = new Resource.Count(tile.entity.resource, 1);
+				if (this.containerAttribute.hasCapacity(resourceCount))
+					this.containerAttribute.add(resourceCount);
+			}
 		});
 		return true;
 	}
