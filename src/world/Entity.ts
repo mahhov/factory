@@ -109,8 +109,15 @@ export class Conveyor extends Entity {
 }
 
 export class Distributor extends Entity {
+	private readonly containerAttribute: EntityContainerAttribute;
+
 	constructor() {
 		super();
+		this.containerAttribute = new EntityContainerAttribute(1);
+		this.attributes.push(this.containerAttribute);
+		this.attributes.push(new EntityTransportAttribute(this.containerAttribute, 5, true, [], util.enumKeys(Rotation), true));
+		this.attributes.push(new EntityResourceFullSpriteAttribute(this.containerAttribute,
+			Distributor.sprite, resource => Distributor.spriteFull(resource)));
 	}
 
 	static get sprite() {
