@@ -132,6 +132,16 @@ export class Junction extends Entity {
 	}
 }
 
+export class Bridge extends Entity {
+	static get sprite() {
+		return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'bridge.png');
+	}
+
+	static spriteFull(resource: Resource) {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'bridge-full.png', [ResourceUtils.color(resource)]);
+	}
+}
+
 export class Extractor extends Entity {
 	constructor() {
 		super();

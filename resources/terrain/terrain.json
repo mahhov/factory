@@ -12,17 +12,20 @@
     "junction.png": {
       "frame": {"x": 48, "y": 0, "w": 16, "h": 16}
     },
-    "extractor.png": {
+    "bridge.png": {
       "frame": {"x": 64, "y": 0, "w": 16, "h": 16}
     },
-    "source.png": {
+    "extractor.png": {
       "frame": {"x": 80, "y": 0, "w": 16, "h": 16}
     },
-    "void.png": {
+    "source.png": {
       "frame": {"x": 96, "y": 0, "w": 16, "h": 16}
     },
-    "factory-2.png": {
+    "void.png": {
       "frame": {"x": 112, "y": 0, "w": 16, "h": 16}
+    },
+    "factory-2.png": {
+      "frame": {"x": 128, "y": 0, "w": 16, "h": 16}
     },
     "conveyor-full.png": {
       "frame": {"x": 16, "y": 16, "w": 16, "h": 16}
@@ -33,6 +36,9 @@
     "junction-full.png": {
       "frame": {"x": 48, "y": 16, "w": 16, "h": 16}
     },
+    "bridge-full.png": {
+      "frame": {"x": 64, "y": 16, "w": 16, "h": 16}
+    },
     "resource-deposit.png": {
       "frame": {"x": 0, "y": 32, "w": 16, "h": 16}
     }
@@ -40,7 +46,7 @@
   "meta": {
     "image": "terrain.png",
     "format": "RGBA8888",
-    "size": {"w": 128, "h": 48},
+    "size": {"w": 144, "h": 48},
     "scale": "1"
   }
 }
