@@ -189,18 +189,20 @@ export class EntityTransportAttribute extends EntityTimedAttribute {
 		let resourceCounts = this.resourceCounts.filter(resourceCount => this.containerAttribute.hasQuantity(resourceCount));
 		if (this.ordered)
 			resourceCounts = resourceCounts.filter(resourceCount => resourceCount.resource === this.containerAttribute.peek[0]);
-		// todo randomness in output rotation, adjacent destination, and resource chosen
-		return this.outputRotations.some(rotation =>
-			getAdjacentDestinations(tile.position, tile.entity.size, rotation)
+		else
+			resourceCounts = util.shuffle(resourceCounts);
+		return util.shuffle(this.outputRotations).some(rotation =>
+			util.shuffle(getAdjacentDestinations(tile.position, tile.entity.size, rotation))
 				.map(destination => world.live.getTile(destination)?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
-				.some(destinationContainerAttribute => resourceCounts.some(resourceCount => {
-					if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount)) {
-						this.containerAttribute.remove(resourceCount);
-						destinationContainerAttribute.add(resourceCount, rotation);
-						return true;
-					}
-					return false;
-				})));
+				.some(destinationContainerAttribute =>
+					resourceCounts.some(resourceCount => {
+						if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount)) {
+							this.containerAttribute.remove(resourceCount);
+							destinationContainerAttribute.add(resourceCount, rotation);
+							return true;
+						}
+						return false;
+					})));
 	}
 }
 
