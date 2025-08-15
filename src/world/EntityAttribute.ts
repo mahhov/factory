@@ -83,8 +83,8 @@ export class EntityContainerAttribute extends EntityAttribute {
 		return !this.orderedResourceAndRotations.length;
 	}
 
-	get peek(): Resource {
-		return this.orderedResourceAndRotations[this.orderedResourceAndRotations.length - 1][0];
+	get peek(): [Resource, Rotation] {
+		return this.orderedResourceAndRotations[this.orderedResourceAndRotations.length - 1];
 	}
 
 	hasCapacity(resourceCount: ResourceUtils.Count): boolean {
@@ -154,10 +154,10 @@ abstract class EntityTimedAttribute extends EntityAttribute {
 }
 
 export class EntityTransportAttribute extends EntityTimedAttribute {
-	private readonly containerAttribute: EntityContainerAttribute;
+	protected readonly containerAttribute: EntityContainerAttribute;
 	private readonly defaultResourceAllowed: boolean;
 	private readonly resourcesNotDefault: Resource[];
-	private readonly outputRotations: Rotation[];
+	protected outputRotations: Rotation[];
 	private readonly ordered: boolean;
 
 	constructor(containerAttribute: EntityContainerAttribute,
@@ -188,7 +188,7 @@ export class EntityTransportAttribute extends EntityTimedAttribute {
 	protected maybeComplete(world: World, tile: Tile): boolean {
 		let resourceCounts = this.resourceCounts.filter(resourceCount => this.containerAttribute.hasQuantity(resourceCount));
 		if (this.ordered)
-			resourceCounts = resourceCounts.filter(resourceCount => resourceCount.resource === this.containerAttribute.peek);
+			resourceCounts = resourceCounts.filter(resourceCount => resourceCount.resource === this.containerAttribute.peek[0]);
 		// todo randomness in output rotation, adjacent destination, and resource chosen
 		return this.outputRotations.some(rotation =>
 			getAdjacentDestinations(tile.position, tile.entity.size, rotation)
@@ -201,6 +201,20 @@ export class EntityTransportAttribute extends EntityTimedAttribute {
 					}
 					return false;
 				})));
+	}
+}
+
+export class EntityJunctionTransportAttribute extends EntityTransportAttribute {
+	constructor(containerAttribute: EntityContainerAttribute,
+	            counterDuration: number,
+	            defaultResourceAllowed: boolean = true,
+	            resourcesNotDefault: Resource[] = []) {
+		super(containerAttribute, counterDuration, defaultResourceAllowed, resourcesNotDefault, [], true);
+	}
+
+	protected maybeComplete(world: World, tile: Tile): boolean {
+		this.outputRotations = [this.containerAttribute.peek[1]];
+		return super.maybeComplete(world, tile);
 	}
 }
 
@@ -327,6 +341,6 @@ export class EntityResourceFullSpriteAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile) {
-		tile.entity.sprite = this.containerAttribute.empty ? this.sprite : this.spriteFull(this.containerAttribute.peek);
+		tile.entity.sprite = this.containerAttribute.empty ? this.sprite : this.spriteFull(this.containerAttribute.peek[0]);
 	}
 }

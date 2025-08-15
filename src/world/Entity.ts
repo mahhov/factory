@@ -8,6 +8,7 @@ import {
 	EntityAttribute,
 	EntityContainerAttribute,
 	EntityExtractorAttribute,
+	EntityJunctionTransportAttribute,
 	EntityProduceAttribute,
 	EntityResourceDisplayAttribute,
 	EntityResourceFullSpriteAttribute,
@@ -130,6 +131,17 @@ export class Distributor extends Entity {
 }
 
 export class Junction extends Entity {
+	private readonly containerAttribute: EntityContainerAttribute;
+
+	constructor() {
+		super();
+		this.containerAttribute = new EntityContainerAttribute(1);
+		this.attributes.push(this.containerAttribute);
+		this.attributes.push(new EntityJunctionTransportAttribute(this.containerAttribute, 5));
+		this.attributes.push(new EntityResourceFullSpriteAttribute(this.containerAttribute,
+			Junction.sprite, resource => Junction.spriteFull(resource)));
+	}
+
 	static get sprite() {
 		return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'junction.png');
 	}

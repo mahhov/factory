@@ -107,8 +107,10 @@ export default class Placer {
 			this.painter.uiContainer.addChild(this.entityClassRect);
 		}
 
-		if (this.started)
+		if (this.state !== State.EMPTY || this.started)
 			this.place(this.world.queue, false);
+		else
+			this.world.queue.clearAllEntities();
 	}
 
 	rotate(delta: number) {
