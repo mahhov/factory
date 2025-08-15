@@ -6,17 +6,14 @@ import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {
 	EntityAttribute,
-	EntityBoxContainerAttribute,
+	EntityContainerAttribute,
 	EntityExtractorAttribute,
-	EntityLineContainerAttribute,
-	EntityOutContainerAttribute,
 	EntityProduceAttribute,
 	EntityResourceDisplayAttribute,
 	EntityResourceFullSpriteAttribute,
 	EntityResourcePickerAttribute,
 	EntitySourceAttribute,
 	EntityTransportAttribute,
-	EntityVoidContainerAttribute,
 } from './EntityAttribute.js';
 import {Resource, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
@@ -91,11 +88,11 @@ export class Wall extends Entity {
 }
 
 export class Conveyor extends Entity {
-	private readonly containerAttribute: EntityLineContainerAttribute;
+	private readonly containerAttribute: EntityContainerAttribute;
 
 	constructor(rotation: Rotation) {
 		super(rotation);
-		this.containerAttribute = new EntityLineContainerAttribute(1, util.enumKeys(Rotation).filter(r => r !== RotationUtils.opposite(rotation)));
+		this.containerAttribute = new EntityContainerAttribute(1, Infinity, {}, util.enumKeys(Rotation).filter(r => r !== RotationUtils.opposite(rotation)));
 		this.attributes.push(this.containerAttribute);
 		this.attributes.push(new EntityTransportAttribute(this.containerAttribute, 10, true, [], [rotation], true));
 		this.attributes.push(new EntityResourceFullSpriteAttribute(this.containerAttribute,
@@ -138,7 +135,7 @@ export class Junction extends Entity {
 export class Extractor extends Entity {
 	constructor() {
 		super();
-		let containerAttribute = new EntityOutContainerAttribute(10);
+		let containerAttribute = new EntityContainerAttribute(Infinity, 10, {}, []);
 		this.attributes.push(containerAttribute);
 		this.attributes.push(new EntityExtractorAttribute(containerAttribute, 80));
 		this.attributes.push(new EntityTransportAttribute(containerAttribute, 1));
@@ -167,7 +164,7 @@ export class Source extends Entity {
 export class Void extends Entity {
 	constructor() {
 		super();
-		this.attributes.push(new EntityVoidContainerAttribute());
+		this.attributes.push(new EntityContainerAttribute());
 	}
 
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'void.png', [Color.ENTITY_VOID]);}
@@ -176,7 +173,7 @@ export class Void extends Entity {
 export class GlassFactory extends Entity {
 	constructor() {
 		super();
-		let containerAttribute = new EntityBoxContainerAttribute({
+		let containerAttribute = new EntityContainerAttribute(Infinity, 0, {
 			[Resource.IRON]: 10,
 			[Resource.CARBON]: 10,
 			[Resource.STEEL]: 10,
@@ -198,7 +195,7 @@ export class GlassFactory extends Entity {
 export class MegaFactory extends Entity {
 	constructor() {
 		super();
-		let containerAttribute = new EntityBoxContainerAttribute({
+		let containerAttribute = new EntityContainerAttribute(Infinity, 0, {
 			[Resource.A]: 10,
 			[Resource.B]: 10,
 			[Resource.X]: 10,
