@@ -1,8 +1,8 @@
 import Vector from '../util/Vector.js';
 
-enum Rotation { RIGHT, DOWN, LEFT, UP }
+export enum Rotation { RIGHT, DOWN, LEFT, UP }
 
-namespace Rotation {
+export namespace RotationUtils {
 	export let positionShift = (rotation: Rotation): Vector => {
 		switch (rotation) {
 			case Rotation.RIGHT:
@@ -18,5 +18,3 @@ namespace Rotation {
 
 	export let opposite = (rotation: Rotation): Rotation => (rotation + 2) % 4;
 }
-
-export default Rotation;

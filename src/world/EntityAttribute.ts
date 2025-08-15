@@ -5,8 +5,8 @@ import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {ResourceDeposit} from './Entity.js';
-import Resource from './Resource.js';
-import Rotation from './Rotation.js';
+import {Resource, ResourceUtils} from './Resource.js';
+import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, World} from './World.js';
 
 // todo add attributes for:
@@ -37,7 +37,7 @@ let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation)
 			size.y = 1;
 			break;
 	}
-	let shift = Rotation.positionShift(rotation);
+	let shift = RotationUtils.positionShift(rotation);
 	return origin.iterate(size).map(border => border.add(shift));
 };
 
@@ -67,23 +67,23 @@ export abstract class EntityContainerAttribute extends EntityAttribute {
 		return Object.values(this.counts).every(count => !count);
 	}
 
-	get peek(): Resource.Count {
-		return new Resource.Count(this.materials[this.materials.length - 1], 1);
+	get peek(): ResourceUtils.Count {
+		return new ResourceUtils.Count(this.materials[this.materials.length - 1], 1);
 	}
 
-	abstract hasCapacity(resourceCount: Resource.Count): boolean;
+	abstract hasCapacity(resourceCount: ResourceUtils.Count): boolean;
 
-	hasQuantity(resourceCount: Resource.Count): boolean {
+	hasQuantity(resourceCount: ResourceUtils.Count): boolean {
 		return this.counts[resourceCount.resource] >= resourceCount.quantity;
 	}
 
-	add(resourceCount: Resource.Count) {
+	add(resourceCount: ResourceUtils.Count) {
 		this.counts[resourceCount.resource] += resourceCount.quantity;
 		util.arr(resourceCount.quantity).forEach(() =>
 			this.materials.push(resourceCount.resource));
 	}
 
-	remove(resourceCount: Resource.Count) {
+	remove(resourceCount: ResourceUtils.Count) {
 		this.counts[resourceCount.resource] -= resourceCount.quantity;
 		for (let i = 0; i < resourceCount.quantity; i++)
 			this.materials.splice(this.materials.lastIndexOf(resourceCount.resource), 1);
@@ -107,7 +107,7 @@ export class EntityLineContainerAttribute extends EntityContainerAttribute {
 		return Object.values(this.counts).reduce((sum, count) => sum + count);
 	}
 
-	hasCapacity(resourceCount: Resource.Count): boolean {
+	hasCapacity(resourceCount: ResourceUtils.Count): boolean {
 		return this.total < this.totalCapacity;
 	}
 
@@ -119,7 +119,7 @@ export class EntityLineContainerAttribute extends EntityContainerAttribute {
 		return [
 			...(Object.entries(this.counts) as unknown as [Resource, number][])
 				.filter(([resource, count]) => count)
-				.map(([resource, count]) => new TooltipLine(`${Resource.string(resource)} ${count}`)),
+				.map(([resource, count]) => new TooltipLine(`${ResourceUtils.string(resource)} ${count}`)),
 			new TooltipLine(`${this.total} / ${this.totalCapacity}`),
 		];
 	}
@@ -138,7 +138,7 @@ export class EntityBoxContainerAttribute extends EntityContainerAttribute {
 		this.capacity = capacity;
 	}
 
-	hasCapacity(resourceCount: Resource.Count): boolean {
+	hasCapacity(resourceCount: ResourceUtils.Count): boolean {
 		return this.counts[resourceCount.resource] + resourceCount.quantity <= (this.capacity[resourceCount.resource] || 0);
 	}
 
@@ -149,7 +149,7 @@ export class EntityBoxContainerAttribute extends EntityContainerAttribute {
 	get tooltip(): TooltipLine[] {
 		return (Object.entries(this.counts) as unknown as [Resource, number][])
 			.filter(([resource, count]) => count)
-			.map(([resource, count]) => new TooltipLine(`${Resource.string(resource)} ${count} / ${this.capacity[resource]}`));
+			.map(([resource, count]) => new TooltipLine(`${ResourceUtils.string(resource)} ${count} / ${this.capacity[resource]}`));
 	}
 
 	get selectable() {
@@ -170,7 +170,7 @@ export class EntityOutContainerAttribute extends EntityBoxContainerAttribute {
 
 // contains all resources with no capacity limit, accepts all rotations
 export class EntityVoidContainerAttribute extends EntityContainerAttribute {
-	hasCapacity(resourceCount: Resource.Count): boolean {
+	hasCapacity(resourceCount: ResourceUtils.Count): boolean {
 		return true;
 	}
 
@@ -233,7 +233,7 @@ abstract class EntityTransportAttribute extends EntityTimedAttribute {
 
 	protected abstract rotations(): Rotation[];
 
-	protected abstract resourceCounts(): Resource.Count[];
+	protected abstract resourceCounts(): ResourceUtils.Count[];
 }
 
 // transport all resources in 1 direction, in order
@@ -249,16 +249,16 @@ export class EntityConveyorTransportAttribute extends EntityTransportAttribute {
 		return [this.rotation];
 	}
 
-	protected resourceCounts(): Resource.Count[] {
+	protected resourceCounts(): ResourceUtils.Count[] {
 		return this.containerAttribute.empty ? [] : [this.containerAttribute.peek];
 	}
 }
 
 // transport subset of resources in all directions
 export class EntityFilteredTransportAttribute extends EntityTransportAttribute {
-	private readonly outputs: Resource.Count[];
+	private readonly outputs: ResourceUtils.Count[];
 
-	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, outputs: Resource.Count[]) {
+	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, outputs: ResourceUtils.Count[]) {
 		super(containerAttribute, counterDuration);
 		this.outputs = outputs;
 	}
@@ -267,7 +267,7 @@ export class EntityFilteredTransportAttribute extends EntityTransportAttribute {
 		return util.shuffle(util.enumKeys(Rotation));
 	}
 
-	protected resourceCounts(): Resource.Count[] {
+	protected resourceCounts(): ResourceUtils.Count[] {
 		return util.shuffle(this.outputs);
 	}
 }
@@ -278,8 +278,8 @@ export class EntityUnfilteredTransportAttribute extends EntityTransportAttribute
 		return util.shuffle(util.enumKeys(Rotation));
 	}
 
-	protected resourceCounts(): Resource.Count[] {
-		return util.shuffle(util.enumKeys(Resource).map(resource => new Resource.Count(resource, 1)));
+	protected resourceCounts(): ResourceUtils.Count[] {
+		return util.shuffle(util.enumKeys(Resource).map(resource => new ResourceUtils.Count(resource, 1)));
 	}
 }
 
@@ -299,7 +299,7 @@ export class EntityExtractorAttribute extends EntityTimedAttribute {
 		tile.position.iterate(tile.entity.size).forEach(position => {
 			let tile = world.terrain.getTile(position);
 			if (tile?.entity instanceof ResourceDeposit) {
-				let resourceCount = new Resource.Count(tile.entity.resource, 1);
+				let resourceCount = new ResourceUtils.Count(tile.entity.resource, 1);
 				if (this.containerAttribute.hasCapacity(resourceCount))
 					this.containerAttribute.add(resourceCount);
 			}
@@ -321,7 +321,7 @@ export class EntitySourceAttribute extends EntityTimedAttribute {
 	}
 
 	protected maybeComplete(world: World, tile: Tile): boolean {
-		let resourceCount = new Resource.Count(this.entityResourcePickerAttribute.resource, 1);
+		let resourceCount = new ResourceUtils.Count(this.entityResourcePickerAttribute.resource, 1);
 		util.enumKeys(Rotation).forEach(rotation =>
 			getAdjacentDestinations(tile.position, tile.entity.size, rotation)
 				.map(destination => world.live.getTile(destination)?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
@@ -335,10 +335,10 @@ export class EntitySourceAttribute extends EntityTimedAttribute {
 
 export class EntityProduceAttribute extends EntityTimedAttribute {
 	private readonly containerAttribute: EntityContainerAttribute;
-	private readonly inputs: Resource.Count[];
-	private readonly outputs: Resource.Count[];
+	private readonly inputs: ResourceUtils.Count[];
+	private readonly outputs: ResourceUtils.Count[];
 
-	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, inputs: Resource.Count[], outputs: Resource.Count[]) {
+	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, inputs: ResourceUtils.Count[], outputs: ResourceUtils.Count[]) {
 		super(counterDuration);
 		this.containerAttribute = containerAttribute;
 		this.inputs = inputs;
@@ -367,7 +367,7 @@ export class EntityResourcePickerAttribute extends EntityAttribute {
 	get tooltip(): TooltipLine[] {
 		return util.enumKeys(Resource).map(resource => {
 			let color = resource === this.resource ? Color.SELECTED_TEXT : undefined;
-			return new TooltipLine(Resource.string(resource), () => this.resource = resource, undefined, color);
+			return new TooltipLine(ResourceUtils.string(resource), () => this.resource = resource, undefined, color);
 		});
 	}
 
@@ -385,7 +385,7 @@ export class EntityResourceDisplayAttribute extends EntityAttribute {
 	}
 
 	get tooltip(): TooltipLine[] {
-		return [new TooltipLine(Resource.string(this.resource))];
+		return [new TooltipLine(ResourceUtils.string(this.resource))];
 	}
 
 	get selectable(): boolean {

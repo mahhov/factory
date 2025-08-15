@@ -4,7 +4,7 @@ import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import Vector from '../util/Vector.js';
 import {Conveyor, Distributor, Empty, Entity, Extractor, GlassFactory, Junction, MegaFactory, Source, Void, Wall} from '../world/Entity.js';
-import Rotation from '../world/Rotation.js';
+import {Rotation, RotationUtils} from '../world/Rotation.js';
 import {World, WorldLayer} from '../world/World.js';
 import {Input} from './Input.js';
 
@@ -24,7 +24,7 @@ export default class Placer {
 	private readonly entityClassRect = new Container();
 
 	private started = false;
-	private rotation = Entity.Rotation.RIGHT;
+	private rotation = Rotation.RIGHT;
 	private entityClass: typeof Entity = Empty;
 	private startPosition = new Vector();
 	private endPosition = new Vector();
@@ -157,15 +157,15 @@ export default class Placer {
 			.add(new Vector(1));
 		let vertical = Math.abs(iterations.y) > Math.abs(iterations.x);
 		let rotation = vertical ?
-			delta.y > 0 ? Entity.Rotation.DOWN : Entity.Rotation.UP :
-			delta.x > 0 ? Entity.Rotation.RIGHT : Entity.Rotation.LEFT;
+			delta.y > 0 ? Rotation.DOWN : Rotation.UP :
+			delta.x > 0 ? Rotation.RIGHT : Rotation.LEFT;
 		if (updateRotation && (delta.y || delta.x))
 			this.rotation = rotation;
 
 		this.world.queue.clearAllEntities();
 		let position = this.startPosition.copy;
 		let n = vertical ? iterations.y : iterations.x;
-		let iterDelta = Rotation.positionShift(rotation).scale(this.entityClass.size);
+		let iterDelta = RotationUtils.positionShift(rotation).scale(this.entityClass.size);
 		for (let i = 0; i < n; i++) {
 			worldLayer.replaceEntity(position, new this.entityClass(this.rotation));
 			position.add(iterDelta);

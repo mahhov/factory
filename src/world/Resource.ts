@@ -1,12 +1,12 @@
 import {ColorSource} from 'pixi.js';
 import Color from '../graphics/Color.js';
 
-enum Resource {
+export enum Resource {
 	COPPER, IRON, CARBON, STEEL,
 	A, B, X, Y,
 }
 
-namespace Resource {
+export namespace ResourceUtils {
 	export class Count {
 		readonly resource: Resource;
 		readonly quantity: number;
@@ -31,5 +31,3 @@ namespace Resource {
 	};
 
 }
-
-export default Resource;

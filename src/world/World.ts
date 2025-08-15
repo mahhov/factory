@@ -2,7 +2,7 @@ import {Container} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity, ResourceDeposit} from './Entity.js';
-import Resource from './Resource.js';
+import {Resource} from './Resource.js';
 import randInt = util.randInt;
 
 export class Tile {

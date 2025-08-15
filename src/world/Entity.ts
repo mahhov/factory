@@ -20,12 +20,11 @@ import {
 	EntityUnfilteredTransportAttribute,
 	EntityVoidContainerAttribute,
 } from './EntityAttribute.js';
-import Resource from './Resource.js';
-import Rotation from './Rotation.js';
+import {Resource, ResourceUtils} from './Resource.js';
+import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, World} from './World.js';
 
 export class Entity {
-	static readonly Rotation = Rotation;
 	protected readonly rotation: Rotation;
 	protected readonly attributes: EntityAttribute[] = [];
 	readonly container = new Container();
@@ -98,7 +97,7 @@ export class Conveyor extends Entity {
 
 	constructor(rotation: Rotation) {
 		super(rotation);
-		this.containerAttribute = new EntityLineContainerAttribute(1, util.enumKeys(Rotation).filter(r => r !== Rotation.opposite(rotation)));
+		this.containerAttribute = new EntityLineContainerAttribute(1, util.enumKeys(Rotation).filter(r => r !== RotationUtils.opposite(rotation)));
 		this.attributes.push(this.containerAttribute);
 		this.attributes.push(new EntityConveyorTransportAttribute(this.containerAttribute, 10, rotation));
 		this.attributes.push(new EntityResourceFullSpriteAttribute(this.containerAttribute,
@@ -110,7 +109,7 @@ export class Conveyor extends Entity {
 	}
 
 	static spriteFull(resource: Resource) {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'conveyor-full.png', [Resource.color(resource)]);
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'conveyor-full.png', [ResourceUtils.color(resource)]);
 	}
 }
 
@@ -124,7 +123,7 @@ export class Distributor extends Entity {
 	}
 
 	static spriteFull(resource: Resource) {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'distributor-full.png', [Resource.color(resource)]);
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'distributor-full.png', [ResourceUtils.color(resource)]);
 	}
 }
 
@@ -134,7 +133,7 @@ export class Junction extends Entity {
 	}
 
 	static spriteFull(resource: Resource) {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'junction-full.png', [Resource.color(resource)]);
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'junction-full.png', [ResourceUtils.color(resource)]);
 	}
 }
 
@@ -185,16 +184,16 @@ export class GlassFactory extends Entity {
 			[Resource.STEEL]: 10,
 		});
 		this.attributes.push(containerAttribute);
-		let outputs = Resource.Count.fromTuples([[Resource.STEEL, 1]]);
+		let outputs = ResourceUtils.Count.fromTuples([[Resource.STEEL, 1]]);
 		this.attributes.push(new EntityProduceAttribute(containerAttribute, 40,
-			Resource.Count.fromTuples([[Resource.IRON, 1], [Resource.CARBON, 1]]),
+			ResourceUtils.Count.fromTuples([[Resource.IRON, 1], [Resource.CARBON, 1]]),
 			outputs));
 		this.attributes.push(new EntityFilteredTransportAttribute(containerAttribute, 1, outputs));
 	}
 
 	static get sprite() {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[Resource.color(Resource.STEEL), Resource.color(Resource.IRON), Resource.color(Resource.CARBON)]);
+			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.CARBON)]);
 	}
 }
 
@@ -208,9 +207,9 @@ export class MegaFactory extends Entity {
 			[Resource.Y]: 10,
 		});
 		this.attributes.push(containerAttribute);
-		let outputs = Resource.Count.fromTuples([[Resource.X, 2], [Resource.Y, 1]]);
+		let outputs = ResourceUtils.Count.fromTuples([[Resource.X, 2], [Resource.Y, 1]]);
 		this.attributes.push(new EntityProduceAttribute(containerAttribute, 40,
-			Resource.Count.fromTuples([[Resource.A, 2], [Resource.B, 1]]),
+			ResourceUtils.Count.fromTuples([[Resource.A, 2], [Resource.B, 1]]),
 			outputs));
 		this.attributes.push(new EntityFilteredTransportAttribute(containerAttribute, 1, outputs));
 	}
@@ -222,7 +221,7 @@ export class MegaFactory extends Entity {
 
 	static get sprite() {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[Resource.color(Resource.X), Resource.color(Resource.A), Resource.color(Resource.B)]);
+			[ResourceUtils.color(Resource.X), ResourceUtils.color(Resource.A), ResourceUtils.color(Resource.B)]);
 	}
 }
 
@@ -231,7 +230,7 @@ export class ResourceDeposit extends Entity {
 
 	constructor(resource: Resource) {
 		super();
-		this.sprite = SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [Resource.color(resource)]);
+		this.sprite = SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [ResourceUtils.color(resource)]);
 		this.resource = resource;
 		this.attributes.push(new EntityResourceDisplayAttribute(resource));
 	}
