@@ -202,23 +202,43 @@ abstract class EntityTimedAttribute extends EntityAttribute {
 	protected abstract maybeComplete(world: World, tile: Tile): boolean;
 }
 
-abstract class EntityTransportAttribute extends EntityTimedAttribute {
-	protected readonly containerAttribute: EntityContainerAttribute;
+export class EntityTransportAttribute extends EntityTimedAttribute {
+	private readonly containerAttribute: EntityContainerAttribute;
+	private readonly defaultResourceAllowed: boolean;
+	private readonly resourcesNotDefault: Resource[];
+	private readonly outputRotations: Rotation[];
+	private readonly ordered: boolean;
 
-	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number) {
+	constructor(containerAttribute: EntityContainerAttribute,
+	            counterDuration: number,
+	            defaultResourceAllowed: boolean = true,
+	            resourcesNotDefault: Resource[] = [],
+	            outputRotations: Rotation[] = util.enumKeys(Rotation),
+	            ordered: boolean = false) {
 		super(counterDuration);
 		this.containerAttribute = containerAttribute;
+		this.defaultResourceAllowed = defaultResourceAllowed;
+		this.resourcesNotDefault = resourcesNotDefault;
+		this.outputRotations = outputRotations;
+		this.ordered = ordered;
 	}
 
-	canProgress(world: World, tile: Tile): boolean {
-		return this.resourceCounts().some(resourceCount =>
+	private get resourceCounts(): ResourceUtils.Count[] {
+		return util.enumKeys(Resource)
+			.filter(resource => this.resourcesNotDefault.includes(resource) !== this.defaultResourceAllowed)
+			.map(resource => new ResourceUtils.Count(resource, 1));
+	}
+
+	protected canProgress(world: World, tile: Tile): boolean {
+		return this.resourceCounts.some(resourceCount =>
 			this.containerAttribute.hasQuantity(resourceCount));
 	}
 
 	protected maybeComplete(world: World, tile: Tile): boolean {
-		let resourceCounts = this.resourceCounts().filter(resourceCount =>
-			this.containerAttribute.hasQuantity(resourceCount));
-		return this.rotations().some(rotation =>
+		let resourceCounts = this.resourceCounts.filter(resourceCount => this.containerAttribute.hasQuantity(resourceCount));
+		if (this.ordered)
+			resourceCounts = resourceCounts.filter(resourceCount => resourceCount.resource === this.containerAttribute.peek.resource);
+		return this.outputRotations.some(rotation =>
 			getAdjacentDestinations(tile.position, tile.entity.size, rotation)
 				.map(destination => world.live.getTile(destination)?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
 				.some(destinationContainerAttribute => resourceCounts.some(resourceCount => {
@@ -229,57 +249,6 @@ abstract class EntityTransportAttribute extends EntityTimedAttribute {
 					}
 					return false;
 				})));
-	}
-
-	protected abstract rotations(): Rotation[];
-
-	protected abstract resourceCounts(): ResourceUtils.Count[];
-}
-
-// transport all resources in 1 direction, in order
-export class EntityConveyorTransportAttribute extends EntityTransportAttribute {
-	private readonly rotation: Rotation;
-
-	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, rotation: Rotation) {
-		super(containerAttribute, counterDuration);
-		this.rotation = rotation;
-	}
-
-	protected rotations(): Rotation[] {
-		return [this.rotation];
-	}
-
-	protected resourceCounts(): ResourceUtils.Count[] {
-		return this.containerAttribute.empty ? [] : [this.containerAttribute.peek];
-	}
-}
-
-// transport subset of resources in all directions
-export class EntityFilteredTransportAttribute extends EntityTransportAttribute {
-	private readonly outputs: ResourceUtils.Count[];
-
-	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, outputs: ResourceUtils.Count[]) {
-		super(containerAttribute, counterDuration);
-		this.outputs = outputs;
-	}
-
-	protected rotations(): Rotation[] {
-		return util.shuffle(util.enumKeys(Rotation));
-	}
-
-	protected resourceCounts(): ResourceUtils.Count[] {
-		return util.shuffle(this.outputs);
-	}
-}
-
-// transport all resources in all directions
-export class EntityUnfilteredTransportAttribute extends EntityTransportAttribute {
-	protected rotations(): Rotation[] {
-		return util.shuffle(util.enumKeys(Rotation));
-	}
-
-	protected resourceCounts(): ResourceUtils.Count[] {
-		return util.shuffle(util.enumKeys(Resource).map(resource => new ResourceUtils.Count(resource, 1)));
 	}
 }
 
@@ -409,3 +378,9 @@ export class EntityResourceFullSpriteAttribute extends EntityAttribute {
 		tile.entity.sprite = this.containerAttribute.empty ? this.sprite : this.spriteFull(this.containerAttribute.peek.resource);
 	}
 }
+
+// container
+//   max total
+//   default max per unlisted resource
+//   max per resource
+//   accepts from which rotations

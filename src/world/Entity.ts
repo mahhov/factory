@@ -7,9 +7,7 @@ import Vector from '../util/Vector.js';
 import {
 	EntityAttribute,
 	EntityBoxContainerAttribute,
-	EntityConveyorTransportAttribute,
 	EntityExtractorAttribute,
-	EntityFilteredTransportAttribute,
 	EntityLineContainerAttribute,
 	EntityOutContainerAttribute,
 	EntityProduceAttribute,
@@ -17,7 +15,7 @@ import {
 	EntityResourceFullSpriteAttribute,
 	EntityResourcePickerAttribute,
 	EntitySourceAttribute,
-	EntityUnfilteredTransportAttribute,
+	EntityTransportAttribute,
 	EntityVoidContainerAttribute,
 } from './EntityAttribute.js';
 import {Resource, ResourceUtils} from './Resource.js';
@@ -99,7 +97,7 @@ export class Conveyor extends Entity {
 		super(rotation);
 		this.containerAttribute = new EntityLineContainerAttribute(1, util.enumKeys(Rotation).filter(r => r !== RotationUtils.opposite(rotation)));
 		this.attributes.push(this.containerAttribute);
-		this.attributes.push(new EntityConveyorTransportAttribute(this.containerAttribute, 10, rotation));
+		this.attributes.push(new EntityTransportAttribute(this.containerAttribute, 10, true, [], [rotation], true));
 		this.attributes.push(new EntityResourceFullSpriteAttribute(this.containerAttribute,
 			Conveyor.sprite, resource => Conveyor.spriteFull(resource)));
 	}
@@ -143,7 +141,7 @@ export class Extractor extends Entity {
 		let containerAttribute = new EntityOutContainerAttribute(10);
 		this.attributes.push(containerAttribute);
 		this.attributes.push(new EntityExtractorAttribute(containerAttribute, 80));
-		this.attributes.push(new EntityUnfilteredTransportAttribute(containerAttribute, 1));
+		this.attributes.push(new EntityTransportAttribute(containerAttribute, 1));
 	}
 
 	static get size() {
@@ -188,7 +186,7 @@ export class GlassFactory extends Entity {
 		this.attributes.push(new EntityProduceAttribute(containerAttribute, 40,
 			ResourceUtils.Count.fromTuples([[Resource.IRON, 1], [Resource.CARBON, 1]]),
 			outputs));
-		this.attributes.push(new EntityFilteredTransportAttribute(containerAttribute, 1, outputs));
+		this.attributes.push(new EntityTransportAttribute(containerAttribute, 1, false, outputs.map(resourceCount => resourceCount.resource)));
 	}
 
 	static get sprite() {
@@ -211,7 +209,7 @@ export class MegaFactory extends Entity {
 		this.attributes.push(new EntityProduceAttribute(containerAttribute, 40,
 			ResourceUtils.Count.fromTuples([[Resource.A, 2], [Resource.B, 1]]),
 			outputs));
-		this.attributes.push(new EntityFilteredTransportAttribute(containerAttribute, 1, outputs));
+		this.attributes.push(new EntityTransportAttribute(containerAttribute, 1, false, outputs.map(resourceCount => resourceCount.resource)));
 	}
 
 	static get size() {

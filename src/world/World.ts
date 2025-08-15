@@ -111,6 +111,7 @@ export class World {
 		this.live = new WorldLayer(false, WorldLayer.emptyGrid(size));
 		container.addChild(this.live.container);
 		this.queue = new WorldLayer(true, WorldLayer.emptyGrid(size));
+		this.queue.clearAllEntities();
 		container.addChild(this.queue.container);
 		this.queue.container.alpha = .5;
 
