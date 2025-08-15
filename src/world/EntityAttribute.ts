@@ -59,8 +59,8 @@ export class EntityContainerAttribute extends EntityAttribute {
 	private readonly resourceCapacity: Partial<Record<Resource, number>>;
 	private readonly inputRotations: Rotation[];
 
-	protected readonly quantities: Record<Resource, number>;
-	protected readonly orderedResources: Resource[] = [];
+	private readonly quantities: Record<Resource, number>;
+	private readonly orderedResourceAndRotations: [Resource, Rotation][] = [];
 
 	constructor(totalCapacity: number = Infinity,
 	            defaultResourceCapacity: number = Infinity,
@@ -80,15 +80,15 @@ export class EntityContainerAttribute extends EntityAttribute {
 	}
 
 	get empty() {
-		return !this.orderedResources.length;
+		return !this.orderedResourceAndRotations.length;
 	}
 
 	get peek(): Resource {
-		return this.orderedResources[this.orderedResources.length - 1];
+		return this.orderedResourceAndRotations[this.orderedResourceAndRotations.length - 1][0];
 	}
 
 	hasCapacity(resourceCount: ResourceUtils.Count): boolean {
-		return this.orderedResources.length < this.totalCapacity &&
+		return this.orderedResourceAndRotations.length < this.totalCapacity &&
 			this.quantities[resourceCount.resource] + resourceCount.quantity <= this.getResourceCapacity(resourceCount.resource);
 	}
 
@@ -96,16 +96,16 @@ export class EntityContainerAttribute extends EntityAttribute {
 		return this.quantities[resourceCount.resource] >= resourceCount.quantity;
 	}
 
-	add(resourceCount: ResourceUtils.Count) {
+	add(resourceCount: ResourceUtils.Count, rotation: Rotation = Rotation.RIGHT) {
 		this.quantities[resourceCount.resource] += resourceCount.quantity;
 		util.arr(resourceCount.quantity).forEach(() =>
-			this.orderedResources.push(resourceCount.resource));
+			this.orderedResourceAndRotations.push([resourceCount.resource, rotation]));
 	}
 
 	remove(resourceCount: ResourceUtils.Count) {
 		this.quantities[resourceCount.resource] -= resourceCount.quantity;
 		for (let i = 0; i < resourceCount.quantity; i++)
-			this.orderedResources.splice(this.orderedResources.lastIndexOf(resourceCount.resource), 1);
+			this.orderedResourceAndRotations.splice(this.orderedResourceAndRotations.findLastIndex(resourceAndRotation => resourceAndRotation[0] === resourceCount.resource), 1);
 	}
 
 	acceptsRotation(rotation: Rotation): boolean {
@@ -120,8 +120,8 @@ export class EntityContainerAttribute extends EntityAttribute {
 				let capacity = this.getResourceCapacity(resource);
 				return new TooltipLine(capacity !== Infinity ? `${prefix} / ${capacity}` : `${prefix}`);
 			});
-		if (this.totalCapacity !== Infinity && this.orderedResources.length)
-			tooltipLines.push(new TooltipLine(`${this.orderedResources.length} / ${this.totalCapacity}`));
+		if (this.totalCapacity !== Infinity && this.orderedResourceAndRotations.length)
+			tooltipLines.push(new TooltipLine(`${this.orderedResourceAndRotations.length} / ${this.totalCapacity}`));
 		return tooltipLines;
 	}
 
@@ -189,13 +189,14 @@ export class EntityTransportAttribute extends EntityTimedAttribute {
 		let resourceCounts = this.resourceCounts.filter(resourceCount => this.containerAttribute.hasQuantity(resourceCount));
 		if (this.ordered)
 			resourceCounts = resourceCounts.filter(resourceCount => resourceCount.resource === this.containerAttribute.peek);
+		// todo randomness in output rotation, adjacent destination, and resource chosen
 		return this.outputRotations.some(rotation =>
 			getAdjacentDestinations(tile.position, tile.entity.size, rotation)
 				.map(destination => world.live.getTile(destination)?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
 				.some(destinationContainerAttribute => resourceCounts.some(resourceCount => {
 					if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount)) {
 						this.containerAttribute.remove(resourceCount);
-						destinationContainerAttribute.add(resourceCount);
+						destinationContainerAttribute.add(resourceCount, rotation);
 						return true;
 					}
 					return false;
