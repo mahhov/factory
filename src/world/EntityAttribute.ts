@@ -4,7 +4,7 @@ import TooltipLine from '../ui/TooltipLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {ResourceDeposit} from './Entity.js';
+import {Entity, ResourceDeposit} from './Entity.js';
 import {Resource, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, World} from './World.js';
@@ -42,7 +42,7 @@ let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation)
 };
 
 export abstract class EntityAttribute {
-	tick(world: World, tile: Tile) {}
+	tick(world: World, tile: Tile<Entity>) {}
 
 	get tooltip(): TooltipLine[] {
 		return [];
@@ -138,7 +138,7 @@ abstract class EntityTimedAttribute extends EntityAttribute {
 		this.counter = new Counter(counterDuration);
 	}
 
-	tick(world: World, tile: Tile) {
+	tick(world: World, tile: Tile<Entity>) {
 		super.tick(world, tile);
 		if (!this.canProgress(world, tile))
 			return;
@@ -148,9 +148,9 @@ abstract class EntityTimedAttribute extends EntityAttribute {
 			this.counter.reset();
 	}
 
-	protected abstract canProgress(world: World, tile: Tile): boolean;
+	protected abstract canProgress(world: World, tile: Tile<Entity>): boolean;
 
-	protected abstract maybeComplete(world: World, tile: Tile): boolean;
+	protected abstract maybeComplete(world: World, tile: Tile<Entity>): boolean;
 }
 
 export class EntityTransportAttribute extends EntityTimedAttribute {
@@ -180,20 +180,20 @@ export class EntityTransportAttribute extends EntityTimedAttribute {
 			.map(resource => new ResourceUtils.Count(resource, 1));
 	}
 
-	protected canProgress(world: World, tile: Tile): boolean {
+	protected canProgress(world: World, tile: Tile<Entity>): boolean {
 		return this.resourceCounts.some(resourceCount =>
 			this.containerAttribute.hasQuantity(resourceCount));
 	}
 
-	protected maybeComplete(world: World, tile: Tile): boolean {
+	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
 		let resourceCounts = this.resourceCounts.filter(resourceCount => this.containerAttribute.hasQuantity(resourceCount));
 		if (this.ordered)
 			resourceCounts = resourceCounts.filter(resourceCount => resourceCount.resource === this.containerAttribute.peek[0]);
 		else
 			resourceCounts = util.shuffle(resourceCounts);
 		return util.shuffle(this.outputRotations).some(rotation =>
-			util.shuffle(getAdjacentDestinations(tile.position, tile.entity.size, rotation))
-				.map(destination => world.live.getTile(destination)?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
+			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
+				.map(destination => world.live.getTile(destination)?.tileable.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
 				.some(destinationContainerAttribute =>
 					resourceCounts.some(resourceCount => {
 						if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount)) {
@@ -214,7 +214,7 @@ export class EntityJunctionTransportAttribute extends EntityTransportAttribute {
 		super(containerAttribute, counterDuration, defaultResourceAllowed, resourcesNotDefault, [], true);
 	}
 
-	protected maybeComplete(world: World, tile: Tile): boolean {
+	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
 		this.outputRotations = [this.containerAttribute.peek[1]];
 		return super.maybeComplete(world, tile);
 	}
@@ -228,15 +228,15 @@ export class EntityExtractorAttribute extends EntityTimedAttribute {
 		this.containerAttribute = containerAttribute;
 	}
 
-	protected canProgress(world: World, tile: Tile): boolean {
+	protected canProgress(world: World, tile: Tile<Entity>): boolean {
 		return true;
 	}
 
-	protected maybeComplete(world: World, tile: Tile): boolean {
-		tile.position.iterate(tile.entity.size).forEach(position => {
+	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
+		tile.position.iterate(tile.tileable.size).forEach(position => {
 			let tile = world.terrain.getTile(position);
-			if (tile?.entity instanceof ResourceDeposit) {
-				let resourceCount = new ResourceUtils.Count(tile.entity.resource, 1);
+			if (tile?.tileable instanceof ResourceDeposit) {
+				let resourceCount = new ResourceUtils.Count(tile.tileable.resource, 1);
 				if (this.containerAttribute.hasCapacity(resourceCount))
 					this.containerAttribute.add(resourceCount);
 			}
@@ -253,15 +253,15 @@ export class EntitySourceAttribute extends EntityTimedAttribute {
 		this.entityResourcePickerAttribute = entityResourcePickerAttribute;
 	}
 
-	protected canProgress(world: World, tile: Tile): boolean {
+	protected canProgress(world: World, tile: Tile<Entity>): boolean {
 		return true;
 	}
 
-	protected maybeComplete(world: World, tile: Tile): boolean {
+	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
 		let resourceCount = new ResourceUtils.Count(this.entityResourcePickerAttribute.resource, 1);
 		util.enumKeys(Rotation).forEach(rotation =>
-			getAdjacentDestinations(tile.position, tile.entity.size, rotation)
-				.map(destination => world.live.getTile(destination)?.entity.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
+			getAdjacentDestinations(tile.position, tile.tileable.size, rotation)
+				.map(destination => world.live.getTile(destination)?.tileable.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
 				.forEach(destinationContainerAttribute => {
 					if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount))
 						destinationContainerAttribute.add(resourceCount);
@@ -282,12 +282,12 @@ export class EntityProduceAttribute extends EntityTimedAttribute {
 		this.outputs = outputs;
 	}
 
-	protected canProgress(world: World, tile: Tile): boolean {
+	protected canProgress(world: World, tile: Tile<Entity>): boolean {
 		return this.inputs.every(resourceCount =>
 			this.containerAttribute.hasQuantity(resourceCount));
 	}
 
-	protected maybeComplete(world: World, tile: Tile): boolean {
+	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
 		if (this.outputs.every(resourceCount =>
 			this.containerAttribute.hasCapacity(resourceCount))) {
 			this.inputs.forEach(resourceCount => this.containerAttribute.remove(resourceCount));
@@ -342,7 +342,7 @@ export class EntityResourceFullSpriteAttribute extends EntityAttribute {
 		this.spriteFull = spriteFull;
 	}
 
-	tick(world: World, tile: Tile) {
-		tile.entity.sprite = this.containerAttribute.empty ? this.sprite : this.spriteFull(this.containerAttribute.peek[0]);
+	tick(world: World, tile: Tile<Entity>) {
+		tile.tileable.sprite = this.containerAttribute.empty ? this.sprite : this.spriteFull(this.containerAttribute.peek[0]);
 	}
 }

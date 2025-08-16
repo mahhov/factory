@@ -4,6 +4,7 @@ import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
+import {Entity} from '../world/Entity.js';
 import {Tile, World} from '../world/World.js';
 import {Input} from './Input.js';
 import TooltipLine from './TooltipLine.js';
@@ -11,10 +12,10 @@ import uiUtil from './uiUtil.js';
 import mouseInContainer = uiUtil.mouseInContainer;
 
 class Selection {
-	readonly tile: Tile;
+	readonly tile: Tile<Entity>;
 	selected = false;
 
-	constructor(tile: Tile) {
+	constructor(tile: Tile<Entity>) {
 		this.tile = tile;
 	}
 }
@@ -46,10 +47,10 @@ export default class Tooltip {
 		let worldPosition = this.camera.canvasToWorld(canvasPosition.copy)
 			.scale(this.world.size).floor();
 		let tile = this.world.live.getTile(worldPosition);
-		if (tile?.entity.selectable)
+		if (tile?.tileable.selectable)
 			return new Selection(tile);
 		tile = this.world.terrain.getTile(worldPosition);
-		if (tile?.entity.selectable)
+		if (tile?.tileable.selectable)
 			return new Selection(tile);
 		return null;
 	}
@@ -81,7 +82,7 @@ export default class Tooltip {
 		}
 
 		let y = 0;
-		util.replace<TooltipLine, Text>(this.textContainer.children as Text[], this.selection.tile.entity.tooltip,
+		util.replace<TooltipLine, Text>(this.textContainer.children as Text[], this.selection.tile.tileable.tooltip,
 			(i: number, tooltipLines: TooltipLine[]) => {
 				let text = new Text({eventMode: 'static'});
 				this.textContainer.addChild(text);
@@ -101,7 +102,7 @@ export default class Tooltip {
 				this.textContainer.removeChildAt(this.textContainer.children.length - 1));
 
 		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.copy.scale(this.world.size.invert()));
-		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.copy.add(this.selection.tile.entity.size).scale(this.world.size.invert()));
+		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.copy.add(this.selection.tile.tileable.size).scale(this.world.size.invert()));
 		let bottomRightShift = bottomRight.copy.add(new Vector(3 / 1000));
 		let size = bottomRight.copy.subtract(topLeft);
 

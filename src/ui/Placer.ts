@@ -147,10 +147,10 @@ export default class Placer {
 
 	pick() {
 		let tile = this.world.live.getTile(this.position);
-		this.setEntity(tile ? tile.entity.constructor as typeof Entity : Empty);
+		this.setEntity(tile ? tile.tileable.constructor as typeof Entity : Empty);
 	}
 
-	private place(worldLayer: WorldLayer, updateRotation: boolean) {
+	private place(worldLayer: WorldLayer<Entity>, updateRotation: boolean) {
 		let delta = this.endPosition.copy.subtract(this.startPosition);
 		let iterations = delta
 			.copy
@@ -170,7 +170,7 @@ export default class Placer {
 		let n = vertical ? iterations.y : iterations.x;
 		let iterDelta = RotationUtils.positionShift(rotation).scale(this.entityClass.size);
 		for (let i = 0; i < n; i++) {
-			worldLayer.replaceEntity(position, new this.entityClass(this.rotation));
+			worldLayer.replaceTileable(position, new this.entityClass(this.rotation));
 			position.add(iterDelta);
 		}
 	}

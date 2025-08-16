@@ -18,9 +18,9 @@ import {
 } from './EntityAttribute.js';
 import {Resource, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
-import {Tile, World} from './World.js';
+import {Tile, Tileable, World} from './World.js';
 
-export class Entity {
+export class Entity implements Tileable {
 	protected readonly rotation: Rotation;
 	protected readonly attributes: EntityAttribute[] = [];
 	readonly container = new Container();
@@ -59,7 +59,7 @@ export class Entity {
 		return this.attributes.find(attribute => attribute instanceof attributeClass) as T;
 	}
 
-	tick(world: World, tile: Tile) {
+	tick(world: World, tile: Tile<Entity>) {
 		this.attributes.forEach(attribute => attribute.tick(world, tile));
 	}
 
