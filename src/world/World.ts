@@ -1,9 +1,8 @@
 import {Container} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Empty, Entity, ResourceDeposit} from './Entity.js';
+import {Empty, Entity, Mob, ResourceDeposit} from './Entity.js';
 import {Resource} from './Resource.js';
-import randInt = util.randInt;
 
 export interface Tileable {
 	container: Container;
@@ -22,13 +21,41 @@ export class Tile<T extends Tileable> {
 	}
 }
 
-export class WorldLayer<T extends Tileable> {
+class WorldLayer {
+	readonly size: Vector;
+	readonly container = new Container();
+
+	constructor(size: Vector) {
+		this.size = size;
+	}
+
+	get width() {
+		return this.size.x;
+	}
+
+	get height() {
+		return this.size.y;
+	}
+
+	protected addContainer(container: Container, position: Vector, size: Vector) {
+		let sizeInv = this.size.copy.invert();
+		position = position.copy.scale(sizeInv);
+		container.x = position.x;
+		container.y = position.y;
+		size = sizeInv.copy.scale(size);
+		container.width = size.x;
+		container.height = size.y;
+		this.container.addChild(container);
+	}
+}
+
+export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 	private readonly defaultTileableCtr: { new(): T };
 	private readonly showDefaultTileable: boolean;
 	grid: Tile<T>[][] = [];
-	readonly container = new Container();
 
 	constructor(defaultTileableCtr: { new(): T }, showDefaultTileable: boolean, size: Vector) {
+		super(size);
 		this.defaultTileableCtr = defaultTileableCtr;
 		this.showDefaultTileable = showDefaultTileable;
 		this.clearAllEntities(size);
@@ -36,18 +63,6 @@ export class WorldLayer<T extends Tileable> {
 
 	defaultGrid(size: Vector): Tile<T>[][] {
 		return util.arr(size.x).map(_ => util.arr(size.y).map(_ => new Tile(new this.defaultTileableCtr())));
-	}
-
-	get width() {
-		return this.grid.length;
-	}
-
-	get height() {
-		return this.grid[0].length;
-	}
-
-	get size() {
-		return new Vector(this.width, this.height);
 	}
 
 	replaceTileable(position: Vector, tileable: T) {
@@ -80,18 +95,11 @@ export class WorldLayer<T extends Tileable> {
 
 		if (!this.showDefaultTileable && tileable instanceof this.defaultTileableCtr) return;
 
-		let sizeInv = this.size.invert();
-		position = position.copy.scale(sizeInv);
-		tileable.container.x = position.x;
-		tileable.container.y = position.y;
-		let size = sizeInv.copy.scale(tileable.size);
-		tileable.container.width = size.x;
-		tileable.container.height = size.y;
-		this.container.addChild(tileable.container);
+		this.addContainer(tileable.container, position, tileable.size);
 	}
 
 	private inBounds(position: Vector, size: Vector) {
-		return position.boundBy(new Vector(), this.size.subtract(size).add(new Vector(1)));
+		return position.boundBy(new Vector(), this.size.copy.subtract(size).add(new Vector(1)));
 	}
 
 	getTile(position: Vector): Tile<T> | null {
@@ -107,26 +115,51 @@ export class WorldLayer<T extends Tileable> {
 	}
 }
 
+export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
+	readonly tiles: Tile<T>[] = [];
+	readonly container = new Container();
+
+	// constructor(size: Vector) {
+	// 	super(size);
+	// }
+
+	addTileable(position: Vector, tileable: T) {
+		let tile = new Tile(tileable);
+		tile.position = position;
+		this.tiles.push(tile);
+		this.addContainer(tileable.container, position, tileable.size);
+	}
+}
+
 export class World {
-	terrain: WorldLayer<Entity>;
-	live: WorldLayer<Entity>;
-	queue: WorldLayer<Entity>;
+	terrain: GridWorldLayer<Entity>;
+	live: GridWorldLayer<Entity>;
+	queue: GridWorldLayer<Entity>;
+	mobLayer: FreeWorldLayer<Entity>;
 
 	constructor(size: Vector, container: Container) {
-		this.terrain = new WorldLayer(Empty, false, size);
+		this.terrain = new GridWorldLayer(Empty, false, size);
 		container.addChild(this.terrain.container);
-		this.live = new WorldLayer(Empty, false, size);
+		this.live = new GridWorldLayer(Empty, false, size);
 		container.addChild(this.live.container);
-		this.queue = new WorldLayer(Empty, true, size);
+		this.queue = new GridWorldLayer(Empty, true, size);
 		container.addChild(this.queue.container);
 		this.queue.container.alpha = .5;
+		this.mobLayer = new FreeWorldLayer<Entity>(size);
+		container.addChild(this.mobLayer.container);
 
 		for (let i = 0; i < 100; i++)
-			this.terrain.replaceTileable(new Vector(randInt(0, this.width), randInt(0, this.height)), new ResourceDeposit(Resource.COPPER));
+			this.terrain.replaceTileable(this.randPosition, new ResourceDeposit(Resource.COPPER));
 		for (let i = 0; i < 100; i++)
-			this.terrain.replaceTileable(new Vector(randInt(0, this.width), randInt(0, this.height)), new ResourceDeposit(Resource.IRON));
+			this.terrain.replaceTileable(this.randPosition, new ResourceDeposit(Resource.IRON));
 		for (let i = 0; i < 100; i++)
-			this.terrain.replaceTileable(new Vector(randInt(0, this.width), randInt(0, this.height)), new ResourceDeposit(Resource.CARBON));
+			this.terrain.replaceTileable(this.randPosition, new ResourceDeposit(Resource.CARBON));
+		for (let i = 0; i < 100; i++) {
+			let position = this.randPosition;
+			this.mobLayer.addTileable(position, new Mob(position));
+		}
+		let position = new Vector();
+		this.mobLayer.addTileable(position, new Mob(position));
 	}
 
 	get width() {
@@ -139,6 +172,10 @@ export class World {
 
 	get size() {
 		return this.live.size;
+	}
+
+	get randPosition() {
+		return new Vector(util.randInt(0, this.width), util.randInt(0, this.height));
 	}
 
 	tick() {

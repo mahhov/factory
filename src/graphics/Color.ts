@@ -21,6 +21,8 @@ enum Color {
 	RESOURCE_X = '#a44db8',
 	RESOURCE_Y = '#b84d66',
 
+	MOB_YELLOW = '#ffff00',
+
 	SPRITE_REPLACEMENT_1 = '#ff0000',
 	SPRITE_REPLACEMENT_2 = '#00ff00',
 	SPRITE_REPLACEMENT_3 = '#0000ff',

@@ -3,7 +3,7 @@ namespace util {
 	export let shuffle = <T>(array: T[]): T[] => {
 		array = [...array];
 		for (let i = 0; i < array.length; i++) {
-			let r = randInt(i, array.length - 1);
+			let r = randInt(i, array.length);
 			[array[i], array[r]] = [array[r], array[i]];
 		}
 		return array;
@@ -13,7 +13,7 @@ namespace util {
 		Math.min(Math.max(v, min), max);
 
 	export let rand = (n: number) => Math.random() * n;
-	export let randInt = (min: number, max: number) => Math.floor(rand(max - min + 1)) + min;
+	export let randInt = (minInclusive: number, maxExclusive: number) => Math.floor(rand(maxExclusive - minInclusive)) + minInclusive;
 	export let randPick = <T>(valueWeightPairs: [T, number][]) => {
 		let sum = valueWeightPairs.reduce((sum: number, pair: [T, number]) => sum + pair[1], 0);
 		let r = rand(sum);

@@ -206,6 +206,7 @@ export class EntityTransportAttribute extends EntityTimedAttribute {
 	}
 }
 
+// todo replace with 4 EntityTransportAttribute
 export class EntityJunctionTransportAttribute extends EntityTransportAttribute {
 	constructor(containerAttribute: EntityContainerAttribute,
 	            counterDuration: number,
@@ -346,3 +347,22 @@ export class EntityResourceFullSpriteAttribute extends EntityAttribute {
 		tile.tileable.sprite = this.containerAttribute.empty ? this.sprite : this.spriteFull(this.containerAttribute.peek[0]);
 	}
 }
+
+// export class EntityMoveRightAttribute extends EntityTimedAttribute {
+// 	position: Vector;
+//
+// 	constructor(counterDuration: number, position: Vector) {
+// 		super(counterDuration);
+// 		this.position = position;
+// 	}
+//
+// 	protected canProgress(world: World, tile: Tile<Entity>): boolean {
+// 		return true;
+// 	}
+//
+// 	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
+// 		this.position.add(new Vector(.1, 0));
+// 		tile.tileable.container.position = world.mobLayer.containerPosition(this.position);
+// 		return true;
+// 	}
+// }

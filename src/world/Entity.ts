@@ -260,6 +260,17 @@ export class ResourceDeposit extends Entity {
 	}
 }
 
+export class Mob extends Entity {
+	constructor(position: Vector) {
+		super();
+		// this.attributes.push(new EntityMoveRightAttribute(10, position));
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'circle.png', [Color.MOB_YELLOW]);
+	}
+}
+
 // class AnimatedConveyor extends Entity {
 // 	constructor(rotation: Rotation) {
 // 		super(AnimatedConveyor.sprite, rotation, 10);

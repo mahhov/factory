@@ -27,6 +27,7 @@
     "factory-2.png": {
       "frame": {"x": 128, "y": 0, "w": 16, "h": 16}
     },
+
     "conveyor-full.png": {
       "frame": {"x": 16, "y": 16, "w": 16, "h": 16}
     },
@@ -39,14 +40,19 @@
     "bridge-full.png": {
       "frame": {"x": 64, "y": 16, "w": 16, "h": 16}
     },
+
     "resource-deposit.png": {
       "frame": {"x": 0, "y": 32, "w": 16, "h": 16}
+    },
+
+    "circle.png": {
+      "frame": {"x": 0, "y": 48, "w": 16, "h": 16}
     }
   },
   "meta": {
     "image": "terrain.png",
     "format": "RGBA8888",
-    "size": {"w": 144, "h": 48},
+    "size": {"w": 144, "h": 64},
     "scale": "1"
   }
 }

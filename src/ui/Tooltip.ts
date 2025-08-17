@@ -101,8 +101,8 @@ export default class Tooltip {
 			() =>
 				this.textContainer.removeChildAt(this.textContainer.children.length - 1));
 
-		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.copy.scale(this.world.size.invert()));
-		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.copy.add(this.selection.tile.tileable.size).scale(this.world.size.invert()));
+		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.copy.scale(this.world.size.copy.invert()));
+		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.copy.add(this.selection.tile.tileable.size).scale(this.world.size.copy.invert()));
 		let bottomRightShift = bottomRight.copy.add(new Vector(3 / 1000));
 		let size = bottomRight.copy.subtract(topLeft);
 

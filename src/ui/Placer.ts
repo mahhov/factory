@@ -5,7 +5,7 @@ import Painter from '../graphics/Painter.js';
 import Vector from '../util/Vector.js';
 import {Conveyor, Distributor, Empty, Entity, Extractor, GlassFactory, Junction, MegaFactory, Source, Void, Wall} from '../world/Entity.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
-import {World, WorldLayer} from '../world/World.js';
+import {World, GridWorldLayer} from '../world/World.js';
 import {Input} from './Input.js';
 
 enum State {
@@ -150,7 +150,7 @@ export default class Placer {
 		this.setEntity(tile ? tile.tileable.constructor as typeof Entity : Empty);
 	}
 
-	private place(worldLayer: WorldLayer<Entity>, updateRotation: boolean) {
+	private place(worldLayer: GridWorldLayer<Entity>, updateRotation: boolean) {
 		let delta = this.endPosition.copy.subtract(this.startPosition);
 		let iterations = delta
 			.copy
