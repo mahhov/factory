@@ -2,6 +2,7 @@ import {Container} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity, Mob, ResourceDeposit} from './Entity.js';
+import {MobLogic} from './MobLogic.js';
 import {Resource} from './Resource.js';
 
 export interface Tileable {
@@ -141,6 +142,7 @@ export class World {
 	live: GridWorldLayer<Entity>;
 	queue: GridWorldLayer<Entity>;
 	mobLayer: FreeWorldLayer<Entity>;
+	mobLogic = new MobLogic();
 
 	constructor(size: Vector, container: Container) {
 		this.terrain = new GridWorldLayer(Empty, false, size);
@@ -182,6 +184,7 @@ export class World {
 	}
 
 	tick() {
+		this.mobLogic.tick(this);
 		this.live.grid.forEach((column, x) => column.forEach((tile, y) => {
 			let position = new Vector(x, y);
 			if (tile.position.equals(position))

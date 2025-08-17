@@ -8,7 +8,8 @@ import {
 	EntityAttribute,
 	EntityContainerAttribute,
 	EntityExtractorAttribute,
-	EntityJunctionTransportAttribute, EntityMoveRightAttribute,
+	EntityJunctionTransportAttribute,
+	EntityMobChaseTargetAttribute,
 	EntityProduceAttribute,
 	EntityResourceDisplayAttribute,
 	EntityResourceFullSpriteAttribute,
@@ -55,7 +56,7 @@ export class Entity implements Tileable {
 		return (this.constructor as typeof Entity).size;
 	}
 
-	getAttribute<T extends EntityAttribute>(attributeClass: typeof EntityAttribute): T | undefined {
+	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | undefined {
 		return this.attributes.find(attribute => attribute instanceof attributeClass) as T;
 	}
 
@@ -263,7 +264,7 @@ export class ResourceDeposit extends Entity {
 export class Mob extends Entity {
 	constructor(position: Vector) {
 		super();
-		this.attributes.push(new EntityMoveRightAttribute(10, position));
+		this.attributes.push(new EntityMobChaseTargetAttribute(10, position));
 	}
 
 	static get sprite() {

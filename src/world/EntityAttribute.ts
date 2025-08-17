@@ -348,8 +348,9 @@ export class EntityResourceFullSpriteAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityMoveRightAttribute extends EntityTimedAttribute {
+export class EntityMobChaseTargetAttribute extends EntityTimedAttribute {
 	position: Vector;
+	target: Vector = new Vector();
 
 	constructor(counterDuration: number, position: Vector) {
 		super(counterDuration);
@@ -361,7 +362,8 @@ export class EntityMoveRightAttribute extends EntityTimedAttribute {
 	}
 
 	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
-		this.position.add(new Vector(.1, 0));
+		let delta = this.target.copy.subtract(this.position).setMagnitude2(.1 ** 2);
+		this.position.add(delta);
 		world.mobLayer.updateTile(this.position, tile);
 		return true;
 	}

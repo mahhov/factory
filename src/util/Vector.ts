@@ -46,6 +46,12 @@ export default class Vector {
 
 	// self-mutating
 
+	setMagnitude2(magnitude2: number) {
+		return this.magnitude2 ?
+			this.scale(new Vector(Math.sqrt(magnitude2 / this.magnitude2))) :
+			this.set(Math.sqrt(magnitude2), 0);
+	}
+
 	set(x: number, y: number) {
 		this.x = x;
 		this.y = y;
