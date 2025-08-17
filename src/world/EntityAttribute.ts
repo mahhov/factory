@@ -348,21 +348,21 @@ export class EntityResourceFullSpriteAttribute extends EntityAttribute {
 	}
 }
 
-// export class EntityMoveRightAttribute extends EntityTimedAttribute {
-// 	position: Vector;
-//
-// 	constructor(counterDuration: number, position: Vector) {
-// 		super(counterDuration);
-// 		this.position = position;
-// 	}
-//
-// 	protected canProgress(world: World, tile: Tile<Entity>): boolean {
-// 		return true;
-// 	}
-//
-// 	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
-// 		this.position.add(new Vector(.1, 0));
-// 		tile.tileable.container.position = world.mobLayer.containerPosition(this.position);
-// 		return true;
-// 	}
-// }
+export class EntityMoveRightAttribute extends EntityTimedAttribute {
+	position: Vector;
+
+	constructor(counterDuration: number, position: Vector) {
+		super(counterDuration);
+		this.position = position;
+	}
+
+	protected canProgress(world: World, tile: Tile<Entity>): boolean {
+		return true;
+	}
+
+	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
+		this.position.add(new Vector(.1, 0));
+		world.mobLayer.updateTile(this.position, tile);
+		return true;
+	}
+}

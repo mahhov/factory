@@ -8,7 +8,7 @@ import {
 	EntityAttribute,
 	EntityContainerAttribute,
 	EntityExtractorAttribute,
-	EntityJunctionTransportAttribute,
+	EntityJunctionTransportAttribute, EntityMoveRightAttribute,
 	EntityProduceAttribute,
 	EntityResourceDisplayAttribute,
 	EntityResourceFullSpriteAttribute,
@@ -263,7 +263,7 @@ export class ResourceDeposit extends Entity {
 export class Mob extends Entity {
 	constructor(position: Vector) {
 		super();
-		// this.attributes.push(new EntityMoveRightAttribute(10, position));
+		this.attributes.push(new EntityMoveRightAttribute(10, position));
 	}
 
 	static get sprite() {

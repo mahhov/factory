@@ -129,6 +129,11 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		this.tiles.push(tile);
 		this.addContainer(tileable.container, position, tileable.size);
 	}
+
+	updateTile(position: Vector, tile: Tile<T>) {
+		tile.position = position;
+		this.addContainer(tile.tileable.container, position, tile.tileable.size);
+	}
 }
 
 export class World {
@@ -158,8 +163,6 @@ export class World {
 			let position = this.randPosition;
 			this.mobLayer.addTileable(position, new Mob(position));
 		}
-		let position = new Vector();
-		this.mobLayer.addTileable(position, new Mob(position));
 	}
 
 	get width() {
@@ -184,5 +187,6 @@ export class World {
 			if (tile.position.equals(position))
 				tile.tileable.tick(this, tile);
 		}));
+		this.mobLayer.tiles.forEach(tile => tile.tileable.tick(this, tile));
 	}
 }
