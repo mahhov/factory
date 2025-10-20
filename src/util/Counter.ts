@@ -25,8 +25,8 @@ export default class Counter {
 		this.i = 0;
 	}
 
-	// returns true once every n calls
-	// returns false on the 1st n-1 calls
+	// returns false once every n calls
+	// returns true on the 1st n-1 calls
 	tick(): boolean {
 		this.i = (this.i + 1) % this.n;
 		return !this.i;
