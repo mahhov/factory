@@ -3,7 +3,7 @@ import Color from '../graphics/Color.js';
 import TooltipLine from '../ui/TooltipLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
-import Vector2 from '../util/Vector2.js';
+import Vector from '../util/Vector.js';
 import {Entity, ResourceDeposit} from './Entity.js';
 import {Resource, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
@@ -18,21 +18,21 @@ import {Tile, World} from './World.js';
 // 	QUEUED, BUILDING, BUILT, DESTROYED
 // }
 
-let getAdjacentDestinations = (origin: Vector2, size: Vector2, rotation: Rotation) => {
+let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation) => {
 	switch (rotation) {
 		case Rotation.RIGHT:
-			origin = new Vector2(origin.x + size.x - 1, origin.y);
-			size = new Vector2(1, size.y);
+			origin = new Vector(origin.x + size.x - 1, origin.y);
+			size = new Vector(1, size.y);
 			break;
 		case Rotation.DOWN:
-			origin = new Vector2(origin.x, origin.y + size.y - 1);
-			size = new Vector2(size.x, 1);
+			origin = new Vector(origin.x, origin.y + size.y - 1);
+			size = new Vector(size.x, 1);
 			break;
 		case Rotation.LEFT:
-			size = new Vector2(1, size.y);
+			size = new Vector(1, size.y);
 			break;
 		case Rotation.UP:
-			size = new Vector2(size.x, 1);
+			size = new Vector(size.x, 1);
 			break;
 	}
 	let shift = RotationUtils.positionShift(rotation);
@@ -347,10 +347,10 @@ export class EntityResourceFullSpriteAttribute extends EntityAttribute {
 }
 
 export class EntityMobChaseTargetAttribute extends EntityTimedAttribute {
-	position: Vector2;
-	target: Vector2 = new Vector2();
+	position: Vector;
+	target: Vector = new Vector();
 
-	constructor(counterDuration: number, position: Vector2) {
+	constructor(counterDuration: number, position: Vector) {
 		super(counterDuration);
 		this.position = position;
 	}

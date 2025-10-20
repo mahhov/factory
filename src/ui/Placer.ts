@@ -2,7 +2,7 @@ import {Container, Graphics, Text} from 'pixi.js';
 import Camera from '../Camera.js';
 import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
-import Vector2 from '../util/Vector2.js';
+import Vector from '../util/Vector.js';
 import {Conveyor, Distributor, Empty, Entity, Extractor, GlassFactory, Junction, MegaFactory, Source, Void, Wall} from '../world/Entity.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
 import {GridWorldLayer, World} from '../world/World.js';
@@ -26,8 +26,8 @@ export default class Placer {
 	private started = false;
 	private rotation = Rotation.RIGHT;
 	private entityClass: typeof Entity = Empty;
-	private startPosition = new Vector2();
-	private endPosition = new Vector2();
+	private startPosition = new Vector();
+	private endPosition = new Vector();
 
 	constructor(painter: Painter, camera: Camera, input: Input, world: World) {
 		this.painter = painter;
@@ -86,8 +86,8 @@ export default class Placer {
 		]];
 	}
 
-	private get position(): Vector2 {
-		let canvasPosition = this.input.mousePosition.scale(new Vector2(1 / this.painter.canvasWidth));
+	private get position(): Vector {
+		let canvasPosition = this.input.mousePosition.scale(new Vector(1 / this.painter.canvasWidth));
 		return this.camera.canvasToWorld(canvasPosition)
 			.scale(this.world.size).floor();
 	}
@@ -157,7 +157,7 @@ export default class Placer {
 			.scale(this.entityClass.size.invert())
 			.floor()
 			.abs()
-			.add(new Vector2(1));
+			.add(new Vector(1));
 		let vertical = Math.abs(iterations.y) > Math.abs(iterations.x);
 		let rotation = vertical ?
 			delta.y > 0 ? Rotation.DOWN : Rotation.UP :

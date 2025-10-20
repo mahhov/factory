@@ -3,7 +3,7 @@ import Camera from '../Camera.js';
 import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
-import Vector2 from '../util/Vector2.js';
+import Vector from '../util/Vector.js';
 import {Entity} from '../world/Entity.js';
 import {Tile, World} from '../world/World.js';
 import {Input} from './Input.js';
@@ -43,7 +43,7 @@ export default class Tooltip {
 	}
 
 	private get createInputSelection(): Selection | null {
-		let canvasPosition = this.input.mousePosition.scale(new Vector2(1 / this.painter.canvasWidth));
+		let canvasPosition = this.input.mousePosition.scale(new Vector(1 / this.painter.canvasWidth));
 		let worldPosition = this.camera.canvasToWorld(canvasPosition)
 			.scale(this.world.size).floor();
 		let tile = this.world.live.getTile(worldPosition);
@@ -103,11 +103,11 @@ export default class Tooltip {
 
 		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.scale(this.world.size.invert()));
 		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.add(this.selection.tile.tileable.size).scale(this.world.size.invert()));
-		let bottomRightShift = bottomRight.add(new Vector2(3 / 1000));
+		let bottomRightShift = bottomRight.add(new Vector(3 / 1000));
 		let size = bottomRight.subtract(topLeft);
 
-		this.textContainer.position = bottomRightShift.scale(new Vector2(1000));
-		let textContainerSize = new Vector2(this.textContainer.width / 1000, this.textContainer.height / 1000);
+		this.textContainer.position = bottomRightShift.scale(new Vector(1000));
+		let textContainerSize = new Vector(this.textContainer.width / 1000, this.textContainer.height / 1000);
 
 		this.textBackground.addChild(new Graphics()
 			.rect(bottomRightShift.x, bottomRightShift.y, textContainerSize.x, textContainerSize.y)

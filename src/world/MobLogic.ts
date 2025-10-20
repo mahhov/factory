@@ -1,9 +1,9 @@
-import Vector2 from '../util/Vector2.js';
+import Vector from '../util/Vector.js';
 import {EntityMobChaseTargetAttribute} from './EntityAttribute.js';
 import {World} from './World.js';
 
 export class MobLogic {
-	position = new Vector2();
+	position = new Vector();
 	first = true;
 
 	constructor() {
