@@ -6,9 +6,9 @@ import Vector from './util/Vector.js';
 let padding = .25;
 
 export default class Camera {
-	private targetLeftTop: Vector = new Vector();
+	private targetLeftTop: Vector = Vector.V0;
 	private targetWidth: number = 1;
-	private leftTop: Vector = new Vector();
+	private leftTop: Vector = Vector.V0;
 	private width: number = 1;
 	readonly container: Container = new Container();
 
@@ -52,6 +52,6 @@ export default class Camera {
 			.add(this.targetLeftTop.scale(new Vector(1 - lazy)));
 
 		this.container.scale = 1 / this.width;
-		this.container.position = this.worldToCanvas(new Vector());
+		this.container.position = this.worldToCanvas(Vector.V0);
 	}
 }

@@ -34,7 +34,7 @@ export class Entity implements Tileable {
 	}
 
 	static get size() {
-		return new Vector(1);
+		return Vector.V1;
 	}
 
 	static get sprite(): Sprite | null {return null;}

@@ -1,10 +1,12 @@
 import util from './util.js';
 
 export default class Vector {
+	static readonly V0 = new Vector(0);
+	static readonly V1 = new Vector(1);
 	readonly x: number;
 	readonly y: number;
 
-	constructor(x: number = 0, y: number = x) {
+	constructor(x: number, y: number = x) {
 		this.x = x;
 		this.y = y;
 	}

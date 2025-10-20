@@ -348,7 +348,7 @@ export class EntityResourceFullSpriteAttribute extends EntityAttribute {
 
 export class EntityMobChaseTargetAttribute extends EntityTimedAttribute {
 	position: Vector;
-	target: Vector = new Vector();
+	target: Vector = Vector.V0;
 
 	constructor(counterDuration: number, position: Vector) {
 		super(counterDuration);

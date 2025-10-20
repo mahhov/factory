@@ -118,8 +118,8 @@ class Input {
 	static readonly State = State;
 
 	private bindings: Binding[] = [];
-	mouseDownPosition = new Vector();
-	mousePosition = new Vector();
+	mouseDownPosition = Vector.V0;
+	mousePosition = Vector.V0;
 
 	constructor(mouseTarget: HTMLCanvasElement) {
 		window.addEventListener('blur', () =>

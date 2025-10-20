@@ -28,28 +28,28 @@ export class MobLogic {
 
 		let density = arr(world.width).map(() => arr(world.height).map(() => 0));
 		let targets: Vector[] = [];
-		for (let x = 0; x < world.width; x++) {
+		for (let x = 0; x < world.width; x++)
 			for (let y = 0; y < world.height; y++) {
 				let position = new Vector(x, y);
 				let tile = world.live.getTile(position)!;
 				let score = scoreMapping[tile.tileable.constructor.name] || 0;
 				if (!score) continue;
-				position.subtract(new Vector(5)).iterate(new Vector(10)).forEach(p => {
-					if (p.x >= 0 && p.x < world.width && p.y >= 0 && p.y < world.height) {
+				new Vector(-5).iterate(new Vector(11)).forEach(delta => {
+					let p = position.add(delta);
+					if (world.live.inBounds(p, Vector.V1)) {
 						let added = density[p.x][p.y] > 5;
-						density[p.x][p.y] += score;
+						density[p.x][p.y] += score / delta.magnitude2;
 						if (!added && density[p.x][p.y] > 5)
 							targets.push(p);
 					}
 				});
 			}
-		}
 		targets.sort((t1, t2) => density[t2.x][t2.y] - density[t1.x][t1.y]);
 		targets = targets.filter(target => {
 			let score = density[target.x][target.y];
 			if (!score) return false;
-			target.subtract(new Vector(10)).iterate(new Vector(20)).forEach(p => {
-				if (p.x >= 0 && p.x < world.width && p.y >= 0 && p.y < world.height)
+			target.subtract(new Vector(10)).iterate(new Vector(21)).forEach(p => {
+				if (world.live.inBounds(p, Vector.V1))
 					density[p.x][p.y] = 0;
 			});
 			return true;

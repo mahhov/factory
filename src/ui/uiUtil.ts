@@ -5,7 +5,7 @@ namespace uiUtil {
 	export let mouseInContainer = (mousePosition: Vector, container: Container) => {
 		let textLocalMouse = Vector.fromObj(container.toLocal(mousePosition));
 		let containerSize = new Vector(container.width, container.height);
-		return textLocalMouse.boundBy(new Vector(), containerSize);
+		return textLocalMouse.boundBy(Vector.V0, containerSize);
 	};
 }
 

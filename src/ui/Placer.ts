@@ -26,8 +26,8 @@ export default class Placer {
 	private started = false;
 	private rotation = Rotation.RIGHT;
 	private entityClass: typeof Entity = Empty;
-	private startPosition = new Vector();
-	private endPosition = new Vector();
+	private startPosition = Vector.V0;
+	private endPosition = Vector.V0;
 
 	constructor(painter: Painter, camera: Camera, input: Input, world: World) {
 		this.painter = painter;
@@ -156,7 +156,7 @@ export default class Placer {
 			.scale(this.entityClass.size.invert())
 			.floor()
 			.abs()
-			.add(new Vector(1));
+			.add(Vector.V1);
 		let vertical = Math.abs(iterations.y) > Math.abs(iterations.x);
 		let rotation = vertical ?
 			delta.y > 0 ? Rotation.DOWN : Rotation.UP :

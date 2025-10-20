@@ -15,7 +15,7 @@ export interface Tileable {
 
 export class Tile<T extends Tileable> {
 	tileable: T;
-	position: Vector = new Vector();
+	position: Vector = Vector.V0;
 
 	constructor(tileable: T) {
 		this.tileable = tileable;
@@ -99,12 +99,12 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 		this.addContainer(tileable.container, position, tileable.size);
 	}
 
-	private inBounds(position: Vector, size: Vector) {
-		return position.boundBy(new Vector(), this.size.subtract(size).add(new Vector(1)));
+	inBounds(position: Vector, size: Vector) {
+		return position.boundBy(Vector.V0, this.size.subtract(size).add(Vector.V1));
 	}
 
 	getTile(position: Vector): Tile<T> | null {
-		return this.inBounds(position, new Vector(1)) ?
+		return this.inBounds(position, Vector.V1) ?
 			this.grid[position.x][position.y] :
 			null;
 	}
