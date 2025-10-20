@@ -51,6 +51,25 @@ export abstract class EntityAttribute {
 	}
 }
 
+export class EntityHealthAttribute extends EntityAttribute {
+	private readonly maxHealth: number;
+	private health: number;
+
+	constructor(health: number) {
+		super();
+		this.maxHealth = health;
+		this.health = health;
+	}
+
+	get tooltip(): TooltipLine[] {
+		return [new TooltipLine(`Health: ${this.health} / ${this.maxHealth}`)];
+	}
+
+	get selectable(): boolean {
+		return true;
+	}
+}
+
 export class EntityContainerAttribute extends EntityAttribute {
 	private readonly totalCapacity: number;
 	private readonly defaultResourceCapacity: number;
@@ -358,9 +377,38 @@ export class EntityMobChaseTargetAttribute extends EntityTimedAttribute {
 	}
 
 	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
-		let delta = this.target.subtract(this.position).setMagnitude2(.1 ** 2);
+		let delta = this.target.subtract(this.position);
+		if (!delta.magnitude2) return true;
+		if (delta.magnitude2 > .1 ** 2)
+			delta = delta.setMagnitude2(.1 ** 2);
 		this.position = this.position.add(delta);
 		world.mobLayer.updateTile(this.position, tile);
 		return true;
+	}
+}
+
+export class EntityMobAttackAttribute extends EntityTimedAttribute {
+	readonly damage: number;
+	readonly range: number;
+
+	constructor(counterDuration: number, damage: number, range: number) {
+		super(counterDuration);
+		this.damage = damage;
+		this.range = range;
+	}
+
+	protected canProgress(world: World, tile: Tile<Entity>): boolean {
+		return true;
+	}
+
+	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
+		// tile.position.
+		// world.live.
+		// let tilesInRange = []; // get tiles in range with health attribute
+		// if (!tilesInRange.length) return false;
+		// tilesInRange.forEach(tile => {
+		// 	// decrement health
+		// });
+		// return true;
 	}
 }

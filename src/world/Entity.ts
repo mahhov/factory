@@ -8,6 +8,7 @@ import {
 	EntityAttribute,
 	EntityContainerAttribute,
 	EntityExtractorAttribute,
+	EntityHealthAttribute,
 	EntityJunctionTransportAttribute,
 	EntityMobChaseTargetAttribute,
 	EntityProduceAttribute,
@@ -165,6 +166,7 @@ export class Bridge extends Entity {
 export class Extractor extends Entity {
 	constructor() {
 		super();
+		this.attributes.push(new EntityHealthAttribute(10));
 		let containerAttribute = new EntityContainerAttribute(Infinity, 10, {}, []);
 		this.attributes.push(containerAttribute);
 		this.attributes.push(new EntityExtractorAttribute(containerAttribute, 80));
