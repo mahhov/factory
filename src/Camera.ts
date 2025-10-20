@@ -1,14 +1,14 @@
 import {Container} from 'pixi.js';
 import Painter from './graphics/Painter.js';
 import util from './util/util.js';
-import Vector from './util/Vector.js';
+import Vector2 from './util/Vector2.js';
 
 let padding = .25;
 
 export default class Camera {
-	private targetLeftTop: Vector = new Vector();
+	private targetLeftTop: Vector2 = new Vector2();
 	private targetWidth: number = 1;
-	private leftTop: Vector = new Vector();
+	private leftTop: Vector2 = new Vector2();
 	private width: number = 1;
 	readonly container: Container = new Container();
 
@@ -16,31 +16,31 @@ export default class Camera {
 		painter.foregroundContainer.addChild(this.container);
 	}
 
-	move(delta: Vector) {
-		this.targetLeftTop.add(delta.scale(new Vector(this.targetWidth)));
+	move(delta: Vector2) {
+		this.targetLeftTop = this.targetLeftTop.add(delta.scale(new Vector2(this.targetWidth)));
 		this.clamp();
 	}
 
 	zoom(delta: number) {
-		let centerWorld = this.canvasToWorld(new Vector(.5));
+		let centerWorld = this.canvasToWorld(new Vector2(.5));
 		this.targetWidth = util.clamp(this.targetWidth + delta, .1, 1 + padding * 2);
-		this.targetLeftTop = centerWorld.subtract(new Vector(this.targetWidth / 2));
+		this.targetLeftTop = centerWorld.subtract(new Vector2(this.targetWidth / 2));
 		this.clamp();
 	}
 
 	clamp() {
-		this.targetLeftTop.clamp(new Vector(-padding), new Vector(1 + padding).subtract(new Vector(this.targetWidth)));
+		this.targetLeftTop = this.targetLeftTop.clamp(new Vector2(-padding), new Vector2(1 + padding).subtract(new Vector2(this.targetWidth)));
 	}
 
-	worldToCanvas(world: Vector) {
+	worldToCanvas(world: Vector2) {
 		return world
 			.subtract(this.leftTop)
-			.scale(new Vector(1 / this.width));
+			.scale(new Vector2(1 / this.width));
 	}
 
-	canvasToWorld(canvas: Vector) {
+	canvasToWorld(canvas: Vector2) {
 		return canvas
-			.scale(new Vector(this.width))
+			.scale(new Vector2(this.width))
 			.add(this.leftTop);
 	}
 
@@ -48,10 +48,10 @@ export default class Camera {
 		let lazy = .85;
 		this.width = this.width * lazy + this.targetWidth * (1 - lazy);
 		this.leftTop = this.leftTop
-			.scale(new Vector(lazy))
-			.add(this.targetLeftTop.copy.scale(new Vector(1 - lazy)));
+			.scale(new Vector2(lazy))
+			.add(this.targetLeftTop.scale(new Vector2(1 - lazy)));
 
 		this.container.scale = 1 / this.width;
-		this.container.position = this.worldToCanvas(new Vector());
+		this.container.position = this.worldToCanvas(new Vector2());
 	}
 }

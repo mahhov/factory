@@ -6,7 +6,7 @@ import Controller from './ui/Controller.js';
 import {Input} from './ui/Input.js';
 import Placer from './ui/Placer.js';
 import Tooltip from './ui/Tooltip.js';
-import Vector from './util/Vector.js';
+import Vector2 from './util/Vector2.js';
 import {World} from './world/World.js';
 
 (async () => {
@@ -24,7 +24,7 @@ import {World} from './world/World.js';
 	let uiContainer = new Container();
 	app.stage.addChild(uiContainer);
 	let input = new Input(app.canvas);
-	let world = new World(new Vector(100), camera.container);
+	let world = new World(new Vector2(100), camera.container);
 	let placer = new Placer(painter, camera, input, world);
 	let tooltip = new Tooltip(painter, camera, input, world);
 	let controller = new Controller(camera, placer, tooltip, input);
@@ -75,3 +75,6 @@ import {World} from './world/World.js';
 //    - piercing lasers
 //    - aoe attacks
 //    - stationary towers
+//   ui:
+//    - tooltips
+//    - click to select entity

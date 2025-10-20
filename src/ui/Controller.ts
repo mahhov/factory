@@ -1,6 +1,6 @@
 import Camera from '../Camera.js';
 import util from '../util/util.js';
-import Vector from '../util/Vector.js';
+import Vector2 from '../util/Vector2.js';
 import {Empty} from '../world/Entity.js';
 import {Input, KeyBinding, MouseBinding, MouseWheelBinding} from './Input.js';
 import Placer from './Placer.js';
@@ -9,10 +9,10 @@ import Tooltip from './Tooltip.js';
 export default class Controller {
 	constructor(camera: Camera, placer: Placer, tooltip: Tooltip, input: Input) {
 		// camera
-		input.addBinding(new KeyBinding('a', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(-.01, 0))));
-		input.addBinding(new KeyBinding('d', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(.01, 0))));
-		input.addBinding(new KeyBinding('w', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(0, -.01))));
-		input.addBinding(new KeyBinding('s', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector(0, .01))));
+		input.addBinding(new KeyBinding('a', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector2(-.01, 0))));
+		input.addBinding(new KeyBinding('d', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector2(.01, 0))));
+		input.addBinding(new KeyBinding('w', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector2(0, -.01))));
+		input.addBinding(new KeyBinding('s', [Input.State.DOWN, Input.State.PRESSED], () => camera.move(new Vector2(0, .01))));
 		input.addBinding(new KeyBinding('q', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(.03)));
 		input.addBinding(new KeyBinding('e', [Input.State.DOWN, Input.State.PRESSED], () => camera.zoom(-.03)));
 		input.addBinding(new MouseWheelBinding(false, [Input.State.PRESSED], () => {

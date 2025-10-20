@@ -1,4 +1,4 @@
-import Vector from '../util/Vector.js';
+import Vector2 from '../util/Vector2.js';
 
 enum State {
 	DOWN, UP, PRESSED, RELEASED
@@ -118,8 +118,8 @@ class Input {
 	static readonly State = State;
 
 	private bindings: Binding[] = [];
-	mouseDownPosition = new Vector();
-	mousePosition = new Vector();
+	mouseDownPosition = new Vector2();
+	mousePosition = new Vector2();
 
 	constructor(mouseTarget: HTMLCanvasElement) {
 		window.addEventListener('blur', () =>
@@ -136,12 +136,12 @@ class Input {
 
 		mouseTarget.addEventListener('mousedown', e => {
 			Object.values(this.bindings).forEach(binding => binding.mouseDown(e.button));
-			this.mouseDownPosition = this.mousePosition.copy;
+			this.mouseDownPosition = this.mousePosition;
 		});
 		window.addEventListener('mouseup', e =>
 			Object.values(this.bindings).forEach(binding => binding.mouseUp(e.button)));
 		mouseTarget.addEventListener('mousemove', e =>
-			this.mousePosition.set((e.x - mouseTarget.offsetLeft), e.y - mouseTarget.offsetTop));
+			this.mousePosition = new Vector2((e.x - mouseTarget.offsetLeft), e.y - mouseTarget.offsetTop));
 		mouseTarget.addEventListener('wheel', e => {
 			if (e.deltaY < 0)
 				Object.values(this.bindings).forEach(binding => binding.mouseWheel(false));

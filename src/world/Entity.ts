@@ -3,7 +3,7 @@ import Color from '../graphics/Color.js';
 import SpriteLoader from '../graphics/SpriteLoader.js';
 import TooltipLine from '../ui/TooltipLine.js';
 import util from '../util/util.js';
-import Vector from '../util/Vector.js';
+import Vector2 from '../util/Vector2.js';
 import {
 	EntityAttribute,
 	EntityContainerAttribute,
@@ -34,13 +34,13 @@ export class Entity implements Tileable {
 	}
 
 	static get size() {
-		return new Vector(1);
+		return new Vector2(1);
 	}
 
 	static get sprite(): Sprite | null {return null;}
 
 	set sprite(sprite: Sprite) {
-		let halfSize = new Vector(sprite.width, sprite.height).scale(new Vector(.5));
+		let halfSize = new Vector2(sprite.width, sprite.height).scale(new Vector2(.5));
 		sprite.pivot = halfSize;
 		sprite.position = halfSize;
 		sprite.rotation = Entity.rotationToAngle(this.rotation);
@@ -172,7 +172,7 @@ export class Extractor extends Entity {
 	}
 
 	static get size() {
-		return new Vector(4, 4);
+		return new Vector2(4, 4);
 	}
 
 	static get sprite() {
@@ -241,7 +241,7 @@ export class MegaFactory extends Entity {
 
 	static get size() {
 		// todo make rotate-able
-		return new Vector(4, 4);
+		return new Vector2(4, 4);
 	}
 
 	static get sprite() {
@@ -262,7 +262,7 @@ export class ResourceDeposit extends Entity {
 }
 
 export class Mob extends Entity {
-	constructor(position: Vector) {
+	constructor(position: Vector2) {
 		super();
 		this.attributes.push(new EntityMobChaseTargetAttribute(10, position));
 	}

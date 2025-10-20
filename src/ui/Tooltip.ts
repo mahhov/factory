@@ -3,7 +3,7 @@ import Camera from '../Camera.js';
 import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
-import Vector from '../util/Vector.js';
+import Vector2 from '../util/Vector2.js';
 import {Entity} from '../world/Entity.js';
 import {Tile, World} from '../world/World.js';
 import {Input} from './Input.js';
@@ -43,8 +43,8 @@ export default class Tooltip {
 	}
 
 	private get createInputSelection(): Selection | null {
-		let canvasPosition = this.input.mousePosition.copy.scale(new Vector(1 / this.painter.canvasWidth));
-		let worldPosition = this.camera.canvasToWorld(canvasPosition.copy)
+		let canvasPosition = this.input.mousePosition.scale(new Vector2(1 / this.painter.canvasWidth));
+		let worldPosition = this.camera.canvasToWorld(canvasPosition)
 			.scale(this.world.size).floor();
 		let tile = this.world.live.getTile(worldPosition);
 		if (tile?.tileable.selectable)
@@ -101,13 +101,13 @@ export default class Tooltip {
 			() =>
 				this.textContainer.removeChildAt(this.textContainer.children.length - 1));
 
-		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.copy.scale(this.world.size.copy.invert()));
-		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.copy.add(this.selection.tile.tileable.size).scale(this.world.size.copy.invert()));
-		let bottomRightShift = bottomRight.copy.add(new Vector(3 / 1000));
-		let size = bottomRight.copy.subtract(topLeft);
+		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.scale(this.world.size.invert()));
+		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.add(this.selection.tile.tileable.size).scale(this.world.size.invert()));
+		let bottomRightShift = bottomRight.add(new Vector2(3 / 1000));
+		let size = bottomRight.subtract(topLeft);
 
-		this.textContainer.position = bottomRightShift.copy.scale(new Vector(1000));
-		let textContainerSize = new Vector(this.textContainer.width / 1000, this.textContainer.height / 1000);
+		this.textContainer.position = bottomRightShift.scale(new Vector2(1000));
+		let textContainerSize = new Vector2(this.textContainer.width / 1000, this.textContainer.height / 1000);
 
 		this.textBackground.addChild(new Graphics()
 			.rect(bottomRightShift.x, bottomRightShift.y, textContainerSize.x, textContainerSize.y)
