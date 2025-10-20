@@ -57,3 +57,6 @@ export default class Controller {
 		}));
 	}
 }
+
+// todo middle click drag to move camera
+// todo allow clicking ui buttons

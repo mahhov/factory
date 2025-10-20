@@ -119,10 +119,6 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	readonly tiles: Tile<T>[] = [];
 	readonly container = new Container();
 
-	// constructor(size: Vector2) {
-	// 	super(size);
-	// }
-
 	addTileable(position: Vector, tileable: T) {
 		let tile = new Tile(tileable);
 		tile.position = position;

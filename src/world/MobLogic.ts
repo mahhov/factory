@@ -32,24 +32,27 @@ export class MobLogic {
 			for (let y = 0; y < world.height; y++) {
 				let position = new Vector(x, y);
 				let tile = world.live.grid[position.x][position.y];
+				if (!tile.position.equals(position)) continue;
+				let center = position.add(tile.tileable.size.scale(new Vector(.5))).floor();
 				let score = scoreMapping[tile.tileable.constructor.name] || 0;
 				if (!score) continue;
-				new Vector(-5).iterate(new Vector(11)).forEach(delta => {
-					let p = position.add(delta);
+				new Vector(-10).iterate(new Vector(21)).forEach(delta => {
+					let p = center.add(delta);
 					if (world.live.inBounds(p, Vector.V1)) {
-						let added = density[p.x][p.y] > 5;
-						density[p.x][p.y] += score / delta.magnitude2;
-						if (!added && density[p.x][p.y] > 5)
+						let added = density[p.x][p.y] >= 1;
+						density[p.x][p.y] += score / (1 + delta.magnitude2 ** .5 / 10);
+						if (!added && density[p.x][p.y] >= 1)
 							targets.push(p);
 					}
 				});
 			}
+
 		targets.sort((t1, t2) => density[t2.x][t2.y] - density[t1.x][t1.y]);
 		targets = targets.filter(target => {
 			let score = density[target.x][target.y];
 			if (!score) return false;
-			target.subtract(new Vector(10)).iterate(new Vector(21)).forEach(p => {
-				if (world.live.inBounds(p, Vector.V1))
+			target.subtract(new Vector(20)).iterate(new Vector(41)).forEach(p => {
+				if (!p.equals(target) && world.live.inBounds(p, Vector.V1))
 					density[p.x][p.y] = 0;
 			});
 			return true;
@@ -60,11 +63,8 @@ export class MobLogic {
 			let maxScore = -Infinity;
 			let bestTargetPosition = mobPosition;
 			targets.forEach(position => {
-				let liveTile = world.live.getTile(position);
-				if (!liveTile) return;
-				let score = scoreMapping[liveTile.tileable.constructor.name] || 0;
-				let distance = mobPosition.subtract(position).magnitude2;
-				let currentScore = score - distance / 20000;
+				let distance = mobPosition.subtract(position).magnitude2 ** .5;
+				let currentScore = density[position.x][position.y] - distance / 10;
 				if (currentScore > maxScore) {
 					maxScore = currentScore;
 					bestTargetPosition = position;
