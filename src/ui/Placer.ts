@@ -151,7 +151,6 @@ export default class Placer {
 	}
 
 	private place(worldLayer: GridWorldLayer<Entity>, updateRotation: boolean) {
-		console.log(this.startPosition, this.endPosition);
 		let delta = this.endPosition.subtract(this.startPosition);
 		let iterations = delta
 			.scale(this.entityClass.size.invert())

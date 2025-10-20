@@ -361,7 +361,7 @@ export class EntityMobChaseTargetAttribute extends EntityTimedAttribute {
 
 	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
 		let delta = this.target.subtract(this.position).setMagnitude2(.1 ** 2);
-		this.position.add(delta);
+		this.position = this.position.add(delta);
 		world.mobLayer.updateTile(this.position, tile);
 		return true;
 	}
