@@ -93,9 +93,8 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 				tile.position = position;
 			});
 
-		if (!this.showDefaultTileable && tileable instanceof this.defaultTileableCtr) return;
-
-		this.addContainer(tileable.container, position, tileable.size);
+		if (this.showDefaultTileable || !(tileable instanceof this.defaultTileableCtr))
+			this.addContainer(tileable.container, position, tileable.size);
 	}
 
 	inBounds(position: Vector, size: Vector) {

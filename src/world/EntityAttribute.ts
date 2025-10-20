@@ -4,7 +4,7 @@ import TooltipLine from '../ui/TooltipLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Entity, ResourceDeposit} from './Entity.js';
+import {Empty, Entity, ResourceDeposit} from './Entity.js';
 import {Resource, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, World} from './World.js';
@@ -59,6 +59,11 @@ export class EntityHealthAttribute extends EntityAttribute {
 		super();
 		this.maxHealth = health;
 		this.health = health;
+	}
+
+	tick(world: World, tile: Tile<Entity>) {
+		if (this.health <= 0)
+			world.live.replaceTileable(tile.position, new Empty());
 	}
 
 	get tooltip(): TooltipLine[] {
