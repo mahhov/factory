@@ -138,10 +138,8 @@ abstract class EntityTimedAttribute extends EntityAttribute {
 
 	tick(world: World, tile: Tile<Entity>) {
 		super.tick(world, tile);
-		if (!this.canProgress(world, tile))
-			return;
-		if (!this.counter.prepare())
-			return;
+		if (!this.canProgress(world, tile)) return;
+		if (!this.counter.prepare()) return;
 		if (this.maybeComplete(world, tile))
 			this.counter.reset();
 	}

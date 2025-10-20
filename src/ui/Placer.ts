@@ -127,8 +127,7 @@ export default class Placer {
 
 	move() {
 		let position = this.position;
-		if (position.equals(this.endPosition))
-			return;
+		if (position.equals(this.endPosition)) return;
 
 		if (!this.started)
 			this.startPosition = position;

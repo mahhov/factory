@@ -31,7 +31,7 @@ export class MobLogic {
 		for (let x = 0; x < world.width; x++)
 			for (let y = 0; y < world.height; y++) {
 				let position = new Vector(x, y);
-				let tile = world.live.getTile(position)!;
+				let tile = world.live.grid[position.x][position.y];
 				let score = scoreMapping[tile.tileable.constructor.name] || 0;
 				if (!score) continue;
 				new Vector(-5).iterate(new Vector(11)).forEach(delta => {

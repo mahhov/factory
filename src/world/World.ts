@@ -67,8 +67,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 	}
 
 	replaceTileable(position: Vector, tileable: T) {
-		if (!this.inBounds(position, tileable.size))
-			return;
+		if (!this.inBounds(position, tileable.size)) return;
 
 		let replaceTiles = position.iterate(tileable.size).map(p => this.getTile(p)!);
 		replaceTiles.forEach(tile =>
