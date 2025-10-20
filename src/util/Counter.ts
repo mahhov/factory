@@ -20,9 +20,10 @@ export default class Counter {
 		return this.i === this.n - 1;
 	}
 
-	// the next n-1 calls to tick() will return false
-	reset() {
-		this.i = 0;
+	// if immediate is false, the next n-1 calls to tick() will return false
+	// if immediate is true, the next call to tick() will return true
+	reset(immediate: boolean = false) {
+		this.i = immediate ? this.n - 1 : 0;
 	}
 
 	// returns false once every n calls

@@ -23,6 +23,10 @@ let scoreMapping: Record<string, number> = {
 export class MobLogic {
 	private counter = new Counter(10);
 
+	constructor() {
+		this.counter.reset(true);
+	}
+
 	tick(world: World) {
 		if (!this.counter.tick()) return;
 
@@ -59,6 +63,8 @@ export class MobLogic {
 		});
 
 		world.mobLayer.tiles.forEach(mobTile => {
+			let targetAttribute = mobTile.tileable.getAttribute(EntityMobChaseTargetAttribute);
+			if (!targetAttribute) return;
 			let mobPosition = mobTile.position;
 			let maxScore = -Infinity;
 			let bestTargetPosition = mobPosition;
@@ -70,10 +76,7 @@ export class MobLogic {
 					bestTargetPosition = position;
 				}
 			});
-
-			let targetAttribute = mobTile.tileable.getAttribute<EntityMobChaseTargetAttribute>(EntityMobChaseTargetAttribute);
-			if (targetAttribute)
-				targetAttribute.target = bestTargetPosition;
+			targetAttribute.target = bestTargetPosition;
 		});
 	}
 }

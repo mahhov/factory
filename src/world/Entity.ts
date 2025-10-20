@@ -10,6 +10,7 @@ import {
 	EntityExtractorAttribute,
 	EntityHealthAttribute,
 	EntityJunctionTransportAttribute,
+	EntityMobAttackAttribute,
 	EntityMobChaseTargetAttribute,
 	EntityProduceAttribute,
 	EntityResourceDisplayAttribute,
@@ -266,7 +267,8 @@ export class ResourceDeposit extends Entity {
 export class Mob extends Entity {
 	constructor(position: Vector) {
 		super();
-		this.attributes.push(new EntityMobChaseTargetAttribute(10, position));
+		this.attributes.push(new EntityMobChaseTargetAttribute(1, position));
+		this.attributes.push(new EntityMobAttackAttribute(1, .005, 2));
 	}
 
 	static get sprite() {

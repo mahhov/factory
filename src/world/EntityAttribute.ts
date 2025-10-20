@@ -53,7 +53,7 @@ export abstract class EntityAttribute {
 
 export class EntityHealthAttribute extends EntityAttribute {
 	private readonly maxHealth: number;
-	private health: number;
+	health: number;
 
 	constructor(health: number) {
 		super();
@@ -208,7 +208,7 @@ export class EntityTransportAttribute extends EntityTimedAttribute {
 			resourceCounts = util.shuffle(resourceCounts);
 		return util.shuffle(this.outputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
-				.map(destination => world.live.getTile(destination)?.tileable.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
+				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityContainerAttribute))
 				.some(destinationContainerAttribute =>
 					resourceCounts.some(resourceCount => {
 						if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount)) {
@@ -277,7 +277,7 @@ export class EntitySourceAttribute extends EntityTimedAttribute {
 		let resourceCount = new ResourceUtils.Count(this.entityResourcePickerAttribute.resource, 1);
 		util.enumKeys(Rotation).forEach(rotation =>
 			getAdjacentDestinations(tile.position, tile.tileable.size, rotation)
-				.map(destination => world.live.getTile(destination)?.tileable.getAttribute<EntityContainerAttribute>(EntityContainerAttribute))
+				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityContainerAttribute))
 				.forEach(destinationContainerAttribute => {
 					if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount))
 						destinationContainerAttribute.add(resourceCount);
@@ -402,13 +402,11 @@ export class EntityMobAttackAttribute extends EntityTimedAttribute {
 	}
 
 	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
-		// tile.position.
-		// world.live.
-		// let tilesInRange = []; // get tiles in range with health attribute
-		// if (!tilesInRange.length) return false;
-		// tilesInRange.forEach(tile => {
-		// 	// decrement health
-		// });
-		// return true;
+		let healthAttributes = tile.position.floor().subtract(new Vector(this.range)).iterate(new Vector(this.range * 2))
+			.map(position => world.live.getTile(position)?.tileable.getAttribute(EntityHealthAttribute))
+			.filter(healthAttribute => healthAttribute);
+		if (!healthAttributes.length) return false;
+		healthAttributes[0]!.health -= this.damage;
+		return true;
 	}
 }
