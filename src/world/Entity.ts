@@ -6,18 +6,22 @@ import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {
 	EntityAttribute,
+	EntityAttribute2,
+	EntityConsumeAttribute2,
 	EntityContainerAttribute,
+	EntityContainerAttribute2,
 	EntityExtractorAttribute,
 	EntityHealthAttribute,
 	EntityJunctionTransportAttribute,
 	EntityMobAttackAttribute,
 	EntityMobChaseTargetAttribute,
 	EntityMobHealthAttribute,
-	EntityProduceAttribute,
+	EntityProduceAttribute2,
 	EntityResourceDisplayAttribute,
 	EntityResourceFullSpriteAttribute,
 	EntityResourcePickerAttribute,
 	EntitySourceAttribute,
+	EntityTimedAttribute2,
 	EntityTransportAttribute,
 	EntityTurretAttribute,
 } from './EntityAttribute.js';
@@ -25,9 +29,9 @@ import {Resource, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, Tileable, World} from './World.js';
 
-export class Entity implements Tileable {
+export class Entity<S extends EntityAttribute = EntityAttribute> implements Tileable {
 	protected readonly rotation: Rotation;
-	protected readonly attributes: EntityAttribute[] = [];
+	protected readonly attributes: S[] = [];
 	readonly container = new Container();
 
 	constructor(rotation: Rotation = Rotation.RIGHT) {
@@ -60,7 +64,7 @@ export class Entity implements Tileable {
 		return (this.constructor as typeof Entity).size;
 	}
 
-	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | undefined {
+	getAttribute<T extends S>(attributeClass: { new(...args: any[]): T }): T | undefined {
 		return this.attributes.find(attribute => attribute instanceof attributeClass) as T;
 	}
 
@@ -74,6 +78,13 @@ export class Entity implements Tileable {
 
 	get selectable(): boolean {
 		return this.attributes.some(attribute => attribute.selectable);
+	}
+}
+
+export class Entity2 extends Entity<EntityAttribute2> {
+	tick(world: World, tile: Tile<Entity>) {
+		if (this.attributes.every(attribute => attribute.tick(world, tile)))
+			this.attributes.forEach(attribute => attribute.reset());
 	}
 }
 
@@ -205,53 +216,27 @@ export class Void extends Entity {
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'void.png', [Color.ENTITY_VOID]);}
 }
 
-export class GlassFactory extends Entity {
+export class GlassFactory extends Entity2 {
 	constructor() {
 		super();
-		let containerAttribute = new EntityContainerAttribute(Infinity, 0, {
+		let containerAttribute = new EntityContainerAttribute2(Infinity, 0, {
 			[Resource.IRON]: 10,
 			[Resource.CARBON]: 10,
 			[Resource.STEEL]: 10,
 		});
 		this.attributes.push(containerAttribute);
-		let outputs = ResourceUtils.Count.fromTuples([[Resource.STEEL, 1]]);
-		this.attributes.push(new EntityProduceAttribute(containerAttribute, 40,
-			ResourceUtils.Count.fromTuples([[Resource.IRON, 1], [Resource.CARBON, 1]]),
-			outputs));
-		this.attributes.push(new EntityTransportAttribute(containerAttribute, 1, false, outputs.map(resourceCount => resourceCount.resource)));
+		this.attributes.push(new EntityTimedAttribute2(40));
+		this.attributes.push(new EntityConsumeAttribute2(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.IRON, 1]])));
+		this.attributes.push(new EntityProduceAttribute2(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.CARBON, 1]])));
+		// this.attributes.push(new EntityProduceAttribute(containerAttribute, 40,
+		// 	ResourceUtils.Count.fromTuples([[Resource.IRON, 1], [Resource.CARBON, 1]]),
+		// 	outputs));
+		// this.attributes.push(new EntityTransportAttribute(containerAttribute, 1, false, outputs.map(resourceCount => resourceCount.resource)));
 	}
 
 	static get sprite() {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
 			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.CARBON)]);
-	}
-}
-
-export class MegaFactory extends Entity {
-	constructor() {
-		super();
-		let containerAttribute = new EntityContainerAttribute(Infinity, 0, {
-			[Resource.A]: 10,
-			[Resource.B]: 10,
-			[Resource.X]: 10,
-			[Resource.Y]: 10,
-		});
-		this.attributes.push(containerAttribute);
-		let outputs = ResourceUtils.Count.fromTuples([[Resource.X, 2], [Resource.Y, 1]]);
-		this.attributes.push(new EntityProduceAttribute(containerAttribute, 40,
-			ResourceUtils.Count.fromTuples([[Resource.A, 2], [Resource.B, 1]]),
-			outputs));
-		this.attributes.push(new EntityTransportAttribute(containerAttribute, 1, false, outputs.map(resourceCount => resourceCount.resource)));
-	}
-
-	static get size() {
-		// todo make rotate-able
-		return new Vector(4, 4);
-	}
-
-	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[ResourceUtils.color(Resource.X), ResourceUtils.color(Resource.A), ResourceUtils.color(Resource.B)]);
 	}
 }
 
