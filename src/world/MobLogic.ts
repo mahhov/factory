@@ -22,7 +22,7 @@ let scoreMapping: Record<string, number> = {
 };
 
 export class MobLogic {
-	private spawnCounter = new Counter(1000);
+	private spawnCounter = new Counter(10 ); // 1000
 	private targetingCounter = new Counter(10);
 
 	constructor() {

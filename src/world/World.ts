@@ -1,7 +1,7 @@
 import {Container} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Empty, Entity, Mob, ResourceDeposit} from './Entity.js';
+import {Empty, Entity, ResourceDeposit} from './Entity.js';
 import {MobLogic} from './MobLogic.js';
 import {Resource} from './Resource.js';
 
@@ -128,6 +128,12 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	updateTile(position: Vector, tile: Tile<T>) {
 		tile.position = position;
 		this.addContainer(tile.tileable.container, position, tile.tileable.size);
+	}
+
+	removeTile(tile: Tile<T>) {
+		let index = this.tiles.indexOf(tile);
+		this.tiles.splice(index, 1);
+		this.container.removeChild(tile.tileable.container);
 	}
 }
 

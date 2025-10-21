@@ -368,6 +368,28 @@ export class EntityResourceFullSpriteAttribute extends EntityAttribute {
 	}
 }
 
+export class EntityTurretAttribute extends EntityTimedAttribute {
+	readonly damage: number;
+	readonly range: number;
+
+	constructor(counterDuration: number, damage: number, range: number) {
+		super(counterDuration);
+		this.damage = damage;
+		this.range = range;
+	}
+
+	protected canProgress(world: World, tile: Tile<Entity>): boolean {
+		return true;
+	}
+
+	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
+		let mobTile = world.mobLayer.tiles.find(mobTile => mobTile.position.subtract(tile.position).magnitude2 <= this.range ** 2);
+		if (!mobTile) return false;
+		world.mobLayer.removeTile(mobTile);
+		return true;
+	}
+}
+
 export class EntityMobChaseTargetAttribute extends EntityTimedAttribute {
 	position: Vector;
 	target: Vector = Vector.V0;
@@ -392,26 +414,13 @@ export class EntityMobChaseTargetAttribute extends EntityTimedAttribute {
 	}
 }
 
-export class EntityMobAttackAttribute extends EntityTimedAttribute {
-	readonly damage: number;
-	readonly range: number;
-
-	constructor(counterDuration: number, damage: number, range: number) {
-		super(counterDuration);
-		this.damage = damage;
-		this.range = range;
-	}
-
-	protected canProgress(world: World, tile: Tile<Entity>): boolean {
-		return true;
-	}
-
+export class EntityMobAttackAttribute extends EntityTurretAttribute {
 	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
-		let healthAttributes = tile.position.floor().subtract(new Vector(this.range)).iterate(new Vector(this.range * 2))
+		let healthAttribute = tile.position.floor().subtract(new Vector(this.range)).iterate(new Vector(this.range * 2))
 			.map(position => world.live.getTile(position)?.tileable.getAttribute(EntityHealthAttribute))
-			.filter(healthAttribute => healthAttribute);
-		if (!healthAttributes.length) return false;
-		healthAttributes[0]!.health -= this.damage;
+			.find(healthAttribute => healthAttribute);
+		if (!healthAttribute) return false;
+		healthAttribute.health -= this.damage;
 		return true;
 	}
 }

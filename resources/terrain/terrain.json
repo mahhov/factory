@@ -47,12 +47,16 @@
 
     "circle.png": {
       "frame": {"x": 0, "y": 48, "w": 16, "h": 16}
+    },
+
+    "turret.png": {
+      "frame": {"x": 0, "y": 64, "w": 16, "h": 16}
     }
   },
   "meta": {
     "image": "terrain.png",
     "format": "RGBA8888",
-    "size": {"w": 144, "h": 64},
+    "size": {"w": 144, "h": 80},
     "scale": "1"
   }
 }

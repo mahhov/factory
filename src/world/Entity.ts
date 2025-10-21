@@ -18,6 +18,7 @@ import {
 	EntityResourcePickerAttribute,
 	EntitySourceAttribute,
 	EntityTransportAttribute,
+	EntityTurretAttribute,
 } from './EntityAttribute.js';
 import {Resource, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
@@ -250,6 +251,28 @@ export class MegaFactory extends Entity {
 	static get sprite() {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
 			[ResourceUtils.color(Resource.X), ResourceUtils.color(Resource.A), ResourceUtils.color(Resource.B)]);
+	}
+}
+
+export class Turret extends Entity {
+	// todo consume resources
+	// todo fire projectiles
+	// todo kill gradually
+	constructor() {
+		super();
+		let containerAttribute = new EntityContainerAttribute(Infinity, 0, {
+			[Resource.COPPER]: 10,
+		});
+		this.attributes.push(containerAttribute);
+		this.attributes.push(new EntityTurretAttribute(10, 1, 10));
+	}
+
+	static get size() {
+		return new Vector(2, 2);
+	}
+
+	static get sprite() {
+		return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'turret.png');
 	}
 }
 

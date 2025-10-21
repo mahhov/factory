@@ -3,7 +3,7 @@ import Camera from '../Camera.js';
 import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import Vector from '../util/Vector.js';
-import {Conveyor, Distributor, Empty, Entity, Extractor, GlassFactory, Junction, MegaFactory, Source, Void, Wall} from '../world/Entity.js';
+import {Conveyor, Distributor, Empty, Entity, Extractor, GlassFactory, Junction, MegaFactory, Turret, Wall} from '../world/Entity.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
 import {GridWorldLayer, World} from '../world/World.js';
 import {Input} from './Input.js';
@@ -14,7 +14,8 @@ enum State {
 
 export default class Placer {
 	static readonly State = State;
-	static readonly entityClasses: typeof Entity[] = [Wall, Conveyor, Distributor, Junction, Extractor, Source, Void, GlassFactory, MegaFactory];
+	static readonly entityClasses: typeof Entity[] =
+		[Wall, Conveyor, Distributor, Junction, Extractor, GlassFactory, MegaFactory, Turret];
 
 	private readonly painter: Painter;
 	private readonly camera: Camera;
