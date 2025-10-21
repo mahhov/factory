@@ -12,6 +12,7 @@ import {
 	EntityJunctionTransportAttribute,
 	EntityMobAttackAttribute,
 	EntityMobChaseTargetAttribute,
+	EntityMobHealthAttribute,
 	EntityProduceAttribute,
 	EntityResourceDisplayAttribute,
 	EntityResourceFullSpriteAttribute,
@@ -257,14 +258,13 @@ export class MegaFactory extends Entity {
 export class Turret extends Entity {
 	// todo consume resources
 	// todo fire projectiles
-	// todo kill gradually
 	constructor() {
 		super();
 		let containerAttribute = new EntityContainerAttribute(Infinity, 0, {
 			[Resource.COPPER]: 10,
 		});
 		this.attributes.push(containerAttribute);
-		this.attributes.push(new EntityTurretAttribute(10, 1, 10));
+		this.attributes.push(new EntityTurretAttribute(1, 1, 2));
 	}
 
 	static get size() {
@@ -290,6 +290,7 @@ export class ResourceDeposit extends Entity {
 export class Mob extends Entity {
 	constructor(position: Vector) {
 		super();
+		this.attributes.push(new EntityMobHealthAttribute(10));
 		this.attributes.push(new EntityMobChaseTargetAttribute(1, position));
 		this.attributes.push(new EntityMobAttackAttribute(1, .005, 2));
 	}

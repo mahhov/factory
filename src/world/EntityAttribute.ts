@@ -383,10 +383,27 @@ export class EntityTurretAttribute extends EntityTimedAttribute {
 	}
 
 	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
-		let mobTile = world.mobLayer.tiles.find(mobTile => mobTile.position.subtract(tile.position).magnitude2 <= this.range ** 2);
-		if (!mobTile) return false;
-		world.mobLayer.removeTile(mobTile);
+		let healthAttribute = world.mobLayer.tiles
+			.map(tile => tile.tileable.getAttribute(EntityMobHealthAttribute))
+			.find(healthAttribute => healthAttribute);
+		if (!healthAttribute) return false;
+		healthAttribute.health -= this.damage;
 		return true;
+	}
+}
+
+export class EntityMobHealthAttribute extends EntityHealthAttribute {
+	tick(world: World, tile: Tile<Entity>) {
+		if (this.health <= 0)
+			world.mobLayer.removeTile(tile);
+	}
+
+	get tooltip(): TooltipLine[] {
+		return [];
+	}
+
+	get selectable(): boolean {
+		return false;
 	}
 }
 
