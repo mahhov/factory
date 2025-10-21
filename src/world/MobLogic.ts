@@ -1,6 +1,7 @@
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
+import {Mob} from './Entity.js';
 import {EntityMobChaseTargetAttribute} from './EntityAttribute.js';
 import {World} from './World.js';
 import arr = util.arr;
@@ -21,14 +22,29 @@ let scoreMapping: Record<string, number> = {
 };
 
 export class MobLogic {
-	private counter = new Counter(10);
+	private spawnCounter = new Counter(1000);
+	private targetingCounter = new Counter(10);
 
 	constructor() {
-		this.counter.reset(true);
+		this.targetingCounter.reset(true);
 	}
 
 	tick(world: World) {
-		if (!this.counter.tick()) return;
+		this.spawn(world);
+		this.target(world);
+	}
+
+	private spawn(world: World) {
+		if (!this.spawnCounter.tick()) return;
+
+		for (let i = 0; i < 2; i++) {
+			let position = world.randPosition;
+			world.mobLayer.addTileable(position, new Mob(position));
+		}
+	}
+
+	private target(world: World) {
+		if (!this.targetingCounter.tick()) return;
 
 		let density = arr(world.width).map(() => arr(world.height).map(() => 0));
 		let targets: Vector[] = [];

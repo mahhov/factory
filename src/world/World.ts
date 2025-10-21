@@ -155,10 +155,6 @@ export class World {
 			this.terrain.replaceTileable(this.randPosition, new ResourceDeposit(Resource.IRON));
 		for (let i = 0; i < 100; i++)
 			this.terrain.replaceTileable(this.randPosition, new ResourceDeposit(Resource.CARBON));
-		for (let i = 0; i < 100; i++) {
-			let position = this.randPosition;
-			this.mobLayer.addTileable(position, new Mob(position));
-		}
 	}
 
 	get width() {
