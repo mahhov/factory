@@ -413,9 +413,9 @@ export class EntityTurretAttribute extends EntityAttribute {
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		// todo limit to range
 		let healthAttribute = world.mobLayer.tiles
-			.map(tile => tile.tileable.getAttribute(EntityMobHealthAttribute))
+			.filter(mobTile => mobTile.position.subtract(tile.position).magnitude2 < this.range ** 2)
+			.map(mobTile => mobTile.tileable.getAttribute(EntityMobHealthAttribute))
 			.find(healthAttribute => healthAttribute);
 		if (!healthAttribute) return false;
 		healthAttribute.health -= this.damage;
