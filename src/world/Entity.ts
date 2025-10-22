@@ -248,7 +248,7 @@ export class Turret extends Entity {
 		super();
 		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(0, {[Resource.COPPER]: 10}));
 		this.attributes.push([containerAttribute]);
-		this.attributes.push([new EntityTurretAttribute(1, 2)]);
+		this.attributes.push([new EntityTurretAttribute(1, 6)]);
 	}
 
 	static get size() {
@@ -274,9 +274,9 @@ export class ResourceDeposit extends Entity {
 export class Mob extends Entity {
 	constructor(position: Vector) {
 		super();
-		this.attributes.push([new EntityMobHealthAttribute(10)]);
 		this.attributes.push([new EntityMobChaseTargetAttribute(position)]);
 		this.attributes.push([new EntityMobAttackAttribute(.005, 2)]);
+		this.attributes.push([new EntityMobHealthAttribute(10)]);
 	}
 
 	static get sprite() {

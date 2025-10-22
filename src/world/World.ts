@@ -6,7 +6,7 @@ import {MobLogic} from './MobLogic.js';
 import {Resource} from './Resource.js';
 
 export interface Tileable {
-	container: Container;
+	readonly container: Container;
 
 	get size(): Vector;
 

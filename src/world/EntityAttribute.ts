@@ -423,21 +423,22 @@ export class EntityTurretAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityMobHealthAttribute extends EntityHealthAttribute {
+export class EntityMobHealthAttribute extends EntityAttribute {
+	private readonly maxHealth: number;
+	health: number;
+
+	constructor(health: number) {
+		super();
+		this.maxHealth = health;
+		this.health = health;
+	}
+
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.health <= 0)
+		if (this.health <= 0) {
 			world.mobLayer.removeTile(tile);
+			return false;
+		}
 		return true;
-	}
-
-	get tooltip():
-		TooltipLine[] {
-		return [];
-	}
-
-	get selectable():
-		boolean {
-		return false;
 	}
 }
 
@@ -453,7 +454,7 @@ export class EntityMobChaseTargetAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let delta = this.target.subtract(this.position);
-		if (!delta.magnitude2) return true;
+		if (!delta.magnitude2) return false;
 		if (delta.magnitude2 > .1 ** 2)
 			delta = delta.setMagnitude2(.1 ** 2);
 		this.position = this.position.add(delta);
