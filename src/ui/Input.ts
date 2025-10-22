@@ -150,6 +150,8 @@ class Input {
 		});
 
 		document.addEventListener('contextmenu', e => e.preventDefault());
+		document.addEventListener('mousedown', e => e.preventDefault());
+		document.addEventListener('wheel', e => e.preventDefault(), {passive: false});
 	}
 
 	addBinding(binding: Binding) {
