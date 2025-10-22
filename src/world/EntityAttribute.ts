@@ -11,14 +11,13 @@ import {Tile, World} from './World.js';
 
 // todo add attributes for:
 //   buildable
-//   health
 //   rotation
 
 // enum BuildingState {
 // 	QUEUED, BUILDING, BUILT, DESTROYED
 // }
 
-let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation) => {
+let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation): Vector[] => {
 	switch (rotation) {
 		case Rotation.RIGHT:
 			origin = new Vector(origin.x + size.x - 1, origin.y);
@@ -39,19 +38,21 @@ let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation)
 	return origin.iterate(size).map(border => border.add(shift));
 };
 
+// export let getResourceCounts = (defaultCount: number, resourceNonDefault: Partial<Record<Resource, number>> = {}): Record<Resource, number> =>
+// 	Object.fromEntries(util.enumKeys(Resource).map((resource: Resource) => {
+// 		let count = resourceNonDefault[resource] ?? defaultCount;
+// 		return [resource, count];
+// 	})) as Record<Resource, number>;
+
+export let getResourceCounts = (defaultCount: number, resourceNonDefault: Partial<Record<Resource, number>> = {}): ResourceUtils.Count[] =>
+	util.enumKeys(Resource)
+		.map((resource: Resource) => {
+			let count = resourceNonDefault[resource] ?? defaultCount;
+			return new ResourceUtils.Count(resource, count);
+		})
+		.filter(resourceCount => resourceCount.quantity);
+
 export abstract class EntityAttribute {
-	tick(world: World, tile: Tile<Entity>) {}
-
-	get tooltip(): TooltipLine[] {
-		return [];
-	}
-
-	get selectable(): boolean {
-		return false;
-	}
-}
-
-export abstract class EntityAttribute2 {
 	private done: boolean = false;
 
 	tick(world: World, tile: Tile<Entity>): boolean {
@@ -64,7 +65,7 @@ export abstract class EntityAttribute2 {
 		this.done = false;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		return true;
 	}
 
@@ -73,134 +74,6 @@ export abstract class EntityAttribute2 {
 	}
 
 	get selectable(): boolean {
-		return false;
-	}
-}
-
-export class EntityContainerAttribute2 extends EntityAttribute2 {
-	private readonly totalCapacity: number;
-	private readonly defaultResourceCapacity: number;
-	private readonly resourceCapacity: Partial<Record<Resource, number>>;
-	private readonly inputRotations: Rotation[];
-
-	private readonly quantities: Record<Resource, number>;
-	private readonly orderedResourceAndRotations: [Resource, Rotation][] = [];
-
-	constructor(totalCapacity: number = Infinity,
-	            defaultResourceCapacity: number = Infinity,
-	            resourceCapacity: Partial<Record<Resource, number>> = {},
-	            inputRotations: Rotation[] = util.enumKeys(Rotation)) {
-		super();
-		this.totalCapacity = totalCapacity;
-		this.defaultResourceCapacity = defaultResourceCapacity;
-		this.resourceCapacity = resourceCapacity;
-		this.inputRotations = inputRotations;
-		this.quantities = Object.fromEntries(util.enumKeys(Resource)
-			.map(resource => [resource, 0])) as Record<Resource, number>;
-	}
-
-	private getResourceCapacity(resource: Resource): number {
-		return this.resourceCapacity[resource] ?? this.defaultResourceCapacity;
-	}
-
-	get empty() {
-		return !this.orderedResourceAndRotations.length;
-	}
-
-	get peek(): [Resource, Rotation] {
-		return this.orderedResourceAndRotations[this.orderedResourceAndRotations.length - 1];
-	}
-
-	hasCapacity(resourceCount: ResourceUtils.Count): boolean {
-		return this.orderedResourceAndRotations.length < this.totalCapacity &&
-			this.quantities[resourceCount.resource] + resourceCount.quantity <= this.getResourceCapacity(resourceCount.resource);
-	}
-
-	hasQuantity(resourceCount: ResourceUtils.Count): boolean {
-		return this.quantities[resourceCount.resource] >= resourceCount.quantity;
-	}
-
-	add(resourceCount: ResourceUtils.Count, rotation: Rotation = Rotation.RIGHT) {
-		this.quantities[resourceCount.resource] += resourceCount.quantity;
-		util.arr(resourceCount.quantity).forEach(() =>
-			this.orderedResourceAndRotations.push([resourceCount.resource, rotation]));
-	}
-
-	remove(resourceCount: ResourceUtils.Count) {
-		this.quantities[resourceCount.resource] -= resourceCount.quantity;
-		for (let i = 0; i < resourceCount.quantity; i++)
-			this.orderedResourceAndRotations.splice(this.orderedResourceAndRotations.findLastIndex(resourceAndRotation => resourceAndRotation[0] === resourceCount.resource), 1);
-	}
-
-	acceptsRotation(rotation: Rotation): boolean {
-		return this.inputRotations.includes(rotation);
-	}
-
-	get tooltip(): TooltipLine[] {
-		let tooltipLines = (Object.entries(this.quantities) as unknown as [Resource, number][])
-			.filter(([resource, count]) => count)
-			.map(([resource, count]) => {
-				let prefix = `${ResourceUtils.string(resource)} ${count}`;
-				let capacity = this.getResourceCapacity(resource);
-				return new TooltipLine(capacity !== Infinity ? `${prefix} / ${capacity}` : `${prefix}`);
-			});
-		if (this.totalCapacity !== Infinity && this.orderedResourceAndRotations.length)
-			tooltipLines.push(new TooltipLine(`${this.orderedResourceAndRotations.length} / ${this.totalCapacity}`));
-		return tooltipLines;
-	}
-
-	get selectable() {
-		return true;
-	}
-}
-
-export class EntityTimedAttribute2 extends EntityAttribute2 {
-	private readonly counter: Counter;
-
-	constructor(counterDuration: number) {
-		super();
-		this.counter = new Counter(counterDuration);
-	}
-
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		return this.counter.tick();
-	}
-}
-
-export class EntityConsumeAttribute2 extends EntityAttribute2 {
-	private readonly containerAttribute: EntityContainerAttribute2;
-	private readonly inputs: ResourceUtils.Count[];
-
-	constructor(containerAttribute: EntityContainerAttribute2, inputs: ResourceUtils.Count[]) {
-		super();
-		this.containerAttribute = containerAttribute;
-		this.inputs = inputs;
-	}
-
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.inputs.every(resourceCount => this.containerAttribute.hasQuantity(resourceCount))) {
-			this.inputs.forEach(resourceCount => this.containerAttribute.remove(resourceCount));
-			return true;
-		}
-		return false;
-	}
-}
-
-export class EntityProduceAttribute2 extends EntityAttribute2 {
-	private readonly containerAttribute: EntityContainerAttribute2;
-	private readonly outputs: ResourceUtils.Count[];
-
-	constructor(containerAttribute: EntityContainerAttribute2, outputs: ResourceUtils.Count[]) {
-		super();
-		this.containerAttribute = containerAttribute;
-		this.outputs = outputs;
-	}
-
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.outputs.every(resourceCount => this.containerAttribute.hasCapacity(resourceCount))) {
-			this.outputs.forEach(resourceCount => this.containerAttribute.add(resourceCount));
-			return true;
-		}
 		return false;
 	}
 }
@@ -215,9 +88,12 @@ export class EntityHealthAttribute extends EntityAttribute {
 		this.health = health;
 	}
 
-	tick(world: World, tile: Tile<Entity>) {
-		if (this.health <= 0)
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (this.health <= 0) {
 			world.live.replaceTileable(tile.position, new Empty());
+			return false;
+		}
+		return true;
 	}
 
 	get tooltip(): TooltipLine[] {
@@ -231,40 +107,36 @@ export class EntityHealthAttribute extends EntityAttribute {
 
 export class EntityContainerAttribute extends EntityAttribute {
 	private readonly totalCapacity: number;
-	private readonly defaultResourceCapacity: number;
-	private readonly resourceCapacity: Partial<Record<Resource, number>>;
+	private readonly resourceCapacities: ResourceUtils.Count[];
 	private readonly inputRotations: Rotation[];
-
 	private readonly quantities: Record<Resource, number>;
 	private readonly orderedResourceAndRotations: [Resource, Rotation][] = [];
 
-	constructor(totalCapacity: number = Infinity,
-	            defaultResourceCapacity: number = Infinity,
-	            resourceCapacity: Partial<Record<Resource, number>> = {},
+	constructor(totalCapacity: number,
+	            resourceCapacities: ResourceUtils.Count[],
 	            inputRotations: Rotation[] = util.enumKeys(Rotation)) {
 		super();
 		this.totalCapacity = totalCapacity;
-		this.defaultResourceCapacity = defaultResourceCapacity;
-		this.resourceCapacity = resourceCapacity;
+		this.resourceCapacities = resourceCapacities;
 		this.inputRotations = inputRotations;
 		this.quantities = Object.fromEntries(util.enumKeys(Resource)
 			.map(resource => [resource, 0])) as Record<Resource, number>;
 	}
 
 	private getResourceCapacity(resource: Resource): number {
-		return this.resourceCapacity[resource] ?? this.defaultResourceCapacity;
+		return this.resourceCapacities.find(capacity => capacity.resource === resource)?.quantity ?? 0;
 	}
 
 	get empty() {
 		return !this.orderedResourceAndRotations.length;
 	}
 
-	get peek(): [Resource, Rotation] {
-		return this.orderedResourceAndRotations[this.orderedResourceAndRotations.length - 1];
+	get peek(): [Resource, Rotation] | undefined {
+		return this.orderedResourceAndRotations.at(-1);
 	}
 
 	hasCapacity(resourceCount: ResourceUtils.Count): boolean {
-		return this.orderedResourceAndRotations.length < this.totalCapacity &&
+		return this.orderedResourceAndRotations.length + resourceCount.quantity <= this.totalCapacity &&
 			this.quantities[resourceCount.resource] + resourceCount.quantity <= this.getResourceCapacity(resourceCount.resource);
 	}
 
@@ -289,9 +161,10 @@ export class EntityContainerAttribute extends EntityAttribute {
 	}
 
 	get tooltip(): TooltipLine[] {
-		let tooltipLines = (Object.entries(this.quantities) as unknown as [Resource, number][])
+		let tooltipLines = (Object.entries(this.quantities))
 			.filter(([resource, count]) => count)
-			.map(([resource, count]) => {
+			.map(([resourceString, count]) => {
+				let resource = Number(resourceString);
 				let prefix = `${ResourceUtils.string(resource)} ${count}`;
 				let capacity = this.getResourceCapacity(resource);
 				return new TooltipLine(capacity !== Infinity ? `${prefix} / ${capacity}` : `${prefix}`);
@@ -306,107 +179,146 @@ export class EntityContainerAttribute extends EntityAttribute {
 	}
 }
 
-abstract class EntityTimedAttribute extends EntityAttribute {
+export class EntityTimedAttribute extends EntityAttribute {
 	private readonly counter: Counter;
 
-	protected constructor(counterDuration: number) {
+	constructor(counterDuration: number) {
 		super();
 		this.counter = new Counter(counterDuration);
 	}
 
-	tick(world: World, tile: Tile<Entity>) {
-		if (!this.canProgress(world, tile)) return;
-		if (!this.counter.prepare()) return;
-		if (this.maybeComplete(world, tile))
-			this.counter.reset();
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		return this.counter.tick();
 	}
-
-	protected abstract canProgress(world: World, tile: Tile<Entity>): boolean;
-
-	protected abstract maybeComplete(world: World, tile: Tile<Entity>): boolean;
 }
 
-export class EntityTransportAttribute extends EntityTimedAttribute {
-	protected readonly containerAttribute: EntityContainerAttribute;
-	private readonly defaultResourceAllowed: boolean;
-	private readonly resourcesNotDefault: Resource[];
-	protected outputRotations: Rotation[];
-	private readonly ordered: boolean;
+export class EntityConsumeAttribute extends EntityAttribute {
+	private readonly containerAttribute: EntityContainerAttribute;
+	private readonly inputs: ResourceUtils.Count[];
 
-	constructor(containerAttribute: EntityContainerAttribute,
-	            counterDuration: number,
-	            defaultResourceAllowed: boolean = true,
-	            resourcesNotDefault: Resource[] = [],
-	            outputRotations: Rotation[] = util.enumKeys(Rotation),
-	            ordered: boolean = false) {
-		super(counterDuration);
+	constructor(containerAttribute: EntityContainerAttribute, inputs: ResourceUtils.Count[]) {
+		super();
 		this.containerAttribute = containerAttribute;
-		this.defaultResourceAllowed = defaultResourceAllowed;
-		this.resourcesNotDefault = resourcesNotDefault;
+		this.inputs = inputs;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (this.inputs.every(resourceCount => this.containerAttribute.hasQuantity(resourceCount))) {
+			this.inputs.forEach(resourceCount => this.containerAttribute.remove(resourceCount));
+			return true;
+		}
+		return false;
+	}
+}
+
+export class EntityProduceAttribute extends EntityAttribute {
+	private readonly containerAttribute: EntityContainerAttribute;
+	private readonly outputs: ResourceUtils.Count[];
+
+	constructor(containerAttribute: EntityContainerAttribute, outputs: ResourceUtils.Count[]) {
+		super();
+		this.containerAttribute = containerAttribute;
+		this.outputs = outputs;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (this.outputs.every(resourceCount => this.containerAttribute.hasCapacity(resourceCount))) {
+			this.outputs.forEach(resourceCount => this.containerAttribute.add(resourceCount));
+			return true;
+		}
+		return false;
+	}
+}
+
+export class EntityHasAnyOfResourceAttribute extends EntityAttribute {
+	private readonly containerAttribute: EntityContainerAttribute;
+	private readonly resourceCounts: ResourceUtils.Count[];
+
+	constructor(containerAttribute: EntityContainerAttribute, resourceCounts: ResourceUtils.Count[]) {
+		super();
+		this.containerAttribute = containerAttribute;
+		this.resourceCounts = resourceCounts;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		return this.resourceCounts.some(resourceCount => this.containerAttribute.hasQuantity(resourceCount));
+	}
+}
+
+export class EntityTransportAttribute extends EntityAttribute {
+	private readonly containerAttribute: EntityContainerAttribute;
+	private readonly outputRotations: Rotation[];
+
+	constructor(containerAttribute: EntityContainerAttribute, outputRotations: Rotation[]) {
+		super();
+		this.containerAttribute = containerAttribute;
 		this.outputRotations = outputRotations;
-		this.ordered = ordered;
 	}
 
-	private get resourceCounts(): ResourceUtils.Count[] {
-		return util.enumKeys(Resource)
-			.filter(resource => this.resourcesNotDefault.includes(resource) !== this.defaultResourceAllowed)
-			.map(resource => new ResourceUtils.Count(resource, 1));
-	}
-
-	protected canProgress(world: World, tile: Tile<Entity>): boolean {
-		return this.resourceCounts.some(resourceCount =>
-			this.containerAttribute.hasQuantity(resourceCount));
-	}
-
-	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
-		let resourceCounts = this.resourceCounts.filter(resourceCount => this.containerAttribute.hasQuantity(resourceCount));
-		if (this.ordered)
-			resourceCounts = resourceCounts.filter(resourceCount => resourceCount.resource === this.containerAttribute.peek[0]);
-		else
-			resourceCounts = util.shuffle(resourceCounts);
-		return util.shuffle(this.outputRotations).some(rotation =>
+	static move(containerAttribute: EntityContainerAttribute, outputRotations: Rotation[], resourceCounts: ResourceUtils.Count[], world: World, tile: Tile<Entity>): boolean {
+		return util.shuffle(outputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
-				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityContainerAttribute) || world.live.getTile(destination)?.tileable.getAttribute(EntityContainerAttribute2))
+				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityContainerAttribute))
 				.some(destinationContainerAttribute =>
-					resourceCounts.some(resourceCount => {
+					util.shuffle(resourceCounts).some(resourceCount => {
 						if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount)) {
-							this.containerAttribute.remove(resourceCount);
+							containerAttribute.remove(resourceCount);
 							destinationContainerAttribute.add(resourceCount, rotation);
 							return true;
 						}
 						return false;
 					})));
 	}
-}
 
-// todo replace with 4 EntityTransportAttribute
-export class EntityJunctionTransportAttribute extends EntityTransportAttribute {
-	constructor(containerAttribute: EntityContainerAttribute,
-	            counterDuration: number,
-	            defaultResourceAllowed: boolean = true,
-	            resourcesNotDefault: Resource[] = []) {
-		super(containerAttribute, counterDuration, defaultResourceAllowed, resourcesNotDefault, [], true);
-	}
-
-	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
-		this.outputRotations = [this.containerAttribute.peek[1]];
-		return super.maybeComplete(world, tile);
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (this.containerAttribute.empty) return false;
+		let [resource] = this.containerAttribute.peek!;
+		return EntityTransportAttribute.move(this.containerAttribute, this.outputRotations, [new ResourceUtils.Count(resource, 1)], world, tile);
 	}
 }
 
-export class EntityExtractorAttribute extends EntityTimedAttribute {
+export class EntityJunctionTransportAttribute extends EntityAttribute {
 	private readonly containerAttribute: EntityContainerAttribute;
 
-	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number) {
-		super(counterDuration);
+	constructor(containerAttribute: EntityContainerAttribute) {
+		super();
 		this.containerAttribute = containerAttribute;
 	}
 
-	protected canProgress(world: World, tile: Tile<Entity>): boolean {
-		return true;
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (this.containerAttribute.empty) return false;
+		let [resource, rotation] = this.containerAttribute.peek!;
+		return EntityTransportAttribute.move(this.containerAttribute, [rotation], [new ResourceUtils.Count(resource, 1)], world, tile);
+	}
+}
+
+export class EntityOutflowAttribute extends EntityAttribute {
+	private readonly containerAttribute: EntityContainerAttribute;
+	private readonly resourceCounts: ResourceUtils.Count[];
+
+	constructor(containerAttribute: EntityContainerAttribute, resourceCounts: ResourceUtils.Count[]) {
+		super();
+		this.containerAttribute = containerAttribute;
+		this.resourceCounts = resourceCounts;
 	}
 
-	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (this.containerAttribute.empty) return false;
+		let outputRotations: Rotation[] = util.enumKeys(Rotation);
+		let resourceCounts = this.resourceCounts.filter(resourceCount => this.containerAttribute.hasQuantity(resourceCount));
+		return EntityTransportAttribute.move(this.containerAttribute, outputRotations, resourceCounts, world, tile);
+	}
+}
+
+export class EntityExtractorAttribute extends EntityAttribute {
+	private readonly containerAttribute: EntityContainerAttribute;
+
+	constructor(containerAttribute: EntityContainerAttribute) {
+		super();
+		this.containerAttribute = containerAttribute;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		tile.position.iterate(tile.tileable.size).forEach(position => {
 			let tile = world.terrain.getTile(position);
 			if (tile?.tileable instanceof ResourceDeposit) {
@@ -419,19 +331,15 @@ export class EntityExtractorAttribute extends EntityTimedAttribute {
 	}
 }
 
-export class EntitySourceAttribute extends EntityTimedAttribute {
+export class EntitySourceAttribute extends EntityAttribute {
 	private readonly entityResourcePickerAttribute: EntityResourcePickerAttribute;
 
-	constructor(counterDuration: number, entityResourcePickerAttribute: EntityResourcePickerAttribute) {
-		super(counterDuration);
+	constructor(entityResourcePickerAttribute: EntityResourcePickerAttribute) {
+		super();
 		this.entityResourcePickerAttribute = entityResourcePickerAttribute;
 	}
 
-	protected canProgress(world: World, tile: Tile<Entity>): boolean {
-		return true;
-	}
-
-	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let resourceCount = new ResourceUtils.Count(this.entityResourcePickerAttribute.resource, 1);
 		util.enumKeys(Rotation).forEach(rotation =>
 			getAdjacentDestinations(tile.position, tile.tileable.size, rotation)
@@ -441,34 +349,6 @@ export class EntitySourceAttribute extends EntityTimedAttribute {
 						destinationContainerAttribute.add(resourceCount);
 				}));
 		return true;
-	}
-}
-
-export class EntityProduceAttribute extends EntityTimedAttribute {
-	private readonly containerAttribute: EntityContainerAttribute;
-	private readonly inputs: ResourceUtils.Count[];
-	private readonly outputs: ResourceUtils.Count[];
-
-	constructor(containerAttribute: EntityContainerAttribute, counterDuration: number, inputs: ResourceUtils.Count[], outputs: ResourceUtils.Count[]) {
-		super(counterDuration);
-		this.containerAttribute = containerAttribute;
-		this.inputs = inputs;
-		this.outputs = outputs;
-	}
-
-	protected canProgress(world: World, tile: Tile<Entity>): boolean {
-		return this.inputs.every(resourceCount =>
-			this.containerAttribute.hasQuantity(resourceCount));
-	}
-
-	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
-		if (this.outputs.every(resourceCount =>
-			this.containerAttribute.hasCapacity(resourceCount))) {
-			this.inputs.forEach(resourceCount => this.containerAttribute.remove(resourceCount));
-			this.outputs.forEach(resourceCount => this.containerAttribute.add(resourceCount));
-			return true;
-		}
-		return false;
 	}
 }
 
@@ -516,26 +396,24 @@ export class EntityResourceFullSpriteAttribute extends EntityAttribute {
 		this.spriteFull = spriteFull;
 	}
 
-	tick(world: World, tile: Tile<Entity>) {
-		tile.tileable.sprite = this.containerAttribute.empty ? this.sprite : this.spriteFull(this.containerAttribute.peek[0]);
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		tile.tileable.sprite = this.containerAttribute.empty ? this.sprite : this.spriteFull(this.containerAttribute.peek![0]);
+		return true;
 	}
 }
 
-export class EntityTurretAttribute extends EntityTimedAttribute {
+export class EntityTurretAttribute extends EntityAttribute {
 	readonly damage: number;
 	readonly range: number;
 
-	constructor(counterDuration: number, damage: number, range: number) {
-		super(counterDuration);
+	constructor(damage: number, range: number) {
+		super();
 		this.damage = damage;
 		this.range = range;
 	}
 
-	protected canProgress(world: World, tile: Tile<Entity>): boolean {
-		return true;
-	}
-
-	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		// todo limit to range
 		let healthAttribute = world.mobLayer.tiles
 			.map(tile => tile.tileable.getAttribute(EntityMobHealthAttribute))
 			.find(healthAttribute => healthAttribute);
@@ -546,34 +424,34 @@ export class EntityTurretAttribute extends EntityTimedAttribute {
 }
 
 export class EntityMobHealthAttribute extends EntityHealthAttribute {
-	tick(world: World, tile: Tile<Entity>) {
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.health <= 0)
 			world.mobLayer.removeTile(tile);
+		return true;
 	}
 
-	get tooltip(): TooltipLine[] {
+	get tooltip():
+		TooltipLine[] {
 		return [];
 	}
 
-	get selectable(): boolean {
+	get selectable():
+		boolean {
 		return false;
 	}
 }
 
-export class EntityMobChaseTargetAttribute extends EntityTimedAttribute {
+export class EntityMobChaseTargetAttribute extends EntityAttribute {
 	position: Vector;
-	target: Vector = Vector.V0;
+	target: Vector;
 
-	constructor(counterDuration: number, position: Vector) {
-		super(counterDuration);
+	constructor(position: Vector) {
+		super();
 		this.position = position;
+		this.target = position;
 	}
 
-	protected canProgress(world: World, tile: Tile<Entity>): boolean {
-		return true;
-	}
-
-	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let delta = this.target.subtract(this.position);
 		if (!delta.magnitude2) return true;
 		if (delta.magnitude2 > .1 ** 2)
@@ -585,7 +463,7 @@ export class EntityMobChaseTargetAttribute extends EntityTimedAttribute {
 }
 
 export class EntityMobAttackAttribute extends EntityTurretAttribute {
-	protected maybeComplete(world: World, tile: Tile<Entity>): boolean {
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let healthAttribute = tile.position.floor().subtract(new Vector(this.range)).iterate(new Vector(this.range * 2))
 			.map(position => world.live.getTile(position)?.tileable.getAttribute(EntityHealthAttribute))
 			.find(healthAttribute => healthAttribute);

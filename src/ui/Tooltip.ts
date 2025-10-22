@@ -98,8 +98,7 @@ export default class Tooltip {
 				y += text.height;
 				text.onpointertap = tooltipLine.callback;
 			},
-			() =>
-				this.textContainer.removeChildAt(this.textContainer.children.length - 1));
+			() => this.textContainer.removeChild(this.textContainer.children.at(-1)!));
 
 		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.scale(this.world.size.invert()));
 		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.add(this.selection.tile.tileable.size).scale(this.world.size.invert()));

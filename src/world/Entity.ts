@@ -6,32 +6,33 @@ import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {
 	EntityAttribute,
-	EntityAttribute2,
-	EntityConsumeAttribute2,
+	EntityConsumeAttribute,
 	EntityContainerAttribute,
-	EntityContainerAttribute2,
 	EntityExtractorAttribute,
+	EntityHasAnyOfResourceAttribute,
 	EntityHealthAttribute,
 	EntityJunctionTransportAttribute,
 	EntityMobAttackAttribute,
 	EntityMobChaseTargetAttribute,
 	EntityMobHealthAttribute,
-	EntityProduceAttribute2,
+	EntityOutflowAttribute,
+	EntityProduceAttribute,
 	EntityResourceDisplayAttribute,
 	EntityResourceFullSpriteAttribute,
 	EntityResourcePickerAttribute,
 	EntitySourceAttribute,
-	EntityTimedAttribute2,
+	EntityTimedAttribute,
 	EntityTransportAttribute,
 	EntityTurretAttribute,
+	getResourceCounts,
 } from './EntityAttribute.js';
 import {Resource, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, Tileable, World} from './World.js';
 
-export class Entity<S extends EntityAttribute = EntityAttribute> implements Tileable {
+export class Entity implements Tileable {
 	protected readonly rotation: Rotation;
-	protected readonly attributes: S[] = [];
+	protected readonly attributes: EntityAttribute[][] = [];
 	readonly container = new Container();
 
 	constructor(rotation: Rotation = Rotation.RIGHT) {
@@ -64,27 +65,22 @@ export class Entity<S extends EntityAttribute = EntityAttribute> implements Tile
 		return (this.constructor as typeof Entity).size;
 	}
 
-	getAttribute<T extends S>(attributeClass: { new(...args: any[]): T }): T | undefined {
-		return this.attributes.find(attribute => attribute instanceof attributeClass) as T;
+	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | undefined {
+		return this.attributes.flat().find(attribute => attribute instanceof attributeClass) as T;
 	}
 
 	tick(world: World, tile: Tile<Entity>) {
-		this.attributes.forEach(attribute => attribute.tick(world, tile));
+		this.attributes
+			.filter(attributeChain => attributeChain.every(attribute => attribute.tick(world, tile)))
+			.forEach(attributeChain => attributeChain.forEach(attribute => attribute.reset()));
 	}
 
 	get tooltip(): TooltipLine[] {
-		return this.attributes.map(attribute => attribute.tooltip).flat();
+		return this.attributes.flat().map(attribute => attribute.tooltip).flat();
 	}
 
 	get selectable(): boolean {
-		return this.attributes.some(attribute => attribute.selectable);
-	}
-}
-
-export class Entity2 extends Entity<EntityAttribute2> {
-	tick(world: World, tile: Tile<Entity>) {
-		if (this.attributes.every(attribute => attribute.tick(world, tile)))
-			this.attributes.forEach(attribute => attribute.reset());
+		return this.attributes.flat().some(attribute => attribute.selectable);
 	}
 }
 
@@ -99,21 +95,24 @@ export class Empty extends Entity {
 export class Wall extends Entity {
 	constructor() {
 		super();
+		this.attributes.push([new EntityHealthAttribute(10)]);
 	}
 
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_WALL]);}
 }
 
 export class Conveyor extends Entity {
-	private readonly containerAttribute: EntityContainerAttribute;
-
 	constructor(rotation: Rotation) {
 		super(rotation);
-		this.containerAttribute = new EntityContainerAttribute(1, Infinity, {}, util.enumKeys(Rotation).filter(r => r !== RotationUtils.opposite(rotation)));
-		this.attributes.push(this.containerAttribute);
-		this.attributes.push(new EntityTransportAttribute(this.containerAttribute, 10, true, [], [rotation], true));
-		this.attributes.push(new EntityResourceFullSpriteAttribute(this.containerAttribute,
-			Conveyor.sprite, resource => Conveyor.spriteFull(resource)));
+		this.attributes.push([new EntityHealthAttribute(1)]);
+		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity), util.enumKeys(Rotation).filter(r => r !== RotationUtils.opposite(rotation)));
+		this.attributes.push([containerAttribute]);
+		this.attributes.push([
+			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
+			new EntityTimedAttribute(10),
+			new EntityTransportAttribute(containerAttribute, [rotation]),
+		]);
+		this.attributes.push([new EntityResourceFullSpriteAttribute(containerAttribute, Conveyor.sprite, resource => Conveyor.spriteFull(resource))]);
 	}
 
 	static get sprite() {
@@ -126,15 +125,17 @@ export class Conveyor extends Entity {
 }
 
 export class Distributor extends Entity {
-	private readonly containerAttribute: EntityContainerAttribute;
-
 	constructor() {
 		super();
-		this.containerAttribute = new EntityContainerAttribute(1);
-		this.attributes.push(this.containerAttribute);
-		this.attributes.push(new EntityTransportAttribute(this.containerAttribute, 5, true, [], util.enumKeys(Rotation), true));
-		this.attributes.push(new EntityResourceFullSpriteAttribute(this.containerAttribute,
-			Distributor.sprite, resource => Distributor.spriteFull(resource)));
+		this.attributes.push([new EntityHealthAttribute(1)]);
+		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity));
+		this.attributes.push([containerAttribute]);
+		this.attributes.push([
+			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
+			new EntityTimedAttribute(10),
+			new EntityTransportAttribute(containerAttribute, util.enumKeys(Rotation)),
+		]);
+		this.attributes.push([new EntityResourceFullSpriteAttribute(containerAttribute, Distributor.sprite, resource => Distributor.spriteFull(resource))]);
 	}
 
 	static get sprite() {
@@ -147,15 +148,17 @@ export class Distributor extends Entity {
 }
 
 export class Junction extends Entity {
-	private readonly containerAttribute: EntityContainerAttribute;
-
 	constructor() {
 		super();
-		this.containerAttribute = new EntityContainerAttribute(1);
-		this.attributes.push(this.containerAttribute);
-		this.attributes.push(new EntityJunctionTransportAttribute(this.containerAttribute, 5));
-		this.attributes.push(new EntityResourceFullSpriteAttribute(this.containerAttribute,
-			Junction.sprite, resource => Junction.spriteFull(resource)));
+		this.attributes.push([new EntityHealthAttribute(1)]);
+		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity));
+		this.attributes.push([containerAttribute]);
+		this.attributes.push([
+			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
+			new EntityTimedAttribute(10),
+			new EntityJunctionTransportAttribute(containerAttribute),
+		]);
+		this.attributes.push([new EntityResourceFullSpriteAttribute(containerAttribute, Junction.sprite, resource => Junction.spriteFull(resource))]);
 	}
 
 	static get sprite() {
@@ -167,24 +170,17 @@ export class Junction extends Entity {
 	}
 }
 
-export class Bridge extends Entity {
-	static get sprite() {
-		return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'bridge.png');
-	}
-
-	static spriteFull(resource: Resource) {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'bridge-full.png', [ResourceUtils.color(resource)]);
-	}
-}
-
 export class Extractor extends Entity {
 	constructor() {
 		super();
-		this.attributes.push(new EntityHealthAttribute(10));
-		let containerAttribute = new EntityContainerAttribute(Infinity, 10, {}, []);
-		this.attributes.push(containerAttribute);
-		this.attributes.push(new EntityExtractorAttribute(containerAttribute, 80));
-		this.attributes.push(new EntityTransportAttribute(containerAttribute, 1));
+		this.attributes.push([new EntityHealthAttribute(32)]);
+		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(10), []);
+		this.attributes.push([containerAttribute]);
+		this.attributes.push([
+			new EntityTimedAttribute(80),
+			new EntityExtractorAttribute(containerAttribute),
+		]);
+		this.attributes.push([new EntityOutflowAttribute(containerAttribute, getResourceCounts(1))]);
 	}
 
 	static get size() {
@@ -200,8 +196,11 @@ export class Source extends Entity {
 	constructor() {
 		super();
 		let entityResourcePickerAttribute = new EntityResourcePickerAttribute();
-		this.attributes.push(entityResourcePickerAttribute);
-		this.attributes.push(new EntitySourceAttribute(40, entityResourcePickerAttribute));
+		this.attributes.push([entityResourcePickerAttribute]);
+		this.attributes.push([
+			new EntityTimedAttribute(40),
+			new EntitySourceAttribute(entityResourcePickerAttribute),
+		]);
 	}
 
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'source.png', [Color.ENTITY_SOURCE]);}
@@ -210,28 +209,30 @@ export class Source extends Entity {
 export class Void extends Entity {
 	constructor() {
 		super();
-		this.attributes.push(new EntityContainerAttribute());
+		this.attributes.push([new EntityContainerAttribute(Infinity, getResourceCounts(Infinity))]);
 	}
 
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'void.png', [Color.ENTITY_VOID]);}
 }
 
-export class GlassFactory extends Entity2 {
+export class GlassFactory extends Entity {
 	constructor() {
 		super();
-		let containerAttribute = new EntityContainerAttribute2(Infinity, 0, {
+		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(0, {
 			[Resource.IRON]: 10,
 			[Resource.CARBON]: 10,
 			[Resource.STEEL]: 10,
-		});
-		this.attributes.push(containerAttribute);
-		this.attributes.push(new EntityTimedAttribute2(40));
-		this.attributes.push(new EntityConsumeAttribute2(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.IRON, 1]])));
-		this.attributes.push(new EntityProduceAttribute2(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.CARBON, 1]])));
-		// this.attributes.push(new EntityProduceAttribute(containerAttribute, 40,
-		// 	ResourceUtils.Count.fromTuples([[Resource.IRON, 1], [Resource.CARBON, 1]]),
-		// 	outputs));
-		// this.attributes.push(new EntityTransportAttribute(containerAttribute, 1, false, outputs.map(resourceCount => resourceCount.resource)));
+		}));
+		this.attributes.push([new EntityHealthAttribute(10)]);
+		this.attributes.push([containerAttribute]);
+		this.attributes.push([
+			new EntityTimedAttribute(40),
+			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.IRON, 1], [Resource.CARBON, 1]])),
+			new EntityProduceAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.STEEL, 1]])),
+		]);
+		this.attributes.push([new EntityOutflowAttribute(containerAttribute, getResourceCounts(0, {
+			[Resource.STEEL]: 1,
+		}))]);
 	}
 
 	static get sprite() {
@@ -245,11 +246,9 @@ export class Turret extends Entity {
 	// todo fire projectiles
 	constructor() {
 		super();
-		let containerAttribute = new EntityContainerAttribute(Infinity, 0, {
-			[Resource.COPPER]: 10,
-		});
-		this.attributes.push(containerAttribute);
-		this.attributes.push(new EntityTurretAttribute(1, 1, 2));
+		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(0, {[Resource.COPPER]: 10}));
+		this.attributes.push([containerAttribute]);
+		this.attributes.push([new EntityTurretAttribute(1, 2)]);
 	}
 
 	static get size() {
@@ -268,32 +267,19 @@ export class ResourceDeposit extends Entity {
 		super();
 		this.sprite = SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [ResourceUtils.color(resource)]);
 		this.resource = resource;
-		this.attributes.push(new EntityResourceDisplayAttribute(resource));
+		this.attributes.push([new EntityResourceDisplayAttribute(resource)]);
 	}
 }
 
 export class Mob extends Entity {
 	constructor(position: Vector) {
 		super();
-		this.attributes.push(new EntityMobHealthAttribute(10));
-		this.attributes.push(new EntityMobChaseTargetAttribute(1, position));
-		this.attributes.push(new EntityMobAttackAttribute(1, .005, 2));
+		this.attributes.push([new EntityMobHealthAttribute(10)]);
+		this.attributes.push([new EntityMobChaseTargetAttribute(position)]);
+		this.attributes.push([new EntityMobAttackAttribute(.005, 2)]);
 	}
 
 	static get sprite() {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'circle.png', [Color.MOB_YELLOW]);
 	}
 }
-
-// class AnimatedConveyor extends Entity {
-// 	constructor(rotation: Rotation) {
-// 		super(AnimatedConveyor.sprite, rotation, 10);
-// 	}
-//
-// 	private static get sprite() {
-// 		let animation = spriteLoader.animation(spriteLoader.Resource.CONVEYOR, 'move');
-// 		animation.animationSpeed = .1;
-// 		animation.play();
-// 		return animation;
-// 	}
-// }
