@@ -51,19 +51,15 @@ class WorldLayer {
 }
 
 export class GridWorldLayer<T extends Tileable> extends WorldLayer {
-	private readonly defaultTileableCtr: { new(): T };
+	private readonly defaultTileable: T;
 	private readonly showDefaultTileable: boolean;
-	grid: Tile<T>[][] = [];
+	readonly grid: Tile<T>[][] = [];
 
-	constructor(defaultTileableCtr: { new(): T }, showDefaultTileable: boolean, size: Vector) {
+	constructor(defaultTileable: T, showDefaultTileable: boolean, size: Vector) {
 		super(size);
-		this.defaultTileableCtr = defaultTileableCtr;
+		this.defaultTileable = defaultTileable;
 		this.showDefaultTileable = showDefaultTileable;
-		this.clearAllEntities(size);
-	}
-
-	defaultGrid(size: Vector): Tile<T>[][] {
-		return util.arr(size.x).map(_ => util.arr(size.y).map(_ => new Tile(new this.defaultTileableCtr())));
+		this.grid = util.arr(size.x).map(_ => util.arr(size.y).map(_ => new Tile(defaultTileable)));
 	}
 
 	replaceTileable(position: Vector, tileable: T) {
@@ -76,9 +72,9 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 					let tile = this.getTile(emptyPosition)!;
 					if (replaceTiles.includes(tile))
 						this.container.removeChild(tile.tileable.container);
-					else if (!(tile.tileable instanceof this.defaultTileableCtr)) {
+					else if (tile.tileable.constructor.name !== this.defaultTileable.constructor.name) {
 						this.container.removeChild(tile.tileable.container);
-						this.addTileable(emptyPosition, new this.defaultTileableCtr());
+						this.addTileable(emptyPosition, this.defaultTileable);
 					}
 				}));
 
@@ -93,7 +89,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 				tile.position = position;
 			});
 
-		if (this.showDefaultTileable || !(tileable instanceof this.defaultTileableCtr))
+		if (this.showDefaultTileable || tileable.constructor.name !== this.defaultTileable.constructor.name)
 			this.addContainer(tileable.container, position, tileable.size);
 	}
 
@@ -107,8 +103,8 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 			null;
 	}
 
-	clearAllEntities(size: Vector = this.size) {
-		this.grid = this.defaultGrid(size);
+	clearAllEntities() {
+		this.grid.forEach(column => column.forEach(tile => tile.tileable = this.defaultTileable));
 		this.container.removeChildren();
 		// doesn't add default grid to `this.container`
 	}
@@ -146,11 +142,11 @@ export class World {
 	mobLogic = new MobLogic();
 
 	constructor(size: Vector, container: Container) {
-		this.terrain = new GridWorldLayer(Empty, false, size);
+		this.terrain = new GridWorldLayer(new Empty(), false, size);
 		container.addChild(this.terrain.container);
-		this.live = new GridWorldLayer(Empty, false, size);
+		this.live = new GridWorldLayer(new Empty(), false, size);
 		container.addChild(this.live.container);
-		this.queue = new GridWorldLayer(Empty, true, size);
+		this.queue = new GridWorldLayer(new Empty(), true, size);
 		container.addChild(this.queue.container);
 		this.queue.container.alpha = .5;
 		this.mobLayer = new FreeWorldLayer<Entity>(size);
