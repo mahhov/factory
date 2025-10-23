@@ -402,27 +402,6 @@ export class EntityResourceFullSpriteAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityTurretAttribute extends EntityAttribute {
-	readonly damage: number;
-	readonly range: number;
-
-	constructor(damage: number, range: number) {
-		super();
-		this.damage = damage;
-		this.range = range;
-	}
-
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let healthAttribute = world.mobLayer.tiles
-			.filter(mobTile => mobTile.position.subtract(tile.position).magnitude2 < this.range ** 2)
-			.map(mobTile => mobTile.tileable.getAttribute(EntityMobHealthAttribute))
-			.find(healthAttribute => healthAttribute);
-		if (!healthAttribute) return false;
-		healthAttribute.health -= this.damage;
-		return true;
-	}
-}
-
 export class EntityMobHealthAttribute extends EntityAttribute {
 	private readonly maxHealth: number;
 	health: number;

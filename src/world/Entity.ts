@@ -26,7 +26,6 @@ import {
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
 	EntityTransportAttribute,
-	EntityTurretAttribute,
 	getResourceCounts,
 } from './EntityAttribute.js';
 import {Resource, ResourceUtils} from './Resource.js';
@@ -251,7 +250,11 @@ export class Turret extends Entity {
 		super();
 		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(0, {[Resource.COPPER]: 10}));
 		this.attributes.push([containerAttribute]);
-		this.attributes.push([new EntityTurretAttribute(1, 6)]);
+		this.attributes.push([
+			new EntityTimedAttribute(30),
+			// todo velocity
+			new EntitySpawnProjectileAttribute(new Vector(.1), 100, 3, 1, 2, true),
+		]);
 	}
 
 	static get size() {
@@ -281,8 +284,7 @@ export class Mob extends Entity {
 		this.attributes.push([
 			new EntityTimedAttribute(30),
 			// todo velocity
-			// todo similar for player turret
-			new EntitySpawnProjectileAttribute(new Vector(.1), 10, .005, 1, 2, false),
+			new EntitySpawnProjectileAttribute(new Vector(.1), 100, .005, 1, 2, false),
 		]);
 		this.attributes.push([new EntityMobHealthAttribute(10)]);
 	}
