@@ -39,7 +39,7 @@ export default class Controller {
 			placer.setEntity(Empty);
 			placer.start();
 		}));
-		input.addBinding(new MouseBinding(MouseBinding.MouseButton.RIGHT, [Input.State.DOWN, Input.State.UP], () => placer.move()));
+		input.addBinding(new MouseBinding(MouseBinding.MouseButton.RIGHT, [Input.State.DOWN], () => placer.move()));
 		input.addBinding(new MouseBinding(MouseBinding.MouseButton.RIGHT, [Input.State.RELEASED], () => placer.end()));
 		input.addBinding(new MouseWheelBinding(false, [Input.State.PRESSED], () => placer.rotate(-1)));
 		input.addBinding(new MouseWheelBinding(true, [Input.State.PRESSED], () => placer.rotate(1)));

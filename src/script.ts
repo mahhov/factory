@@ -9,6 +9,32 @@ import Tooltip from './ui/Tooltip.js';
 import Vector from './util/Vector.js';
 import {World} from './world/World.js';
 
+class Loop {
+	private label: string;
+	private frames = 0;
+	private last = 0;
+	mostRecentFps = 0;
+	private readonly handler: () => void;
+
+	constructor(label: string, handler: () => void) {
+		this.label = label;
+		this.handler = handler;
+	}
+
+	run() {
+		let now = performance.now();
+		let elapsed = now - this.last;
+		if (elapsed > 1000) {
+			let fps = this.frames / elapsed * 1000;
+			// console.log(this.label, fps);
+			this.frames = 0;
+			this.last = now;
+		}
+		this.frames++;
+		this.handler();
+	}
+}
+
 (async () => {
 	let app = new Application();
 	await app.init({
@@ -29,12 +55,17 @@ import {World} from './world/World.js';
 	let tooltip = new Tooltip(painter, camera, input, world);
 	let controller = new Controller(camera, placer, tooltip, input);
 
-	setInterval(() => {
+	let renderLoop = new Loop('render fps', () => {
 		camera.tick();
 		input.tick();
-		world.tick();
 		tooltip.tick();
-	}, 10);
+	});
+	app.ticker.add(() => renderLoop.run());
+
+	let updateLoop = new Loop('update fps', () => {
+		world.tick();
+	});
+	setInterval(() => updateLoop.run(), 10);
 })();
 
 // todo
