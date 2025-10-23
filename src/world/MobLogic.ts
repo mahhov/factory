@@ -39,10 +39,11 @@ export class MobLogic {
 
 		for (let i = 0; i < 2; i++) {
 			let position = world.randPosition;
-			world.mobLayer.addTileable(position, new Mob(position));
+			world.mobLayer.addTileable(position, new Mob());
 		}
 	}
 
+	// todo ends targeting empty tiles in between player tiles
 	private target(world: World) {
 		if (!this.targetingCounter.tick()) return;
 

@@ -4,7 +4,7 @@ import TooltipLine from '../ui/TooltipLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Empty, Entity, ResourceDeposit} from './Entity.js';
+import {Empty, Entity, Projectile, ResourceDeposit} from './Entity.js';
 import {Resource, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, World} from './World.js';
@@ -443,33 +443,91 @@ export class EntityMobHealthAttribute extends EntityAttribute {
 }
 
 export class EntityMobChaseTargetAttribute extends EntityAttribute {
-	position: Vector;
-	target: Vector;
-
-	constructor(position: Vector) {
-		super();
-		this.position = position;
-		this.target = position;
-	}
+	target: Vector = Vector.V0;
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let delta = this.target.subtract(this.position);
+		let delta = this.target.subtract(tile.position);
 		if (!delta.magnitude2) return false;
 		if (delta.magnitude2 > .1 ** 2)
 			delta = delta.setMagnitude2(.1 ** 2);
-		this.position = this.position.add(delta);
-		world.mobLayer.updateTile(this.position, tile);
+		world.mobLayer.updateTile(tile.position.add(delta), tile);
 		return true;
 	}
 }
 
-export class EntityMobAttackAttribute extends EntityTurretAttribute {
+export class EntitySpawnProjectileAttribute extends EntityAttribute {
+	private readonly velocity: Vector;
+	private readonly duration: number;
+	private readonly range: number;
+	private readonly maxTargets: number;
+	private readonly damage: number;
+	private readonly friendly: boolean;
+
+	constructor(velocity: Vector, duration: number, range: number, maxTargets: number, damage: number, friendly: boolean) {
+		super();
+		this.velocity = velocity;
+		this.duration = duration;
+		this.range = range;
+		this.maxTargets = maxTargets;
+		this.damage = damage;
+		this.friendly = friendly;
+	}
+
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let healthAttribute = tile.position.floor().subtract(new Vector(this.range)).iterate(new Vector(this.range * 2))
-			.map(position => world.live.getTile(position)?.tileable.getAttribute(EntityHealthAttribute))
-			.find(healthAttribute => healthAttribute);
-		if (!healthAttribute) return false;
-		healthAttribute.health -= this.damage;
+		world.mobLayer.addTileable(tile.position, new Projectile(this.velocity, this.duration, this.range, this.maxTargets, this.damage, this.friendly));
+		return true;
+	}
+}
+
+export class EntityDirectionMovementAttribute extends EntityAttribute {
+	private readonly velocity: Vector;
+
+	constructor(velocity: Vector) {
+		super();
+		this.velocity = velocity;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		world.mobLayer.updateTile(tile.position.add(this.velocity), tile);
+		return true;
+	}
+}
+
+export class EntityDamageAttribute extends EntityAttribute {
+	private readonly range: number;
+	private readonly maxTargets: number;
+	private readonly damage: number;
+	private readonly friendly: boolean;
+
+	constructor(range: number, maxTargets: number, damage: number, friendly: boolean) {
+		super();
+		this.range = range;
+		this.maxTargets = maxTargets;
+		this.damage = damage;
+		this.friendly = friendly;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		let healthAttributes: (EntityHealthAttribute | EntityMobHealthAttribute | undefined)[] = [];
+		if (this.friendly)
+			healthAttributes = world.mobLayer.tiles
+				.filter(mobTile => mobTile.position.subtract(tile.position).magnitude2 < this.range ** 2)
+				.map(mobTile => mobTile.tileable.getAttribute(EntityMobHealthAttribute));
+		else {
+			let start = tile.position.subtract(new Vector(this.range)).floor();
+			let end = tile.position.add(new Vector(this.range)).floor();
+			healthAttributes = start.iterate(end.subtract(start).add(new Vector(1)))
+				.map(position => world.live.getTile(position)?.tileable.getAttribute(EntityHealthAttribute));
+		}
+		healthAttributes = healthAttributes.filter((healthAttribute, i) => healthAttribute && i < this.maxTargets);
+		healthAttributes.forEach(healthAttribute => healthAttribute!.health -= this.damage);
+		return healthAttributes.length > 0;
+	}
+}
+
+export class EntityExpireProjectileAttribute extends EntityAttribute {
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		world.mobLayer.removeTile(tile);
 		return true;
 	}
 }

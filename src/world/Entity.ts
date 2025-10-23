@@ -8,11 +8,13 @@ import {
 	EntityAttribute,
 	EntityConsumeAttribute,
 	EntityContainerAttribute,
+	EntityDamageAttribute,
+	EntityDirectionMovementAttribute,
+	EntityExpireProjectileAttribute,
 	EntityExtractorAttribute,
 	EntityHasAnyOfResourceAttribute,
 	EntityHealthAttribute,
 	EntityJunctionTransportAttribute,
-	EntityMobAttackAttribute,
 	EntityMobChaseTargetAttribute,
 	EntityMobHealthAttribute,
 	EntityOutflowAttribute,
@@ -21,6 +23,7 @@ import {
 	EntityResourceFullSpriteAttribute,
 	EntityResourcePickerAttribute,
 	EntitySourceAttribute,
+	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
 	EntityTransportAttribute,
 	EntityTurretAttribute,
@@ -272,14 +275,38 @@ export class ResourceDeposit extends Entity {
 }
 
 export class Mob extends Entity {
-	constructor(position: Vector) {
+	constructor() {
 		super();
-		this.attributes.push([new EntityMobChaseTargetAttribute(position)]);
-		this.attributes.push([new EntityMobAttackAttribute(.005, 2)]);
+		this.attributes.push([new EntityMobChaseTargetAttribute()]);
+		this.attributes.push([
+			new EntityTimedAttribute(30),
+			// todo velocity
+			// todo similar for player turret
+			new EntitySpawnProjectileAttribute(new Vector(.1), 10, .005, 1, 2, false),
+		]);
 		this.attributes.push([new EntityMobHealthAttribute(10)]);
 	}
 
 	static get sprite() {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'circle.png', [Color.MOB_YELLOW]);
+	}
+}
+
+export class Projectile extends Entity {
+	constructor(velocity: Vector, duration: number, range: number, maxTargets: number, damage: number, friendly: boolean) {
+		super();
+		this.attributes.push([new EntityDirectionMovementAttribute(velocity)]);
+		this.attributes.push([
+			new EntityDamageAttribute(range, maxTargets, damage, friendly),
+			new EntityExpireProjectileAttribute(),
+		]);
+		this.attributes.push([
+			new EntityTimedAttribute(duration),
+			new EntityExpireProjectileAttribute(),
+		]);
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'circle.png', [Color.PROJECTILE_RED]);
 	}
 }

@@ -1,6 +1,6 @@
 export default class Counter {
 	private readonly n: number;
-	private i = 0; // valid values are [0, n). tick() returns true if i == n - 1
+	private i = 0; // [0, n). tick() returns true if i == n - 1
 
 	constructor(n: number) {
 		if (n < 1)
