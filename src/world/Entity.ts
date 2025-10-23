@@ -278,7 +278,7 @@ export class ResourceDeposit extends Entity {
 export class Mob extends Entity {
 	constructor() {
 		super();
-		this.attributes.push([new EntityMobChaseTargetAttribute(.1)]);
+		this.attributes.push([new EntityMobChaseTargetAttribute(.1, 6)]);
 		this.attributes.push([
 			new EntityTimedAttribute(30),
 			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, false),

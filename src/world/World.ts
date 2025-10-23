@@ -132,6 +132,7 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 
 	removeTile(tile: Tile<T>) {
 		let index = this.tiles.indexOf(tile);
+		if (index === -1) return;
 		this.tiles.splice(index, 1);
 		this.container.removeChild(tile.tileable.container);
 	}
