@@ -251,8 +251,7 @@ export class Turret extends Entity {
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
 			new EntityTimedAttribute(30),
-			// todo velocity
-			new EntitySpawnProjectileAttribute(new Vector(.1), 100, 3, 1, 2, true),
+			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, true),
 		]);
 	}
 
@@ -279,11 +278,10 @@ export class ResourceDeposit extends Entity {
 export class Mob extends Entity {
 	constructor() {
 		super();
-		this.attributes.push([new EntityMobChaseTargetAttribute()]);
+		this.attributes.push([new EntityMobChaseTargetAttribute(.1)]);
 		this.attributes.push([
 			new EntityTimedAttribute(30),
-			// todo velocity
-			new EntitySpawnProjectileAttribute(new Vector(.1), 100, .005, 1, 2, false),
+			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, false),
 		]);
 		this.attributes.push([new EntityMobHealthAttribute(10)]);
 	}

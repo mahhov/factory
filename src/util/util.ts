@@ -8,6 +8,18 @@ namespace util {
 		}
 		return array;
 	};
+	export let findMinMap = <T>(array: T[], map: (value: T, index: number, array: T[]) => number) => {
+		let minIndex = 0;
+		let minValue = Infinity;
+		array.forEach((value, i) => {
+			let mappedValue = map(value, i, array);
+			if (mappedValue < minValue) {
+				minIndex = i;
+				minValue = mappedValue;
+			}
+		});
+		return array[minIndex];
+	};
 
 	export let clamp = (v: number, min: number, max: number) =>
 		Math.min(Math.max(v, min), max);

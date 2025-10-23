@@ -43,7 +43,6 @@ export class MobLogic {
 		}
 	}
 
-	// todo ends targeting empty tiles in between player tiles
 	private target(world: World) {
 		if (!this.targetingCounter.tick()) return;
 

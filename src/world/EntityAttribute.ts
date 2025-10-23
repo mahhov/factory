@@ -422,27 +422,33 @@ export class EntityMobHealthAttribute extends EntityAttribute {
 }
 
 export class EntityMobChaseTargetAttribute extends EntityAttribute {
+	private readonly velocity: number;
 	target: Vector = Vector.V0;
+
+	constructor(velocity: number) {
+		super();
+		this.velocity = velocity;
+	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let delta = this.target.subtract(tile.position);
 		if (!delta.magnitude2) return false;
-		if (delta.magnitude2 > .1 ** 2)
-			delta = delta.setMagnitude2(.1 ** 2);
+		if (delta.magnitude2 > this.velocity ** 2)
+			delta = delta.setMagnitude2(this.velocity ** 2);
 		world.mobLayer.updateTile(tile.position.add(delta), tile);
 		return true;
 	}
 }
 
 export class EntitySpawnProjectileAttribute extends EntityAttribute {
-	private readonly velocity: Vector;
+	private readonly velocity: number;
 	private readonly duration: number;
 	private readonly range: number;
 	private readonly maxTargets: number;
 	private readonly damage: number;
 	private readonly friendly: boolean;
 
-	constructor(velocity: Vector, duration: number, range: number, maxTargets: number, damage: number, friendly: boolean) {
+	constructor(velocity: number, duration: number, range: number, maxTargets: number, damage: number, friendly: boolean) {
 		super();
 		this.velocity = velocity;
 		this.duration = duration;
@@ -452,8 +458,29 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 		this.friendly = friendly;
 	}
 
+	static findTargetsWithinRange(position: Vector, range: number, targetFriendly: boolean, world: World): Tile<Entity>[] {
+		let targets: Tile<Entity>[];
+		if (targetFriendly) {
+			let start = position.subtract(new Vector(range)).floor();
+			let end = position.add(new Vector(range)).floor();
+			targets = start.iterate(end.subtract(start).add(new Vector(1)))
+				.map(position => world.live.getTile(position))
+				.filter(tile => tile?.tileable.getAttribute(EntityHealthAttribute)) as Tile<Entity>[];
+		} else
+			targets = world.mobLayer.tiles
+				.filter(tile => tile.position.subtract(position).magnitude2 < range ** 2)
+				.filter(tile => tile.tileable.getAttribute(EntityMobHealthAttribute));
+		// todo includes same entity multiple times due to taking up multiple tiles
+		return targets.sort((t1, t2) => t1.position.subtract(position).magnitude2 - t2.position.subtract(position).magnitude2);
+	}
+
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		world.mobLayer.addTileable(tile.position, new Projectile(this.velocity, this.duration, this.range, this.maxTargets, this.damage, this.friendly));
+		let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.velocity * this.duration + this.range, !this.friendly, world);
+		if (!targets.length) return false;
+		let velocity = targets[0].position.subtract(tile.position);
+		if (velocity.magnitude2 > this.velocity ** 2)
+			velocity = velocity.setMagnitude2(this.velocity ** 2);
+		world.mobLayer.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.friendly));
 		return true;
 	}
 }
@@ -487,20 +514,12 @@ export class EntityDamageAttribute extends EntityAttribute {
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let healthAttributes: (EntityHealthAttribute | EntityMobHealthAttribute | undefined)[] = [];
-		if (this.friendly)
-			healthAttributes = world.mobLayer.tiles
-				.filter(mobTile => mobTile.position.subtract(tile.position).magnitude2 < this.range ** 2)
-				.map(mobTile => mobTile.tileable.getAttribute(EntityMobHealthAttribute));
-		else {
-			let start = tile.position.subtract(new Vector(this.range)).floor();
-			let end = tile.position.add(new Vector(this.range)).floor();
-			healthAttributes = start.iterate(end.subtract(start).add(new Vector(1)))
-				.map(position => world.live.getTile(position)?.tileable.getAttribute(EntityHealthAttribute));
-		}
-		healthAttributes = healthAttributes.filter((healthAttribute, i) => healthAttribute && i < this.maxTargets);
-		healthAttributes.forEach(healthAttribute => healthAttribute!.health -= this.damage);
-		return healthAttributes.length > 0;
+		let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.range, !this.friendly, world);
+		targets
+			.filter((_, i) => i < this.maxTargets)
+			.map(target => this.friendly ? target.tileable.getAttribute(EntityMobHealthAttribute) : target.tileable.getAttribute(EntityHealthAttribute))
+			.forEach(healthAttribute => healthAttribute!.health -= this.damage);
+		return targets.length > 0;
 	}
 }
 
