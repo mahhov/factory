@@ -245,7 +245,6 @@ export class GlassFactory extends Entity {
 
 export class Turret extends Entity {
 	// todo consume resources
-	// todo fire projectiles
 	constructor() {
 		super();
 		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(0, {[Resource.COPPER]: 10}));
