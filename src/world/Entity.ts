@@ -244,13 +244,13 @@ export class GlassFactory extends Entity {
 }
 
 export class Turret extends Entity {
-	// todo consume resources
 	constructor() {
 		super();
 		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(0, {[Resource.COPPER]: 10}));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
 			new EntityTimedAttribute(30),
+			new EntityConsumeAttribute(containerAttribute, getResourceCounts(0, {[Resource.COPPER]: 1})),
 			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, true),
 		]);
 	}
