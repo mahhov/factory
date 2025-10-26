@@ -1,4 +1,5 @@
 import {Container} from 'pixi.js';
+import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity, ResourceDeposit} from './Entity.js';
@@ -137,30 +138,31 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 }
 
 export class World {
-	terrain: GridWorldLayer<Entity>;
-	live: GridWorldLayer<Entity>;
-	queue: GridWorldLayer<Entity>;
-	mobLayer: FreeWorldLayer<Entity>;
-	mobLogic = new MobLogic();
+	readonly terrain: GridWorldLayer<Entity>;
+	readonly live: GridWorldLayer<Entity>;
+	readonly queue: GridWorldLayer<Entity>;
+	readonly mobLayer: FreeWorldLayer<Entity>;
+	readonly mobLogic = new MobLogic();
 	// todo UI to show player resources
-	playerMaterials = new EntityContainerAttribute(Infinity, getResourceCounts(500));
+	readonly playerMaterials: EntityContainerAttribute;
 
-	constructor(size: Vector, container: Container) {
+	constructor(size: Vector, painter: Painter, cameraContainer: Container) {
 		this.terrain = new GridWorldLayer(new Empty(), false, size);
-		container.addChild(this.terrain.container);
+		cameraContainer.addChild(this.terrain.container);
 		this.live = new GridWorldLayer(new Empty(), false, size);
-		container.addChild(this.live.container);
+		cameraContainer.addChild(this.live.container);
 		this.queue = new GridWorldLayer(new Empty(), true, size);
-		container.addChild(this.queue.container);
+		cameraContainer.addChild(this.queue.container);
 		this.queue.container.alpha = .5;
 		this.mobLayer = new FreeWorldLayer<Entity>(size);
-		container.addChild(this.mobLayer.container);
+		cameraContainer.addChild(this.mobLayer.container);
 
 		for (let resource = Resource.IRON; resource <= Resource.METHANE; resource++)
 			for (let x = 0; x < 7; x++)
 				for (let y = 0; y < 7; y++)
 					this.terrain.replaceTileable(new Vector(resource * 8 + x, y), new ResourceDeposit(resource));
 
+		this.playerMaterials = new EntityContainerAttribute(Infinity, getResourceCounts(500));
 		for (let resource = Resource.IRON; resource <= Resource.METHANE; resource++)
 			this.playerMaterials.add(new ResourceUtils.Count(resource, 500));
 	}

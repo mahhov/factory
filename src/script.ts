@@ -51,7 +51,7 @@ class Loop {
 	let uiContainer = new Container();
 	app.stage.addChild(uiContainer);
 	let input = new Input(app.canvas);
-	let world = new World(new Vector(100), camera.container);
+	let world = new World(new Vector(100), painter, camera.container);
 	let placer = new Placer(painter, camera, input, world);
 	let tooltip = new Tooltip(painter, camera, input, world);
 	let controller = new Controller(camera, placer, tooltip, input);

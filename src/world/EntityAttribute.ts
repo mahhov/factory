@@ -70,7 +70,7 @@ export abstract class EntityAttribute {
 	}
 }
 
-// todo queue, build 1 at a time
+// todo queue, build 1 at a time. add a builder player resource, that building entities consumes. more consumed the farther away the entity is
 // todo some graphical indicator for buildings queued, buildings in progress, buildings active
 export class EntityBuildableAttribute extends EntityAttribute {
 	private readonly counter: Counter;
