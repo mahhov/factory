@@ -2,8 +2,13 @@ import {ColorSource} from 'pixi.js';
 import Color from '../graphics/Color.js';
 
 export enum Resource {
-	COPPER, IRON, CARBON, STEEL,
-	A, B, X, Y,
+	IRON, FLUX_SAND, SULPHUR,
+	STEEL, TITANIUM,
+	METAGLASS, PLASTEEL, GRAPHITE,
+	THERMITE, EXIDIUM,
+	WATER, METHANE,
+	POWER,
+	COOLANT,
 }
 
 export namespace ResourceUtils {
@@ -29,5 +34,4 @@ export namespace ResourceUtils {
 		let key = `RESOURCE_${Resource[resource]}` as unknown as keyof typeof Color;
 		return Color[key];
 	};
-
 }

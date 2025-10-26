@@ -353,7 +353,7 @@ export class EntitySourceAttribute extends EntityAttribute {
 }
 
 export class EntityResourcePickerAttribute extends EntityAttribute {
-	resource: Resource = Resource.COPPER;
+	resource: Resource = 0;
 
 	get tooltip(): TooltipLine[] {
 		return util.enumKeys(Resource).map(resource => {

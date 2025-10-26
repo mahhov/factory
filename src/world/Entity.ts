@@ -222,14 +222,13 @@ export class GlassFactory extends Entity {
 		super();
 		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(0, {
 			[Resource.IRON]: 10,
-			[Resource.CARBON]: 10,
 			[Resource.STEEL]: 10,
 		}));
 		this.attributes.push([new EntityHealthAttribute(10)]);
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
 			new EntityTimedAttribute(40),
-			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.IRON, 1], [Resource.CARBON, 1]])),
+			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.IRON, 1], [Resource.STEEL, 1]])),
 			new EntityProduceAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.STEEL, 1]])),
 		]);
 		this.attributes.push([new EntityOutflowAttribute(containerAttribute, getResourceCounts(0, {
@@ -239,18 +238,18 @@ export class GlassFactory extends Entity {
 
 	static get sprite() {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.CARBON)]);
+			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
 	}
 }
 
 export class Turret extends Entity {
 	constructor() {
 		super();
-		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(0, {[Resource.COPPER]: 10}));
+		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(0, {[Resource.IRON]: 10}));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
 			new EntityTimedAttribute(30),
-			new EntityConsumeAttribute(containerAttribute, getResourceCounts(0, {[Resource.COPPER]: 1})),
+			new EntityConsumeAttribute(containerAttribute, getResourceCounts(0, {[Resource.IRON]: 1})),
 			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, true),
 		]);
 	}

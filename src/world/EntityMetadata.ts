@@ -12,18 +12,32 @@ let lowerCaseToTitleCase = (str: string): string => str.toLowerCase().replace(/\
 // 'flux-sand' -> 'FLUX_SAND'
 let dashCaseToSnakeCase = (str: string): string => str.split('-').join('_').toUpperCase();
 
-let parseResourceCounts = (str: string): ResourceUtils.Count[] =>
-	str.split(', ').map(s => {
-		console.assert(/^\d+ [\w\-]+$/.test(s));
-		let [count, resource] = s.split(' ') as [string, string];
-		let resourceStr = dashCaseToSnakeCase(resource);
-		console.assert(resourceStr in Resource);
-		return new ResourceUtils.Count(Resource[resourceStr as keyof typeof Resource], Number(count));
-	});
-
 let parseNumber = (str: string): number => str === '-' ? 0 : Number(str);
 
-let parse = <F extends Record<string, FieldHandler<any>>>(mdString: string, fields: F): ParsedResult<F>[] => {
+let parseResourceCount = (str: string): ResourceUtils.Count => {
+	console.assert(/^\d+ [\w\-]+$/.test(str));
+	let [count, resource] = str.split(' ') as [string, string];
+	let resourceStr = dashCaseToSnakeCase(resource);
+	console.assert(resourceStr in Resource);
+	return new ResourceUtils.Count(Resource[resourceStr as keyof typeof Resource], Number(count));
+};
+
+let parseMaterialCounts = (str: string): ResourceUtils.Count[] =>
+	str === '-' ? [] : str.split(', ').map(parseResourceCount);
+
+let parseBuildingOutput = (str: string): ResourceUtils.Count | [string, number][] => {
+	if (str === '-') return [];
+	if (/^\d*\.?\d+ t\d+(, \d*\.?\d+ t\d+)* material \/ area$/.test(str)) {
+		return [...str
+			.matchAll(/(\d*\.?\d+) t(\d+)/g)
+			.map(m => [m[2], Number(m[1])] as [string, number])];
+	}
+	if (/^\d+ liquid$/.test(str))
+		return [['liquid', Number(str.split(' ')[0])]];
+	return parseResourceCount(str);
+};
+
+let parseSection = <F extends Record<string, FieldHandler<any>>>(mdString: string, fields: F): ParsedResult<F>[] => {
 	let [headers, ...lines]: string[][] = mdString
 		.trim()
 		.split('\n')
@@ -33,35 +47,31 @@ let parse = <F extends Record<string, FieldHandler<any>>>(mdString: string, fiel
 			.split('|')
 			.filter(v => v)
 			.map(v => v.trim()));
-
 	let datas: StringRecord[] = lines.map(line => Object.fromEntries(line.map((cell, i) => [headers[i], cell])));
-	return datas.map(data =>
-		Object.fromEntries(
-			Object.entries(fields).map(([key, handler]) => [key, handler(data)]),
-		),
-	) as ParsedResult<F>[]; // Type Assertion to enforce the derived type F
+	return datas.map(data => Object.fromEntries(Object.entries(fields).map(([key, handler]) => [key, handler(data)]))) as ParsedResult<F>[];
 };
 
-// todo:
-
-let x = await fetch('../../resources/metadata.md');
-let y = await x.text();
-let sections: StringRecord = {};
-let parts = y.split(/^#\s*(\w+)/gm);
-for (let i = 1; i < parts.length; i += 2)
-	sections[parts[i]] = parts[i + 1];
-
-let fields = {
-	name: (data: StringRecord) => lowerCaseToTitleCase(data.name),
-	buildCost: (data: StringRecord) => parseResourceCounts(data['cost to build']),
-	materialInput: (data: StringRecord) => 0,
-	powerInput: (data: StringRecord) => parseNumber(data['power / second']),
-	heatOutput: (data: StringRecord) => parseNumber(data['heat / second']),
-	materialOutput: (data: StringRecord) => 0,
-	boost: (data: StringRecord) => 0,
-	size: (data: StringRecord) => parseNumber(data.size),
-	health: (data: StringRecord) => parseNumber(data.health),
+let sectionFields: Record<string, Record<string, FieldHandler<any>>> = {
+	buildings: {
+		name: (data: StringRecord) => lowerCaseToTitleCase(data.name),
+		buildCost: (data: StringRecord) => parseMaterialCounts(data['cost to build']),
+		materialInput: (data: StringRecord) => parseMaterialCounts(data['material / second']),
+		powerInput: (data: StringRecord) => parseNumber(data['power / second']),
+		heatOutput: (data: StringRecord) => parseNumber(data['heat / second']),
+		materialOutput: (data: StringRecord) => parseBuildingOutput(data['output / second']),
+		boost: (data: StringRecord) => !!data.boost,
+		size: (data: StringRecord) => parseNumber(data.size),
+		health: (data: StringRecord) => parseNumber(data.health),
+	},
 };
 
-let parsed = parse(sections.buildings, fields);
-console.log(parsed);
+let parsed: Record<string, ParsedResult<any>[]> = {};
+let metadataMarkdown = await (await fetch('../../resources/metadata.md')).text();
+let parts = metadataMarkdown.split(/^#\s*(\w+)/gm);
+for (let i = 1; i < parts.length; i += 2) {
+	let header = parts[i];
+	if (header in sectionFields)
+		parsed[header] = parseSection(parts[i + 1], sectionFields[header]);
+}
+
+export default parsed;

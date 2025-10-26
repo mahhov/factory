@@ -152,12 +152,11 @@ export class World {
 		this.mobLayer = new FreeWorldLayer<Entity>(size);
 		container.addChild(this.mobLayer.container);
 
-		for (let i = 0; i < 100; i++)
-			this.terrain.replaceTileable(this.randPosition, new ResourceDeposit(Resource.COPPER));
-		for (let i = 0; i < 100; i++)
-			this.terrain.replaceTileable(this.randPosition, new ResourceDeposit(Resource.IRON));
-		for (let i = 0; i < 100; i++)
-			this.terrain.replaceTileable(this.randPosition, new ResourceDeposit(Resource.CARBON));
+		// todo why isn't (0,0) being added
+		for (let resource = Resource.IRON; resource <= Resource.METHANE; resource++)
+			for (let x = 0; x < 7; x++)
+				for (let y = 0; y < 7; y++)
+					this.terrain.replaceTileable(new Vector(resource * 8 + x, y), new ResourceDeposit(resource));
 	}
 
 	get width() {
