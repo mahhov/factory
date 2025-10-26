@@ -8,6 +8,7 @@ import Placer from './ui/Placer.js';
 import Tooltip from './ui/Tooltip.js';
 import Vector from './util/Vector.js';
 import {World} from './world/World.js';
+import './world/EntityMetadata.js';
 
 class Loop {
 	private label: string;

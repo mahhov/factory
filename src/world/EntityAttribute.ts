@@ -9,14 +9,6 @@ import {Resource, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, World} from './World.js';
 
-// todo add attributes for:
-//   buildable
-//   rotation
-
-// enum BuildingState {
-// 	QUEUED, BUILDING, BUILT, DESTROYED
-// }
-
 let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation): Vector[] => {
 	switch (rotation) {
 		case Rotation.RIGHT:
@@ -75,6 +67,45 @@ export abstract class EntityAttribute {
 
 	get selectable(): boolean {
 		return false;
+	}
+}
+
+// todo queue, build 1 at a time
+// todo some graphical indicator for buildings queued, buildings in progress, buildings active
+export class EntityBuildableAttribute extends EntityAttribute {
+	private readonly counter: Counter;
+	private readonly materialCost: ResourceUtils.Count[];
+	private doneBuilding = false;
+
+	constructor(duration: number, materialCost: ResourceUtils.Count[]) {
+		super();
+		this.counter = new Counter(duration);
+		this.materialCost = materialCost;
+	}
+
+	// returns true if building. returns false if done building or insufficient material
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (this.doneBuilding)
+			return false;
+
+		let lastRatio = this.counter.i / this.counter.n;
+		let ratio = (this.counter.i + 1) / this.counter.n;
+		let costs = this.materialCost.map(cost => new ResourceUtils.Count(
+			cost.resource, Math.floor(cost.quantity * ratio) - Math.floor(cost.quantity * lastRatio)));
+
+		if (!costs.every(cost => world.playerMaterials.hasQuantity(cost)))
+			return false;
+
+		costs.forEach(cost => world.playerMaterials.remove(cost));
+		if (this.counter.tick())
+			this.doneBuilding = true;
+		return true;
+	}
+
+	get tooltip(): TooltipLine[] {
+		if (this.doneBuilding) return [];
+		let percent = Math.floor(this.counter.i / this.counter.n * 100);
+		return this.doneBuilding ? [] : [new TooltipLine(`Building ${percent}%`)];
 	}
 }
 
@@ -182,9 +213,9 @@ export class EntityContainerAttribute extends EntityAttribute {
 export class EntityTimedAttribute extends EntityAttribute {
 	private readonly counter: Counter;
 
-	constructor(counterDuration: number) {
+	constructor(duration: number) {
 		super();
-		this.counter = new Counter(counterDuration);
+		this.counter = new Counter(duration);
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {

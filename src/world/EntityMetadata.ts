@@ -54,7 +54,8 @@ let parseSection = <F extends Record<string, FieldHandler<any>>>(mdString: strin
 let sectionFields: Record<string, Record<string, FieldHandler<any>>> = {
 	buildings: {
 		name: (data: StringRecord) => lowerCaseToTitleCase(data.name),
-		buildCost: (data: StringRecord) => parseMaterialCounts(data['cost to build']),
+		buildTime: (data: StringRecord) => parseNumber(data['build time']),
+		buildCost: (data: StringRecord) => parseMaterialCounts(data['build cost']),
 		materialInput: (data: StringRecord) => parseMaterialCounts(data['material / second']),
 		powerInput: (data: StringRecord) => parseNumber(data['power / second']),
 		heatOutput: (data: StringRecord) => parseNumber(data['heat / second']),

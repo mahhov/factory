@@ -183,6 +183,4 @@ export default class Placer {
 	}
 }
 
-// todo:
-//  - only add if world empty or replaceable
-//  - add after build time & cost
+// todo only add if world empty or replaceable

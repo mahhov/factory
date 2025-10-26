@@ -6,6 +6,7 @@ import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {
 	EntityAttribute,
+	EntityBuildableAttribute,
 	EntityConsumeAttribute,
 	EntityContainerAttribute,
 	EntityDamageAttribute,
@@ -97,6 +98,7 @@ export class Empty extends Entity {
 export class Wall extends Entity {
 	constructor() {
 		super();
+		this.attributes.push([new EntityBuildableAttribute(200, [new ResourceUtils.Count(Resource.IRON, 10)])]);
 		this.attributes.push([new EntityHealthAttribute(10)]);
 	}
 
