@@ -14,10 +14,11 @@ export interface Tileable {
 }
 
 export class Tile<T extends Tileable> {
+	position: Vector;
 	tileable: T;
-	position: Vector = Vector.V0;
 
-	constructor(tileable: T) {
+	constructor(position: Vector, tileable: T) {
+		this.position = position;
 		this.tileable = tileable;
 	}
 }
@@ -59,7 +60,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 		super(size);
 		this.defaultTileable = defaultTileable;
 		this.showDefaultTileable = showDefaultTileable;
-		this.grid = util.arr(size.x).map(_ => util.arr(size.y).map(_ => new Tile(defaultTileable)));
+		this.grid = util.arr(size.x).map(x => util.arr(size.y).map(y => new Tile(new Vector(x, y), defaultTileable)));
 	}
 
 	replaceTileable(position: Vector, tileable: T) {
@@ -115,7 +116,7 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	readonly container = new Container();
 
 	addTileable(position: Vector, tileable: T) {
-		let tile = new Tile(tileable);
+		let tile = new Tile(position, tileable);
 		tile.position = position;
 		this.tiles.push(tile);
 		this.addContainer(tileable.container, position, tileable.size);
@@ -152,7 +153,6 @@ export class World {
 		this.mobLayer = new FreeWorldLayer<Entity>(size);
 		container.addChild(this.mobLayer.container);
 
-		// todo why isn't (0,0) being added
 		for (let resource = Resource.IRON; resource <= Resource.METHANE; resource++)
 			for (let x = 0; x < 7; x++)
 				for (let y = 0; y < 7; y++)
