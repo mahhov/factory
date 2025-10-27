@@ -23,6 +23,10 @@ export class Tile<T extends Tileable> {
 		this.position = position;
 		this.tileable = tileable;
 	}
+
+	equals(tile: Tile<T>) {
+		return this.position.equals(tile.position) && this.tileable.constructor === tile.tileable.constructor;
+	}
 }
 
 class WorldLayer {
@@ -84,7 +88,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 		this.addTileable(position, tileable);
 	}
 
-	private addTileable(position: Vector, tileable: T) {
+	protected addTileable(position: Vector, tileable: T) {
 		position.iterate(tileable.size)
 			.map(subPosition => this.getTile(subPosition)!)
 			.forEach(tile => {
@@ -113,7 +117,17 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 	}
 }
 
-export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
+class OrderedGridWorldLayer<T extends Tileable> extends GridWorldLayer<T> {
+	order: Vector[] = [];
+
+	protected addTileable(position: Vector, tileable: T) {
+		super.addTileable(position, tileable);
+		this.order = this.order.filter(p => !p.equals(position));
+		this.order.push(position);
+	}
+}
+
+class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	readonly tiles: Tile<T>[] = [];
 	readonly container = new Container();
 
@@ -138,30 +152,37 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 }
 
 export class World {
-	readonly terrain: GridWorldLayer<Entity>;
-	readonly live: GridWorldLayer<Entity>;
-	readonly queue: GridWorldLayer<Entity>;
-	readonly mobLayer: FreeWorldLayer<Entity>;
 	readonly mobLogic = new MobLogic();
 	readonly playerLogic;
+	readonly terrain: GridWorldLayer<Entity>;
+	readonly live: GridWorldLayer<Entity>;
+	readonly queue: OrderedGridWorldLayer<Entity>;
+	readonly planning: GridWorldLayer<Entity>;
+	readonly mobLayer: FreeWorldLayer<Entity>;
 
 	constructor(size: Vector, painter: Painter, cameraContainer: Container) {
+		this.playerLogic = new PlayerLogic(painter);
+
 		this.terrain = new GridWorldLayer(new Empty(), false, size);
 		cameraContainer.addChild(this.terrain.container);
-		this.live = new GridWorldLayer(new Empty(), false, size);
-		cameraContainer.addChild(this.live.container);
-		this.queue = new GridWorldLayer(new Empty(), true, size);
-		cameraContainer.addChild(this.queue.container);
-		this.queue.container.alpha = .5;
-		this.mobLayer = new FreeWorldLayer<Entity>(size);
-		cameraContainer.addChild(this.mobLayer.container);
-
 		for (let resource = Resource.IRON; resource <= Resource.METHANE; resource++)
 			for (let x = 0; x < 7; x++)
 				for (let y = 0; y < 7; y++)
 					this.terrain.replaceTileable(new Vector(resource * 8 + x, y), new ResourceDeposit(resource));
 
-		this.playerLogic = new PlayerLogic(painter);
+		this.live = new GridWorldLayer(new Empty(), false, size);
+		cameraContainer.addChild(this.live.container);
+
+		this.queue = new OrderedGridWorldLayer(new Empty(), true, size);
+		cameraContainer.addChild(this.queue.container);
+		this.queue.container.alpha = .5;
+
+		this.planning = new GridWorldLayer(new Empty(), true, size);
+		cameraContainer.addChild(this.planning.container);
+		this.planning.container.alpha = .5;
+
+		this.mobLayer = new FreeWorldLayer<Entity>(size);
+		cameraContainer.addChild(this.mobLayer.container);
 	}
 
 	get width() {
@@ -182,12 +203,37 @@ export class World {
 
 	tick() {
 		this.mobLogic.tick(this);
+		this.playerLogic.tick();
+		this.tickLive();
+		this.tickQueue();
+		this.tickMobLayer();
+	}
+
+	private tickLive() {
 		this.live.grid.forEach((column, x) => column.forEach((tile, y) => {
 			let position = new Vector(x, y);
 			if (tile.position.equals(position))
 				tile.tileable.tick(this, tile);
 		}));
+	}
+
+	private tickQueue() {
+		if (!this.queue.order.length) return;
+		if (this.playerLogic.built) return;
+		while (this.queue.order.length) {
+			let position = this.queue.order.shift()!;
+			let currentTile = this.live.getTile(position)!;
+			let nextTile = this.queue.getTile(position)!;
+			if (currentTile.equals(nextTile)) continue;
+			this.live.replaceTileable(position, nextTile.tileable);
+			return;
+		}
+		// todo slower building if further from player base
+		// todo cancel in-progress building if queued for removal
+		// todo recycle materials on destruction
+	}
+
+	private tickMobLayer() {
 		this.mobLayer.tiles.forEach(tile => tile.tileable.tick(this, tile));
-		this.playerLogic.tick();
 	}
 }

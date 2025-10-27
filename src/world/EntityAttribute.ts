@@ -75,7 +75,7 @@ export abstract class EntityAttribute {
 export class EntityBuildableAttribute extends EntityAttribute {
 	private readonly counter: Counter;
 	private readonly materialCost: ResourceUtils.Count[];
-	private doneBuilding = false;
+	doneBuilding = false;
 
 	constructor(duration: number, materialCost: ResourceUtils.Count[]) {
 		super();

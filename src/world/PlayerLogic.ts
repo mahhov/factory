@@ -24,8 +24,4 @@ export class PlayerLogic {
 	}
 }
 
-// todo:
-//   queue, build 1 at a time. add a builder player resource, that building entities consumes. more consumed the farther away the entity is
-//   queue building recycling
-//   metadata entities
-//   recycle materials on destruction
+// todo metadata entities

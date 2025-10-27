@@ -109,15 +109,15 @@ export default class Placer {
 		}
 
 		if (this.state !== State.EMPTY || this.started)
-			this.place(this.world.queue, false);
+			this.place(this.world.planning, false);
 		else
-			this.world.queue.clearAllEntities();
+			this.world.planning.clearAllEntities();
 	}
 
 	rotate(delta: number) {
 		if (this.started) {
 			this.rotation = (this.rotation + delta + 4) % 4;
-			this.place(this.world.queue, false);
+			this.place(this.world.planning, false);
 		}
 	}
 
@@ -135,18 +135,20 @@ export default class Placer {
 		this.endPosition = position;
 
 		if (this.state !== State.EMPTY || this.started)
-			this.place(this.world.queue, this.started);
+			this.place(this.world.planning, this.started);
 	}
 
 	end() {
 		if (this.started) {
 			this.started = false;
-			this.place(this.world.live, false);
+			this.place(this.world.queue, false);
 		}
 	}
 
 	pick() {
-		let tile = this.world.live.getTile(this.position);
+		let tile = this.world.queue.getTile(this.position);
+		if (tile?.tileable instanceof Empty)
+			tile = this.world.live.getTile(this.position);
 		this.setEntity(tile ? tile.tileable.constructor as typeof Entity : Empty);
 	}
 
@@ -164,7 +166,7 @@ export default class Placer {
 		if (updateRotation && (delta.y || delta.x))
 			this.rotation = rotation;
 
-		this.world.queue.clearAllEntities();
+		this.world.planning.clearAllEntities();
 		let position = this.startPosition;
 		let n = vertical ? iterations.y : iterations.x;
 		let iterDelta = RotationUtils.positionShift(rotation).scale(this.entityClass.size);
