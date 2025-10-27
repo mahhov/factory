@@ -3,9 +3,9 @@ import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity, ResourceDeposit} from './Entity.js';
-import {EntityContainerAttribute, getResourceCounts} from './EntityAttribute.js';
 import {MobLogic} from './MobLogic.js';
-import {Resource, ResourceUtils} from './Resource.js';
+import {PlayerLogic} from './PlayerLogic.js';
+import {Resource} from './Resource.js';
 
 export interface Tileable {
 	readonly container: Container;
@@ -144,7 +144,7 @@ export class World {
 	readonly mobLayer: FreeWorldLayer<Entity>;
 	readonly mobLogic = new MobLogic();
 	// todo UI to show player resources
-	readonly playerMaterials: EntityContainerAttribute;
+	readonly playerLogic;
 
 	constructor(size: Vector, painter: Painter, cameraContainer: Container) {
 		this.terrain = new GridWorldLayer(new Empty(), false, size);
@@ -162,9 +162,7 @@ export class World {
 				for (let y = 0; y < 7; y++)
 					this.terrain.replaceTileable(new Vector(resource * 8 + x, y), new ResourceDeposit(resource));
 
-		this.playerMaterials = new EntityContainerAttribute(Infinity, getResourceCounts(500));
-		for (let resource = Resource.IRON; resource <= Resource.METHANE; resource++)
-			this.playerMaterials.add(new ResourceUtils.Count(resource, 500));
+		this.playerLogic = new PlayerLogic(painter);
 	}
 
 	get width() {
