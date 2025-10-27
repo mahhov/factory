@@ -6,6 +6,7 @@ import {Resource, ResourceUtils} from './Resource.js';
 
 export class PlayerLogic {
 	readonly materials: EntityContainerAttribute;
+	built: boolean = false;
 	private readonly multilineText: MultilineText;
 
 	constructor(painter: Painter) {
@@ -17,6 +18,7 @@ export class PlayerLogic {
 	}
 
 	tick() {
+		this.built = false;
 		this.multilineText.lines = this.materials.tooltip;
 		this.multilineText.tick();
 	}

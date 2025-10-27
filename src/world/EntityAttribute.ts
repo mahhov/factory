@@ -71,6 +71,7 @@ export abstract class EntityAttribute {
 }
 
 // todo some graphical indicator for buildings queued, buildings in progress, buildings active
+// todo partial health for partially built buildings
 export class EntityBuildableAttribute extends EntityAttribute {
 	private readonly counter: Counter;
 	private readonly materialCost: ResourceUtils.Count[];
@@ -84,8 +85,9 @@ export class EntityBuildableAttribute extends EntityAttribute {
 
 	// returns true if building. returns false if done building or insufficient material
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.doneBuilding)
-			return false;
+		if (this.doneBuilding) return false;
+		if (world.playerLogic.built) return false;
+		world.playerLogic.built = true;
 
 		let lastRatio = this.counter.i / this.counter.n;
 		let ratio = (this.counter.i + 1) / this.counter.n;
