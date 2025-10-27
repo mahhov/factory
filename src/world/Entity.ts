@@ -1,7 +1,7 @@
 import {Container, Sprite} from 'pixi.js';
 import Color from '../graphics/Color.js';
 import SpriteLoader from '../graphics/SpriteLoader.js';
-import TooltipLine from '../ui/TooltipLine.js';
+import TextLine from '../ui/TextLine.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {
@@ -78,7 +78,7 @@ export class Entity implements Tileable {
 			.forEach(attributeChain => attributeChain.forEach(attribute => attribute.reset()));
 	}
 
-	get tooltip(): TooltipLine[] {
+	get tooltip(): TextLine[] {
 		return this.attributes.flat().map(attribute => attribute.tooltip).flat();
 	}
 

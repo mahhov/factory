@@ -1,7 +1,7 @@
 import {FillInput} from 'pixi.js';
 import Color from '../graphics/Color.js';
 
-export default class TooltipLine {
+export default class TextLine {
 	readonly string: String;
 	readonly callback: () => void;
 	readonly size: number;

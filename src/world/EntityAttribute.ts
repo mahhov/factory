@@ -1,6 +1,6 @@
 import {Sprite} from 'pixi.js';
 import Color from '../graphics/Color.js';
-import TooltipLine from '../ui/TooltipLine.js';
+import TextLine from '../ui/TextLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
@@ -61,7 +61,7 @@ export abstract class EntityAttribute {
 		return true;
 	}
 
-	get tooltip(): TooltipLine[] {
+	get tooltip(): TextLine[] {
 		return [];
 	}
 
@@ -93,19 +93,19 @@ export class EntityBuildableAttribute extends EntityAttribute {
 		let costs = this.materialCost.map(cost => new ResourceUtils.Count(
 			cost.resource, Math.floor(cost.quantity * ratio) - Math.floor(cost.quantity * lastRatio)));
 
-		if (!costs.every(cost => world.playerMaterials.hasQuantity(cost)))
+		if (!costs.every(cost => world.playerLogic.materials.hasQuantity(cost)))
 			return false;
 
-		costs.forEach(cost => world.playerMaterials.remove(cost));
+		costs.forEach(cost => world.playerLogic.materials.remove(cost));
 		if (this.counter.tick())
 			this.doneBuilding = true;
 		return true;
 	}
 
-	get tooltip(): TooltipLine[] {
+	get tooltip(): TextLine[] {
 		if (this.doneBuilding) return [];
 		let percent = Math.floor(this.counter.i / this.counter.n * 100);
-		return this.doneBuilding ? [] : [new TooltipLine(`Building ${percent}%`)];
+		return this.doneBuilding ? [] : [new TextLine(`Building ${percent}%`)];
 	}
 }
 
@@ -127,8 +127,8 @@ export class EntityHealthAttribute extends EntityAttribute {
 		return true;
 	}
 
-	get tooltip(): TooltipLine[] {
-		return [new TooltipLine(`Health: ${this.health} / ${this.maxHealth}`)];
+	get tooltip(): TextLine[] {
+		return [new TextLine(`Health: ${this.health} / ${this.maxHealth}`)];
 	}
 
 	get selectable(): boolean {
@@ -191,17 +191,17 @@ export class EntityContainerAttribute extends EntityAttribute {
 		return this.inputRotations.includes(rotation);
 	}
 
-	get tooltip(): TooltipLine[] {
+	get tooltip(): TextLine[] {
 		let tooltipLines = (Object.entries(this.quantities))
 			.filter(([resource, count]) => count)
 			.map(([resourceString, count]) => {
 				let resource = Number(resourceString);
 				let prefix = `${ResourceUtils.string(resource)} ${count}`;
 				let capacity = this.getResourceCapacity(resource);
-				return new TooltipLine(capacity !== Infinity ? `${prefix} / ${capacity}` : `${prefix}`);
+				return new TextLine(capacity !== Infinity ? `${prefix} / ${capacity}` : `${prefix}`);
 			});
 		if (this.totalCapacity !== Infinity && this.orderedResourceAndRotations.length)
-			tooltipLines.push(new TooltipLine(`${this.orderedResourceAndRotations.length} / ${this.totalCapacity}`));
+			tooltipLines.push(new TextLine(`${this.orderedResourceAndRotations.length} / ${this.totalCapacity}`));
 		return tooltipLines;
 	}
 
@@ -386,10 +386,10 @@ export class EntitySourceAttribute extends EntityAttribute {
 export class EntityResourcePickerAttribute extends EntityAttribute {
 	resource: Resource = 0;
 
-	get tooltip(): TooltipLine[] {
+	get tooltip(): TextLine[] {
 		return util.enumKeys(Resource).map(resource => {
 			let color = resource === this.resource ? Color.SELECTED_TEXT : undefined;
-			return new TooltipLine(ResourceUtils.string(resource), () => this.resource = resource, undefined, color);
+			return new TextLine(ResourceUtils.string(resource), () => this.resource = resource, undefined, color);
 		});
 	}
 
@@ -406,8 +406,8 @@ export class EntityResourceDisplayAttribute extends EntityAttribute {
 		this.resource = resource;
 	}
 
-	get tooltip(): TooltipLine[] {
-		return [new TooltipLine(ResourceUtils.string(this.resource))];
+	get tooltip(): TextLine[] {
+		return [new TextLine(ResourceUtils.string(this.resource))];
 	}
 
 	get selectable(): boolean {

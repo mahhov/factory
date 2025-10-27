@@ -1,13 +1,12 @@
-import {Container, Graphics, Text} from 'pixi.js';
+import {Container, Graphics} from 'pixi.js';
 import Camera from '../Camera.js';
 import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
-import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Entity} from '../world/Entity.js';
 import {Tile, World} from '../world/World.js';
 import {Input} from './Input.js';
-import TooltipLine from './TooltipLine.js';
+import MultilineText from './MultilineText.js';
 import uiUtil from './uiUtil.js';
 import mouseInContainer = uiUtil.mouseInContainer;
 
@@ -25,21 +24,18 @@ export default class Tooltip {
 	private readonly camera: Camera;
 	private readonly input: Input;
 	private readonly world: World;
-
-	private readonly textContainer = new Container();
-	private readonly textBackground = new Container();
+	private readonly multilineText: MultilineText;
 	private readonly selectionRect = new Container();
-
 	private selection: Selection | null = null;
+
 
 	constructor(painter: Painter, camera: Camera, input: Input, world: World) {
 		this.painter = painter;
 		this.camera = camera;
 		this.input = input;
 		this.world = world;
-		painter.textUiContainer.addChild(this.textContainer);
+		this.multilineText = new MultilineText(painter, Vector.V0, []);
 		painter.uiContainer.addChild(this.selectionRect);
-		painter.uiContainer.addChild(this.textBackground);
 	}
 
 	private get createInputSelection(): Selection | null {
@@ -56,7 +52,7 @@ export default class Tooltip {
 	}
 
 	toggleSelect() {
-		if (mouseInContainer(this.input.mousePosition, this.textContainer)) return;
+		if (mouseInContainer(this.input.mousePosition, this.multilineText.textContainer)) return;
 		let selection = this.createInputSelection;
 		if (!selection || !this.selection || this.selection.tile !== selection.tile)
 			this.selection = selection;
@@ -74,46 +70,25 @@ export default class Tooltip {
 	}
 
 	tick() {
-		this.textBackground.removeChildren();
 		this.selectionRect.removeChildren();
 		if (!this.selection) {
-			this.textContainer.removeChildren();
+			this.multilineText.lines = [];
+			this.multilineText.tick();
 			return;
 		}
-
-		let y = 0;
-		util.replace<TooltipLine, Text>(this.textContainer.children as Text[], this.selection.tile.tileable.tooltip,
-			(i: number, tooltipLines: TooltipLine[]) => {
-				let text = new Text({eventMode: 'static'});
-				this.textContainer.addChild(text);
-			},
-			(text: Text, i: number, tooltipLine: TooltipLine) => {
-				text.text = tooltipLine.string;
-				text.style = {
-					fontFamily: 'Arial',
-					fontSize: tooltipLine.size,
-					fill: tooltipLine.color,
-				};
-				text.y = y;
-				y += text.height;
-				text.onpointertap = tooltipLine.callback;
-			},
-			() => this.textContainer.removeChild(this.textContainer.children.at(-1)!));
 
 		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.scale(this.world.size.invert()));
 		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.add(this.selection.tile.tileable.size).scale(this.world.size.invert()));
 		let bottomRightShift = bottomRight.add(new Vector(3 / 1000));
 		let size = bottomRight.subtract(topLeft);
 
-		this.textContainer.position = bottomRightShift.scale(new Vector(1000));
-		let textContainerSize = new Vector(this.textContainer.width / 1000, this.textContainer.height / 1000);
-
-		this.textBackground.addChild(new Graphics()
-			.rect(bottomRightShift.x, bottomRightShift.y, textContainerSize.x, textContainerSize.y)
-			.fill({color: Color.TEXT_RECT_BACKGROUND}));
+		this.multilineText.position = bottomRightShift;
+		this.multilineText.lines = this.selection.tile.tileable.tooltip;
+		this.multilineText.tick();
 
 		this.selectionRect.addChild(new Graphics()
 			.rect(topLeft.x, topLeft.y, size.x, size.y)
 			.stroke({width: (this.selection.selected ? 3 : 1) / this.painter.canvasWidth, color: this.selection.selected ? Color.SELECTED_RECT_OUTLINE : Color.RECT_OUTLINE}));
+
 	}
 }
