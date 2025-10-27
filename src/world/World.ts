@@ -143,7 +143,6 @@ export class World {
 	readonly queue: GridWorldLayer<Entity>;
 	readonly mobLayer: FreeWorldLayer<Entity>;
 	readonly mobLogic = new MobLogic();
-	// todo UI to show player resources
 	readonly playerLogic;
 
 	constructor(size: Vector, painter: Painter, cameraContainer: Container) {
@@ -189,5 +188,6 @@ export class World {
 				tile.tileable.tick(this, tile);
 		}));
 		this.mobLayer.tiles.forEach(tile => tile.tileable.tick(this, tile));
+		this.playerLogic.tick();
 	}
 }

@@ -34,7 +34,7 @@ export default class Tooltip {
 		this.camera = camera;
 		this.input = input;
 		this.world = world;
-		this.multilineText = new MultilineText(painter, Vector.V0, []);
+		this.multilineText = new MultilineText(painter);
 		painter.uiContainer.addChild(this.selectionRect);
 	}
 

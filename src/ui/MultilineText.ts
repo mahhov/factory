@@ -11,7 +11,7 @@ export default class MultilineText {
 	position: Vector;
 	lines: TextLine[];
 
-	constructor(painter: Painter, position: Vector, lines: TextLine[]) {
+	constructor(painter: Painter, position: Vector = Vector.V0, lines: TextLine[] = []) {
 		this.position = position;
 		this.lines = lines;
 		painter.textUiContainer.addChild(this.textContainer);
