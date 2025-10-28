@@ -109,7 +109,7 @@ export class Conveyor extends Entity {
 	constructor(rotation: Rotation) {
 		super(rotation);
 		this.attributes.push([new EntityHealthAttribute(1)]);
-		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity), util.enumKeys(Rotation).filter(r => r !== RotationUtils.opposite(rotation)));
+		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity), util.enumValues(Rotation).filter(r => r !== RotationUtils.opposite(rotation)));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
 			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
@@ -137,7 +137,7 @@ export class Distributor extends Entity {
 		this.attributes.push([
 			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
 			new EntityTimedAttribute(10),
-			new EntityTransportAttribute(containerAttribute, util.enumKeys(Rotation)),
+			new EntityTransportAttribute(containerAttribute, util.enumValues(Rotation)),
 		]);
 		this.attributes.push([new EntityResourceFullSpriteAttribute(containerAttribute, Distributor.sprite, resource => Distributor.spriteFull(resource))]);
 	}

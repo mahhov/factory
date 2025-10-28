@@ -37,7 +37,7 @@ let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation)
 // 	})) as Record<Resource, number>;
 
 export let getResourceCounts = (defaultCount: number, resourceNonDefault: Partial<Record<Resource, number>> = {}): ResourceUtils.Count[] =>
-	util.enumKeys(Resource)
+	util.enumValues(Resource)
 		.map((resource: Resource) => {
 			let count = resourceNonDefault[resource] ?? defaultCount;
 			return new ResourceUtils.Count(resource, count);
@@ -146,12 +146,12 @@ export class EntityContainerAttribute extends EntityAttribute {
 
 	constructor(totalCapacity: number,
 	            resourceCapacities: ResourceUtils.Count[],
-	            inputRotations: Rotation[] = util.enumKeys(Rotation)) {
+	            inputRotations: Rotation[] = util.enumValues(Rotation)) {
 		super();
 		this.totalCapacity = totalCapacity;
 		this.resourceCapacities = resourceCapacities;
 		this.inputRotations = inputRotations;
-		this.quantities = Object.fromEntries(util.enumKeys(Resource)
+		this.quantities = Object.fromEntries(util.enumValues(Resource)
 			.map(resource => [resource, 0])) as Record<Resource, number>;
 	}
 
@@ -336,7 +336,7 @@ export class EntityOutflowAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.containerAttribute.empty) return false;
-		let outputRotations: Rotation[] = util.enumKeys(Rotation);
+		let outputRotations: Rotation[] = util.enumValues(Rotation);
 		let resourceCounts = this.resourceCounts.filter(resourceCount => this.containerAttribute.hasQuantity(resourceCount));
 		return EntityTransportAttribute.move(this.containerAttribute, outputRotations, resourceCounts, world, tile);
 	}
@@ -373,7 +373,7 @@ export class EntitySourceAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let resourceCount = new ResourceUtils.Count(this.entityResourcePickerAttribute.resource, 1);
-		util.enumKeys(Rotation).forEach(rotation =>
+		util.enumValues(Rotation).forEach(rotation =>
 			getAdjacentDestinations(tile.position, tile.tileable.size, rotation)
 				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityContainerAttribute))
 				.forEach(destinationContainerAttribute => {
@@ -388,7 +388,7 @@ export class EntityResourcePickerAttribute extends EntityAttribute {
 	resource: Resource = 0;
 
 	get tooltip(): TextLine[] {
-		return util.enumKeys(Resource).map(resource => {
+		return util.enumValues(Resource).map(resource => {
 			let color = resource === this.resource ? Color.SELECTED_TEXT : undefined;
 			return new TextLine(ResourceUtils.string(resource), () => this.resource = resource, undefined, color);
 		});

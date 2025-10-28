@@ -36,7 +36,9 @@ namespace util {
 		return pick[0];
 	};
 
-	export let enumKeys = <T extends {}>(enumm: T): T[keyof T][] =>
+	export let enumKeys = <T extends {}>(enumm: T): (keyof T)[] =>
+		Object.values(enumm).filter(value => typeof value !== 'number') as (keyof T)[];
+	export let enumValues = <T extends {}>(enumm: T): T[keyof T][] =>
 		Object.values(enumm).filter(value => typeof value === 'number') as T[keyof T][];
 
 	export let replace = <S, V>(values: V[], sources: S[], creator: (i: number, sources: S[]) => void, updater: (value: V, i: number, source: S) => void, remover: () => void) => {
