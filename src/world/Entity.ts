@@ -34,19 +34,17 @@ import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, Tileable, World} from './World.js';
 
 export class Entity implements Tileable {
+	readonly size: Vector;
 	protected readonly rotation: Rotation;
 	protected readonly attributes: EntityAttribute[][] = [];
 	readonly container = new Container();
 
-	constructor(rotation: Rotation = Rotation.RIGHT) {
+	constructor(size: Vector = Vector.V1, rotation: Rotation = Rotation.RIGHT) {
+		this.size = size;
 		this.rotation = rotation;
 		let sprite = (this.constructor as typeof Entity).sprite;
 		if (sprite)
 			this.sprite = sprite;
-	}
-
-	static get size() {
-		return Vector.V1;
 	}
 
 	static get sprite(): Sprite | null {return null;}
@@ -62,10 +60,6 @@ export class Entity implements Tileable {
 
 	static rotationToAngle(rotation: Rotation) {
 		return [...Array(4)].map((_, i) => i * Math.PI / 2)[rotation];
-	}
-
-	get size() {
-		return (this.constructor as typeof Entity).size;
 	}
 
 	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | undefined {
@@ -107,7 +101,7 @@ export class Wall extends Entity {
 
 export class Conveyor extends Entity {
 	constructor(rotation: Rotation) {
-		super(rotation);
+		super(Vector.V1, rotation);
 		this.attributes.push([new EntityHealthAttribute(1)]);
 		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity), util.enumValues(Rotation).filter(r => r !== RotationUtils.opposite(rotation)));
 		this.attributes.push([containerAttribute]);
@@ -176,7 +170,7 @@ export class Junction extends Entity {
 
 export class Extractor extends Entity {
 	constructor() {
-		super();
+		super(new Vector(4));
 		this.attributes.push([new EntityHealthAttribute(32)]);
 		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(10), []);
 		this.attributes.push([containerAttribute]);
@@ -185,10 +179,6 @@ export class Extractor extends Entity {
 			new EntityExtractorAttribute(containerAttribute),
 		]);
 		this.attributes.push([new EntityOutflowAttribute(containerAttribute, getResourceCounts(1))]);
-	}
-
-	static get size() {
-		return new Vector(4, 4);
 	}
 
 	static get sprite() {
@@ -246,7 +236,7 @@ export class GlassFactory extends Entity {
 
 export class Turret extends Entity {
 	constructor() {
-		super();
+		super(new Vector(2));
 		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(0, {[Resource.IRON]: 10}));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
@@ -254,10 +244,6 @@ export class Turret extends Entity {
 			new EntityConsumeAttribute(containerAttribute, getResourceCounts(0, {[Resource.IRON]: 1})),
 			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, true),
 		]);
-	}
-
-	static get size() {
-		return new Vector(2, 2);
 	}
 
 	static get sprite() {

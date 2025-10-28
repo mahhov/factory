@@ -48,11 +48,9 @@ export default class Placer {
 			[container.x, container.y] = coordinates[0];
 			painter.uiContainer.addChild(container);
 
-			let sprite = Placer.toolClass(tool).sprite;
-			if (sprite) {
-				[sprite.width, sprite.height] = coordinates[1];
-				container.addChild(sprite);
-			}
+			let spriteContainer = Placer.cachedToolClass(tool).container;
+			[spriteContainer.width, spriteContainer.height] = coordinates[1];
+			container.addChild(spriteContainer);
 
 			let rect = new Graphics()
 				.rect(0, 0, ...coordinates[1])
@@ -81,24 +79,29 @@ export default class Placer {
 			.stroke({width: 3 / painter.canvasWidth, color: Color.SELECTED_RECT_OUTLINE}));
 	}
 
-	private static toolClass(tool: Tool): typeof Entity {
+	private static cachedToolClass(tool: Tool): Entity {
+		// todo actually cache
+		return Object.fromEntries(util.enumValues(Tool).map(tool => [tool, Placer.createToolClass(tool, Rotation.RIGHT)]))[tool];
+	}
+
+	private static createToolClass(tool: Tool, rotation: Rotation): Entity {
 		switch (tool) {
 			case Tool.EMPTY:
-				return Empty;
+				return new Empty();
 			case Tool.WALL:
-				return Wall;
+				return new Wall();
 			case Tool.CONVEYOR:
-				return Conveyor;
+				return new Conveyor(rotation);
 			case Tool.DISTRIBUTOR:
-				return Distributor;
+				return new Distributor();
 			case Tool.JUNCTION:
-				return Junction;
+				return new Junction();
 			case Tool.EXTRACTOR:
-				return Extractor;
+				return new Extractor();
 			case Tool.GLASS_FACTORY:
-				return GlassFactory;
+				return new GlassFactory();
 			case Tool.TURRET:
-				return Turret;
+				return new Turret();
 		}
 	}
 
@@ -176,13 +179,13 @@ export default class Placer {
 		if (tile?.tileable instanceof Empty)
 			tile = this.world.live.getTile(this.position);
 		let tool: Tool = tile ?
-			util.enumValues(Tool).find(tool => Placer.toolClass(tool) === tile.tileable.constructor)!
+			util.enumValues(Tool).find(tool => Placer.cachedToolClass(tool).constructor === tile.tileable.constructor)!
 			: Tool.EMPTY;
 		this.setTool(tool);
 	}
 
 	private place(worldLayer: GridWorldLayer<Entity>, updateRotation: boolean) {
-		let toolClass = Placer.toolClass(this.tool);
+		let toolClass = Placer.cachedToolClass(this.tool);
 		let delta = this.endPosition.subtract(this.startPosition);
 		let iterations = delta
 			.scale(toolClass.size.invert())
@@ -201,7 +204,7 @@ export default class Placer {
 		let n = vertical ? iterations.y : iterations.x;
 		let iterDelta = RotationUtils.positionShift(rotation).scale(toolClass.size);
 		for (let i = 0; i < n; i++) {
-			worldLayer.replaceTileable(position, new toolClass(this.rotation));
+			worldLayer.replaceTileable(position, Placer.createToolClass(this.tool, this.rotation));
 			position = position.add(iterDelta);
 		}
 	}
