@@ -30,12 +30,6 @@ let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation)
 	return origin.iterate(size).map(border => border.add(shift));
 };
 
-// export let getResourceCounts = (defaultCount: number, resourceNonDefault: Partial<Record<Resource, number>> = {}): Record<Resource, number> =>
-// 	Object.fromEntries(util.enumKeys(Resource).map((resource: Resource) => {
-// 		let count = resourceNonDefault[resource] ?? defaultCount;
-// 		return [resource, count];
-// 	})) as Record<Resource, number>;
-
 export let getResourceCounts = (defaultCount: number, resourceNonDefault: Partial<Record<Resource, number>> = {}): ResourceUtils.Count[] =>
 	util.enumValues(Resource)
 		.map((resource: Resource) => {

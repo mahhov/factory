@@ -2,6 +2,7 @@ import {Container, Graphics, Text} from 'pixi.js';
 import Camera from '../Camera.js';
 import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
+import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Conveyor, Distributor, Empty, Entity, Extractor, GlassFactory, Junction, Turret, Wall} from '../world/Entity.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
@@ -12,10 +13,13 @@ enum State {
 	EMPTY, ENTITY_SELECTED, STARTED
 }
 
+enum Tool {
+	EMPTY, WALL, CONVEYOR, DISTRIBUTOR, JUNCTION, EXTRACTOR, GLASS_FACTORY, TURRET,
+}
+
 export default class Placer {
 	static readonly State = State;
-	static readonly entityClasses: typeof Entity[] =
-		[Wall, Conveyor, Distributor, Junction, Extractor, GlassFactory, Turret];
+	static Tool = Tool;
 
 	private readonly painter: Painter;
 	private readonly camera: Camera;
@@ -26,7 +30,7 @@ export default class Placer {
 
 	private started = false;
 	private rotation = Rotation.RIGHT;
-	private entityClass: typeof Entity = Empty;
+	private tool: Tool = Tool.EMPTY;
 	private startPosition = Vector.V0;
 	private endPosition = Vector.V0;
 
@@ -36,14 +40,15 @@ export default class Placer {
 		this.input = input;
 		this.world = world;
 
-		Placer.entityClasses.forEach((clazz, i) => {
+		util.enumValues(Tool).forEach((tool, i) => {
+			if (!i) return;
 			let coordinates = Placer.entityClassUiCoordinates(i);
 
 			let container = new Container();
 			[container.x, container.y] = coordinates[0];
 			painter.uiContainer.addChild(container);
 
-			let sprite = clazz.sprite;
+			let sprite = Placer.toolClass(tool).sprite;
 			if (sprite) {
 				[sprite.width, sprite.height] = coordinates[1];
 				container.addChild(sprite);
@@ -59,7 +64,7 @@ export default class Placer {
 			painter.textUiContainer.addChild(textContainer);
 
 			let text = new Text({
-				text: i + 1,
+				text: i,
 				style: {
 					fontFamily: 'Arial',
 					fontSize: 14,
@@ -72,14 +77,36 @@ export default class Placer {
 		});
 
 		this.entityClassRect.addChild(new Graphics()
-			.rect(0, 0, ...Placer.entityClassUiCoordinates(0)[1])
+			.rect(0, 0, ...Placer.entityClassUiCoordinates(1)[1])
 			.stroke({width: 3 / painter.canvasWidth, color: Color.SELECTED_RECT_OUTLINE}));
 	}
 
-	private static entityClassUiCoordinates(i: number): [number, number][] {
+	private static toolClass(tool: Tool): typeof Entity {
+		switch (tool) {
+			case Tool.EMPTY:
+				return Empty;
+			case Tool.WALL:
+				return Wall;
+			case Tool.CONVEYOR:
+				return Conveyor;
+			case Tool.DISTRIBUTOR:
+				return Distributor;
+			case Tool.JUNCTION:
+				return Junction;
+			case Tool.EXTRACTOR:
+				return Extractor;
+			case Tool.GLASS_FACTORY:
+				return GlassFactory;
+			case Tool.TURRET:
+				return Turret;
+		}
+	}
+
+	private static entityClassUiCoordinates(tool: Tool): [number, number][] {
+		console.assert(tool !== Tool.EMPTY);
 		let size = .035, margin = .005;
 		return [[
-			i * (size + margin) + margin,
+			(tool - 1) * (size + margin) + margin,
 			1 - margin - size,
 		], [
 			size,
@@ -93,18 +120,17 @@ export default class Placer {
 			.scale(this.world.size).floor();
 	}
 
-	toggleEntity(clazz: typeof Entity) {
-		this.setEntity(this.entityClass === clazz ? Empty : clazz);
+	toggleTool(tool: Tool) {
+		this.setTool(tool === this.tool ? Tool.EMPTY : tool);
 	}
 
-	setEntity(clazz: typeof Entity) {
-		this.entityClass = clazz;
+	setTool(tool: Tool) {
+		this.tool = tool;
 
-		let index = Placer.entityClasses.indexOf(this.entityClass);
-		if (index === -1)
+		if (tool === Tool.EMPTY)
 			this.painter.uiContainer.removeChild(this.entityClassRect);
 		else {
-			[this.entityClassRect.x, this.entityClassRect.y] = Placer.entityClassUiCoordinates(index)[0];
+			[this.entityClassRect.x, this.entityClassRect.y] = Placer.entityClassUiCoordinates(tool)[0];
 			this.painter.uiContainer.addChild(this.entityClassRect);
 		}
 
@@ -149,13 +175,17 @@ export default class Placer {
 		let tile = this.world.queue.getTile(this.position);
 		if (tile?.tileable instanceof Empty)
 			tile = this.world.live.getTile(this.position);
-		this.setEntity(tile ? tile.tileable.constructor as typeof Entity : Empty);
+		let tool: Tool = tile ?
+			util.enumValues(Tool).find(tool => Placer.toolClass(tool) === tile.tileable.constructor)!
+			: Tool.EMPTY;
+		this.setTool(tool);
 	}
 
 	private place(worldLayer: GridWorldLayer<Entity>, updateRotation: boolean) {
+		let toolClass = Placer.toolClass(this.tool);
 		let delta = this.endPosition.subtract(this.startPosition);
 		let iterations = delta
-			.scale(this.entityClass.size.invert())
+			.scale(toolClass.size.invert())
 			.floor()
 			.abs()
 			.add(Vector.V1);
@@ -169,9 +199,9 @@ export default class Placer {
 		this.world.planning.clearAllEntities();
 		let position = this.startPosition;
 		let n = vertical ? iterations.y : iterations.x;
-		let iterDelta = RotationUtils.positionShift(rotation).scale(this.entityClass.size);
+		let iterDelta = RotationUtils.positionShift(rotation).scale(toolClass.size);
 		for (let i = 0; i < n; i++) {
-			worldLayer.replaceTileable(position, new this.entityClass(this.rotation));
+			worldLayer.replaceTileable(position, new toolClass(this.rotation));
 			position = position.add(iterDelta);
 		}
 	}
@@ -179,7 +209,7 @@ export default class Placer {
 	get state() {
 		if (this.started)
 			return State.STARTED;
-		if (this.entityClass !== Empty)
+		if (this.tool !== Tool.EMPTY)
 			return State.ENTITY_SELECTED;
 		return State.EMPTY;
 	}

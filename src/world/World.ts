@@ -9,9 +9,7 @@ import {Resource} from './Resource.js';
 
 export interface Tileable {
 	readonly container: Container;
-
-	get size(): Vector;
-
+	readonly size: Vector;
 	tick(world: World, tile: Tile<Tileable>): void;
 }
 

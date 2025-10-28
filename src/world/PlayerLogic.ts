@@ -23,5 +23,3 @@ export class PlayerLogic {
 		this.multilineText.tick();
 	}
 }
-
-// todo metadata entities
