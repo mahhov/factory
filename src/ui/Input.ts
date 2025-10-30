@@ -1,43 +1,43 @@
 import Vector from '../util/Vector.js';
 
-enum State {
+export enum InputState {
 	DOWN, UP, PRESSED, RELEASED
 }
 
 abstract class Binding {
-	private readonly listenerStates: State[] = [];
+	private readonly listenerStates: InputState[] = [];
+	private state: InputState = InputState.UP;
 	private readonly listener = () => { };
-	private state: State = State.UP;
 
-	protected constructor(listenerStates: State[], listener: () => void) {
+	protected constructor(listenerStates: InputState[], listener: () => void) {
 		this.listenerStates = listenerStates;
 		this.listener = listener;
 	}
 
-	static updateState(state: State) {
+	static updateState(state: InputState) {
 		switch (state) {
-			case State.DOWN:
-			case State.PRESSED:
-				return State.DOWN;
-			case State.UP:
-			case State.RELEASED:
-				return State.UP;
+			case InputState.DOWN:
+			case InputState.PRESSED:
+				return InputState.DOWN;
+			case InputState.UP:
+			case InputState.RELEASED:
+				return InputState.UP;
 		}
 	}
 
 	press() {
-		if (this.state === State.UP)
-			this.state = State.PRESSED;
+		if (this.state === InputState.UP)
+			this.state = InputState.PRESSED;
 	}
 
 	release() {
-		if (this.state === State.DOWN)
-			this.state = State.RELEASED;
+		if (this.state === InputState.DOWN)
+			this.state = InputState.RELEASED;
 	}
 
-	keyDown(key: string) {}
+	keyDown(e: KeyboardEvent) {return false;}
 
-	keyUp(key: string) {}
+	keyUp(e: KeyboardEvent) {}
 
 	mouseDown(button: MouseButton) {}
 
@@ -52,34 +52,52 @@ abstract class Binding {
 	}
 }
 
-class KeyBinding extends Binding {
+export enum KeyModifier {
+	CONTROL,
+	SHIFT,
+	ALT
+}
+
+export class KeyBinding extends Binding {
 	private readonly key: string;
+	private readonly modifiers: KeyModifier[] = [];
 
-	constructor(key: string, listenerStates: State[], listener: () => void) {
+	constructor(key: string, modifiers: KeyModifier[], listenerStates: InputState[], listener: () => void) {
 		super(listenerStates, listener);
-		this.key = key;
+		this.key = key.toLowerCase();
+		this.modifiers = modifiers;
 	}
 
-	keyDown(key: string) {
-		if (this.key === key)
+	keyDown(e: KeyboardEvent) {
+		if (this.filter(e).every(v => v)) {
 			this.press();
+			return true;
+		}
+		return false;
 	}
 
-	keyUp(key: string) {
-		if (this.key === key)
+	keyUp(e: KeyboardEvent) {
+		if (this.filter(e).some(v => v))
 			this.release();
+	}
+
+	private filter(e: KeyboardEvent) {
+		return [
+			this.key === e.key.toLowerCase(),
+			this.modifiers.includes(KeyModifier.CONTROL) === e.ctrlKey,
+			this.modifiers.includes(KeyModifier.SHIFT) === e.shiftKey,
+			this.modifiers.includes(KeyModifier.ALT) === e.altKey];
 	}
 }
 
-enum MouseButton {
+export enum MouseButton {
 	LEFT, MIDDLE, RIGHT, BACK, FORWARD
 }
 
-class MouseBinding extends Binding {
-	static readonly MouseButton = MouseButton;
+export class MouseBinding extends Binding {
 	private readonly button: MouseButton;
 
-	constructor(button: MouseButton, listenerStates: State[], listener: () => void) {
+	constructor(button: MouseButton, listenerStates: InputState[], listener: () => void) {
 		super(listenerStates, listener);
 		this.button = button;
 	}
@@ -95,11 +113,11 @@ class MouseBinding extends Binding {
 	}
 }
 
-class MouseWheelBinding extends Binding {
+export class MouseWheelBinding extends Binding {
 	private readonly down: boolean;
 
-	constructor(down: boolean, listenerStates: State[], listener: () => void) {
-		super(listenerStates, listener);
+	constructor(down: boolean, listener: () => void) {
+		super([InputState.PRESSED], listener);
 		this.down = down;
 	}
 
@@ -114,34 +132,42 @@ class MouseWheelBinding extends Binding {
 	}
 }
 
-class Input {
-	static readonly State = State;
-
-	private bindings: Binding[] = [];
+export class Input {
+	private readonly bindings: Binding[] = [];
 	mouseDownPosition = Vector.V0;
+	mouseLastPosition = Vector.V0;
 	mousePosition = Vector.V0;
+	shiftDown = false;
 
 	constructor(mouseTarget: HTMLCanvasElement) {
 		window.addEventListener('blur', () =>
 			Object.values(this.bindings).forEach(binding => binding.release()));
 
 		document.addEventListener('keydown', e => {
-			if (!e.repeat)
-				Object.values(this.bindings).forEach(binding => binding.keyDown(e.key));
+			if (e.repeat) return;
+			if (e.key === 'Shift')
+				this.shiftDown = true;
+			if (Object.values(this.bindings).some(binding => binding.keyDown(e)))
+				e.preventDefault();
 		});
 		document.addEventListener('keyup', e => {
-			if (!e.repeat)
-				Object.values(this.bindings).forEach(binding => binding.keyUp(e.key));
+			if (e.repeat) return;
+			if (e.key === 'Shift')
+				this.shiftDown = false;
+			Object.values(this.bindings).forEach(binding => binding.keyUp(e));
 		});
 
 		mouseTarget.addEventListener('mousedown', e => {
 			Object.values(this.bindings).forEach(binding => binding.mouseDown(e.button));
+			this.mouseLastPosition = this.mousePosition;
 			this.mouseDownPosition = this.mousePosition;
 		});
 		window.addEventListener('mouseup', e =>
 			Object.values(this.bindings).forEach(binding => binding.mouseUp(e.button)));
-		mouseTarget.addEventListener('mousemove', e =>
-			this.mousePosition = new Vector((e.x - mouseTarget.offsetLeft), e.y - mouseTarget.offsetTop));
+		mouseTarget.addEventListener('mousemove', e => {
+			this.shiftDown = e.shiftKey;
+			this.mousePosition = new Vector((e.x - mouseTarget.offsetLeft), e.y - mouseTarget.offsetTop);
+		});
 		mouseTarget.addEventListener('wheel', e => {
 			if (e.deltaY < 0)
 				Object.values(this.bindings).forEach(binding => binding.mouseWheel(false));
@@ -158,9 +184,12 @@ class Input {
 		this.bindings.push(binding);
 	}
 
+	get mouseMoved() {
+		return !this.mousePosition.equals(this.mouseLastPosition);
+	}
+
 	tick() {
 		Object.values(this.bindings).forEach(binding => binding.tick());
+		this.mouseLastPosition = this.mousePosition;
 	}
 }
-
-export {Input, KeyBinding, MouseBinding, MouseWheelBinding};
