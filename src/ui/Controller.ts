@@ -1,7 +1,7 @@
 import Camera from '../Camera.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Input, InputState, KeyBinding, MouseBinding, MouseButton, MouseWheelBinding} from './Input.js';
+import {Input, InputState, KeyBinding, KeyModifier, MouseBinding, MouseButton, MouseWheelBinding} from './Input.js';
 import Placer from './Placer.js';
 import Tooltip from './Tooltip.js';
 
@@ -24,17 +24,21 @@ export default class Controller {
 		}));
 
 		// placer
-		util.arr(Math.min(util.enumValues(Placer.Tool).length, 8))
-			.forEach((tool, i) => input.addBinding(new KeyBinding(String(i), [], [InputState.PRESSED], () => placer.toggleTool(tool))));
+		util.arr(9)
+			.forEach(i => {
+				let key = String(i + 1);
+				input.addBinding(new KeyBinding(key, [], [InputState.PRESSED], () => placer.toggleToolIndex(i)));
+				input.addBinding(new KeyBinding(key, [KeyModifier.CONTROL], [InputState.PRESSED], () => placer.setToolGroupIndex(i)));
+			});
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.PRESSED], () => {
 			if (placer.state !== Placer.State.EMPTY)
 				placer.start();
 		}));
-		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.DOWN], () => placer.move()));
+		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.DOWN, InputState.UP], () => placer.move()));
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.RELEASED], () => placer.end()));
 		input.addBinding(new MouseBinding(MouseButton.MIDDLE, [InputState.RELEASED], () => placer.pick()));
 		input.addBinding(new MouseBinding(MouseButton.RIGHT, [InputState.PRESSED], () => {
-			placer.setTool(Placer.Tool.EMPTY);
+			placer.clearTool();
 			placer.start();
 		}));
 		input.addBinding(new MouseBinding(MouseButton.RIGHT, [InputState.DOWN], () => placer.move()));
