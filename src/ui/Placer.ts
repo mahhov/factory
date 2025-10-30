@@ -38,8 +38,8 @@ export default class Placer {
 
 	private started = false;
 	private rotation = Rotation.RIGHT;
-	private toolGroup: ToolGroup = 'walls';
-	private tool: Tool = Tool.EMPTY;
+	private toolGroup!: ToolGroup;
+	private tool!: Tool;
 	private startPosition = Vector.V0;
 	private endPosition = Vector.V0;
 
@@ -52,8 +52,7 @@ export default class Placer {
 		painter.uiContainer.addChild(this.toolListIconContainer);
 		painter.textUiContainer.addChild(this.toolListTextContainer);
 		// todo UI to display possible tool groups
-		// todo not displaying wall/wall on init because of the early exit when unchanged
-		this.setToolGroupAndTool('factories', Tool.GLASS_FACTORY);
+		this.setToolGroupAndTool('walls', Tool.EMPTY);
 
 		this.entityClassRect.addChild(new Graphics()
 			.rect(0, 0, ...Placer.entityClassUiCoordinates(1)[1])
