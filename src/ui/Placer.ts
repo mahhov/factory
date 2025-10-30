@@ -9,7 +9,7 @@ import {Rotation, RotationUtils} from '../world/Rotation.js';
 import {GridWorldLayer, World} from '../world/World.js';
 import {Input} from './Input.js';
 
-enum State {
+export enum PlacerState {
 	EMPTY, ENTITY_SELECTED, STARTED
 }
 
@@ -27,8 +27,6 @@ let toolTree = {
 type ToolGroup = keyof typeof toolTree;
 
 export default class Placer {
-	static readonly State = State;
-
 	private readonly painter: Painter;
 	private readonly camera: Camera;
 	private readonly input: Input;
@@ -184,7 +182,7 @@ export default class Placer {
 				[this.entityClassRect.x, this.entityClassRect.y] = Placer.entityClassUiCoordinates(index)[0];
 				this.toolListIconContainer.addChild(this.entityClassRect);
 			}
-			if (this.state !== State.EMPTY || this.started)
+			if (this.state !== PlacerState.EMPTY || this.started)
 				this.place(this.world.planning, false);
 			else
 				this.world.planning.clearAllEntities();
@@ -211,7 +209,7 @@ export default class Placer {
 			this.startPosition = position;
 		this.endPosition = position;
 
-		if (this.state !== State.EMPTY || this.started)
+		if (this.state !== PlacerState.EMPTY || this.started)
 			this.place(this.world.planning, this.started);
 	}
 
@@ -249,10 +247,10 @@ export default class Placer {
 
 	get state() {
 		if (this.started)
-			return State.STARTED;
+			return PlacerState.STARTED;
 		if (this.tool !== Tool.EMPTY)
-			return State.ENTITY_SELECTED;
-		return State.EMPTY;
+			return PlacerState.ENTITY_SELECTED;
+		return PlacerState.EMPTY;
 	}
 }
 

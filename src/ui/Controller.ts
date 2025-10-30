@@ -2,7 +2,7 @@ import Camera from '../Camera.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Input, InputState, KeyBinding, KeyModifier, MouseBinding, MouseButton, MouseWheelBinding} from './Input.js';
-import Placer from './Placer.js';
+import Placer, {PlacerState} from './Placer.js';
 import Tooltip from './Tooltip.js';
 
 export default class Controller {
@@ -15,11 +15,11 @@ export default class Controller {
 		input.addBinding(new KeyBinding('q', [], [InputState.DOWN], () => camera.zoom(.03)));
 		input.addBinding(new KeyBinding('e', [], [InputState.DOWN], () => camera.zoom(-.03)));
 		input.addBinding(new MouseWheelBinding(false, () => {
-			if (placer.state !== Placer.State.STARTED)
+			if (placer.state !== PlacerState.STARTED)
 				camera.zoom(-.3);
 		}));
 		input.addBinding(new MouseWheelBinding(true, () => {
-			if (placer.state !== Placer.State.STARTED)
+			if (placer.state !== PlacerState.STARTED)
 				camera.zoom(.3);
 		}));
 
@@ -31,7 +31,7 @@ export default class Controller {
 				input.addBinding(new KeyBinding(key, [KeyModifier.CONTROL], [InputState.PRESSED], () => placer.setToolGroupIndex(i)));
 			});
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.PRESSED], () => {
-			if (placer.state !== Placer.State.EMPTY)
+			if (placer.state !== PlacerState.EMPTY)
 				placer.start();
 		}));
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.DOWN, InputState.UP], () => placer.move()));
@@ -48,13 +48,13 @@ export default class Controller {
 
 		// tooltip
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.UP], () => {
-			if (placer.state === Placer.State.EMPTY)
+			if (placer.state === PlacerState.EMPTY)
 				tooltip.hover();
 			else
 				tooltip.unselect();
 		}));
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.PRESSED], () => {
-			if (placer.state === Placer.State.EMPTY)
+			if (placer.state === PlacerState.EMPTY)
 				tooltip.toggleSelect();
 		}));
 	}
