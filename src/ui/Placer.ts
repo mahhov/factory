@@ -32,9 +32,12 @@ export default class Placer {
 	private readonly input: Input;
 	private readonly world: World;
 
-	private readonly toolListIconContainer = new Container();
-	private readonly toolListTextContainer = new Container();
-	private readonly entityClassRect = new Container();
+	private readonly toolGroupIconContainer = new Container();
+	private readonly toolGroupTextContainer = new Container();
+	private readonly toolGroupSelectionRect = new Container();
+	private readonly toolIconContainer = new Container();
+	private readonly toolTextContainer = new Container();
+	private readonly toolSelectionRect = new Container();
 
 	private started = false;
 	private rotation = Rotation.RIGHT;
@@ -49,14 +52,20 @@ export default class Placer {
 		this.input = input;
 		this.world = world;
 
-		painter.uiContainer.addChild(this.toolListIconContainer);
-		painter.textUiContainer.addChild(this.toolListTextContainer);
-		// todo UI to display possible tool groups
-		this.setToolGroupAndTool('walls', Tool.EMPTY);
-
-		this.entityClassRect.addChild(new Graphics()
-			.rect(0, 0, ...Placer.entityClassUiCoordinates(1)[1])
+		painter.uiContainer.addChild(this.toolGroupIconContainer);
+		painter.textUiContainer.addChild(this.toolGroupTextContainer);
+		painter.uiContainer.addChild(this.toolGroupSelectionRect);
+		this.toolGroupSelectionRect.addChild(new Graphics()
+			.rect(0, 0, ...Placer.toolGroupUiCoordinates(1)[1])
 			.stroke({width: 3 / painter.canvasWidth, color: Color.SELECTED_RECT_OUTLINE}));
+		painter.uiContainer.addChild(this.toolIconContainer);
+		painter.textUiContainer.addChild(this.toolTextContainer);
+		painter.uiContainer.addChild(this.toolSelectionRect);
+		this.toolSelectionRect.addChild(new Graphics()
+			.rect(0, 0, ...Placer.toolUiCoordinates(1)[1])
+			.stroke({width: 3 / painter.canvasWidth, color: Color.SELECTED_RECT_OUTLINE}));
+
+		this.setToolGroupAndTool('walls', Tool.EMPTY);
 	}
 
 	private static cachedToolClass(tool: Tool): Entity {
@@ -85,7 +94,18 @@ export default class Placer {
 		}
 	}
 
-	private static entityClassUiCoordinates(index: number): [number, number][] {
+	private static toolGroupUiCoordinates(index: number): [number, number][] {
+		let size = .035, margin = .005;
+		return [[
+			index * (size + margin) + margin,
+			1 - (margin + size) * 2,
+		], [
+			size,
+			size,
+		]];
+	}
+
+	private static toolUiCoordinates(index: number): [number, number][] {
 		let size = .035, margin = .005;
 		return [[
 			index * (size + margin) + margin,
@@ -139,15 +159,52 @@ export default class Placer {
 	private setToolGroupAndTool(toolGroup: ToolGroup, tool: Tool) {
 		console.assert(tool === Tool.EMPTY || toolTree[toolGroup].includes(tool));
 
-		if (this.toolGroup !== toolGroup) {
-			this.toolGroup = toolGroup;
-			this.toolListIconContainer.removeChildren();
-			this.toolListTextContainer.removeChildren();
-			toolTree[toolGroup].forEach((tool, i) => {
-				let coordinates = Placer.entityClassUiCoordinates(i);
+		if (!this.toolGroupIconContainer.children.length) {
+			// redraw top row
+			// todo dedupe
+			// todo only run once
+			Object.keys(toolTree).forEach((toolGroup, i) => {
+				// todo smaller rects
+				let coordinates = Placer.toolGroupUiCoordinates(i);
 				let container = new Container();
 				[container.x, container.y] = coordinates[0];
-				this.toolListIconContainer.addChild(container);
+				this.toolGroupIconContainer.addChild(container);
+				// todo add tool group sprites
+				let rect = new Graphics()
+					.rect(0, 0, ...coordinates[1])
+					.stroke({width: 1 / this.painter.canvasWidth, color: Color.RECT_OUTLINE});
+				container.addChild(rect);
+				let textContainer = new Container();
+				[textContainer.x, textContainer.y] = coordinates[0].map(v => v * 1000);
+				this.toolGroupTextContainer.addChild(textContainer);
+				let text = new Text({
+					text: '^' + (i + 1),
+					style: {
+						fontFamily: 'Arial',
+						fontSize: 14,
+						fill: Color.DEFAULT_TEXT,
+					},
+					x: 3,
+					y: 1,
+				});
+				textContainer.addChild(text);
+			});
+		}
+
+		if (this.toolGroup !== toolGroup) {
+			this.toolGroup = toolGroup;
+			// redraw top row selection
+			let index = Object.keys(toolTree).indexOf(toolGroup);
+			[this.toolGroupSelectionRect.x, this.toolGroupSelectionRect.y] = Placer.toolGroupUiCoordinates(index)[0];
+			this.toolGroupIconContainer.addChild(this.toolGroupSelectionRect);
+			// redraw bottom row
+			this.toolIconContainer.removeChildren();
+			this.toolTextContainer.removeChildren();
+			toolTree[toolGroup].forEach((tool, i) => {
+				let coordinates = Placer.toolUiCoordinates(i);
+				let container = new Container();
+				[container.x, container.y] = coordinates[0];
+				this.toolIconContainer.addChild(container);
 				let spriteContainer = Placer.cachedToolClass(tool).container;
 				[spriteContainer.width, spriteContainer.height] = coordinates[1];
 				container.addChild(spriteContainer);
@@ -157,9 +214,9 @@ export default class Placer {
 				container.addChild(rect);
 				let textContainer = new Container();
 				[textContainer.x, textContainer.y] = coordinates[0].map(v => v * 1000);
-				this.toolListTextContainer.addChild(textContainer);
+				this.toolTextContainer.addChild(textContainer);
 				let text = new Text({
-					text: i,
+					text: i + 1,
 					style: {
 						fontFamily: 'Arial',
 						fontSize: 14,
@@ -174,13 +231,15 @@ export default class Placer {
 
 		if (this.tool !== tool) {
 			this.tool = tool;
+			// redraw bottom selection
 			let index = toolTree[this.toolGroup].indexOf(tool);
 			if (tool === Tool.EMPTY)
-				this.toolListIconContainer.removeChild(this.entityClassRect);
+				this.toolIconContainer.removeChild(this.toolSelectionRect);
 			else {
-				[this.entityClassRect.x, this.entityClassRect.y] = Placer.entityClassUiCoordinates(index)[0];
-				this.toolListIconContainer.addChild(this.entityClassRect);
+				[this.toolSelectionRect.x, this.toolSelectionRect.y] = Placer.toolUiCoordinates(index)[0];
+				this.toolIconContainer.addChild(this.toolSelectionRect);
 			}
+			// redraw planned entities
 			if (this.state !== PlacerState.EMPTY || this.started)
 				this.place(this.world.planning, false);
 			else
