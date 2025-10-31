@@ -148,13 +148,12 @@ export default class Placer {
 
 		if (this.toolGroupIconContainer.children.length === 1) {
 			// redraw top row
-			Object.keys(toolTree).forEach((toolGroup, i) => {
+			Object.values(toolTree).forEach((tools, i) => {
 				let coordinates = Placer.toolUiCoordinates(true, i);
-				this.addToolUiButton(coordinates, this.toolGroupIconContainer, null, this.toolGroupTextContainer, '^' + (i + 1));
+				this.addToolUiButton(coordinates, this.toolGroupIconContainer, Placer.cachedToolEntities[tools[0]].container, this.toolGroupTextContainer, '^' + (i + 1));
 				let container = new Container();
 				[container.x, container.y] = coordinates[0];
 				this.toolGroupIconContainer.addChild(container);
-				// todo add tool group sprites
 				let rect = new Graphics()
 					.rect(0, 0, ...coordinates[1])
 					.stroke({width: 1 / this.painter.canvasWidth, color: Color.RECT_OUTLINE});
@@ -208,7 +207,7 @@ export default class Placer {
 		}
 	}
 
-	private addToolUiButton(coordinates: [number, number][], iconContainer: Container, spriteContainer: Container | null, textContainer: Container, text: string) {
+	private addToolUiButton(coordinates: [number, number][], iconContainer: Container, spriteContainer: Container, textContainer: Container, text: string) {
 		let container = new Container();
 		[container.x, container.y] = coordinates[0];
 		iconContainer.addChild(container);
