@@ -2,8 +2,14 @@ import {Resource, ResourceUtils} from './Resource.js';
 
 type StringRecord = Record<string, string>;
 type FieldHandler<R> = (data: StringRecord) => R;
-type ParsedResult<T extends Record<string, FieldHandler<any>>> = {
+type FieldHandlerDictionary = Record<string, FieldHandler<any>>;
+type FieldHandlerDictionary2 = Record<string, FieldHandlerDictionary>;
+type ParsedLine<T extends FieldHandlerDictionary> = {
 	[K in keyof T]: T[K] extends FieldHandler<infer R> ? R : never;
+};
+type ParsedSection<T extends FieldHandlerDictionary> = ParsedLine<T>[];
+type ParsedSection2<T extends FieldHandlerDictionary2> = {
+	[K in keyof T]: ParsedSection<T[K]>;
 };
 
 // 'iron wall' => 'Iron Wall'
@@ -37,7 +43,7 @@ let parseBuildingOutput = (str: string): ResourceUtils.Count | [string, number][
 	return parseResourceCount(str);
 };
 
-let parseSection = <F extends Record<string, FieldHandler<any>>>(mdString: string, fields: F): ParsedResult<F>[] => {
+let parseSection = <F extends FieldHandlerDictionary>(mdString: string, fields: F): ParsedSection<F> => {
 	let [headers, ...lines]: string[][] = mdString
 		.trim()
 		.split('\n')
@@ -48,10 +54,21 @@ let parseSection = <F extends Record<string, FieldHandler<any>>>(mdString: strin
 			.filter(v => v)
 			.map(v => v.trim()));
 	let datas: StringRecord[] = lines.map(line => Object.fromEntries(line.map((cell, i) => [headers[i], cell])));
-	return datas.map(data => Object.fromEntries(Object.entries(fields).map(([key, handler]) => [key, handler(data)]))) as ParsedResult<F>[];
+	return datas.map(data => Object.fromEntries(Object.entries(fields).map(([key, handler]) => [key, handler(data)]))) as ParsedSection<F>;
 };
 
-let sectionFields: Record<string, Record<string, FieldHandler<any>>> = {
+let parseSection2 = <F2 extends FieldHandlerDictionary2>(mdString: string, fields2: F2): ParsedSection2<F2> => {
+	let parsed: Partial<ParsedSection2<F2>> = {};
+	let parts = mdString.split(/^#\s*(\w+)/gm);
+	for (let i = 1; i < parts.length; i += 2) {
+		let header: keyof typeof fields2 = parts[i];
+		if (header in fields2)
+			parsed[header] = parseSection(parts[i + 1], fields2[header]);
+	}
+	return parsed as ParsedSection2<F2>;
+};
+
+let sectionFields = {
 	buildings: {
 		name: (data: StringRecord) => lowerCaseToTitleCase(data.name),
 		buildTime: (data: StringRecord) => parseNumber(data['build time']),
@@ -66,13 +83,9 @@ let sectionFields: Record<string, Record<string, FieldHandler<any>>> = {
 	},
 };
 
-let parsed: Record<string, ParsedResult<any>[]> = {};
-let metadataMarkdown = await (await fetch('../../resources/metadata.md')).text();
-let parts = metadataMarkdown.split(/^#\s*(\w+)/gm);
-for (let i = 1; i < parts.length; i += 2) {
-	let header = parts[i];
-	if (header in sectionFields)
-		parsed[header] = parseSection(parts[i + 1], sectionFields[header]);
-}
+let mdString = await (await fetch('../../resources/metadata.md')).text();
+let parsed = parseSection2(mdString, sectionFields);
 
-export default parsed;
+let findEntityMetadata = (type: keyof typeof sectionFields, name: string) =>
+	parsed[type].find(entry => entry.name === name);
+export default findEntityMetadata;
