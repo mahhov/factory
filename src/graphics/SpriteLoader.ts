@@ -17,11 +17,6 @@ namespace SpriteLoader {
 		return Promise.all(Object.values(Resource).map(resource => Assets.load(path(resource))));
 	};
 
-	// export let animation = (resource: Resource, animation: string) => {
-	// 	let sheet = Assets.get(path(resource));
-	// 	return new AnimatedSprite(sheet.animations[animation]);
-	// };
-
 	export let getSprite = (resource: Resource, frame: string): Sprite => {
 		let sheet = Assets.get(path(resource));
 		return new Sprite(sheet.textures[frame]);

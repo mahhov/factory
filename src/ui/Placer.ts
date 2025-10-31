@@ -27,18 +27,17 @@ let toolTree = {
 type ToolGroup = keyof typeof toolTree;
 
 export default class Placer {
+	private static cachedToolEntities_: Record<Tool, Entity>;
 	private readonly painter: Painter;
 	private readonly camera: Camera;
 	private readonly input: Input;
 	private readonly world: World;
-
 	private readonly toolGroupIconContainer = new Container();
 	private readonly toolGroupTextContainer = new Container();
 	private readonly toolGroupSelectionRect = new Container();
 	private readonly toolIconContainer = new Container();
 	private readonly toolTextContainer = new Container();
 	private readonly toolSelectionRect = new Container();
-
 	private started = false;
 	private rotation = Rotation.RIGHT;
 	private toolGroup!: ToolGroup;
@@ -68,12 +67,12 @@ export default class Placer {
 		this.setToolGroupAndTool('walls', Tool.EMPTY);
 	}
 
-	private static cachedToolClass(tool: Tool): Entity {
-		// todo actually cache
-		return Object.fromEntries(util.enumValues(Tool).map(tool => [tool, Placer.createToolClass(tool, Rotation.RIGHT)]))[tool];
+	private static get cachedToolEntities() {
+		Placer.cachedToolEntities_ ||= Object.fromEntries(util.enumValues(Tool).map(tool => [tool, Placer.createToolEntity(tool, Rotation.RIGHT)])) as Record<Tool, Entity>;
+		return Placer.cachedToolEntities_;
 	}
 
-	private static createToolClass(tool: Tool, rotation: Rotation): Entity {
+	private static createToolEntity(tool: Tool, rotation: Rotation): Entity {
 		switch (tool) {
 			case Tool.EMPTY:
 				return new Empty();
@@ -134,7 +133,7 @@ export default class Placer {
 		if (tile?.tileable instanceof Empty)
 			tile = this.world.live.getTile(this.position);
 		let tool: Tool = tile ?
-			util.enumValues(Tool).find(tool => Placer.cachedToolClass(tool).constructor === tile.tileable.constructor) || Tool.EMPTY
+			util.enumValues(Tool).find(tool => Placer.cachedToolEntities[tool].constructor === tile.tileable.constructor) || Tool.EMPTY
 			: Tool.EMPTY;
 
 		let toolGroup = tool !== Tool.EMPTY ?
@@ -190,7 +189,7 @@ export default class Placer {
 				let container = new Container();
 				[container.x, container.y] = coordinates[0];
 				this.toolIconContainer.addChild(container);
-				let spriteContainer = Placer.cachedToolClass(tool).container;
+				let spriteContainer = Placer.cachedToolEntities[tool].container;
 				[spriteContainer.width, spriteContainer.height] = coordinates[1];
 				container.addChild(spriteContainer);
 				let rect = new Graphics()
@@ -264,10 +263,10 @@ export default class Placer {
 	}
 
 	private place(worldLayer: GridWorldLayer<Entity>, updateRotation: boolean) {
-		let toolClass = Placer.cachedToolClass(this.tool);
+		let toolEntity = Placer.cachedToolEntities[this.tool];
 		let delta = this.endPosition.subtract(this.startPosition);
 		let iterations = delta
-			.scale(toolClass.size.invert())
+			.scale(toolEntity.size.invert())
 			.floor()
 			.abs()
 			.add(Vector.V1);
@@ -281,9 +280,9 @@ export default class Placer {
 		this.world.planning.clearAllEntities();
 		let position = this.startPosition;
 		let n = vertical ? iterations.y : iterations.x;
-		let iterDelta = RotationUtils.positionShift(rotation).scale(toolClass.size);
+		let iterDelta = RotationUtils.positionShift(rotation).scale(toolEntity.size);
 		for (let i = 0; i < n; i++) {
-			worldLayer.replaceTileable(position, Placer.createToolClass(this.tool, this.rotation));
+			worldLayer.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation));
 			position = position.add(iterDelta);
 		}
 	}
