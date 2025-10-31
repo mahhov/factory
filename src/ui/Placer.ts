@@ -54,15 +54,15 @@ export default class Placer {
 
 		painter.uiContainer.addChild(this.toolGroupIconContainer);
 		painter.textUiContainer.addChild(this.toolGroupTextContainer);
-		painter.uiContainer.addChild(this.toolGroupSelectionRect);
+		this.toolGroupIconContainer.addChild(this.toolGroupSelectionRect);
 		this.toolGroupSelectionRect.addChild(new Graphics()
-			.rect(0, 0, ...Placer.toolGroupUiCoordinates(1)[1])
+			.rect(0, 0, ...Placer.toolUiCoordinates(true, 0)[1])
 			.stroke({width: 3 / painter.canvasWidth, color: Color.SELECTED_RECT_OUTLINE}));
 		painter.uiContainer.addChild(this.toolIconContainer);
 		painter.textUiContainer.addChild(this.toolTextContainer);
-		painter.uiContainer.addChild(this.toolSelectionRect);
+		this.toolIconContainer.addChild(this.toolSelectionRect);
 		this.toolSelectionRect.addChild(new Graphics()
-			.rect(0, 0, ...Placer.toolUiCoordinates(1)[1])
+			.rect(0, 0, ...Placer.toolUiCoordinates(false, 0)[1])
 			.stroke({width: 3 / painter.canvasWidth, color: Color.SELECTED_RECT_OUTLINE}));
 
 		this.setToolGroupAndTool('walls', Tool.EMPTY);
@@ -94,26 +94,14 @@ export default class Placer {
 		}
 	}
 
-	private static toolGroupUiCoordinates(index: number): [number, number][] {
-		let size = .035, margin = .005;
-		return [[
-			index * (size + margin) + margin,
-			1 - (margin + size) * 2,
-		], [
-			size,
-			size,
-		]];
-	}
-
-	private static toolUiCoordinates(index: number): [number, number][] {
-		let size = .035, margin = .005;
-		return [[
-			index * (size + margin) + margin,
-			1 - margin - size,
-		], [
-			size,
-			size,
-		]];
+	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {
+		let toolGroupSize = .02, toolSize = .035, margin = .005;
+		let size = group ? toolGroupSize : toolSize;
+		let y = 1 - margin - toolSize;
+		if (group)
+			y = y - margin - toolGroupSize;
+		let x = margin + index * (size + margin);
+		return [[x, y], [size, size]];
 	}
 
 	private get position(): Vector {
@@ -159,13 +147,11 @@ export default class Placer {
 	private setToolGroupAndTool(toolGroup: ToolGroup, tool: Tool) {
 		console.assert(tool === Tool.EMPTY || toolTree[toolGroup].includes(tool));
 
-		if (!this.toolGroupIconContainer.children.length) {
+		if (this.toolGroupIconContainer.children.length === 1) {
 			// redraw top row
 			// todo dedupe
-			// todo only run once
 			Object.keys(toolTree).forEach((toolGroup, i) => {
-				// todo smaller rects
-				let coordinates = Placer.toolGroupUiCoordinates(i);
+				let coordinates = Placer.toolUiCoordinates(true, i);
 				let container = new Container();
 				[container.x, container.y] = coordinates[0];
 				this.toolGroupIconContainer.addChild(container);
@@ -181,11 +167,11 @@ export default class Placer {
 					text: '^' + (i + 1),
 					style: {
 						fontFamily: 'Arial',
-						fontSize: 14,
+						fontSize: 10,
 						fill: Color.DEFAULT_TEXT,
 					},
-					x: 3,
-					y: 1,
+					x: 1,
+					y: -1,
 				});
 				textContainer.addChild(text);
 			});
@@ -195,13 +181,12 @@ export default class Placer {
 			this.toolGroup = toolGroup;
 			// redraw top row selection
 			let index = Object.keys(toolTree).indexOf(toolGroup);
-			[this.toolGroupSelectionRect.x, this.toolGroupSelectionRect.y] = Placer.toolGroupUiCoordinates(index)[0];
-			this.toolGroupIconContainer.addChild(this.toolGroupSelectionRect);
+			[this.toolGroupSelectionRect.x, this.toolGroupSelectionRect.y] = Placer.toolUiCoordinates(true, index)[0];
 			// redraw bottom row
 			this.toolIconContainer.removeChildren();
 			this.toolTextContainer.removeChildren();
 			toolTree[toolGroup].forEach((tool, i) => {
-				let coordinates = Placer.toolUiCoordinates(i);
+				let coordinates = Placer.toolUiCoordinates(false, i);
 				let container = new Container();
 				[container.x, container.y] = coordinates[0];
 				this.toolIconContainer.addChild(container);
@@ -219,11 +204,11 @@ export default class Placer {
 					text: i + 1,
 					style: {
 						fontFamily: 'Arial',
-						fontSize: 14,
+						fontSize: 10,
 						fill: Color.DEFAULT_TEXT,
 					},
-					x: 3,
-					y: 1,
+					x: 1,
+					y: -1,
 				});
 				textContainer.addChild(text);
 			});
@@ -236,7 +221,7 @@ export default class Placer {
 			if (tool === Tool.EMPTY)
 				this.toolIconContainer.removeChild(this.toolSelectionRect);
 			else {
-				[this.toolSelectionRect.x, this.toolSelectionRect.y] = Placer.toolUiCoordinates(index)[0];
+				[this.toolSelectionRect.x, this.toolSelectionRect.y] = Placer.toolUiCoordinates(false, index)[0];
 				this.toolIconContainer.addChild(this.toolSelectionRect);
 			}
 			// redraw planned entities
