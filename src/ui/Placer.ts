@@ -148,9 +148,9 @@ export default class Placer {
 
 		if (this.toolGroupIconContainer.children.length === 1) {
 			// redraw top row
-			// todo dedupe
 			Object.keys(toolTree).forEach((toolGroup, i) => {
 				let coordinates = Placer.toolUiCoordinates(true, i);
+				this.addToolUiButton(coordinates, this.toolGroupIconContainer, null, this.toolGroupTextContainer, '^' + (i + 1));
 				let container = new Container();
 				[container.x, container.y] = coordinates[0];
 				this.toolGroupIconContainer.addChild(container);
@@ -186,30 +186,7 @@ export default class Placer {
 			this.toolTextContainer.removeChildren();
 			toolTree[toolGroup].forEach((tool, i) => {
 				let coordinates = Placer.toolUiCoordinates(false, i);
-				let container = new Container();
-				[container.x, container.y] = coordinates[0];
-				this.toolIconContainer.addChild(container);
-				let spriteContainer = Placer.cachedToolEntities[tool].container;
-				[spriteContainer.width, spriteContainer.height] = coordinates[1];
-				container.addChild(spriteContainer);
-				let rect = new Graphics()
-					.rect(0, 0, ...coordinates[1])
-					.stroke({width: 1 / this.painter.canvasWidth, color: Color.RECT_OUTLINE});
-				container.addChild(rect);
-				let textContainer = new Container();
-				[textContainer.x, textContainer.y] = coordinates[0].map(v => v * 1000);
-				this.toolTextContainer.addChild(textContainer);
-				let text = new Text({
-					text: i + 1,
-					style: {
-						fontFamily: 'Arial',
-						fontSize: 10,
-						fill: Color.DEFAULT_TEXT,
-					},
-					x: 1,
-					y: -1,
-				});
-				textContainer.addChild(text);
+				this.addToolUiButton(coordinates, this.toolIconContainer, Placer.cachedToolEntities[tool].container, this.toolTextContainer, String(i + 1));
 			});
 		}
 
@@ -229,6 +206,30 @@ export default class Placer {
 			else
 				this.world.planning.clearAllEntities();
 		}
+	}
+
+	private addToolUiButton(coordinates: [number, number][], iconContainer: Container, spriteContainer: Container | null, textContainer: Container, text: string) {
+		let container = new Container();
+		[container.x, container.y] = coordinates[0];
+		iconContainer.addChild(container);
+		if (spriteContainer) {
+			[spriteContainer.width, spriteContainer.height] = coordinates[1];
+			container.addChild(spriteContainer);
+		}
+		let rect = new Graphics()
+			.rect(0, 0, ...coordinates[1])
+			.stroke({width: 1 / this.painter.canvasWidth, color: Color.RECT_OUTLINE});
+		container.addChild(rect);
+		textContainer.addChild(new Text({
+			text,
+			style: {
+				fontFamily: 'Arial',
+				fontSize: 10,
+				fill: Color.DEFAULT_TEXT,
+			},
+			x: coordinates[0][0] * 1000 + 1,
+			y: coordinates[0][1] * 1000 - 1,
+		}));
 	}
 
 	rotate(delta: number) {
