@@ -66,6 +66,8 @@ export abstract class EntityAttribute {
 
 // todo some graphical indicator for buildings queued, buildings in progress, buildings active
 // todo partial health for partially built buildings
+// todo gets stuck building when out of resources
+// todo queued salvage not displaying correctly
 export class EntityBuildableAttribute extends EntityAttribute {
 	private readonly counter: Counter;
 	private readonly materialCost: ResourceUtils.Count[];
@@ -73,7 +75,7 @@ export class EntityBuildableAttribute extends EntityAttribute {
 
 	constructor(duration: number, materialCost: ResourceUtils.Count[]) {
 		super();
-		this.counter = new Counter(duration);
+		this.counter = new Counter(duration * 20);
 		this.materialCost = materialCost;
 	}
 

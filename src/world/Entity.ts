@@ -90,10 +90,10 @@ export class Empty extends Entity {
 }
 
 export class Wall extends Entity {
-	constructor() {
-		super();
-		this.attributes.push([new EntityBuildableAttribute(200, [new ResourceUtils.Count(Resource.IRON, 10)])]);
-		this.attributes.push([new EntityHealthAttribute(10)]);
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number) {
+		super(size);
+		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
+		this.attributes.push([new EntityHealthAttribute(health)]);
 	}
 
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_WALL]);}

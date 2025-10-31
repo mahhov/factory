@@ -5,6 +5,7 @@ import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Conveyor, Distributor, Empty, Entity, Extractor, GlassFactory, Junction, Turret, Wall} from '../world/Entity.js';
+import findEntityMetadata from '../world/EntityMetadata.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
 import {GridWorldLayer, World} from '../world/World.js';
 import {Input} from './Input.js';
@@ -14,11 +15,15 @@ export enum PlacerState {
 }
 
 enum Tool {
-	EMPTY, WALL, CONVEYOR, DISTRIBUTOR, JUNCTION, EXTRACTOR, GLASS_FACTORY, TURRET,
+	EMPTY,
+	IRON_WALL, STEEL_WALL,
+	CONVEYOR, DISTRIBUTOR, JUNCTION, EXTRACTOR,
+	GLASS_FACTORY,
+	TURRET,
 }
 
 let toolTree = {
-	walls: [Tool.WALL],
+	walls: [Tool.IRON_WALL, Tool.STEEL_WALL],
 	transport: [Tool.CONVEYOR, Tool.DISTRIBUTOR, Tool.JUNCTION],
 	extractors: [Tool.EXTRACTOR],
 	factories: [Tool.GLASS_FACTORY],
@@ -76,8 +81,14 @@ export default class Placer {
 		switch (tool) {
 			case Tool.EMPTY:
 				return new Empty();
-			case Tool.WALL:
-				return new Wall();
+			case Tool.IRON_WALL: {
+				let metadata = findEntityMetadata('buildings', 'Iron Wall')!;
+				return new Wall(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health);
+			}
+			case Tool.STEEL_WALL: {
+				let metadata = findEntityMetadata('buildings', 'Steel Wall')!;
+				return new Wall(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health);
+			}
 			case Tool.CONVEYOR:
 				return new Conveyor(rotation);
 			case Tool.DISTRIBUTOR:
