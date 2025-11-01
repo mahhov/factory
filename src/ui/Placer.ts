@@ -74,11 +74,11 @@ export default class Placer {
 	}
 
 	private static get cachedToolEntities() {
-		Placer.cachedToolEntities_ ||= Object.fromEntries(util.enumValues(Tool).map(tool => [tool, Placer.createToolEntity(tool, Rotation.RIGHT)])) as Record<Tool, Entity>;
+		Placer.cachedToolEntities_ ||= Object.fromEntries(util.enumValues(Tool).map(tool => [tool, Placer.createToolEntity(tool)])) as Record<Tool, Entity>;
 		return Placer.cachedToolEntities_;
 	}
 
-	private static createToolEntity(tool: Tool, rotation: Rotation): Entity {
+	private static createToolEntity(tool: Tool, rotation: Rotation = Rotation.RIGHT): Entity {
 		switch (tool) {
 			case Tool.EMPTY:
 				return new Empty();
@@ -87,13 +87,13 @@ export default class Placer {
 			case Tool.STEEL_WALL:
 				return Placer.createToolWall(findEntityMetadata('buildings', 'Steel Wall'));
 			case Tool.EXTRACTOR:
-				Placer.createToolExtractor(findEntityMetadata('buildings', 'Extractor'));
+				return Placer.createToolExtractor(findEntityMetadata('buildings', 'Extractor'));
 			case Tool.REINFORCED_EXTRACTOR:
-				Placer.createToolExtractor(findEntityMetadata('buildings', 'Reinforced Extractor'));
+				return Placer.createToolExtractor(findEntityMetadata('buildings', 'Reinforced Extractor'));
 			case Tool.QUADRATIC_EXTRACTOR:
-				Placer.createToolExtractor(findEntityMetadata('buildings', 'Quadratic Extractor'));
+				return Placer.createToolExtractor(findEntityMetadata('buildings', 'Quadratic Extractor'));
 			case Tool.LASER_EXTRACTOR:
-				Placer.createToolExtractor(findEntityMetadata('buildings', 'Laser Extractor'));
+				return Placer.createToolExtractor(findEntityMetadata('buildings', 'Laser Extractor'));
 			case Tool.CONVEYOR:
 				return new Conveyor(rotation);
 			case Tool.DISTRIBUTOR:
@@ -154,6 +154,7 @@ export default class Placer {
 		let tile = this.world.queue.getTile(this.position);
 		if (tile?.tileable instanceof Empty)
 			tile = this.world.live.getTile(this.position);
+		// todo picker not working when multiple entities share same class. use name to distinguish
 		let tool: Tool = tile ?
 			util.enumValues(Tool).find(tool => Placer.cachedToolEntities[tool].constructor === tile.tileable.constructor) || Tool.EMPTY
 			: Tool.EMPTY;
@@ -172,7 +173,7 @@ export default class Placer {
 			// redraw top row
 			Object.values(toolTree).forEach((tools, i) => {
 				let coordinates = Placer.toolUiCoordinates(true, i);
-				this.addToolUiButton(coordinates, this.toolGroupIconContainer, Placer.cachedToolEntities[tools[0]].container, this.toolGroupTextContainer, '^' + (i + 1));
+				this.addToolUiButton(coordinates, this.toolGroupIconContainer, Placer.createToolEntity(tools[0]).container, this.toolGroupTextContainer, '^' + (i + 1));
 				let container = new Container();
 				[container.x, container.y] = coordinates[0];
 				this.toolGroupIconContainer.addChild(container);
@@ -233,10 +234,8 @@ export default class Placer {
 		let container = new Container();
 		[container.x, container.y] = coordinates[0];
 		iconContainer.addChild(container);
-		if (spriteContainer) {
-			[spriteContainer.width, spriteContainer.height] = coordinates[1];
-			container.addChild(spriteContainer);
-		}
+		[spriteContainer.width, spriteContainer.height] = coordinates[1];
+		container.addChild(spriteContainer);
 		let rect = new Graphics()
 			.rect(0, 0, ...coordinates[1])
 			.stroke({width: 1 / this.painter.canvasWidth, color: Color.RECT_OUTLINE});
@@ -318,4 +317,9 @@ export default class Placer {
 	}
 }
 
-// todo only add if world empty or replaceable
+// todo:
+//   only add if world empty or replaceable
+//   replacing entity not working
+//   shadow empty being left when right click dragging resource tiles
+//   bigger tier extractors not working
+//   use different sprites or colors for different tier walls, extractors, etc

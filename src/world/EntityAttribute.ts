@@ -346,7 +346,6 @@ export class EntityExtractorAttribute extends EntityAttribute {
 		super();
 		this.containerAttribute = containerAttribute;
 		this.outputPerTier = outputPerTier;
-
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {

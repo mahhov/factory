@@ -171,10 +171,12 @@ export class Junction extends Entity {
 export class Extractor extends Entity {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, powerInput: number, heatOutput: number, outputPerTier: number[]) {
 		super(size);
+		// todo move health and buildable attributes to a super class
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
 		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(10), []);
 		this.attributes.push([containerAttribute]);
+		// todo don't extract while still being built
 		this.attributes.push([
 			new EntityTimedAttribute(80),
 			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([
