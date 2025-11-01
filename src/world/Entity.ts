@@ -124,7 +124,7 @@ export class Extractor extends Entity {
 }
 
 export class Conveyor extends Entity {
-	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, rate: number,rotation: Rotation) {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, rate: number, rotation: Rotation) {
 		super(size, rotation);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
@@ -148,14 +148,15 @@ export class Conveyor extends Entity {
 }
 
 export class Distributor extends Entity {
-	constructor() {
-		super();
-		this.attributes.push([new EntityHealthAttribute(1)]);
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, rate: number) {
+		super(size);
+		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
+		this.attributes.push([new EntityHealthAttribute(health)]);
 		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
 			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
-			new EntityTimedAttribute(10),
+			new EntityTimedAttribute(40 / rate),
 			new EntityTransportAttribute(containerAttribute, util.enumValues(Rotation)),
 		]);
 		this.attributes.push([new EntityResourceFullSpriteAttribute(containerAttribute, Distributor.sprite, resource => Distributor.spriteFull(resource))]);
@@ -171,14 +172,15 @@ export class Distributor extends Entity {
 }
 
 export class Junction extends Entity {
-	constructor() {
-		super();
-		this.attributes.push([new EntityHealthAttribute(1)]);
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, rate: number) {
+		super(size);
+		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
+		this.attributes.push([new EntityHealthAttribute(health)]);
 		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
 			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
-			new EntityTimedAttribute(10),
+			new EntityTimedAttribute(40 / rate),
 			new EntityJunctionTransportAttribute(containerAttribute),
 		]);
 		this.attributes.push([new EntityResourceFullSpriteAttribute(containerAttribute, Junction.sprite, resource => Junction.spriteFull(resource))]);

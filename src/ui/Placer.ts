@@ -106,9 +106,9 @@ export default class Placer {
 			case Tool.HIGH_SPEED_CONVEYOR:
 				return Placer.createToolConveyor(findEntityMetadata('buildings', 'High Speed Conveyor'), rotation);
 			case Tool.DISTRIBUTOR:
-				return new Distributor();
+				return Placer.createToolDistributor(findEntityMetadata('buildings', 'High Speed Conveyor'));
 			case Tool.JUNCTION:
-				return new Junction();
+				return Placer.createToolJunction(findEntityMetadata('buildings', 'High Speed Conveyor'));
 			case Tool.GLASS_FACTORY:
 				return new GlassFactory();
 			case Tool.TURRET:
@@ -126,6 +126,14 @@ export default class Placer {
 
 	private static createToolConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
 		return new Conveyor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number, rotation);
+	}
+
+	private static createToolDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Distributor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number);
+	}
+
+	private static createToolJunction(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Junction(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number);
 	}
 
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {
