@@ -99,15 +99,40 @@ export class Wall extends Entity {
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_WALL]);}
 }
 
+export class Extractor extends Entity {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, powerInput: number, heatOutput: number, outputPerTier: number[]) {
+		super(size);
+		// todo move health and buildable attributes to a super class
+		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
+		this.attributes.push([new EntityHealthAttribute(health)]);
+		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(10), []);
+		this.attributes.push([containerAttribute]);
+		// todo don't extract while still being built
+		this.attributes.push([
+			new EntityTimedAttribute(80),
+			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([
+				[Resource.POWER, powerInput],
+				[Resource.COOLANT, heatOutput]])),
+			new EntityExtractorAttribute(containerAttribute, outputPerTier),
+		]);
+		this.attributes.push([new EntityOutflowAttribute(containerAttribute, getResourceCounts(1))]);
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'extractor.png', [Color.ENTITY_EXTRACTOR]);
+	}
+}
+
 export class Conveyor extends Entity {
-	constructor(rotation: Rotation) {
-		super(Vector.V1, rotation);
-		this.attributes.push([new EntityHealthAttribute(1)]);
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, rate: number,rotation: Rotation) {
+		super(size, rotation);
+		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
+		this.attributes.push([new EntityHealthAttribute(health)]);
 		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity), util.enumValues(Rotation).filter(r => r !== RotationUtils.opposite(rotation)));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
 			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
-			new EntityTimedAttribute(10),
+			new EntityTimedAttribute(40 / rate),
 			new EntityTransportAttribute(containerAttribute, [rotation]),
 		]);
 		this.attributes.push([new EntityResourceFullSpriteAttribute(containerAttribute, Conveyor.sprite, resource => Conveyor.spriteFull(resource))]);
@@ -165,30 +190,6 @@ export class Junction extends Entity {
 
 	static spriteFull(resource: Resource) {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'junction-full.png', [ResourceUtils.color(resource)]);
-	}
-}
-
-export class Extractor extends Entity {
-	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, powerInput: number, heatOutput: number, outputPerTier: number[]) {
-		super(size);
-		// todo move health and buildable attributes to a super class
-		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
-		this.attributes.push([new EntityHealthAttribute(health)]);
-		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(10), []);
-		this.attributes.push([containerAttribute]);
-		// todo don't extract while still being built
-		this.attributes.push([
-			new EntityTimedAttribute(80),
-			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([
-				[Resource.POWER, powerInput],
-				[Resource.COOLANT, heatOutput]])),
-			new EntityExtractorAttribute(containerAttribute, outputPerTier),
-		]);
-		this.attributes.push([new EntityOutflowAttribute(containerAttribute, getResourceCounts(1))]);
-	}
-
-	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'extractor.png', [Color.ENTITY_EXTRACTOR]);
 	}
 }
 

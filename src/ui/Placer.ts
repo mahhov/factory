@@ -14,11 +14,18 @@ export enum PlacerState {
 	EMPTY, ENTITY_SELECTED, STARTED
 }
 
+// todo plasteel bunker
+// todo packed conveyor, distributor, junction
+// todo factories
+// todo storage & dispenser
+// todo energy
+// todo vents
+// todo liquid
 enum Tool {
 	EMPTY,
 	EXTRACTOR, REINFORCED_EXTRACTOR, QUADRATIC_EXTRACTOR, LASER_EXTRACTOR,
 	IRON_WALL, STEEL_WALL,
-	CONVEYOR, DISTRIBUTOR, JUNCTION,
+	CONVEYOR, HIGH_SPEED_CONVEYOR, DISTRIBUTOR, JUNCTION,
 	GLASS_FACTORY,
 	TURRET,
 }
@@ -26,7 +33,7 @@ enum Tool {
 let toolTree = {
 	walls: [Tool.IRON_WALL, Tool.STEEL_WALL],
 	extractors: [Tool.EXTRACTOR, Tool.REINFORCED_EXTRACTOR, Tool.QUADRATIC_EXTRACTOR, Tool.LASER_EXTRACTOR],
-	transport: [Tool.CONVEYOR, Tool.DISTRIBUTOR, Tool.JUNCTION],
+	transport: [Tool.CONVEYOR, Tool.HIGH_SPEED_CONVEYOR, Tool.DISTRIBUTOR, Tool.JUNCTION],
 	factories: [Tool.GLASS_FACTORY],
 	turrets: [Tool.TURRET],
 };
@@ -95,7 +102,9 @@ export default class Placer {
 			case Tool.LASER_EXTRACTOR:
 				return Placer.createToolExtractor(findEntityMetadata('buildings', 'Laser Extractor'));
 			case Tool.CONVEYOR:
-				return new Conveyor(rotation);
+				return Placer.createToolConveyor(findEntityMetadata('buildings', 'Conveyor'), rotation);
+			case Tool.HIGH_SPEED_CONVEYOR:
+				return Placer.createToolConveyor(findEntityMetadata('buildings', 'High Speed Conveyor'), rotation);
 			case Tool.DISTRIBUTOR:
 				return new Distributor();
 			case Tool.JUNCTION:
@@ -113,6 +122,10 @@ export default class Placer {
 
 	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		return new Extractor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.heatOutput, metadata.materialOutput as number[]);
+	}
+
+	private static createToolConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
+		return new Conveyor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number, rotation);
 	}
 
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {
