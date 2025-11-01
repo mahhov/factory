@@ -1,7 +1,8 @@
 import Painter from '../graphics/Painter.js';
 import MultilineText from '../ui/MultilineText.js';
 import Vector from '../util/Vector.js';
-import {EntityContainerAttribute, getResourceCounts} from './EntityAttribute.js';
+import {getResourceCounts} from './Entity.js';
+import {EntityContainerAttribute} from './EntityAttribute.js';
 import {Resource, ResourceUtils} from './Resource.js';
 
 export class PlayerLogic {

@@ -30,14 +30,6 @@ let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation)
 	return origin.iterate(size).map(border => border.add(shift));
 };
 
-export let getResourceCounts = (defaultCount: number, resourceNonDefault: Partial<Record<Resource, number>> = {}): ResourceUtils.Count[] =>
-	util.enumValues(Resource)
-		.map((resource: Resource) => {
-			let count = resourceNonDefault[resource] ?? defaultCount;
-			return new ResourceUtils.Count(resource, count);
-		})
-		.filter(resourceCount => resourceCount.quantity);
-
 export abstract class EntityAttribute {
 	private done: boolean = false;
 

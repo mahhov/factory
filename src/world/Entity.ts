@@ -27,11 +27,13 @@ import {
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
 	EntityTransportAttribute,
-	getResourceCounts,
 } from './EntityAttribute.js';
 import {Resource, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, Tileable, World} from './World.js';
+
+export let getResourceCounts = (count: number): ResourceUtils.Count[] =>
+	util.enumValues(Resource).map((resource: Resource) => new ResourceUtils.Count(resource, count));
 
 export class Entity implements Tileable {
 	readonly size: Vector;
@@ -105,7 +107,7 @@ export class Extractor extends Entity {
 		// todo move health and buildable attributes to a super class
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
-		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(10), []);
+		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(10));
 		this.attributes.push([containerAttribute]);
 		// todo don't extract while still being built
 		this.attributes.push([
@@ -195,6 +197,30 @@ export class Junction extends Entity {
 	}
 }
 
+export class Factory extends Entity {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, materialInput: ResourceUtils.Count[], powerInput: number, heatOutput: number, materialOutput: ResourceUtils.Count) {
+		super(size);
+		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
+		this.attributes.push([new EntityHealthAttribute(health)]);
+		let containerAttribute = new EntityContainerAttribute(Infinity, materialInput.concat(materialOutput).map(resourceCount => new ResourceUtils.Count(resourceCount.resource, 10)));
+		this.attributes.push([containerAttribute]);
+		this.attributes.push([
+			new EntityTimedAttribute(40),
+			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([
+				[Resource.POWER, powerInput],
+				[Resource.COOLANT, heatOutput]])),
+			new EntityConsumeAttribute(containerAttribute, materialInput),
+			new EntityProduceAttribute(containerAttribute, [materialOutput]),
+		]);
+		this.attributes.push([new EntityOutflowAttribute(containerAttribute, [materialOutput])]);
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
+			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+	}
+}
+
 export class Source extends Entity {
 	constructor() {
 		super();
@@ -218,39 +244,14 @@ export class Void extends Entity {
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'void.png', [Color.ENTITY_VOID]);}
 }
 
-export class GlassFactory extends Entity {
-	constructor() {
-		super();
-		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(0, {
-			[Resource.IRON]: 10,
-			[Resource.STEEL]: 10,
-		}));
-		this.attributes.push([new EntityHealthAttribute(10)]);
-		this.attributes.push([containerAttribute]);
-		this.attributes.push([
-			new EntityTimedAttribute(40),
-			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.IRON, 1], [Resource.STEEL, 1]])),
-			new EntityProduceAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.STEEL, 1]])),
-		]);
-		this.attributes.push([new EntityOutflowAttribute(containerAttribute, getResourceCounts(0, {
-			[Resource.STEEL]: 1,
-		}))]);
-	}
-
-	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
-	}
-}
-
 export class Turret extends Entity {
 	constructor() {
 		super(new Vector(2));
-		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(0, {[Resource.IRON]: 10}));
+		let containerAttribute = new EntityContainerAttribute(Infinity, [new ResourceUtils.Count(Resource.IRON, 10)]);
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
 			new EntityTimedAttribute(30),
-			new EntityConsumeAttribute(containerAttribute, getResourceCounts(0, {[Resource.IRON]: 1})),
+			new EntityConsumeAttribute(containerAttribute, [new ResourceUtils.Count(Resource.IRON, 1)]),
 			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, true),
 		]);
 	}
