@@ -221,6 +221,43 @@ export class Factory extends Entity {
 	}
 }
 
+export class Storage extends Entity {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, capacity: number) {
+		super(size);
+		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
+		this.attributes.push([new EntityHealthAttribute(health)]);
+		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity));
+		// todo output to dispenser
+		this.attributes.push([containerAttribute]);
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
+			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+	}
+}
+
+export class Dispenser extends Entity {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, rate: number, rotation: Rotation) {
+		super(size);
+		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
+		this.attributes.push([new EntityHealthAttribute(health)]);
+		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity), [rotation]);
+		this.attributes.push([containerAttribute]);
+		this.attributes.push([
+			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
+			new EntityTimedAttribute(40 / rate),
+			new EntityTransportAttribute(containerAttribute, [rotation]),
+		]);
+		this.attributes.push([new EntityResourceFullSpriteAttribute(containerAttribute, Dispenser.sprite, resource => Dispenser.sprite)]);
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
+			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+	}
+}
+
 export class Source extends Entity {
 	constructor() {
 		super();

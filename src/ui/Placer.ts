@@ -4,7 +4,7 @@ import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Conveyor, Distributor, Empty, Entity, Extractor, Factory, Junction, Turret, Wall} from '../world/Entity.js';
+import {Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Junction, Storage, Turret, Wall} from '../world/Entity.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {ResourceUtils} from '../world/Resource.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
@@ -15,18 +15,19 @@ export enum PlacerState {
 	EMPTY, ENTITY_SELECTED, STARTED
 }
 
-// todo plasteel bunker
-// todo packed conveyor
-// todo storage & dispenser
-// todo energy
-// todo vents
-// todo liquid
 enum Tool {
 	EMPTY,
+	// todo plasteel bunker
 	IRON_WALL, STEEL_WALL,
 	EXTRACTOR, REINFORCED_EXTRACTOR, QUADRATIC_EXTRACTOR, LASER_EXTRACTOR,
+	// todo packed conveyor
 	CONVEYOR, HIGH_SPEED_CONVEYOR, DISTRIBUTOR, JUNCTION,
 	STEEL_SMELTER, METAGLASS_FOUNDRY, PLASTEEL_MIXER, THERMITE_FORGE, EXIDIUM_CATALYST,
+	STORAGE, DISPENSER,
+	// todo energy
+	// todo vents
+	// todo liquid
+	// todo turrets
 	TURRET,
 }
 
@@ -35,6 +36,7 @@ let toolTree = {
 	extractors: [Tool.EXTRACTOR, Tool.REINFORCED_EXTRACTOR, Tool.QUADRATIC_EXTRACTOR, Tool.LASER_EXTRACTOR],
 	transport: [Tool.CONVEYOR, Tool.HIGH_SPEED_CONVEYOR, Tool.DISTRIBUTOR, Tool.JUNCTION],
 	factories: [Tool.STEEL_SMELTER, Tool.METAGLASS_FOUNDRY, Tool.PLASTEEL_MIXER, Tool.THERMITE_FORGE, Tool.EXIDIUM_CATALYST],
+	storage: [Tool.STORAGE, Tool.DISPENSER],
 	turrets: [Tool.TURRET],
 };
 type ToolGroup = keyof typeof toolTree;
@@ -119,6 +121,10 @@ export default class Placer {
 				return Placer.createToolFactory(findEntityMetadata('buildings', 'Thermite Forge'));
 			case Tool.EXIDIUM_CATALYST:
 				return Placer.createToolFactory(findEntityMetadata('buildings', 'Exidium Catalyst'));
+			case Tool.STORAGE:
+				return Placer.createToolStorage(findEntityMetadata('buildings', 'Storage'));
+			case Tool.DISPENSER:
+				return Placer.createToolDispenser(findEntityMetadata('buildings', 'Dispenser'), rotation);
 			case Tool.TURRET:
 				return new Turret();
 		}
@@ -146,6 +152,14 @@ export default class Placer {
 
 	private static createToolFactory(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		return new Factory(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.materialOutput as ResourceUtils.Count);
+	}
+
+	private static createToolStorage(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Storage(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number);
+	}
+
+	private static createToolDispenser(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
+		return new Dispenser(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number, rotation);
 	}
 
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {
