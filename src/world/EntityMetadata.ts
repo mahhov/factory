@@ -4,7 +4,7 @@ type StringRecord = Record<string, string>;
 type FieldHandler<R> = (data: StringRecord) => R;
 type FieldHandlerDictionary = Record<string, FieldHandler<any>>;
 type FieldHandlerDictionary2 = Record<string, FieldHandlerDictionary>;
-type ParsedLine<T extends FieldHandlerDictionary> = {
+export type ParsedLine<T extends FieldHandlerDictionary> = {
 	[K in keyof T]: T[K] extends FieldHandler<infer R> ? R : never;
 };
 type ParsedSection<T extends FieldHandlerDictionary> = ParsedLine<T>[];
@@ -31,15 +31,18 @@ let parseResourceCount = (str: string): ResourceUtils.Count => {
 let parseMaterialCounts = (str: string): ResourceUtils.Count[] =>
 	str === '-' ? [] : str.split(', ').map(parseResourceCount);
 
-let parseBuildingOutput = (str: string): ResourceUtils.Count | [string, number][] => {
+let parseBuildingOutput = (str: string): ResourceUtils.Count | number[] | number => {
 	if (str === '-') return [];
 	if (/^\d*\.?\d+ t\d+(, \d*\.?\d+ t\d+)* material \/ area$/.test(str)) {
 		return [...str
 			.matchAll(/(\d*\.?\d+) t(\d+)/g)
-			.map(m => [m[2], Number(m[1])] as [string, number])];
+			.map((m, i) => {
+				console.assert(Number(m[2]) === i + 1);
+				return Number(m[1]);
+			})];
 	}
 	if (/^\d+ liquid$/.test(str))
-		return [['liquid', Number(str.split(' ')[0])]];
+		return Number(str.split(' ')[0]);
 	return parseResourceCount(str);
 };
 
@@ -68,7 +71,7 @@ let parseSection2 = <F2 extends FieldHandlerDictionary2>(mdString: string, field
 	return parsed as ParsedSection2<F2>;
 };
 
-let sectionFields = {
+export let sectionFields = {
 	buildings: {
 		name: (data: StringRecord) => lowerCaseToTitleCase(data.name),
 		buildTime: (data: StringRecord) => parseNumber(data['build time']),
@@ -86,6 +89,5 @@ let sectionFields = {
 let mdString = await (await fetch('../../resources/metadata.md')).text();
 let parsed = parseSection2(mdString, sectionFields);
 
-let findEntityMetadata = (type: keyof typeof sectionFields, name: string) =>
-	parsed[type].find(entry => entry.name === name);
-export default findEntityMetadata;
+export let findEntityMetadata = <T extends keyof typeof sectionFields>(type: T, name: string): ParsedLine<typeof sectionFields[T]> =>
+	parsed[type].find(entry => entry.name === name)!;

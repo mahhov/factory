@@ -5,7 +5,7 @@ import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Conveyor, Distributor, Empty, Entity, Extractor, GlassFactory, Junction, Turret, Wall} from '../world/Entity.js';
-import findEntityMetadata from '../world/EntityMetadata.js';
+import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
 import {GridWorldLayer, World} from '../world/World.js';
 import {Input} from './Input.js';
@@ -16,16 +16,17 @@ export enum PlacerState {
 
 enum Tool {
 	EMPTY,
+	EXTRACTOR, REINFORCED_EXTRACTOR, QUADRATIC_EXTRACTOR, LASER_EXTRACTOR,
 	IRON_WALL, STEEL_WALL,
-	CONVEYOR, DISTRIBUTOR, JUNCTION, EXTRACTOR,
+	CONVEYOR, DISTRIBUTOR, JUNCTION,
 	GLASS_FACTORY,
 	TURRET,
 }
 
 let toolTree = {
 	walls: [Tool.IRON_WALL, Tool.STEEL_WALL],
+	extractors: [Tool.EXTRACTOR, Tool.REINFORCED_EXTRACTOR, Tool.QUADRATIC_EXTRACTOR, Tool.LASER_EXTRACTOR],
 	transport: [Tool.CONVEYOR, Tool.DISTRIBUTOR, Tool.JUNCTION],
-	extractors: [Tool.EXTRACTOR],
 	factories: [Tool.GLASS_FACTORY],
 	turrets: [Tool.TURRET],
 };
@@ -81,27 +82,37 @@ export default class Placer {
 		switch (tool) {
 			case Tool.EMPTY:
 				return new Empty();
-			case Tool.IRON_WALL: {
-				let metadata = findEntityMetadata('buildings', 'Iron Wall')!;
-				return new Wall(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health);
-			}
-			case Tool.STEEL_WALL: {
-				let metadata = findEntityMetadata('buildings', 'Steel Wall')!;
-				return new Wall(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health);
-			}
+			case Tool.IRON_WALL:
+				return Placer.createToolWall(findEntityMetadata('buildings', 'Iron Wall'));
+			case Tool.STEEL_WALL:
+				return Placer.createToolWall(findEntityMetadata('buildings', 'Steel Wall'));
+			case Tool.EXTRACTOR:
+				Placer.createToolExtractor(findEntityMetadata('buildings', 'Extractor'));
+			case Tool.REINFORCED_EXTRACTOR:
+				Placer.createToolExtractor(findEntityMetadata('buildings', 'Reinforced Extractor'));
+			case Tool.QUADRATIC_EXTRACTOR:
+				Placer.createToolExtractor(findEntityMetadata('buildings', 'Quadratic Extractor'));
+			case Tool.LASER_EXTRACTOR:
+				Placer.createToolExtractor(findEntityMetadata('buildings', 'Laser Extractor'));
 			case Tool.CONVEYOR:
 				return new Conveyor(rotation);
 			case Tool.DISTRIBUTOR:
 				return new Distributor();
 			case Tool.JUNCTION:
 				return new Junction();
-			case Tool.EXTRACTOR:
-				return new Extractor();
 			case Tool.GLASS_FACTORY:
 				return new GlassFactory();
 			case Tool.TURRET:
 				return new Turret();
 		}
+	}
+
+	private static createToolWall(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Wall(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health);
+	}
+
+	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Extractor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.heatOutput, metadata.materialOutput as number[]);
 	}
 
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {

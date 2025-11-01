@@ -169,14 +169,18 @@ export class Junction extends Entity {
 }
 
 export class Extractor extends Entity {
-	constructor() {
-		super(new Vector(4));
-		this.attributes.push([new EntityHealthAttribute(32)]);
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, powerInput: number, heatOutput: number, outputPerTier: number[]) {
+		super(size);
+		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
+		this.attributes.push([new EntityHealthAttribute(health)]);
 		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(10), []);
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
 			new EntityTimedAttribute(80),
-			new EntityExtractorAttribute(containerAttribute),
+			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([
+				[Resource.POWER, powerInput],
+				[Resource.COOLANT, heatOutput]])),
+			new EntityExtractorAttribute(containerAttribute, outputPerTier),
 		]);
 		this.attributes.push([new EntityOutflowAttribute(containerAttribute, getResourceCounts(1))]);
 	}
@@ -296,3 +300,5 @@ export class Projectile extends Entity {
 		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'circle.png', [Color.PROJECTILE_RED]);
 	}
 }
+
+// todo allow boosting entities with eg water

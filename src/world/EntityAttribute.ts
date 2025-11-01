@@ -340,10 +340,13 @@ export class EntityOutflowAttribute extends EntityAttribute {
 
 export class EntityExtractorAttribute extends EntityAttribute {
 	private readonly containerAttribute: EntityContainerAttribute;
+	private readonly outputPerTier: number[]; // todo use
 
-	constructor(containerAttribute: EntityContainerAttribute) {
+	constructor(containerAttribute: EntityContainerAttribute, outputPerTier: number[]) {
 		super();
 		this.containerAttribute = containerAttribute;
+		this.outputPerTier = outputPerTier;
+
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
