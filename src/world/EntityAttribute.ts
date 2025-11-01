@@ -340,7 +340,7 @@ export class EntityOutflowAttribute extends EntityAttribute {
 
 export class EntityExtractorAttribute extends EntityAttribute {
 	private readonly containerAttribute: EntityContainerAttribute;
-	private readonly outputPerTier: number[]; // todo use
+	private readonly outputPerTier: number[];
 
 	constructor(containerAttribute: EntityContainerAttribute, outputPerTier: number[]) {
 		super();
@@ -352,11 +352,12 @@ export class EntityExtractorAttribute extends EntityAttribute {
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		tile.position.iterate(tile.tileable.size).forEach(position => {
 			let tile = world.terrain.getTile(position);
-			if (tile?.tileable instanceof ResourceDeposit) {
-				let resourceCount = new ResourceUtils.Count(tile.tileable.resource, 1);
-				if (this.containerAttribute.hasCapacity(resourceCount))
-					this.containerAttribute.add(resourceCount);
-			}
+			if (!(tile?.tileable instanceof ResourceDeposit)) return;
+			let n = this.outputPerTier[tile.tileable.resourceTier] * 20;
+			if (!n) return;
+			let resourceCount = new ResourceUtils.Count(tile.tileable.resource, 1);
+			for (let i = 0; i < n && this.containerAttribute.hasCapacity(resourceCount); i++)
+				this.containerAttribute.add(resourceCount);
 		});
 		return true;
 	}

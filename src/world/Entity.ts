@@ -264,6 +264,29 @@ export class ResourceDeposit extends Entity {
 		this.resource = resource;
 		this.attributes.push([new EntityResourceDisplayAttribute(resource)]);
 	}
+
+	get resourceTier() {
+		switch (this.resource) {
+			case Resource.IRON:
+			case Resource.FLUX_SAND:
+			case Resource.SULPHUR:
+				return 0;
+			case Resource.TITANIUM:
+				return 1;
+			case Resource.GRAPHITE:
+				return 2;
+			case Resource.STEEL:
+			case Resource.METAGLASS:
+			case Resource.PLASTEEL:
+			case Resource.THERMITE:
+			case Resource.EXIDIUM:
+			case Resource.WATER:
+			case Resource.METHANE:
+			case Resource.POWER:
+			case Resource.COOLANT:
+				return -1;
+		}
+	}
 }
 
 export class Mob extends Entity {
