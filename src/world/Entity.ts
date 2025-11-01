@@ -15,6 +15,7 @@ import {
 	EntityExtractorAttribute,
 	EntityHasAnyOfResourceAttribute,
 	EntityHealthAttribute,
+	EntityInflowAttribute,
 	EntityJunctionTransportAttribute,
 	EntityMobChaseTargetAttribute,
 	EntityMobHealthAttribute,
@@ -226,8 +227,7 @@ export class Storage extends Entity {
 		super(size);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
-		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity));
-		// todo output to dispenser
+		let containerAttribute = new EntityContainerAttribute(capacity, getResourceCounts(Infinity));
 		this.attributes.push([containerAttribute]);
 	}
 
@@ -242,8 +242,11 @@ export class Dispenser extends Entity {
 		super(size);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
-		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity), [rotation]);
+		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity), []);
 		this.attributes.push([containerAttribute]);
+		let entityResourcePickerAttribute = new EntityResourcePickerAttribute();
+		this.attributes.push([entityResourcePickerAttribute]);
+		this.attributes.push([new EntityInflowAttribute(entityResourcePickerAttribute, containerAttribute, [rotation])]);
 		this.attributes.push([
 			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
 			new EntityTimedAttribute(40 / rate),

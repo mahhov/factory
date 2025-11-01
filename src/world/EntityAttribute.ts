@@ -330,6 +330,35 @@ export class EntityOutflowAttribute extends EntityAttribute {
 	}
 }
 
+export class EntityInflowAttribute extends EntityAttribute {
+	private readonly entityResourcePickerAttribute: EntityResourcePickerAttribute;
+	private readonly containerAttribute: EntityContainerAttribute;
+	private readonly inputRotations: Rotation[];
+
+	constructor(entityResourcePickerAttribute: EntityResourcePickerAttribute, containerAttribute: EntityContainerAttribute, inputRotations: Rotation[]) {
+		super();
+		this.entityResourcePickerAttribute = entityResourcePickerAttribute;
+		this.containerAttribute = containerAttribute;
+		this.inputRotations = inputRotations;
+	}
+
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
+		let resourceCount = new ResourceUtils.Count(this.entityResourcePickerAttribute.resource, 1);
+		if (!this.containerAttribute.hasCapacity(resourceCount)) return false;
+		return util.shuffle(this.inputRotations).some(rotation =>
+			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, RotationUtils.opposite(rotation)))
+				.map(source => world.live.getTile(source)?.tileable.getAttribute(EntityContainerAttribute))
+				.some(sourceContainerAttribute => {
+					if (sourceContainerAttribute?.hasQuantity(resourceCount)) {
+						sourceContainerAttribute.remove(resourceCount);
+						this.containerAttribute.add(resourceCount, rotation);
+						return true;
+					}
+					return false;
+				}));
+	}
+}
+
 export class EntityExtractorAttribute extends EntityAttribute {
 	private readonly containerAttribute: EntityContainerAttribute;
 	private readonly outputPerTier: number[];
