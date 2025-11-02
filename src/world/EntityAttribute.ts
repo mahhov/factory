@@ -75,7 +75,7 @@ export class EntityBuildableAttribute extends EntityAttribute {
 
 	constructor(duration: number, materialCost: ResourceUtils.Count[]) {
 		super();
-		this.counter = new Counter(duration * 20);
+		this.counter = new Counter(1);
 		this.materialCost = materialCost;
 	}
 
@@ -415,7 +415,7 @@ export class EntityPowerConsumeAttribute extends EntityAttribute {
 					return true;
 				}
 			}
-			tileable.getAttribute(EntityConductAttribute)?.connections
+			tileable.getAttribute(EntityConductAttribute)?.allConnections
 				.filter(entity => !visited.has(entity) && entity.getAttribute(EntityConductAttribute))
 				.forEach(entity => queue.push(entity));
 		}
@@ -458,7 +458,8 @@ export class EntityProducePowerAttribute extends EntityAttribute {
 
 export class EntityConductAttribute extends EntityAttribute {
 	private readonly range: number;
-	connections: Entity[] = [];
+	private connections: Entity[] = [];
+	private oldConnections: Entity[] = [];
 
 	constructor(range: number) {
 		super();
@@ -466,6 +467,7 @@ export class EntityConductAttribute extends EntityAttribute {
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		this.oldConnections = this.connections;
 		this.connections = [];
 		util.enumValues(Rotation).forEach(rotation => {
 			getLineDestinations(tile.position, tile.tileable.size, rotation, this.range).some(destination => {
@@ -477,9 +479,7 @@ export class EntityConductAttribute extends EntityAttribute {
 				let conductAttribute = searchTile.tileable.getAttribute(EntityConductAttribute);
 				if (conductAttribute) {
 					this.connections.push(searchTile.tileable);
-					if (!conductAttribute.connections.includes(tile.tileable))
-						// todo these get erased depending on tick order
-						conductAttribute.connections.push(tile.tileable);
+					conductAttribute.connections.push(tile.tileable);
 					return true;
 				}
 			});
@@ -487,8 +487,12 @@ export class EntityConductAttribute extends EntityAttribute {
 		return true;
 	}
 
+	get allConnections() {
+		return this.connections.concat(this.oldConnections).filter(util.unique);
+	}
+
 	get tooltip(): TextLine[] {
-		return [new TextLine(`Connections: ${this.connections.length}`)];
+		return [new TextLine(`Connections: ${this.allConnections.length}`)];
 	}
 }
 
