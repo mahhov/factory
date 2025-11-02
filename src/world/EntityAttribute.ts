@@ -381,7 +381,7 @@ export class EntityExtractorAttribute extends EntityAttribute {
 		tile.position.iterate(tile.tileable.size).forEach(position => {
 			let tile = world.terrain.getTile(position);
 			if (!(tile?.tileable instanceof ResourceDeposit)) return;
-			let n = this.outputPerTier[tile.tileable.resourceTier] * 20;
+			let n = this.outputPerTier[tile.tileable.materialResourceTier] * 20;
 			if (!n) return;
 			let resourceCount = new ResourceUtils.Count(tile.tileable.resource, 1);
 			for (let i = 0; i < n && this.containerAttribute.hasCapacity(resourceCount); i++)
@@ -402,7 +402,6 @@ export class EntityPowerConsumeAttribute extends EntityAttribute {
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (!this.quantity) return true;
 		// todo partial quantity consumption
-		// todo generating power into battery
 		let visited = new Set();
 		let queue = [tile.tileable];
 		while (queue.length) {

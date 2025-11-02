@@ -376,8 +376,7 @@ export class ResourceDeposit extends Entity {
 		this.attributes.push([new EntityResourceDisplayAttribute(resource)]);
 	}
 
-	// todo rename materialResourceTier
-	get resourceTier() {
+	get materialResourceTier() {
 		switch (this.resource) {
 			case Resource.IRON:
 			case Resource.FLUX_SAND:
