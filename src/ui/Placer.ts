@@ -4,7 +4,7 @@ import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Battery, Conductor, Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Junction, Storage, Turret, Wall} from '../world/Entity.js';
+import {Battery, Conductor, Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Generator, Junction, Storage, Turret, Wall} from '../world/Entity.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {ResourceUtils} from '../world/Resource.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
@@ -132,13 +132,13 @@ export default class Placer {
 				return Placer.createToolDispenser(findEntityMetadata('buildings', 'Dispenser'), rotation);
 
 			case Tool.THERMAL_GENERATOR:
-				return Placer.createToolFactory(findEntityMetadata('buildings', 'Thermal Generator'));
+				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Thermal Generator'));
 			case Tool.SOLAR_ARRAY:
-				return Placer.createToolFactory(findEntityMetadata('buildings', 'Solar Array'));
+				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Solar Array'));
 			case Tool.METHANE_BURNER:
-				return Placer.createToolFactory(findEntityMetadata('buildings', 'Methane Burner'));
+				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Methane Burner'));
 			case Tool.THERMITE_REACTOR:
-				return Placer.createToolFactory(findEntityMetadata('buildings', 'Thermite Reactor'));
+				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Thermite Reactor'));
 			case Tool.CONDUCTOR:
 				return Placer.createToolConductor(findEntityMetadata('buildings', 'Conductor'));
 			case Tool.BATTERY:
@@ -154,39 +154,43 @@ export default class Placer {
 	}
 
 	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Extractor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.heatOutput, metadata.materialOutput as number[]);
+		return new Extractor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.heatOutput, metadata.output as number[]);
 	}
 
 	private static createToolConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Conveyor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number, rotation);
+		return new Conveyor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
 	}
 
 	private static createToolDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Distributor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number);
+		return new Distributor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolJunction(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Junction(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number);
+		return new Junction(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolFactory(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Factory(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.materialOutput as ResourceUtils.Count);
+		return new Factory(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.output as ResourceUtils.Count);
 	}
 
 	private static createToolStorage(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Storage(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number);
+		return new Storage(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolDispenser(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Dispenser(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number, rotation);
+		return new Dispenser(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
+	}
+
+	private static createToolGenerator(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Generator(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.output as number);
 	}
 
 	private static createToolConductor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Conductor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health);
+		return new Conductor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolBattery(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Battery(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number);
+		return new Battery(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {

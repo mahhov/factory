@@ -21,7 +21,10 @@ import {
 	EntityMobChaseTargetAttribute,
 	EntityMobHealthAttribute,
 	EntityOutflowAttribute,
+	EntityPowerConsumeAttribute,
+	EntityPowerStorageAttribute,
 	EntityProduceAttribute,
+	EntityProducePowerAttribute,
 	EntityResourceDisplayAttribute,
 	EntityResourceFullSpriteAttribute,
 	EntityResourcePickerAttribute,
@@ -114,14 +117,13 @@ export class Extractor extends Entity {
 		// todo don't extract while still being built
 		this.attributes.push([
 			new EntityTimedAttribute(80),
-			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([
-				[Resource.POWER, powerInput],
-				[Resource.COOLANT, heatOutput]])),
+			new EntityPowerConsumeAttribute(powerInput),
+			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.COOLANT, heatOutput]])),
 			new EntityExtractorAttribute(containerAttribute, outputPerTier),
 		]);
 		this.attributes.push([new EntityOutflowAttribute(containerAttribute, getMaterialResourceCounts(1))]);
 		if (powerInput)
-			this.attributes.push([new EntityConductAttribute(false)]);
+			this.attributes.push([new EntityConductAttribute(0)]);
 	}
 
 	static get sprite() {
@@ -210,15 +212,39 @@ export class Factory extends Entity {
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
 			new EntityTimedAttribute(40),
-			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([
-				[Resource.POWER, powerInput],
-				[Resource.COOLANT, heatOutput]])),
+			new EntityPowerConsumeAttribute(powerInput),
+			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.COOLANT, heatOutput]])),
 			new EntityConsumeAttribute(containerAttribute, materialInput),
 			new EntityProduceAttribute(containerAttribute, [materialOutput]),
 		]);
 		this.attributes.push([new EntityOutflowAttribute(containerAttribute, [materialOutput])]);
-		if (powerInput || materialOutput.resource === Resource.POWER)
-			this.attributes.push([new EntityConductAttribute(false)]);
+		if (powerInput)
+			this.attributes.push([new EntityConductAttribute(0)]);
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
+			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+	}
+}
+
+export class Generator extends Entity {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, materialInput: ResourceUtils.Count[], powerInput: number, heatOutput: number, powerOutput: number) {
+		super(size);
+		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
+		this.attributes.push([new EntityHealthAttribute(health)]);
+		let containerAttribute = new EntityContainerAttribute(Infinity, materialInput.map(resourceCount => new ResourceUtils.Count(resourceCount.resource, 10)));
+		this.attributes.push([containerAttribute]);
+		let powerStorageAttribute = new EntityPowerStorageAttribute(powerOutput);
+		this.attributes.push([powerStorageAttribute]);
+		this.attributes.push([
+			new EntityTimedAttribute(40),
+			new EntityPowerConsumeAttribute(powerInput),
+			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.COOLANT, heatOutput]])),
+			new EntityConsumeAttribute(containerAttribute, materialInput),
+			new EntityProducePowerAttribute(powerStorageAttribute, powerOutput),
+		]);
+		this.attributes.push([new EntityConductAttribute(0)]);
 	}
 
 	static get sprite() {
@@ -249,9 +275,9 @@ export class Dispenser extends Entity {
 		this.attributes.push([new EntityHealthAttribute(health)]);
 		let containerAttribute = new EntityContainerAttribute(1, getMaterialResourceCounts(Infinity), []);
 		this.attributes.push([containerAttribute]);
-		let entityResourcePickerAttribute = new EntityResourcePickerAttribute();
-		this.attributes.push([entityResourcePickerAttribute]);
-		this.attributes.push([new EntityInflowAttribute(entityResourcePickerAttribute, containerAttribute, [rotation])]);
+		let resourcePickerAttribute = new EntityResourcePickerAttribute();
+		this.attributes.push([resourcePickerAttribute]);
+		this.attributes.push([new EntityInflowAttribute(resourcePickerAttribute, containerAttribute, [rotation])]);
 		this.attributes.push([
 			new EntityHasAnyOfResourceAttribute(containerAttribute, getMaterialResourceCounts(1)),
 			new EntityTimedAttribute(40 / rate),
@@ -267,11 +293,11 @@ export class Dispenser extends Entity {
 }
 
 export class Conductor extends Entity {
-	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number) {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, range: number) {
 		super(size);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
-		this.attributes.push([new EntityConductAttribute(true)]);
+		this.attributes.push([new EntityConductAttribute(range)]);
 	}
 
 	static get sprite() {
@@ -285,8 +311,13 @@ export class Battery extends Entity {
 		super(size);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
-		this.attributes.push([new EntityContainerAttribute(Infinity, [new ResourceUtils.Count(Resource.POWER, capacity)])]);
-		this.attributes.push([new EntityConductAttribute(false)]);
+		let powerStorageAttribute = new EntityPowerStorageAttribute(capacity);
+		this.attributes.push([powerStorageAttribute]);
+		this.attributes.push([
+			new EntityPowerConsumeAttribute(50),
+			new EntityProducePowerAttribute(powerStorageAttribute, 50),
+		]);
+		this.attributes.push([new EntityConductAttribute(0)]);
 	}
 
 	static get sprite() {
@@ -298,11 +329,11 @@ export class Battery extends Entity {
 export class Source extends Entity {
 	constructor() {
 		super();
-		let entityResourcePickerAttribute = new EntityResourcePickerAttribute();
-		this.attributes.push([entityResourcePickerAttribute]);
+		let resourcePickerAttribute = new EntityResourcePickerAttribute();
+		this.attributes.push([resourcePickerAttribute]);
 		this.attributes.push([
 			new EntityTimedAttribute(40),
-			new EntitySourceAttribute(entityResourcePickerAttribute),
+			new EntitySourceAttribute(resourcePickerAttribute),
 		]);
 	}
 
@@ -345,6 +376,7 @@ export class ResourceDeposit extends Entity {
 		this.attributes.push([new EntityResourceDisplayAttribute(resource)]);
 	}
 
+	// todo rename materialResourceTier
 	get resourceTier() {
 		switch (this.resource) {
 			case Resource.IRON:

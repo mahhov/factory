@@ -30,6 +30,14 @@ let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation)
 	return origin.iterate(size).map(border => border.add(shift));
 };
 
+let getLineDestinations = (origin: Vector, size: Vector, rotation: Rotation, range: number): Vector[] => {
+	let adjacents = getAdjacentDestinations(origin, size, rotation);
+	let shift = RotationUtils.positionShift(rotation);
+	return util.arr(range)
+		.map(offsetMagnitude => shift.scale(new Vector(offsetMagnitude)))
+		.flatMap(offset => adjacents.map(adjacent => adjacent.add(offset)));
+};
+
 export abstract class EntityAttribute {
 	private done: boolean = false;
 
@@ -331,19 +339,19 @@ export class EntityOutflowAttribute extends EntityAttribute {
 }
 
 export class EntityInflowAttribute extends EntityAttribute {
-	private readonly entityResourcePickerAttribute: EntityResourcePickerAttribute;
+	private readonly resourcePickerAttribute: EntityResourcePickerAttribute;
 	private readonly containerAttribute: EntityContainerAttribute;
 	private readonly inputRotations: Rotation[];
 
-	constructor(entityResourcePickerAttribute: EntityResourcePickerAttribute, containerAttribute: EntityContainerAttribute, inputRotations: Rotation[]) {
+	constructor(resourcePickerAttribute: EntityResourcePickerAttribute, containerAttribute: EntityContainerAttribute, inputRotations: Rotation[]) {
 		super();
-		this.entityResourcePickerAttribute = entityResourcePickerAttribute;
+		this.resourcePickerAttribute = resourcePickerAttribute;
 		this.containerAttribute = containerAttribute;
 		this.inputRotations = inputRotations;
 	}
 
 	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let resourceCount = new ResourceUtils.Count(this.entityResourcePickerAttribute.resource, 1);
+		let resourceCount = new ResourceUtils.Count(this.resourcePickerAttribute.resource, 1);
 		if (!this.containerAttribute.hasCapacity(resourceCount)) return false;
 		return util.shuffle(this.inputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, RotationUtils.opposite(rotation)))
@@ -383,27 +391,117 @@ export class EntityExtractorAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityConductAttribute extends EntityAttribute {
-	private readonly connecting: boolean;
+export class EntityPowerConsumeAttribute extends EntityAttribute {
+	private readonly quantity: number;
 
-	constructor(connecting: boolean) {
+	constructor(quantity: number) {
 		super();
-		this.connecting = connecting;
-	}
-
-	// todo implement power network
-}
-
-export class EntitySourceAttribute extends EntityAttribute {
-	private readonly entityResourcePickerAttribute: EntityResourcePickerAttribute;
-
-	constructor(entityResourcePickerAttribute: EntityResourcePickerAttribute) {
-		super();
-		this.entityResourcePickerAttribute = entityResourcePickerAttribute;
+		this.quantity = quantity;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let resourceCount = new ResourceUtils.Count(this.entityResourcePickerAttribute.resource, 1);
+		if (!this.quantity) return true;
+		// todo partial quantity consumption
+		// todo generating power into battery
+		let visited = new Set();
+		let queue = [tile.tileable];
+		while (queue.length) {
+			let tileable = queue.pop()!;
+			visited.add(tileable);
+			if (tileable !== tile.tileable) {
+				let powerStorageAttribute = tileable.getAttribute(EntityPowerStorageAttribute);
+				if (powerStorageAttribute && powerStorageAttribute.quantity >= this.quantity) {
+					powerStorageAttribute.quantity -= this.quantity;
+					return true;
+				}
+			}
+			tileable.getAttribute(EntityConductAttribute)?.connections
+				.filter(entity => !visited.has(entity) && entity.getAttribute(EntityConductAttribute))
+				.forEach(entity => queue.push(entity));
+		}
+		return false;
+	}
+}
+
+export class EntityPowerStorageAttribute extends EntityAttribute {
+	readonly capacity: number;
+	quantity: number = 0;
+
+	constructor(capacity: number) {
+		super();
+		this.capacity = capacity;
+	}
+
+	get tooltip(): TextLine[] {
+		return [new TextLine(`Power: ${this.quantity} / ${this.capacity}`)];
+	}
+}
+
+export class EntityProducePowerAttribute extends EntityAttribute {
+	private readonly powerStorageAttribute: EntityPowerStorageAttribute;
+	private readonly quantity: number;
+
+	constructor(powerStorageAttribute: EntityPowerStorageAttribute, quantity: number) {
+		super();
+		this.powerStorageAttribute = powerStorageAttribute;
+		this.quantity = quantity;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (this.powerStorageAttribute.capacity - this.powerStorageAttribute.quantity >= this.quantity) {
+			this.powerStorageAttribute.quantity += this.quantity;
+			return true;
+		}
+		return false;
+	}
+}
+
+export class EntityConductAttribute extends EntityAttribute {
+	private readonly range: number;
+	connections: Entity[] = [];
+
+	constructor(range: number) {
+		super();
+		this.range = range;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		this.connections = [];
+		util.enumValues(Rotation).forEach(rotation => {
+			getLineDestinations(tile.position, tile.tileable.size, rotation, this.range).some(destination => {
+				// todo this will only allow 1 connection in each direction. won't work when size is > 1
+				let searchTile = world.live.getTile(destination);
+				// todo some tiles should block
+				if (!searchTile)
+					return true;
+				let conductAttribute = searchTile.tileable.getAttribute(EntityConductAttribute);
+				if (conductAttribute) {
+					this.connections.push(searchTile.tileable);
+					if (!conductAttribute.connections.includes(tile.tileable))
+						// todo these get erased depending on tick order
+						conductAttribute.connections.push(tile.tileable);
+					return true;
+				}
+			});
+		});
+		return true;
+	}
+
+	get tooltip(): TextLine[] {
+		return [new TextLine(`Connections: ${this.connections.length}`)];
+	}
+}
+
+export class EntitySourceAttribute extends EntityAttribute {
+	private readonly resourcePickerAttribute: EntityResourcePickerAttribute;
+
+	constructor(resourcePickerAttribute: EntityResourcePickerAttribute) {
+		super();
+		this.resourcePickerAttribute = resourcePickerAttribute;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		let resourceCount = new ResourceUtils.Count(this.resourcePickerAttribute.resource, 1);
 		util.enumValues(Rotation).forEach(rotation =>
 			getAdjacentDestinations(tile.position, tile.tileable.size, rotation)
 				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityContainerAttribute))
@@ -594,3 +692,5 @@ export class EntityExpireProjectileAttribute extends EntityAttribute {
 		return true;
 	}
 }
+
+// todo sort
