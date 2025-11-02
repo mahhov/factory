@@ -10,6 +10,7 @@ import {Resource} from './Resource.js';
 export interface Tileable {
 	readonly container: Container;
 	readonly size: Vector;
+
 	tick(world: World, tile: Tile<Tileable>): void;
 }
 
@@ -77,8 +78,8 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 					let tile = this.getTile(emptyPosition)!;
 					if (replaceTiles.includes(tile))
 						this.container.removeChild(tile.tileable.container);
-					else if (tile.tileable.constructor.name !== this.defaultTileable.constructor.name) {
 						this.container.removeChild(tile.tileable.container);
+					else if (tile.tileable.constructor !== this.defaultTileable.constructor) {
 						this.addTileable(emptyPosition, this.defaultTileable);
 					}
 				}));
@@ -94,7 +95,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 				tile.position = position;
 			});
 
-		if (this.showDefaultTileable || tileable.constructor.name !== this.defaultTileable.constructor.name)
+		if (this.showDefaultTileable || tileable.constructor !== this.defaultTileable.constructor)
 			this.addContainer(tileable.container, position, tileable.size);
 	}
 
@@ -228,6 +229,7 @@ export class World {
 		}
 		// todo slower building if further from player base
 		// todo cancel in-progress building if queued for removal
+		// todo allow replacing queued buildings
 		// todo recycle materials on destruction
 	}
 

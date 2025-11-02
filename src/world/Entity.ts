@@ -7,6 +7,7 @@ import Vector from '../util/Vector.js';
 import {
 	EntityAttribute,
 	EntityBuildableAttribute,
+	EntityConductAttribute,
 	EntityConsumeAttribute,
 	EntityContainerAttribute,
 	EntityDamageAttribute,
@@ -33,8 +34,8 @@ import {Resource, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, Tileable, World} from './World.js';
 
-export let getResourceCounts = (count: number): ResourceUtils.Count[] =>
-	util.enumValues(Resource).map((resource: Resource) => new ResourceUtils.Count(resource, count));
+export let getMaterialResourceCounts = (count: number): ResourceUtils.Count[] =>
+	util.arr(Resource.WATER).map((resource: Resource) => new ResourceUtils.Count(resource, count));
 
 export class Entity implements Tileable {
 	readonly size: Vector;
@@ -108,7 +109,7 @@ export class Extractor extends Entity {
 		// todo move health and buildable attributes to a super class
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
-		let containerAttribute = new EntityContainerAttribute(Infinity, getResourceCounts(10));
+		let containerAttribute = new EntityContainerAttribute(Infinity, getMaterialResourceCounts(10), []);
 		this.attributes.push([containerAttribute]);
 		// todo don't extract while still being built
 		this.attributes.push([
@@ -118,7 +119,9 @@ export class Extractor extends Entity {
 				[Resource.COOLANT, heatOutput]])),
 			new EntityExtractorAttribute(containerAttribute, outputPerTier),
 		]);
-		this.attributes.push([new EntityOutflowAttribute(containerAttribute, getResourceCounts(1))]);
+		this.attributes.push([new EntityOutflowAttribute(containerAttribute, getMaterialResourceCounts(1))]);
+		if (powerInput)
+			this.attributes.push([new EntityConductAttribute(false)]);
 	}
 
 	static get sprite() {
@@ -131,10 +134,10 @@ export class Conveyor extends Entity {
 		super(size, rotation);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
-		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity), util.enumValues(Rotation).filter(r => r !== RotationUtils.opposite(rotation)));
+		let containerAttribute = new EntityContainerAttribute(1, getMaterialResourceCounts(Infinity), util.enumValues(Rotation).filter(r => r !== RotationUtils.opposite(rotation)));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
-			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
+			new EntityHasAnyOfResourceAttribute(containerAttribute, getMaterialResourceCounts(1)),
 			new EntityTimedAttribute(40 / rate),
 			new EntityTransportAttribute(containerAttribute, [rotation]),
 		]);
@@ -155,10 +158,10 @@ export class Distributor extends Entity {
 		super(size);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
-		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity));
+		let containerAttribute = new EntityContainerAttribute(1, getMaterialResourceCounts(Infinity));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
-			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
+			new EntityHasAnyOfResourceAttribute(containerAttribute, getMaterialResourceCounts(1)),
 			new EntityTimedAttribute(40 / rate),
 			new EntityTransportAttribute(containerAttribute, util.enumValues(Rotation)),
 		]);
@@ -179,10 +182,10 @@ export class Junction extends Entity {
 		super(size);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
-		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity));
+		let containerAttribute = new EntityContainerAttribute(1, getMaterialResourceCounts(Infinity));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
-			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
+			new EntityHasAnyOfResourceAttribute(containerAttribute, getMaterialResourceCounts(1)),
 			new EntityTimedAttribute(40 / rate),
 			new EntityJunctionTransportAttribute(containerAttribute),
 		]);
@@ -214,6 +217,8 @@ export class Factory extends Entity {
 			new EntityProduceAttribute(containerAttribute, [materialOutput]),
 		]);
 		this.attributes.push([new EntityOutflowAttribute(containerAttribute, [materialOutput])]);
+		if (powerInput || materialOutput.resource === Resource.POWER)
+			this.attributes.push([new EntityConductAttribute(false)]);
 	}
 
 	static get sprite() {
@@ -227,7 +232,7 @@ export class Storage extends Entity {
 		super(size);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
-		let containerAttribute = new EntityContainerAttribute(capacity, getResourceCounts(Infinity));
+		let containerAttribute = new EntityContainerAttribute(capacity, getMaterialResourceCounts(Infinity));
 		this.attributes.push([containerAttribute]);
 	}
 
@@ -242,17 +247,46 @@ export class Dispenser extends Entity {
 		super(size);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
-		let containerAttribute = new EntityContainerAttribute(1, getResourceCounts(Infinity), []);
+		let containerAttribute = new EntityContainerAttribute(1, getMaterialResourceCounts(Infinity), []);
 		this.attributes.push([containerAttribute]);
 		let entityResourcePickerAttribute = new EntityResourcePickerAttribute();
 		this.attributes.push([entityResourcePickerAttribute]);
 		this.attributes.push([new EntityInflowAttribute(entityResourcePickerAttribute, containerAttribute, [rotation])]);
 		this.attributes.push([
-			new EntityHasAnyOfResourceAttribute(containerAttribute, getResourceCounts(1)),
+			new EntityHasAnyOfResourceAttribute(containerAttribute, getMaterialResourceCounts(1)),
 			new EntityTimedAttribute(40 / rate),
 			new EntityTransportAttribute(containerAttribute, [rotation]),
 		]);
 		this.attributes.push([new EntityResourceFullSpriteAttribute(containerAttribute, Dispenser.sprite, resource => Dispenser.sprite)]);
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
+			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+	}
+}
+
+export class Conductor extends Entity {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number) {
+		super(size);
+		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
+		this.attributes.push([new EntityHealthAttribute(health)]);
+		this.attributes.push([new EntityConductAttribute(true)]);
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
+			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+	}
+}
+
+export class Battery extends Entity {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, capacity: number) {
+		super(size);
+		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
+		this.attributes.push([new EntityHealthAttribute(health)]);
+		this.attributes.push([new EntityContainerAttribute(Infinity, [new ResourceUtils.Count(Resource.POWER, capacity)])]);
+		this.attributes.push([new EntityConductAttribute(false)]);
 	}
 
 	static get sprite() {
@@ -278,7 +312,7 @@ export class Source extends Entity {
 export class Void extends Entity {
 	constructor() {
 		super();
-		this.attributes.push([new EntityContainerAttribute(Infinity, getResourceCounts(Infinity))]);
+		this.attributes.push([new EntityContainerAttribute(Infinity, getMaterialResourceCounts(Infinity))]);
 	}
 
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'void.png', [Color.ENTITY_VOID]);}

@@ -4,7 +4,7 @@ import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Junction, Storage, Turret, Wall} from '../world/Entity.js';
+import {Battery, Conductor, Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Junction, Storage, Turret, Wall} from '../world/Entity.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {ResourceUtils} from '../world/Resource.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
@@ -17,14 +17,14 @@ export enum PlacerState {
 
 enum Tool {
 	EMPTY,
-	// todo plasteel bunker
+	// todo bunker
 	IRON_WALL, STEEL_WALL,
 	EXTRACTOR, REINFORCED_EXTRACTOR, QUADRATIC_EXTRACTOR, LASER_EXTRACTOR,
 	// todo packed conveyor
 	CONVEYOR, HIGH_SPEED_CONVEYOR, DISTRIBUTOR, JUNCTION,
 	STEEL_SMELTER, METAGLASS_FOUNDRY, PLASTEEL_MIXER, THERMITE_FORGE, EXIDIUM_CATALYST,
 	STORAGE, DISPENSER,
-	// todo energy
+	THERMAL_GENERATOR, SOLAR_ARRAY, METHANE_BURNER, THERMITE_REACTOR, CONDUCTOR, BATTERY,
 	// todo vents
 	// todo liquid
 	// todo turrets
@@ -37,6 +37,7 @@ let toolTree = {
 	transport: [Tool.CONVEYOR, Tool.HIGH_SPEED_CONVEYOR, Tool.DISTRIBUTOR, Tool.JUNCTION],
 	factories: [Tool.STEEL_SMELTER, Tool.METAGLASS_FOUNDRY, Tool.PLASTEEL_MIXER, Tool.THERMITE_FORGE, Tool.EXIDIUM_CATALYST],
 	storage: [Tool.STORAGE, Tool.DISPENSER],
+	power: [Tool.THERMAL_GENERATOR, Tool.SOLAR_ARRAY, Tool.METHANE_BURNER, Tool.THERMITE_REACTOR, Tool.CONDUCTOR, Tool.BATTERY],
 	turrets: [Tool.TURRET],
 };
 type ToolGroup = keyof typeof toolTree;
@@ -95,6 +96,7 @@ export default class Placer {
 				return Placer.createToolWall(findEntityMetadata('buildings', 'Iron Wall'));
 			case Tool.STEEL_WALL:
 				return Placer.createToolWall(findEntityMetadata('buildings', 'Steel Wall'));
+
 			case Tool.EXTRACTOR:
 				return Placer.createToolExtractor(findEntityMetadata('buildings', 'Extractor'));
 			case Tool.REINFORCED_EXTRACTOR:
@@ -103,6 +105,7 @@ export default class Placer {
 				return Placer.createToolExtractor(findEntityMetadata('buildings', 'Quadratic Extractor'));
 			case Tool.LASER_EXTRACTOR:
 				return Placer.createToolExtractor(findEntityMetadata('buildings', 'Laser Extractor'));
+
 			case Tool.CONVEYOR:
 				return Placer.createToolConveyor(findEntityMetadata('buildings', 'Conveyor'), rotation);
 			case Tool.HIGH_SPEED_CONVEYOR:
@@ -111,6 +114,7 @@ export default class Placer {
 				return Placer.createToolDistributor(findEntityMetadata('buildings', 'High Speed Conveyor'));
 			case Tool.JUNCTION:
 				return Placer.createToolJunction(findEntityMetadata('buildings', 'High Speed Conveyor'));
+
 			case Tool.STEEL_SMELTER:
 				return Placer.createToolFactory(findEntityMetadata('buildings', 'Steel Smelter'));
 			case Tool.METAGLASS_FOUNDRY:
@@ -121,10 +125,25 @@ export default class Placer {
 				return Placer.createToolFactory(findEntityMetadata('buildings', 'Thermite Forge'));
 			case Tool.EXIDIUM_CATALYST:
 				return Placer.createToolFactory(findEntityMetadata('buildings', 'Exidium Catalyst'));
+
 			case Tool.STORAGE:
 				return Placer.createToolStorage(findEntityMetadata('buildings', 'Storage'));
 			case Tool.DISPENSER:
 				return Placer.createToolDispenser(findEntityMetadata('buildings', 'Dispenser'), rotation);
+
+			case Tool.THERMAL_GENERATOR:
+				return Placer.createToolFactory(findEntityMetadata('buildings', 'Thermal Generator'));
+			case Tool.SOLAR_ARRAY:
+				return Placer.createToolFactory(findEntityMetadata('buildings', 'Solar Array'));
+			case Tool.METHANE_BURNER:
+				return Placer.createToolFactory(findEntityMetadata('buildings', 'Methane Burner'));
+			case Tool.THERMITE_REACTOR:
+				return Placer.createToolFactory(findEntityMetadata('buildings', 'Thermite Reactor'));
+			case Tool.CONDUCTOR:
+				return Placer.createToolConductor(findEntityMetadata('buildings', 'Conductor'));
+			case Tool.BATTERY:
+				return Placer.createToolBattery(findEntityMetadata('buildings', 'Battery'));
+
 			case Tool.TURRET:
 				return new Turret();
 		}
@@ -160,6 +179,14 @@ export default class Placer {
 
 	private static createToolDispenser(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
 		return new Dispenser(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number, rotation);
+	}
+
+	private static createToolConductor(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Conductor(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health);
+	}
+
+	private static createToolBattery(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Battery(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialOutput as number);
 	}
 
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {

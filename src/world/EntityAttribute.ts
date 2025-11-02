@@ -383,6 +383,17 @@ export class EntityExtractorAttribute extends EntityAttribute {
 	}
 }
 
+export class EntityConductAttribute extends EntityAttribute {
+	private readonly connecting: boolean;
+
+	constructor(connecting: boolean) {
+		super();
+		this.connecting = connecting;
+	}
+
+	// todo implement power network
+}
+
 export class EntitySourceAttribute extends EntityAttribute {
 	private readonly entityResourcePickerAttribute: EntityResourcePickerAttribute;
 

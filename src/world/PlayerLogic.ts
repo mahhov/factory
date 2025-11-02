@@ -1,7 +1,7 @@
 import Painter from '../graphics/Painter.js';
 import MultilineText from '../ui/MultilineText.js';
 import Vector from '../util/Vector.js';
-import {getResourceCounts} from './Entity.js';
+import {getMaterialResourceCounts} from './Entity.js';
 import {EntityContainerAttribute} from './EntityAttribute.js';
 import {Resource, ResourceUtils} from './Resource.js';
 
@@ -11,7 +11,7 @@ export class PlayerLogic {
 	private readonly multilineText: MultilineText;
 
 	constructor(painter: Painter) {
-		this.materials = new EntityContainerAttribute(Infinity, getResourceCounts(500));
+		this.materials = new EntityContainerAttribute(Infinity, getMaterialResourceCounts(500));
 		for (let resource = Resource.IRON; resource <= Resource.METHANE; resource++)
 			this.materials.add(new ResourceUtils.Count(resource, 500));
 
