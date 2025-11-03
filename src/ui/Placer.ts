@@ -4,9 +4,9 @@ import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Battery, Conductor, Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Generator, Junction, Pump, Storage, Turret, Vent, Wall} from '../world/Entity.js';
+import {Battery, Conductor, Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Generator, Junction, Pump, Storage, Turret, Vent, Wall, Well} from '../world/Entity.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
-import {ResourceUtils} from '../world/Resource.js';
+import {Resource, ResourceUtils} from '../world/Resource.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
 import {GridWorldLayer, World} from '../world/World.js';
 import {Input} from './Input.js';
@@ -158,7 +158,7 @@ export default class Placer {
 			case Tool.POWERED_PUMP:
 				return Placer.createToolPump(findEntityMetadata('buildings', 'Powered Pump'));
 			case Tool.WELL:
-				// return Placer.createToolPump(findEntityMetadata('buildings', 'Well'));
+				return Placer.createToolWell(findEntityMetadata('buildings', 'Well'));
 				return new Turret();
 			case Tool.PIPE:
 				// return Placer.createToolLiquid(findEntityMetadata('buildings', 'Pipe'));
@@ -223,6 +223,10 @@ export default class Placer {
 
 	private static createToolPump(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		return new Pump(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.output as number);
+	}
+
+	private static createToolWell(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Well(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, new ResourceUtils.Count(Resource.WATER, metadata.output as number));
 	}
 
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {

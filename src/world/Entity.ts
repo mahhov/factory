@@ -22,6 +22,7 @@ import {
 	EntityJunctionTransportAttribute,
 	EntityLiquidConsumeAttribute,
 	EntityLiquidContainerAttribute,
+	EntityLiquidDryExtractorAttribute,
 	EntityLiquidExtractorAttribute,
 	EntityMobChaseTargetAttribute,
 	EntityMobHealthAttribute,
@@ -295,6 +296,26 @@ export class Pump extends Building {
 			new EntityTimedAttribute(40),
 			powerInput ? new EntityPowerConsumeAttribute(powerInput * 40) : null,
 			new EntityLiquidExtractorAttribute(liquidOutput * 40),
+		].filter(v => v) as EntityAttribute[]);
+		if (powerInput)
+			this.attributes.push([new EntityConductAttribute(0)]);
+		// todo is not being powered
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
+			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+	}
+}
+
+export class Well extends Building {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, powerInput: number, liquidOutput: ResourceUtils.Count) {
+		super(size, buildTime, buildCost, health);
+		this.attributes.push([new EntityLiquidContainerAttribute([liquidOutput.resource], liquidOutput.quantity)]);
+		this.attributes.push([
+			new EntityTimedAttribute(40),
+			powerInput ? new EntityPowerConsumeAttribute(powerInput * 40) : null,
+			new EntityLiquidDryExtractorAttribute(new ResourceUtils.Count(liquidOutput.resource, liquidOutput.quantity * 40)),
 		].filter(v => v) as EntityAttribute[]);
 		if (powerInput)
 			this.attributes.push([new EntityConductAttribute(0)]);

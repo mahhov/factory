@@ -653,7 +653,7 @@ export class EntityLiquidContainerAttribute extends EntityAttribute {
 }
 
 export class EntityLiquidExtractorAttribute extends EntityAttribute {
-	quantity: number = 0;
+	private readonly quantity: number;
 
 	constructor(quantity: number) {
 		super();
@@ -663,11 +663,29 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let liquidContainerAttribute = tile.tileable.getAttribute(EntityLiquidContainerAttribute);
 		if (!liquidContainerAttribute) return false;
+		let area = tile.tileable.size.x * tile.tileable.size.y;
 		tile.position.iterate(tile.tileable.size).forEach(position => {
 			let tile = world.terrain.getTile(position);
 			if (!(tile?.tileable instanceof ResourceDeposit)) return;
-			liquidContainerAttribute.tryToAdd(new ResourceUtils.Count(tile.tileable.resource, this.quantity));
+			liquidContainerAttribute.tryToAdd(new ResourceUtils.Count(tile.tileable.resource, this.quantity / area));
 		});
+		// todo is extracting water even when placed on methane
+		return true;
+	}
+}
+
+export class EntityLiquidDryExtractorAttribute extends EntityAttribute {
+	private readonly resourceCount: ResourceUtils.Count;
+
+	constructor(resourceCount: ResourceUtils.Count) {
+		super();
+		this.resourceCount = resourceCount;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		let liquidContainerAttribute = tile.tileable.getAttribute(EntityLiquidContainerAttribute);
+		if (!liquidContainerAttribute) return false;
+		liquidContainerAttribute.tryToAdd(new ResourceUtils.Count(this.resourceCount.resource, this.resourceCount.quantity));
 		return true;
 	}
 }
