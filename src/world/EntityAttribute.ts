@@ -641,7 +641,7 @@ export class EntityLiquidContainerAttribute extends EntityAttribute {
 		}
 		if (resourceCount.quantity > this.resourceCount.quantity && this.resourceCount.quantity < 10) {
 			let take = Math.min(resourceCount.quantity, this.maxQuantity);
-			this.resourceCount = new ResourceUtils.Count(this.resourceCount.resource, take);
+			this.resourceCount = new ResourceUtils.Count(resourceCount.resource, take);
 			return take;
 		}
 		return 0;
@@ -669,7 +669,6 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 			if (!(tile?.tileable instanceof ResourceDeposit)) return;
 			liquidContainerAttribute.tryToAdd(new ResourceUtils.Count(tile.tileable.resource, this.quantity / area));
 		});
-		// todo is extracting water even when placed on methane
 		return true;
 	}
 }
