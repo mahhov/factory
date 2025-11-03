@@ -96,22 +96,25 @@ export class Empty extends Entity {
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_EMPTY]);}
 }
 
-export class Wall extends Entity {
-	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number) {
-		super(size);
+export class Building extends Entity {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, rotation: Rotation = Rotation.RIGHT) {
+		super(size, rotation);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
+	}
+}
+
+export class Wall extends Building {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number) {
+		super(size, buildTime, buildCost, health);
 	}
 
 	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_WALL]);}
 }
 
-export class Extractor extends Entity {
+export class Extractor extends Building {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, powerInput: number, heatOutput: number, outputPerTier: number[]) {
-		super(size);
-		// todo move health and buildable attributes to a super class
-		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
-		this.attributes.push([new EntityHealthAttribute(health)]);
+		super(size, buildTime, buildCost, health);
 		let containerAttribute = new EntityContainerAttribute(Infinity, getMaterialResourceCounts(10), []);
 		this.attributes.push([containerAttribute]);
 		// todo don't extract while still being built
@@ -131,11 +134,9 @@ export class Extractor extends Entity {
 	}
 }
 
-export class Conveyor extends Entity {
+export class Conveyor extends Building {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, rate: number, rotation: Rotation) {
-		super(size, rotation);
-		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
-		this.attributes.push([new EntityHealthAttribute(health)]);
+		super(size, buildTime, buildCost, health, rotation);
 		let containerAttribute = new EntityContainerAttribute(1, getMaterialResourceCounts(Infinity), util.enumValues(Rotation).filter(r => r !== RotationUtils.opposite(rotation)));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
@@ -155,11 +156,9 @@ export class Conveyor extends Entity {
 	}
 }
 
-export class Distributor extends Entity {
+export class Distributor extends Building {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, rate: number) {
-		super(size);
-		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
-		this.attributes.push([new EntityHealthAttribute(health)]);
+		super(size, buildTime, buildCost, health);
 		let containerAttribute = new EntityContainerAttribute(1, getMaterialResourceCounts(Infinity));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
@@ -179,11 +178,9 @@ export class Distributor extends Entity {
 	}
 }
 
-export class Junction extends Entity {
+export class Junction extends Building {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, rate: number) {
-		super(size);
-		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
-		this.attributes.push([new EntityHealthAttribute(health)]);
+		super(size, buildTime, buildCost, health);
 		let containerAttribute = new EntityContainerAttribute(1, getMaterialResourceCounts(Infinity));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
@@ -203,11 +200,9 @@ export class Junction extends Entity {
 	}
 }
 
-export class Factory extends Entity {
+export class Factory extends Building {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, materialInput: ResourceUtils.Count[], powerInput: number, heatOutput: number, materialOutput: ResourceUtils.Count) {
-		super(size);
-		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
-		this.attributes.push([new EntityHealthAttribute(health)]);
+		super(size, buildTime, buildCost, health);
 		let containerAttribute = new EntityContainerAttribute(Infinity, materialInput.concat(materialOutput).map(resourceCount => new ResourceUtils.Count(resourceCount.resource, 10)));
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
@@ -228,11 +223,9 @@ export class Factory extends Entity {
 	}
 }
 
-export class Generator extends Entity {
+export class Generator extends Building {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, materialInput: ResourceUtils.Count[], powerInput: number, heatOutput: number, powerOutput: number) {
-		super(size);
-		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
-		this.attributes.push([new EntityHealthAttribute(health)]);
+		super(size, buildTime, buildCost, health);
 		let containerAttribute = new EntityContainerAttribute(Infinity, materialInput.map(resourceCount => new ResourceUtils.Count(resourceCount.resource, 10)));
 		this.attributes.push([containerAttribute]);
 		let powerStorageAttribute = new EntityPowerStorageAttribute(powerOutput * 40, 0);
@@ -253,11 +246,9 @@ export class Generator extends Entity {
 	}
 }
 
-export class Storage extends Entity {
+export class Storage extends Building {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, capacity: number) {
-		super(size);
-		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
-		this.attributes.push([new EntityHealthAttribute(health)]);
+		super(size, buildTime, buildCost, health);
 		let containerAttribute = new EntityContainerAttribute(capacity, getMaterialResourceCounts(Infinity));
 		this.attributes.push([containerAttribute]);
 	}
@@ -268,11 +259,9 @@ export class Storage extends Entity {
 	}
 }
 
-export class Dispenser extends Entity {
+export class Dispenser extends Building {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, rate: number, rotation: Rotation) {
-		super(size);
-		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
-		this.attributes.push([new EntityHealthAttribute(health)]);
+		super(size, buildTime, buildCost, health);
 		let containerAttribute = new EntityContainerAttribute(1, getMaterialResourceCounts(Infinity), []);
 		this.attributes.push([containerAttribute]);
 		let resourcePickerAttribute = new EntityResourcePickerAttribute();
@@ -292,11 +281,9 @@ export class Dispenser extends Entity {
 	}
 }
 
-export class Conductor extends Entity {
+export class Conductor extends Building {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, range: number) {
-		super(size);
-		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
-		this.attributes.push([new EntityHealthAttribute(health)]);
+		super(size, buildTime, buildCost, health);
 		this.attributes.push([new EntityConductAttribute(range)]);
 	}
 
@@ -306,11 +293,9 @@ export class Conductor extends Entity {
 	}
 }
 
-export class Battery extends Entity {
+export class Battery extends Building {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, capacity: number) {
-		super(size);
-		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
-		this.attributes.push([new EntityHealthAttribute(health)]);
+		super(size, buildTime, buildCost, health);
 		let powerLargeStorageAttribute = new EntityPowerStorageAttribute(capacity * 40, 1);
 		this.attributes.push([powerLargeStorageAttribute]);
 		this.attributes.push([new EntityConductAttribute(0)]);
