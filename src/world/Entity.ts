@@ -275,7 +275,7 @@ export class Vent extends Building {
 		this.attributes.push([
 			new EntityTimedAttribute(40),
 			powerInput ? new EntityPowerConsumeAttribute(powerInput * 40) : null,
-			liquidInput ? new EntityLiquidConsumeAttribute(liquidInput) : null,
+			liquidContainerAttribute ? new EntityLiquidConsumeAttribute(liquidContainerAttribute, liquidInput) : null,
 			new EntityCoolantProduceAttribute(coolantOutput * 40),
 		].filter(v => v) as EntityAttribute[]);
 		if (powerInput)
@@ -291,15 +291,15 @@ export class Vent extends Building {
 export class Pump extends Building {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, powerInput: number, liquidOutput: number) {
 		super(size, buildTime, buildCost, health);
-		this.attributes.push([new EntityLiquidContainerAttribute([Resource.WATER, Resource.METHANE], liquidOutput)]);
+		let liquidContainerAttribute = new EntityLiquidContainerAttribute([Resource.WATER, Resource.METHANE], liquidOutput);
+		this.attributes.push([liquidContainerAttribute]);
 		this.attributes.push([
 			new EntityTimedAttribute(40),
 			powerInput ? new EntityPowerConsumeAttribute(powerInput * 40) : null,
-			new EntityLiquidExtractorAttribute(liquidOutput * 40),
+			new EntityLiquidExtractorAttribute(liquidContainerAttribute, liquidOutput * 40),
 		].filter(v => v) as EntityAttribute[]);
 		if (powerInput)
 			this.attributes.push([new EntityConductAttribute(0)]);
-		// todo is not being powered
 	}
 
 	static get sprite() {
@@ -311,11 +311,12 @@ export class Pump extends Building {
 export class Well extends Building {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, powerInput: number, liquidOutput: ResourceUtils.Count) {
 		super(size, buildTime, buildCost, health);
-		this.attributes.push([new EntityLiquidContainerAttribute([liquidOutput.resource], liquidOutput.quantity)]);
+		let liquidContainerAttribute = new EntityLiquidContainerAttribute([liquidOutput.resource], liquidOutput.quantity);
+		this.attributes.push([liquidContainerAttribute]);
 		this.attributes.push([
 			new EntityTimedAttribute(40),
 			powerInput ? new EntityPowerConsumeAttribute(powerInput * 40) : null,
-			new EntityLiquidDryExtractorAttribute(new ResourceUtils.Count(liquidOutput.resource, liquidOutput.quantity * 40)),
+			new EntityLiquidDryExtractorAttribute(liquidContainerAttribute, new ResourceUtils.Count(liquidOutput.resource, liquidOutput.quantity * 40)),
 		].filter(v => v) as EntityAttribute[]);
 		if (powerInput)
 			this.attributes.push([new EntityConductAttribute(0)]);

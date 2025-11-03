@@ -603,18 +603,18 @@ export class EntityCoolantProduceAttribute extends EntityAttribute {
 }
 
 export class EntityLiquidConsumeAttribute extends EntityAttribute {
+	private readonly liquidContainerAttribute: EntityLiquidContainerAttribute;
 	private readonly resourceCount: ResourceUtils.Count;
 
-	constructor(resourceCount: ResourceUtils.Count) {
+	constructor(liquidContainerAttribute: EntityLiquidContainerAttribute, resourceCount: ResourceUtils.Count) {
 		super();
+		this.liquidContainerAttribute = liquidContainerAttribute;
 		this.resourceCount = resourceCount;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let liquidContainerAttribute = tile.tileable.getAttribute(EntityLiquidContainerAttribute);
-		if (!liquidContainerAttribute) return false;
-		if (liquidContainerAttribute.resourceCount.resource === this.resourceCount.resource && liquidContainerAttribute.resourceCount.quantity >= this.resourceCount.quantity) {
-			liquidContainerAttribute.resourceCount = new ResourceUtils.Count(liquidContainerAttribute.resourceCount.resource, liquidContainerAttribute.resourceCount.quantity - this.resourceCount.quantity);
+		if (this.liquidContainerAttribute.resourceCount.resource === this.resourceCount.resource && this.liquidContainerAttribute.resourceCount.quantity >= this.resourceCount.quantity) {
+			this.liquidContainerAttribute.resourceCount = new ResourceUtils.Count(this.liquidContainerAttribute.resourceCount.resource, this.liquidContainerAttribute.resourceCount.quantity - this.resourceCount.quantity);
 			return true;
 		}
 		return false;
@@ -653,38 +653,38 @@ export class EntityLiquidContainerAttribute extends EntityAttribute {
 }
 
 export class EntityLiquidExtractorAttribute extends EntityAttribute {
+	private readonly liquidContainerAttribute: EntityLiquidContainerAttribute;
 	private readonly quantity: number;
 
-	constructor(quantity: number) {
+	constructor(liquidContainerAttribute: EntityLiquidContainerAttribute, quantity: number) {
 		super();
+		this.liquidContainerAttribute = liquidContainerAttribute;
 		this.quantity = quantity;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let liquidContainerAttribute = tile.tileable.getAttribute(EntityLiquidContainerAttribute);
-		if (!liquidContainerAttribute) return false;
 		let area = tile.tileable.size.x * tile.tileable.size.y;
 		tile.position.iterate(tile.tileable.size).forEach(position => {
 			let tile = world.terrain.getTile(position);
 			if (!(tile?.tileable instanceof ResourceDeposit)) return;
-			liquidContainerAttribute.tryToAdd(new ResourceUtils.Count(tile.tileable.resource, this.quantity / area));
+			this.liquidContainerAttribute.tryToAdd(new ResourceUtils.Count(tile.tileable.resource, this.quantity / area));
 		});
 		return true;
 	}
 }
 
 export class EntityLiquidDryExtractorAttribute extends EntityAttribute {
+	private readonly liquidContainerAttribute: EntityLiquidContainerAttribute;
 	private readonly resourceCount: ResourceUtils.Count;
 
-	constructor(resourceCount: ResourceUtils.Count) {
+	constructor(liquidContainerAttribute: EntityLiquidContainerAttribute, resourceCount: ResourceUtils.Count) {
 		super();
+		this.liquidContainerAttribute = liquidContainerAttribute;
 		this.resourceCount = resourceCount;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let liquidContainerAttribute = tile.tileable.getAttribute(EntityLiquidContainerAttribute);
-		if (!liquidContainerAttribute) return false;
-		liquidContainerAttribute.tryToAdd(new ResourceUtils.Count(this.resourceCount.resource, this.resourceCount.quantity));
+		this.liquidContainerAttribute.tryToAdd(new ResourceUtils.Count(this.resourceCount.resource, this.resourceCount.quantity));
 		return true;
 	}
 }
@@ -903,4 +903,3 @@ export class EntityExpireProjectileAttribute extends EntityAttribute {
 
 // todo sort & naming
 // todo fix tooltips
-// todo don't pass in constructor params of attributes. use getAttribute
