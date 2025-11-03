@@ -4,7 +4,7 @@ import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Battery, Conductor, Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Generator, Junction, Storage, Turret, Vent, Wall} from '../world/Entity.js';
+import {Battery, Conductor, Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Generator, Junction, Pump, Storage, Turret, Vent, Wall} from '../world/Entity.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {ResourceUtils} from '../world/Resource.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
@@ -26,7 +26,7 @@ enum Tool {
 	STORAGE, DISPENSER,
 	THERMAL_GENERATOR, SOLAR_ARRAY, METHANE_BURNER, THERMITE_REACTOR, CONDUCTOR, BATTERY,
 	AIR_VENT, WATER_VENT, METHANE_VENT,
-	// todo liquid
+	PUMP, POWERED_PUMP, WELL, PIPE, LIQUID_STORAGE,
 	// todo turrets
 	TURRET,
 }
@@ -39,6 +39,7 @@ let toolTree = {
 	storage: [Tool.STORAGE, Tool.DISPENSER],
 	power: [Tool.THERMAL_GENERATOR, Tool.SOLAR_ARRAY, Tool.METHANE_BURNER, Tool.THERMITE_REACTOR, Tool.CONDUCTOR, Tool.BATTERY],
 	vents: [Tool.AIR_VENT, Tool.WATER_VENT, Tool.METHANE_VENT],
+	liquids: [Tool.PUMP, Tool.POWERED_PUMP, Tool.WELL, Tool.PIPE, Tool.LIQUID_STORAGE],
 	turrets: [Tool.TURRET],
 };
 type ToolGroup = keyof typeof toolTree;
@@ -152,6 +153,21 @@ export default class Placer {
 			case Tool.METHANE_VENT:
 				return Placer.createToolVent(findEntityMetadata('buildings', 'Methane Vent'));
 
+			case Tool.PUMP:
+				return Placer.createToolPump(findEntityMetadata('buildings', 'Pump'));
+			case Tool.POWERED_PUMP:
+				return Placer.createToolPump(findEntityMetadata('buildings', 'Powered Pump'));
+			case Tool.WELL:
+				// return Placer.createToolPump(findEntityMetadata('buildings', 'Well'));
+				return new Turret();
+			case Tool.PIPE:
+				// return Placer.createToolLiquid(findEntityMetadata('buildings', 'Pipe'));
+				return new Turret();
+			case Tool.LIQUID_STORAGE:
+				return new Turret();
+			// return Placer.createToolLiquid(findEntityMetadata('buildings', 'Liquid Storage'));
+
+
 			case Tool.TURRET:
 				return new Turret();
 		}
@@ -202,7 +218,11 @@ export default class Placer {
 	}
 
 	private static createToolVent(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Vent(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.output as number);
+		return new Vent(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput?.[0], metadata.powerInput, metadata.output as number);
+	}
+
+	private static createToolPump(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Pump(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.output as number);
 	}
 
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {

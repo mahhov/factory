@@ -20,6 +20,9 @@ import {
 	EntityHealthAttribute,
 	EntityInflowAttribute,
 	EntityJunctionTransportAttribute,
+	EntityLiquidConsumeAttribute,
+	EntityLiquidContainerAttribute,
+	EntityLiquidExtractorAttribute,
 	EntityMobChaseTargetAttribute,
 	EntityMobHealthAttribute,
 	EntityOutflowAttribute,
@@ -261,18 +264,37 @@ export class Generator extends Building {
 }
 
 export class Vent extends Building {
-	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, materialInput: ResourceUtils.Count[], powerInput: number, coolantOutput: number) {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, liquidInput: ResourceUtils.Count, powerInput: number, coolantOutput: number) {
 		super(size, buildTime, buildCost, health);
-		let containerAttribute;
-		if (materialInput.length) {
-			containerAttribute = new EntityContainerAttribute(Infinity, materialInput.map(resourceCount => new ResourceUtils.Count(resourceCount.resource, 10)));
-			this.attributes.push([containerAttribute]);
+		let liquidContainerAttribute;
+		if (liquidInput) {
+			liquidContainerAttribute = new EntityLiquidContainerAttribute([liquidInput.resource], 200 * 40);
+			this.attributes.push([liquidContainerAttribute]);
 		}
 		this.attributes.push([
 			new EntityTimedAttribute(40),
 			powerInput ? new EntityPowerConsumeAttribute(powerInput * 40) : null,
-			containerAttribute ? new EntityConsumeAttribute(containerAttribute, materialInput) : null,
+			liquidInput ? new EntityLiquidConsumeAttribute(liquidInput) : null,
 			new EntityCoolantProduceAttribute(coolantOutput * 40),
+		].filter(v => v) as EntityAttribute[]);
+		if (powerInput)
+			this.attributes.push([new EntityConductAttribute(0)]);
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
+			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+	}
+}
+
+export class Pump extends Building {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, powerInput: number, liquidOutput: number) {
+		super(size, buildTime, buildCost, health);
+		this.attributes.push([new EntityLiquidContainerAttribute([Resource.WATER, Resource.METHANE], liquidOutput)]);
+		this.attributes.push([
+			new EntityTimedAttribute(40),
+			powerInput ? new EntityPowerConsumeAttribute(powerInput * 40) : null,
+			new EntityLiquidExtractorAttribute(liquidOutput * 40),
 		].filter(v => v) as EntityAttribute[]);
 		if (powerInput)
 			this.attributes.push([new EntityConductAttribute(0)]);
