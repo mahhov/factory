@@ -75,7 +75,7 @@ export class EntityBuildableAttribute extends EntityAttribute {
 
 	constructor(duration: number, materialCost: ResourceUtils.Count[]) {
 		super();
-		this.counter = new Counter(1);
+		this.counter = new Counter(duration * 20);
 		this.materialCost = materialCost;
 	}
 

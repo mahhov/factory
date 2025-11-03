@@ -102,6 +102,16 @@ export class Building extends Entity {
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
 	}
+
+	tick(world: World, tile: Tile<Entity>) {
+		if (this.getAttribute(EntityBuildableAttribute)!.doneBuilding)
+			super.tick(world, tile);
+		else {
+			this.attributes.slice(0, 2)
+				.filter(attributeChain => attributeChain.every(attribute => attribute.tick(world, tile)))
+				.forEach(attributeChain => attributeChain.forEach(attribute => attribute.reset()));
+		}
+	}
 }
 
 export class Wall extends Building {
@@ -117,7 +127,6 @@ export class Extractor extends Building {
 		super(size, buildTime, buildCost, health);
 		let containerAttribute = new EntityContainerAttribute(Infinity, getMaterialResourceCounts(10), []);
 		this.attributes.push([containerAttribute]);
-		// todo don't extract while still being built
 		this.attributes.push([
 			new EntityTimedAttribute(80),
 			powerInput ? new EntityPowerConsumeAttribute(powerInput * 80) : null,
