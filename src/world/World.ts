@@ -78,8 +78,8 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 					let tile = this.getTile(emptyPosition)!;
 					if (replaceTiles.includes(tile))
 						this.container.removeChild(tile.tileable.container);
-						this.container.removeChild(tile.tileable.container);
 					else if (tile.tileable.constructor !== this.defaultTileable.constructor) {
+						this.container.removeChild(tile.tileable.container);
 						this.addTileable(emptyPosition, this.defaultTileable);
 					}
 				}));

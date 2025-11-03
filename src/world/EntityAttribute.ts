@@ -393,42 +393,69 @@ export class EntityExtractorAttribute extends EntityAttribute {
 
 export class EntityPowerConsumeAttribute extends EntityAttribute {
 	private readonly quantity: number;
+	private consumed: number = 0;
 
 	constructor(quantity: number) {
 		super();
+		console.assert(quantity > 0);
 		this.quantity = quantity;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (!this.quantity) return true;
-		// todo partial quantity consumption
+	static takePower(consumer: Entity, quantity: number, priority: number): number {
+		let taken = 0;
 		let visited = new Set();
-		let queue = [tile.tileable];
+		let queue = [consumer];
 		while (queue.length) {
 			let tileable = queue.pop()!;
 			visited.add(tileable);
-			if (tileable !== tile.tileable) {
+			if (tileable !== consumer) {
 				let powerStorageAttribute = tileable.getAttribute(EntityPowerStorageAttribute);
-				if (powerStorageAttribute && powerStorageAttribute.quantity >= this.quantity) {
-					powerStorageAttribute.quantity -= this.quantity;
-					return true;
+				if (powerStorageAttribute && powerStorageAttribute.priority < priority) {
+					let consume = Math.min(quantity, powerStorageAttribute.quantity);
+					taken += consume;
+					powerStorageAttribute.quantity -= consume;
+					if (taken === quantity)
+						break;
 				}
 			}
 			tileable.getAttribute(EntityConductAttribute)?.allConnections
 				.filter(entity => !visited.has(entity) && entity.getAttribute(EntityConductAttribute))
 				.forEach(entity => queue.push(entity));
 		}
+		return taken;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		this.consumed += EntityPowerConsumeAttribute.takePower(tile.tileable, this.quantity - this.consumed, Infinity);
+		if (this.consumed === this.quantity) {
+			this.consumed = 0;
+			return true;
+		}
 		return false;
+	}
+
+	get tooltip(): TextLine[] {
+		return [new TextLine(`Power: ${this.consumed} / ${this.quantity}`)];
 	}
 }
 
 export class EntityPowerStorageAttribute extends EntityAttribute {
 	readonly capacity: number;
 	quantity: number = 0;
+	readonly priority: number;
 
-	constructor(capacity: number) {
+	constructor(capacity: number, priority: number) {
 		super();
 		this.capacity = capacity;
+		this.priority = priority;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (!this.priority) return true;
+		let remainingCapacity = this.capacity - this.quantity;
+		if (remainingCapacity)
+			this.quantity += EntityPowerConsumeAttribute.takePower(tile.tileable, remainingCapacity, this.priority);
+		return true;
 	}
 
 	get tooltip(): TextLine[] {

@@ -70,7 +70,7 @@ export class Entity implements Tileable {
 	}
 
 	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | undefined {
-		return this.attributes.flat().find(attribute => attribute instanceof attributeClass) as T;
+		return this.attributes.flat().find(attribute => attribute.constructor === attributeClass) as T;
 	}
 
 	tick(world: World, tile: Tile<Entity>) {
@@ -117,10 +117,10 @@ export class Extractor extends Entity {
 		// todo don't extract while still being built
 		this.attributes.push([
 			new EntityTimedAttribute(80),
-			new EntityPowerConsumeAttribute(powerInput),
+			powerInput ? new EntityPowerConsumeAttribute(powerInput * 80) : null,
 			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.COOLANT, heatOutput]])),
 			new EntityExtractorAttribute(containerAttribute, outputPerTier),
-		]);
+		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([new EntityOutflowAttribute(containerAttribute, getMaterialResourceCounts(1))]);
 		if (powerInput)
 			this.attributes.push([new EntityConductAttribute(0)]);
@@ -212,11 +212,11 @@ export class Factory extends Entity {
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
 			new EntityTimedAttribute(40),
-			new EntityPowerConsumeAttribute(powerInput),
+			powerInput ? new EntityPowerConsumeAttribute(powerInput * 40) : null,
 			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.COOLANT, heatOutput]])),
 			new EntityConsumeAttribute(containerAttribute, materialInput),
 			new EntityProduceAttribute(containerAttribute, [materialOutput]),
-		]);
+		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([new EntityOutflowAttribute(containerAttribute, [materialOutput])]);
 		if (powerInput)
 			this.attributes.push([new EntityConductAttribute(0)]);
@@ -235,15 +235,15 @@ export class Generator extends Entity {
 		this.attributes.push([new EntityHealthAttribute(health)]);
 		let containerAttribute = new EntityContainerAttribute(Infinity, materialInput.map(resourceCount => new ResourceUtils.Count(resourceCount.resource, 10)));
 		this.attributes.push([containerAttribute]);
-		let powerStorageAttribute = new EntityPowerStorageAttribute(powerOutput);
+		let powerStorageAttribute = new EntityPowerStorageAttribute(powerOutput * 40, 0);
 		this.attributes.push([powerStorageAttribute]);
 		this.attributes.push([
 			new EntityTimedAttribute(40),
-			new EntityPowerConsumeAttribute(powerInput),
+			powerInput ? new EntityPowerConsumeAttribute(powerInput * 40) : null,
 			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.COOLANT, heatOutput]])),
 			new EntityConsumeAttribute(containerAttribute, materialInput),
-			new EntityProducePowerAttribute(powerStorageAttribute, powerOutput),
-		]);
+			new EntityProducePowerAttribute(powerStorageAttribute, powerOutput * 40),
+		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([new EntityConductAttribute(0)]);
 	}
 
@@ -311,12 +311,8 @@ export class Battery extends Entity {
 		super(size);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
-		let powerStorageAttribute = new EntityPowerStorageAttribute(capacity);
-		this.attributes.push([powerStorageAttribute]);
-		this.attributes.push([
-			new EntityPowerConsumeAttribute(50),
-			new EntityProducePowerAttribute(powerStorageAttribute, 50),
-		]);
+		let powerLargeStorageAttribute = new EntityPowerStorageAttribute(capacity * 40, 1);
+		this.attributes.push([powerLargeStorageAttribute]);
 		this.attributes.push([new EntityConductAttribute(0)]);
 	}
 
