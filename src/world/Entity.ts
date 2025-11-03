@@ -10,6 +10,8 @@ import {
 	EntityConductAttribute,
 	EntityConsumeAttribute,
 	EntityContainerAttribute,
+	EntityCoolantConsumeAttribute,
+	EntityCoolantProduceAttribute,
 	EntityDamageAttribute,
 	EntityDirectionMovementAttribute,
 	EntityExpireProjectileAttribute,
@@ -130,7 +132,7 @@ export class Extractor extends Building {
 		this.attributes.push([
 			new EntityTimedAttribute(320),
 			powerInput ? new EntityPowerConsumeAttribute(powerInput * 320) : null,
-			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.COOLANT, heatOutput]])),
+			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 320) : null,
 			new EntityExtractorAttribute(containerAttribute, outputPerTier),
 		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([new EntityOutflowAttribute(containerAttribute, getMaterialResourceCounts(1))]);
@@ -217,7 +219,7 @@ export class Factory extends Building {
 		this.attributes.push([
 			new EntityTimedAttribute(40),
 			powerInput ? new EntityPowerConsumeAttribute(powerInput * 40) : null,
-			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.COOLANT, heatOutput]])),
+			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 40) : null,
 			new EntityConsumeAttribute(containerAttribute, materialInput),
 			new EntityProduceAttribute(containerAttribute, [materialOutput]),
 		].filter(v => v) as EntityAttribute[]);
@@ -245,7 +247,7 @@ export class Generator extends Building {
 		this.attributes.push([
 			new EntityTimedAttribute(40),
 			powerInput ? new EntityPowerConsumeAttribute(powerInput * 40) : null,
-			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.COOLANT, heatOutput]])),
+			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 40) : null,
 			containerAttribute ? new EntityConsumeAttribute(containerAttribute, materialInput) : null,
 			new EntityProducePowerAttribute(powerStorageAttribute, powerOutput * 40),
 		].filter(v => v) as EntityAttribute[]);
@@ -410,8 +412,6 @@ export class ResourceDeposit extends Entity {
 			case Resource.EXIDIUM:
 			case Resource.WATER:
 			case Resource.METHANE:
-			case Resource.POWER:
-			case Resource.COOLANT:
 				return -1;
 		}
 	}

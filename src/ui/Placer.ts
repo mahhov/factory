@@ -4,7 +4,7 @@ import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Battery, Conductor, Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Generator, Junction, Storage, Turret, Wall} from '../world/Entity.js';
+import {Battery, Conductor, Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Generator, Junction, Storage, Turret, Vent, Wall} from '../world/Entity.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {ResourceUtils} from '../world/Resource.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
@@ -25,7 +25,7 @@ enum Tool {
 	STEEL_SMELTER, METAGLASS_FOUNDRY, PLASTEEL_MIXER, THERMITE_FORGE, EXIDIUM_CATALYST,
 	STORAGE, DISPENSER,
 	THERMAL_GENERATOR, SOLAR_ARRAY, METHANE_BURNER, THERMITE_REACTOR, CONDUCTOR, BATTERY,
-	// todo vents
+	AIR_VENT, WATER_VENT, METHANE_VENT,
 	// todo liquid
 	// todo turrets
 	TURRET,
@@ -38,6 +38,7 @@ let toolTree = {
 	factories: [Tool.STEEL_SMELTER, Tool.METAGLASS_FOUNDRY, Tool.PLASTEEL_MIXER, Tool.THERMITE_FORGE, Tool.EXIDIUM_CATALYST],
 	storage: [Tool.STORAGE, Tool.DISPENSER],
 	power: [Tool.THERMAL_GENERATOR, Tool.SOLAR_ARRAY, Tool.METHANE_BURNER, Tool.THERMITE_REACTOR, Tool.CONDUCTOR, Tool.BATTERY],
+	vents: [Tool.AIR_VENT, Tool.WATER_VENT, Tool.METHANE_VENT],
 	turrets: [Tool.TURRET],
 };
 type ToolGroup = keyof typeof toolTree;
@@ -144,6 +145,13 @@ export default class Placer {
 			case Tool.BATTERY:
 				return Placer.createToolBattery(findEntityMetadata('buildings', 'Battery'));
 
+			case Tool.AIR_VENT:
+				return Placer.createToolVent(findEntityMetadata('buildings', 'Air Vent'));
+			case Tool.WATER_VENT:
+				return Placer.createToolVent(findEntityMetadata('buildings', 'Water Vent'));
+			case Tool.METHANE_VENT:
+				return Placer.createToolVent(findEntityMetadata('buildings', 'Methane Vent'));
+
 			case Tool.TURRET:
 				return new Turret();
 		}
@@ -191,6 +199,10 @@ export default class Placer {
 
 	private static createToolBattery(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		return new Battery(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+	}
+
+	private static createToolVent(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Vent(new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.output as number);
 	}
 
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {

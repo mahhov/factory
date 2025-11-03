@@ -41,7 +41,7 @@ let parseBuildingOutput = (str: string): ResourceUtils.Count | number[] | number
 				return Number(m[1]);
 			})];
 	}
-	if (/^\d+ (rate|power|range|capacity|liquid)$/.test(str))
+	if (/^\d+ (rate|power|range|capacity|coolant|liquid)$/.test(str))
 		return Number(str.split(' ')[0]);
 	return parseResourceCount(str);
 };

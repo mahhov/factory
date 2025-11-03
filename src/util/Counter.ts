@@ -3,8 +3,7 @@ export default class Counter {
 	i = 0; // [0, n). tick() returns true if i == n - 1
 
 	constructor(n: number) {
-		if (n < 1)
-			console.error('Counter n must be at least 1:', n);
+		console.assert(n > 0);
 		this.n = n;
 	}
 

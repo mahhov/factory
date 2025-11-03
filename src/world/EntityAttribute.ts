@@ -543,6 +543,59 @@ export class EntityConductAttribute extends EntityAttribute {
 	}
 }
 
+export class EntityCoolantConsumeAttribute extends EntityAttribute {
+	private readonly quantity: number;
+	private consumed: number = 0;
+
+	constructor(quantity: number) {
+		super();
+		console.assert(quantity > 0);
+		this.quantity = quantity;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		let coolantProduceAttributes: EntityCoolantProduceAttribute[] = util.enumValues(Rotation)
+			.flatMap(rotation => getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
+			.map(position => world.live.getTile(position))
+			.map(tile => tile?.tileable.getAttribute(EntityCoolantProduceAttribute))
+			.filter(coolantProduceAttribute => coolantProduceAttribute) as EntityCoolantProduceAttribute[];
+		for (let i = 0; i < coolantProduceAttributes.length && this.consumed < this.quantity; i++) {
+			let take = Math.min(this.quantity - this.consumed, coolantProduceAttributes[i].quantity);
+			this.consumed += take;
+			coolantProduceAttributes[i].quantity -= take;
+		}
+		if (this.consumed === this.quantity) {
+			this.consumed = 0;
+			return true;
+		}
+		return false;
+	}
+
+	get tooltip(): TextLine[] {
+		return [new TextLine(`Coolant: ${this.consumed} / ${this.quantity}`)];
+	}
+}
+
+export class EntityCoolantProduceAttribute extends EntityAttribute {
+	private readonly maxQuantity: number;
+	quantity: number = 0;
+
+	constructor(quantity: number) {
+		super();
+		console.assert(quantity > 0);
+		this.maxQuantity = quantity;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		this.quantity = this.maxQuantity;
+		return true;
+	}
+
+	get tooltip(): TextLine[] {
+		return [new TextLine(`Coolant: ${this.quantity} / ${this.maxQuantity}`)];
+	}
+}
+
 export class EntitySourceAttribute extends EntityAttribute {
 	private readonly resourcePickerAttribute: EntityResourcePickerAttribute;
 

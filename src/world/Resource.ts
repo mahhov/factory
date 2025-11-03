@@ -1,14 +1,13 @@
 import {ColorSource} from 'pixi.js';
 import Color from '../graphics/Color.js';
 
+// todo rename Material
 export enum Resource {
 	IRON, FLUX_SAND, SULPHUR,
 	STEEL, TITANIUM,
 	METAGLASS, PLASTEEL, GRAPHITE,
 	THERMITE, EXIDIUM,
 	WATER, METHANE,
-	POWER,
-	COOLANT,
 }
 
 export namespace ResourceUtils {
