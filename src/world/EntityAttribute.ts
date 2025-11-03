@@ -68,6 +68,7 @@ export abstract class EntityAttribute {
 // todo partial health for partially built buildings
 // todo gets stuck building when out of resources
 // todo queued salvage not displaying correctly
+// todo don't move resources into storage that's still being built. don't act upon entities that are still being built. maybe move them from the live layer to an in-progress layer
 export class EntityBuildableAttribute extends EntityAttribute {
 	private readonly counter: Counter;
 	private readonly materialCost: ResourceUtils.Count[];
@@ -295,14 +296,14 @@ export class EntityTransportAttribute extends EntityAttribute {
 		this.outputRotations = outputRotations;
 	}
 
-	static move(containerAttribute: EntityContainerAttribute, outputRotations: Rotation[], resourceCounts: ResourceUtils.Count[], world: World, tile: Tile<Entity>): boolean {
+	static move(fromContainer: EntityContainerAttribute, outputRotations: Rotation[], resourceCounts: ResourceUtils.Count[], world: World, tile: Tile<Entity>): boolean {
 		return util.shuffle(outputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
 				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityContainerAttribute))
 				.some(destinationContainerAttribute =>
 					util.shuffle(resourceCounts).some(resourceCount => {
 						if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount)) {
-							containerAttribute.remove(resourceCount);
+							fromContainer.remove(resourceCount);
 							destinationContainerAttribute.add(resourceCount, rotation);
 							return true;
 						}
@@ -385,6 +386,7 @@ export class EntityInflowAttribute extends EntityAttribute {
 export class EntityExtractorAttribute extends EntityAttribute {
 	private readonly containerAttribute: EntityContainerAttribute;
 	private readonly outputPerTier: number[];
+	private readonly quantities: Record<Resource, number>;
 
 	constructor(containerAttribute: EntityContainerAttribute, outputPerTier: number[]) {
 		super();
@@ -392,17 +394,21 @@ export class EntityExtractorAttribute extends EntityAttribute {
 		console.assert(outputPerTier.every(output => output >= 0));
 		this.containerAttribute = containerAttribute;
 		this.outputPerTier = outputPerTier;
+		this.quantities = Object.fromEntries(util.enumValues(Resource)
+			.map(resource => [resource, 0])) as Record<Resource, number>;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		tile.position.iterate(tile.tileable.size).forEach(position => {
 			let tile = world.terrain.getTile(position);
 			if (!(tile?.tileable instanceof ResourceDeposit)) return;
-			let n = this.outputPerTier[tile.tileable.materialResourceTier] * 20;
+			this.quantities[tile.tileable.resource] += this.outputPerTier[tile.tileable.materialResourceTier];
+		});
+		util.enumValues(Resource).forEach(resource => {
+			let n = Math.floor(this.quantities[resource]);
 			if (!n) return;
-			let resourceCount = new ResourceUtils.Count(tile.tileable.resource, 1);
-			for (let i = 0; i < n && this.containerAttribute.hasCapacity(resourceCount); i++)
-				this.containerAttribute.add(resourceCount);
+			this.quantities[resource] -= n;
+			this.containerAttribute.add(new ResourceUtils.Count(resource, n));
 		});
 		return true;
 	}
