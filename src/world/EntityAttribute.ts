@@ -112,6 +112,7 @@ export class EntityHealthAttribute extends EntityAttribute {
 
 	constructor(health: number) {
 		super();
+		console.assert(health > 0);
 		this.maxHealth = health;
 		this.health = health;
 	}
@@ -144,6 +145,9 @@ export class EntityContainerAttribute extends EntityAttribute {
 	            resourceCapacities: ResourceUtils.Count[],
 	            inputRotations: Rotation[] = util.enumValues(Rotation)) {
 		super();
+		console.assert(totalCapacity > 0);
+		console.assert(resourceCapacities.length > 0);
+		console.assert(resourceCapacities.every(resourceCount => resourceCount.quantity > 0));
 		this.totalCapacity = totalCapacity;
 		this.resourceCapacities = resourceCapacities;
 		this.inputRotations = inputRotations;
@@ -212,6 +216,7 @@ export class EntityTimedAttribute extends EntityAttribute {
 
 	constructor(duration: number) {
 		super();
+		console.assert(duration > 0);
 		this.counter = new Counter(duration);
 	}
 
@@ -226,6 +231,8 @@ export class EntityConsumeAttribute extends EntityAttribute {
 
 	constructor(containerAttribute: EntityContainerAttribute, inputs: ResourceUtils.Count[]) {
 		super();
+		console.assert(inputs.length > 0);
+		console.assert(inputs.every(resourceCount => resourceCount.quantity > 0));
 		this.containerAttribute = containerAttribute;
 		this.inputs = inputs;
 	}
@@ -245,6 +252,8 @@ export class EntityProduceAttribute extends EntityAttribute {
 
 	constructor(containerAttribute: EntityContainerAttribute, outputs: ResourceUtils.Count[]) {
 		super();
+		console.assert(outputs.length > 0);
+		console.assert(outputs.every(resourceCount => resourceCount.quantity > 0));
 		this.containerAttribute = containerAttribute;
 		this.outputs = outputs;
 	}
@@ -264,6 +273,8 @@ export class EntityHasAnyOfResourceAttribute extends EntityAttribute {
 
 	constructor(containerAttribute: EntityContainerAttribute, resourceCounts: ResourceUtils.Count[]) {
 		super();
+		console.assert(resourceCounts.length > 0);
+		console.assert(resourceCounts.every(resourceCount => resourceCount.quantity > 0));
 		this.containerAttribute = containerAttribute;
 		this.resourceCounts = resourceCounts;
 	}
@@ -279,6 +290,7 @@ export class EntityTransportAttribute extends EntityAttribute {
 
 	constructor(containerAttribute: EntityContainerAttribute, outputRotations: Rotation[]) {
 		super();
+		console.assert(outputRotations.length > 0);
 		this.containerAttribute = containerAttribute;
 		this.outputRotations = outputRotations;
 	}
@@ -326,6 +338,8 @@ export class EntityOutflowAttribute extends EntityAttribute {
 
 	constructor(containerAttribute: EntityContainerAttribute, resourceCounts: ResourceUtils.Count[]) {
 		super();
+		console.assert(resourceCounts.length > 0);
+		console.assert(resourceCounts.every(resourceCount => resourceCount.quantity > 0));
 		this.containerAttribute = containerAttribute;
 		this.resourceCounts = resourceCounts;
 	}
@@ -345,6 +359,7 @@ export class EntityInflowAttribute extends EntityAttribute {
 
 	constructor(resourcePickerAttribute: EntityResourcePickerAttribute, containerAttribute: EntityContainerAttribute, inputRotations: Rotation[]) {
 		super();
+		console.assert(inputRotations.length > 0);
 		this.resourcePickerAttribute = resourcePickerAttribute;
 		this.containerAttribute = containerAttribute;
 		this.inputRotations = inputRotations;
@@ -373,6 +388,8 @@ export class EntityExtractorAttribute extends EntityAttribute {
 
 	constructor(containerAttribute: EntityContainerAttribute, outputPerTier: number[]) {
 		super();
+		console.assert(outputPerTier.length > 0);
+		console.assert(outputPerTier.every(output => output >= 0));
 		this.containerAttribute = containerAttribute;
 		this.outputPerTier = outputPerTier;
 	}
@@ -446,6 +463,8 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 
 	constructor(capacity: number, priority: number) {
 		super();
+		console.assert(capacity > 0);
+		console.assert(priority >= 0);
 		this.capacity = capacity;
 		this.priority = priority;
 	}
@@ -469,6 +488,7 @@ export class EntityProducePowerAttribute extends EntityAttribute {
 
 	constructor(powerStorageAttribute: EntityPowerStorageAttribute, quantity: number) {
 		super();
+		console.assert(quantity > 0);
 		this.powerStorageAttribute = powerStorageAttribute;
 		this.quantity = quantity;
 	}
@@ -489,6 +509,7 @@ export class EntityConductAttribute extends EntityAttribute {
 
 	constructor(range: number) {
 		super();
+		console.assert(range >= 0);
 		this.range = range;
 	}
 
@@ -599,6 +620,7 @@ export class EntityMobHealthAttribute extends EntityAttribute {
 
 	constructor(health: number) {
 		super();
+		console.assert(health > 0);
 		this.maxHealth = health;
 		this.health = health;
 	}
@@ -619,6 +641,8 @@ export class EntityMobChaseTargetAttribute extends EntityAttribute {
 
 	constructor(velocity: number, distance: number) {
 		super();
+		console.assert(velocity > 0);
+		console.assert(distance > 0);
 		this.velocity = velocity;
 		this.distance = distance;
 	}
@@ -643,6 +667,11 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 
 	constructor(velocity: number, duration: number, range: number, maxTargets: number, damage: number, friendly: boolean) {
 		super();
+		console.assert(velocity > 0);
+		console.assert(duration > 0);
+		console.assert(range > 0);
+		console.assert(maxTargets > 0);
+		console.assert(damage > 0);
 		this.velocity = velocity;
 		this.duration = duration;
 		this.range = range;
@@ -700,6 +729,9 @@ export class EntityDamageAttribute extends EntityAttribute {
 
 	constructor(range: number, maxTargets: number, damage: number, friendly: boolean) {
 		super();
+		console.assert(range > 0);
+		console.assert(maxTargets > 0);
+		console.assert(damage > 0);
 		this.range = range;
 		this.maxTargets = maxTargets;
 		this.damage = damage;
@@ -724,3 +756,4 @@ export class EntityExpireProjectileAttribute extends EntityAttribute {
 }
 
 // todo sort
+// todo fix tooltips

@@ -235,18 +235,45 @@ export class Factory extends Building {
 export class Generator extends Building {
 	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, materialInput: ResourceUtils.Count[], powerInput: number, heatOutput: number, powerOutput: number) {
 		super(size, buildTime, buildCost, health);
-		let containerAttribute = new EntityContainerAttribute(Infinity, materialInput.map(resourceCount => new ResourceUtils.Count(resourceCount.resource, 10)));
-		this.attributes.push([containerAttribute]);
+		let containerAttribute;
+		if (materialInput.length) {
+			containerAttribute = new EntityContainerAttribute(Infinity, materialInput.map(resourceCount => new ResourceUtils.Count(resourceCount.resource, 10)));
+			this.attributes.push([containerAttribute]);
+		}
 		let powerStorageAttribute = new EntityPowerStorageAttribute(powerOutput * 40, 0);
 		this.attributes.push([powerStorageAttribute]);
 		this.attributes.push([
 			new EntityTimedAttribute(40),
 			powerInput ? new EntityPowerConsumeAttribute(powerInput * 40) : null,
 			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.COOLANT, heatOutput]])),
-			new EntityConsumeAttribute(containerAttribute, materialInput),
+			containerAttribute ? new EntityConsumeAttribute(containerAttribute, materialInput) : null,
 			new EntityProducePowerAttribute(powerStorageAttribute, powerOutput * 40),
 		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([new EntityConductAttribute(0)]);
+	}
+
+	static get sprite() {
+		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
+			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+	}
+}
+
+export class Vent extends Building {
+	constructor(size: Vector, buildTime: number, buildCost: ResourceUtils.Count[], health: number, materialInput: ResourceUtils.Count[], powerInput: number, coolantOutput: number) {
+		super(size, buildTime, buildCost, health);
+		let containerAttribute;
+		if (materialInput.length) {
+			containerAttribute = new EntityContainerAttribute(Infinity, materialInput.map(resourceCount => new ResourceUtils.Count(resourceCount.resource, 10)));
+			this.attributes.push([containerAttribute]);
+		}
+		this.attributes.push([
+			new EntityTimedAttribute(40),
+			powerInput ? new EntityPowerConsumeAttribute(powerInput * 40) : null,
+			containerAttribute ? new EntityConsumeAttribute(containerAttribute, materialInput) : null,
+			new EntityCoolantProduceAttribute(coolantOutput * 40),
+		].filter(v => v) as EntityAttribute[]);
+		if (powerInput)
+			this.attributes.push([new EntityConductAttribute(0)]);
 	}
 
 	static get sprite() {
@@ -426,3 +453,4 @@ export class Projectile extends Entity {
 }
 
 // todo allow boosting entities with eg water
+// todo sort
