@@ -128,8 +128,8 @@ export class Extractor extends Building {
 		let containerAttribute = new EntityContainerAttribute(Infinity, getMaterialResourceCounts(10), []);
 		this.attributes.push([containerAttribute]);
 		this.attributes.push([
-			new EntityTimedAttribute(80),
-			powerInput ? new EntityPowerConsumeAttribute(powerInput * 80) : null,
+			new EntityTimedAttribute(320),
+			powerInput ? new EntityPowerConsumeAttribute(powerInput * 320) : null,
 			new EntityConsumeAttribute(containerAttribute, ResourceUtils.Count.fromTuples([[Resource.COOLANT, heatOutput]])),
 			new EntityExtractorAttribute(containerAttribute, outputPerTier),
 		].filter(v => v) as EntityAttribute[]);
