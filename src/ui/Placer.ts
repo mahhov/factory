@@ -5,6 +5,7 @@ import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Battery, Conductor, Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Generator, Junction, Pump, Storage, Turret, Vent, Wall, Well} from '../world/Entity.js';
+import {EntityNameAttribute} from '../world/EntityAttribute.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {Resource, ResourceUtils} from '../world/Resource.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
@@ -268,9 +269,10 @@ export default class Placer {
 		let tile = this.world.queue.getTile(this.position);
 		if (tile?.tileable instanceof Empty)
 			tile = this.world.live.getTile(this.position);
-		// todo picker not working when multiple entities share same class. use name to distinguish
 		let tool: Tool = tile ?
-			util.enumValues(Tool).find(tool => Placer.cachedToolEntities[tool].constructor === tile.tileable.constructor) || Tool.EMPTY
+			util.enumValues(Tool).find(tool =>
+				Placer.cachedToolEntities[tool].getAttribute(EntityNameAttribute)?.name ===
+				tile.tileable.getAttribute(EntityNameAttribute)?.name) || Tool.EMPTY
 			: Tool.EMPTY;
 
 		let toolGroup = tool !== Tool.EMPTY ?

@@ -65,7 +65,7 @@ export abstract class EntityAttribute {
 }
 
 export class EntityNameAttribute extends EntityAttribute {
-	private readonly name: string;
+	readonly name: string;
 
 	constructor(name: string) {
 		super();
