@@ -64,6 +64,20 @@ export abstract class EntityAttribute {
 	}
 }
 
+export class EntityNameAttribute extends EntityAttribute {
+	private readonly name: string;
+
+	constructor(name: string) {
+		super();
+		console.assert(!!name);
+		this.name = name;
+	}
+
+	get tooltip(): TextLine[] {
+		return [new TextLine(this.name)];
+	}
+}
+
 // todo some graphical indicator for buildings queued, buildings in progress, buildings active
 // todo partial health for partially built buildings
 // todo gets stuck building when out of resources
