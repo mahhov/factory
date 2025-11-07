@@ -1,0 +1,275 @@
+import {CanvasSource, Texture} from 'pixi.js';
+
+class GeneratedTexture {
+	texture: Texture;
+
+	constructor(size: number, rects: [number, number, number, number, string][]) {
+		let canvas = document.createElement('canvas');
+		canvas.width = size;
+		canvas.height = size;
+		let ctx = canvas.getContext('2d');
+		rects.forEach(([x, y, width, height, color]) => {
+			ctx!.fillStyle = color;
+			ctx!.fillRect(x, y, width, height);
+		});
+		let source = new CanvasSource({resource: canvas});
+		this.texture = new Texture({source});
+	}
+}
+
+// AI generated
+export let generatedTextures = {
+	// --- WALLS (16x16 / 32x32) ---
+	wallIron: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#374151'], // Full Casing (Dark Grey)
+		[1, 1, 14, 14, '#4b5563'], // Inner Wall
+		[4, 4, 8, 8, '#6b7280'], // Central Block
+	]),
+	wallSteel: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#374151'],
+		[1, 1, 14, 14, '#4b5563'],
+		[3, 3, 10, 10, '#1f2937'], // Inner Core (Darker)
+		[7, 1, 2, 14, '#f87171'],
+		[1, 7, 14, 2, '#f87171'], // Plus Reinforcement (Red)
+	]),
+	wallBunker: new GeneratedTexture(32, [
+		[0, 0, 32, 32, '#4b5563'],
+		[2, 2, 28, 28, '#1f2937'],
+		[4, 4, 24, 24, '#f87171'], // Red Inner Core
+		[10, 10, 12, 12, '#374151'], // Central Bunker Block
+	]),
+
+	// --- EXTRACTORS (16x16 / 32x32) ---
+	extractorT1: new GeneratedTexture(16, [
+		[4, 4, 8, 8, '#22c55e'], // Green Casing
+		[7, 0, 2, 16, '#facc15'],
+		[0, 7, 16, 2, '#facc15'], // Yellow Shafts
+		[6, 6, 4, 4, '#d97706'], // Central Intake Core
+	]),
+	extractorT2: new GeneratedTexture(32, [
+		[4, 4, 24, 24, '#22c55e'],
+		[14, 0, 4, 32, '#facc15'],
+		[0, 14, 32, 4, '#facc15'],
+		[10, 10, 12, 12, '#d97706'], // Inner Core
+		[12, 1, 8, 4, '#d97706'],
+		[12, 27, 8, 4, '#d97706'], // Reinforced Caps
+		[1, 12, 4, 8, '#d97706'],
+		[27, 12, 4, 8, '#d97706'],
+	]),
+	extractorT3: new GeneratedTexture(32, [
+		[0, 0, 32, 32, '#1f2937'], // Dark Casing
+		[4, 4, 24, 24, '#22c55e'],
+		[14, 0, 4, 32, '#facc15'],
+		[0, 14, 32, 4, '#facc15'],
+		[10, 10, 12, 12, '#d97706'],
+		[8, 8, 16, 16, '#047857'], // QUADRATIC FOCUS RING (Dark Green)
+	]),
+	extractorT4: new GeneratedTexture(32, [
+		[0, 0, 32, 32, '#1f2937'],
+		[4, 4, 24, 24, '#22c55e'],
+		[14, 0, 4, 32, '#facc15'],
+		[0, 14, 32, 4, '#facc15'],
+		[12, 12, 8, 8, '#ef4444'], // Red Laser Core
+		[1, 1, 4, 4, '#0ea5e9'],
+		[27, 1, 4, 4, '#0ea5e9'], // Laser Channels (Cyan)
+		[1, 27, 4, 4, '#0ea5e9'],
+		[27, 27, 4, 4, '#0ea5e9'],
+	]),
+
+	// --- TRANSPORT (8x8) ---
+	transConveyorT1: new GeneratedTexture(8, [
+		[3, 0, 2, 8, '#9ca3af'], // Gray Track
+		[3, 1, 2, 1, '#facc15'],
+		[3, 4, 2, 1, '#facc15'],
+		[3, 7, 2, 1, '#facc15'], // Yellow Arrows
+	]),
+	transConveyorT2: new GeneratedTexture(8, [
+		[3, 0, 2, 8, '#4b5563'], // Darker Track
+		[3, 1, 2, 1, '#facc15'],
+		[3, 2, 2, 1, '#facc15'], // Double Chevron
+		[3, 5, 2, 1, '#facc15'],
+		[3, 6, 2, 1, '#facc15'],
+	]),
+	transConveyorT3: new GeneratedTexture(8, [
+		[2, 0, 4, 8, '#1f2937'], // Packed Track (4px wide)
+		[3, 1, 2, 1, '#3b82f6'],
+		[3, 3, 2, 1, '#3b82f6'],
+		[3, 5, 2, 1, '#3b82f6'],
+		[3, 7, 2, 1, '#3b82f6'], // Blue Arrows
+	]),
+	transDistributor: new GeneratedTexture(8, [
+		[3, 3, 2, 2, '#f97316'], // Orange Hub
+		[3, 0, 2, 3, '#9ca3af'],
+		[3, 5, 2, 3, '#9ca3af'],
+		[0, 3, 3, 2, '#9ca3af'],
+		[5, 3, 3, 2, '#9ca3af'], // Cross path
+	]),
+	transJunction: new GeneratedTexture(8, [
+		[0, 3, 8, 2, '#4b5563'],
+		[3, 0, 2, 8, '#4b5563'], // Grey Cross
+		[3, 3, 2, 2, '#facc15'], // Yellow Center
+	]),
+
+	// --- FACTORIES (16x16 / 32x32) ---
+	factorySteel: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#4b5563'],
+		[2, 2, 12, 12, '#1f2937'],
+		[4, 4, 8, 8, '#dc2626'], // Red Smelting Core
+		[7, 0, 2, 16, '#f97316'],
+		[0, 7, 16, 2, '#f97316'], // Orange Heat Channels
+	]),
+	factoryGlass: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#3b82f6'],
+		[2, 2, 12, 12, '#0ea5e9'],
+		[4, 4, 8, 8, '#ecfdf5'], // White Glass Pool
+		[1, 1, 2, 2, '#fff'],
+		[13, 1, 2, 2, '#fff'], // Corner Shimmer
+		[1, 13, 2, 2, '#fff'],
+		[13, 13, 2, 2, '#fff'],
+	]),
+	factoryPlasteel: new GeneratedTexture(32, [
+		[0, 0, 32, 32, '#059669'],
+		[4, 4, 24, 24, '#047857'],
+		[14, 1, 4, 30, '#3b82f6'],
+		[1, 14, 30, 4, '#3b82f6'], // Blue Mixer Blades
+		[12, 12, 8, 8, '#fef08a'], // Central Mixer Core
+	]),
+	factoryThermite: new GeneratedTexture(32, [
+		[0, 0, 32, 32, '#1f2937'],
+		[4, 4, 24, 24, '#dc2626'],
+		[8, 8, 16, 16, '#f97316'], // Thermite Layer
+		[12, 12, 8, 8, '#fff'], // White-hot center
+	]),
+	factoryExidium: new GeneratedTexture(32, [
+		[0, 0, 32, 32, '#9333ea'], // Purple Casing
+		[4, 4, 24, 24, '#4c0f88'],
+		[10, 10, 12, 12, '#facc15'], // Gold Catalyst Core
+		[15, 1, 2, 30, '#fff'],
+		[1, 15, 30, 2, '#fff'], // White Energy Cross
+	]),
+
+	// --- STORAGE (16x16 / 8x8) ---
+	storageMat: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#f97316'],
+		[2, 2, 12, 12, '#d97706'],
+		[4, 4, 8, 2, '#fef08a'],
+		[4, 8, 8, 2, '#fef08a'], // Stacked Materials
+		[7, 0, 2, 4, '#92400e'], // Access Hatch
+	]),
+	storageDispense: new GeneratedTexture(8, [
+		[1, 1, 6, 6, '#4b5563'], // Grey Casing
+		[3, 3, 2, 2, '#facc15'], // Material Core
+		[3, 5, 2, 3, '#f97316'], // Output Chute
+	]),
+	storageLiq: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#3b82f6'],
+		[2, 2, 12, 12, '#0ea5e9'],
+		[4, 4, 8, 1, '#ecfdf5'],
+		[4, 6, 8, 1, '#ecfdf5'],
+		[4, 8, 8, 1, '#ecfdf5'],
+		[4, 10, 8, 1, '#ecfdf5'], // Fill Lines
+	]),
+
+	// --- POWER (16x16 / 32x32 / 8x8) ---
+	genThermal: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#475569'],
+		[2, 2, 12, 12, '#1f2937'],
+		[5, 5, 6, 6, '#dc2626'], // Red Heat Core
+		[6, 4, 4, 8, '#f97316'],
+		[4, 6, 8, 4, '#f97316'], // Orange Flame/Heat transfer
+	]),
+	genSolar: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#047857'], // Dark Green Frame
+		[1, 1, 14, 14, '#22c55e'], // Panel
+		[3, 0, 2, 16, '#ecfdf5'],
+		[7, 0, 2, 16, '#ecfdf5'],
+		[11, 0, 2, 16, '#ecfdf5'], // Cell Lines
+	]),
+	genMethane: new GeneratedTexture(32, [
+		[0, 0, 32, 32, '#374151'],
+		[4, 4, 24, 24, '#22c55e'], // Green Gas Chamber
+		[10, 10, 12, 12, '#dc2626'], // Central Burner
+		[14, 14, 4, 4, '#fff'], // White Ignition Point
+		[2, 2, 4, 4, '#facc15'],
+		[26, 2, 4, 4, '#facc15'], // Gas Inlets
+		[2, 26, 4, 4, '#facc15'],
+		[26, 26, 4, 4, '#facc15'],
+	]),
+	genReactor: new GeneratedTexture(32, [
+		[0, 0, 32, 32, '#1f2937'],
+		[2, 2, 28, 28, '#475569'],
+		[6, 6, 20, 20, '#ef4444'], // Reactor Field (Red)
+		[10, 10, 12, 12, '#fff'], // Central Core
+		[15, 0, 2, 32, '#facc15'],
+		[0, 15, 32, 2, '#facc15'], // Confinement Field
+	]),
+	transConductor: new GeneratedTexture(8, [
+		[3, 0, 2, 8, '#facc15'],
+		[0, 3, 8, 2, '#facc15'], // Yellow Wires
+		[3, 3, 2, 2, '#f97316'], // Orange Hub
+	]),
+	storageBatt: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#10b981'],
+		[1, 1, 14, 14, '#047857'],
+		[4, 4, 8, 8, '#facc15'], // Charge Plate
+		[7, 1, 2, 14, '#fff'],
+		[1, 7, 14, 2, '#fff'], // Plus/Charge Symbol
+	]),
+
+	// --- FLUID/AIR (8x8 / 16x16 / 32x32) ---
+	ventAir: new GeneratedTexture(8, [
+		[1, 1, 6, 6, '#d1d5db'], // Grey Casing
+		[3, 0, 2, 1, '#0ea5e9'],
+		[3, 7, 2, 1, '#0ea5e9'],
+		[0, 3, 1, 2, '#0ea5e9'],
+		[7, 3, 1, 2, '#0ea5e9'], // Air Outlets (Cyan)
+	]),
+	ventWater: new GeneratedTexture(8, [
+		[1, 1, 6, 6, '#3b82f6'], // Blue Casing
+		[3, 0, 2, 1, '#ecfdf5'],
+		[3, 7, 2, 1, '#ecfdf5'],
+		[0, 3, 1, 2, '#ecfdf5'],
+		[7, 3, 1, 2, '#ecfdf5'], // Water Outlets (White)
+	]),
+	ventMethane: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#22c55e'], // Green Casing
+		[2, 2, 12, 12, '#1f2937'],
+		[7, 0, 2, 4, '#f97316'],
+		[0, 7, 4, 2, '#f97316'], // Methane Vents (Orange)
+		[7, 12, 2, 4, '#f97316'],
+		[12, 7, 4, 2, '#f97316'],
+	]),
+	pumpBase: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#475569'],
+		[2, 2, 12, 12, '#1f2937'],
+		[7, 0, 2, 16, '#3b82f6'],
+		[0, 7, 16, 2, '#3b82f6'], // Intake Pipes
+		[6, 6, 4, 4, '#0ea5e9'], // Fluid Impeller
+	]),
+	pumpPowered: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#475569'],
+		[2, 2, 12, 12, '#1f2937'],
+		[7, 0, 2, 16, '#3b82f6'],
+		[0, 7, 16, 2, '#3b82f6'],
+		[6, 6, 4, 4, '#facc15'], // Powered Impeller
+		[1, 1, 2, 2, '#f97316'], // Power Inlet
+	]),
+	pumpWell: new GeneratedTexture(32, [
+		[0, 0, 32, 32, '#374151'],
+		[4, 4, 24, 24, '#475569'],
+		[10, 10, 12, 12, '#0ea5e9'], // Water/Fluid Core
+		[14, 0, 4, 32, '#3b82f6'],
+		[0, 14, 32, 4, '#3b82f6'], // Heavy Intake Pipes
+		[1, 1, 6, 6, '#facc15'], // Reinforced Corners
+		[25, 1, 6, 6, '#facc15'],
+		[1, 25, 6, 6, '#facc15'],
+		[25, 25, 6, 6, '#facc15'],
+	]),
+	transPipeT1: new GeneratedTexture(8, [
+		[3, 0, 2, 8, '#3b82f6'], // Blue Pipe
+		[3, 3, 2, 2, '#ecfdf5'], // White Pulse
+	]),
+
+	// Empty tile for background
+	empty: new GeneratedTexture(8, []),
+};

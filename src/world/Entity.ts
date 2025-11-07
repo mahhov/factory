@@ -1,5 +1,6 @@
 import {Container, Sprite} from 'pixi.js';
 import Color from '../graphics/Color.js';
+import {generatedTextures} from '../graphics/generatedTextures.js';
 import SpriteLoader from '../graphics/SpriteLoader.js';
 import TextLine from '../ui/TextLine.js';
 import util from '../util/util.js';
@@ -125,7 +126,9 @@ export class Wall extends Building {
 		super(size, buildTime, buildCost, health);
 	}
 
-	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_WALL]);}
+	static get sprite() {
+		return new Sprite(generatedTextures.wallIron.texture);
+	}
 }
 
 export class Extractor extends Building {
@@ -145,7 +148,7 @@ export class Extractor extends Building {
 	}
 
 	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'extractor.png', [Color.ENTITY_EXTRACTOR]);
+		return new Sprite(generatedTextures.extractorT1.texture);
 	}
 }
 
@@ -163,7 +166,7 @@ export class Conveyor extends Building {
 	}
 
 	static get sprite() {
-		return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'conveyor.png');
+		return new Sprite(generatedTextures.transConveyorT1.texture);
 	}
 
 	static spriteFull(resource: Resource) {
@@ -185,7 +188,7 @@ export class Distributor extends Building {
 	}
 
 	static get sprite() {
-		return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'distributor.png');
+		return new Sprite(generatedTextures.transDistributor.texture);
 	}
 
 	static spriteFull(resource: Resource) {
@@ -207,7 +210,7 @@ export class Junction extends Building {
 	}
 
 	static get sprite() {
-		return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'junction.png');
+		return new Sprite(generatedTextures.transJunction.texture);
 	}
 
 	static spriteFull(resource: Resource) {
@@ -233,8 +236,7 @@ export class Factory extends Building {
 	}
 
 	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+		return new Sprite(generatedTextures.factorySteel.texture);
 	}
 }
 
@@ -259,8 +261,7 @@ export class Generator extends Building {
 	}
 
 	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+		return new Sprite(generatedTextures.genMethane.texture);
 	}
 }
 
@@ -283,8 +284,7 @@ export class Vent extends Building {
 	}
 
 	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+		return new Sprite(generatedTextures.ventAir.texture);
 	}
 }
 
@@ -303,8 +303,7 @@ export class Pump extends Building {
 	}
 
 	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+		return new Sprite(generatedTextures.pumpBase.texture);
 	}
 }
 
@@ -323,8 +322,7 @@ export class Well extends Building {
 	}
 
 	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+		return new Sprite(generatedTextures.pumpWell.texture);
 	}
 }
 
@@ -336,8 +334,7 @@ export class Storage extends Building {
 	}
 
 	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+		return new Sprite(generatedTextures.storageMat.texture);
 	}
 }
 
@@ -358,8 +355,7 @@ export class Dispenser extends Building {
 	}
 
 	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+		return new Sprite(generatedTextures.storageDispense.texture);
 	}
 }
 
@@ -370,8 +366,7 @@ export class Conductor extends Building {
 	}
 
 	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+		return new Sprite(generatedTextures.transConductor.texture);
 	}
 }
 
@@ -384,8 +379,7 @@ export class Battery extends Building {
 	}
 
 	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'factory-2.png',
-			[ResourceUtils.color(Resource.STEEL), ResourceUtils.color(Resource.IRON), ResourceUtils.color(Resource.STEEL)]);
+		return new Sprite(generatedTextures.storageBatt.texture);
 	}
 }
 
