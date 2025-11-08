@@ -290,27 +290,6 @@ export default class Placer {
 			Object.values(toolTree).forEach((tools, i) => {
 				let coordinates = Placer.toolUiCoordinates(true, i);
 				this.addToolUiButton(coordinates, this.toolGroupIconContainer, Placer.createToolEntity(tools[0]).container, this.toolGroupTextContainer, '^' + (i + 1));
-				let container = new Container();
-				[container.x, container.y] = coordinates[0];
-				this.toolGroupIconContainer.addChild(container);
-				let rect = new Graphics()
-					.rect(0, 0, ...coordinates[1])
-					.stroke({width: 1 / this.painter.canvasWidth, color: Color.RECT_OUTLINE});
-				container.addChild(rect);
-				let textContainer = new Container();
-				[textContainer.x, textContainer.y] = coordinates[0].map(v => v * 1000);
-				this.toolGroupTextContainer.addChild(textContainer);
-				let text = new Text({
-					text: '^' + (i + 1),
-					style: {
-						fontFamily: 'Arial',
-						fontSize: 10,
-						fill: Color.DEFAULT_TEXT,
-					},
-					x: 1,
-					y: -1,
-				});
-				textContainer.addChild(text);
 			});
 		}
 
@@ -347,15 +326,13 @@ export default class Placer {
 	}
 
 	private addToolUiButton(coordinates: [number, number][], iconContainer: Container, spriteContainer: Container, textContainer: Container, text: string) {
-		let container = new Container();
-		[container.x, container.y] = coordinates[0];
-		iconContainer.addChild(container);
+		[spriteContainer.x, spriteContainer.y] = coordinates[0];
 		[spriteContainer.width, spriteContainer.height] = coordinates[1];
-		container.addChild(spriteContainer);
+		iconContainer.addChild(spriteContainer);
 		let rect = new Graphics()
-			.rect(0, 0, ...coordinates[1])
+			.rect(...coordinates[0], ...coordinates[1])
 			.stroke({width: 1 / this.painter.canvasWidth, color: Color.RECT_OUTLINE});
-		container.addChild(rect);
+		iconContainer.addChild(rect);
 		textContainer.addChild(new Text({
 			text,
 			style: {
