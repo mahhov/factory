@@ -143,7 +143,7 @@ export class EntityHealthAttribute extends EntityAttribute {
 	}
 
 	get tooltip(): TextLine[] {
-		return [new TextLine(`Health: ${this.health} / ${this.maxHealth}`)];
+		return [new TextLine(`Health ${this.health} / ${this.maxHealth}`)];
 	}
 
 	get selectable(): boolean {
@@ -162,6 +162,10 @@ export class EntityTimedAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		return this.counter.tick();
+	}
+
+	get tooltip(): TextLine[] {
+		return [new TextLine(`Cooldown ${this.counter.i} / ${this.counter.n}`)];
 	}
 }
 
@@ -321,7 +325,7 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 
 	get tooltip(): TextLine[] {
 		let tooltipLines = (Object.entries(this.quantities))
-			.filter(([resource, count]) => count)
+			.filter(([resourceString, count]) => count)
 			.map(([resourceString, count]) => {
 				let resource = Number(resourceString);
 				let prefix = `${ResourceUtils.string(resource)} ${count}`;
@@ -476,16 +480,41 @@ export class EntityPowerProduceAttribute extends EntityAttribute {
 }
 
 export class EntityPowerConsumeAttribute extends EntityAttribute {
+	private readonly powerStorageAttribute: EntityPowerStorageAttribute;
 	private readonly quantity: number;
-	private consumed: number = 0;
 
-	constructor(quantity: number) {
+	constructor(powerStorageAttribute: EntityPowerStorageAttribute, quantity: number) {
 		super();
 		console.assert(quantity > 0);
+		this.powerStorageAttribute = powerStorageAttribute;
 		this.quantity = quantity;
 	}
 
-	static takePower(consumer: Entity, quantity: number, priority: number): number {
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (this.powerStorageAttribute.quantity >= this.quantity) {
+			this.powerStorageAttribute.quantity -= this.quantity;
+			return true;
+		}
+		return false;
+	}
+}
+
+export enum EntityPowerStorageAttributePriority {PRODUCE, STORAGE, CONSUME}
+
+export class EntityPowerStorageAttribute extends EntityAttribute {
+	readonly capacity: number;
+	quantity: number = 0;
+	readonly priority: EntityPowerStorageAttributePriority;
+
+	constructor(capacity: number, priority: EntityPowerStorageAttributePriority) {
+		super();
+		console.assert(capacity > 0);
+		console.assert(priority >= 0);
+		this.capacity = capacity;
+		this.priority = priority;
+	}
+
+	private static takePower(consumer: Entity, quantity: number, priority: EntityPowerStorageAttributePriority): number {
 		let taken = 0;
 		let visited = new Set();
 		let queue = [consumer];
@@ -510,42 +539,15 @@ export class EntityPowerConsumeAttribute extends EntityAttribute {
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		this.consumed += EntityPowerConsumeAttribute.takePower(tile.tileable, this.quantity - this.consumed, Infinity);
-		if (this.consumed === this.quantity) {
-			this.consumed = 0;
-			return true;
-		}
-		return false;
-	}
-
-	get tooltip(): TextLine[] {
-		return [new TextLine(`Power: ${this.consumed} / ${this.quantity}`)];
-	}
-}
-
-export class EntityPowerStorageAttribute extends EntityAttribute {
-	readonly capacity: number;
-	quantity: number = 0;
-	readonly priority: number;
-
-	constructor(capacity: number, priority: number) {
-		super();
-		console.assert(capacity > 0);
-		console.assert(priority >= 0);
-		this.capacity = capacity;
-		this.priority = priority;
-	}
-
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (!this.priority) return true;
 		let remainingCapacity = this.capacity - this.quantity;
 		if (remainingCapacity)
-			this.quantity += EntityPowerConsumeAttribute.takePower(tile.tileable, remainingCapacity, this.priority);
+			this.quantity += EntityPowerStorageAttribute.takePower(tile.tileable, remainingCapacity, this.priority);
 		return true;
 	}
 
 	get tooltip(): TextLine[] {
-		return [new TextLine(`Power: ${this.quantity} / ${this.capacity}`)];
+		return [new TextLine(`Power ${this.quantity} / ${this.capacity}`)];
 	}
 }
 
@@ -586,7 +588,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 	}
 
 	get tooltip(): TextLine[] {
-		return [new TextLine(`Connections: ${this.allConnections.length}`)];
+		return [new TextLine(`Connections ${this.allConnections.length}`)];
 	}
 }
 
@@ -608,7 +610,7 @@ export class EntityCoolantProduceAttribute extends EntityAttribute {
 	}
 
 	get tooltip(): TextLine[] {
-		return [new TextLine(`Coolant: ${this.quantity} / ${this.maxQuantity}`)];
+		return [new TextLine(`Coolant ${this.quantity} / ${this.maxQuantity}`)];
 	}
 }
 
@@ -641,7 +643,7 @@ export class EntityCoolantConsumeAttribute extends EntityAttribute {
 	}
 
 	get tooltip(): TextLine[] {
-		return [new TextLine(`Coolant: ${this.consumed} / ${this.quantity}`)];
+		return [new TextLine(`Coolant ${this.consumed} / ${this.quantity}`)];
 	}
 }
 
@@ -928,5 +930,3 @@ export class EntityExpireProjectileAttribute extends EntityAttribute {
 		return true;
 	}
 }
-
-// todo fix tooltips
