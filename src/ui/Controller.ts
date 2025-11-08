@@ -14,6 +14,8 @@ export default class Controller {
 		input.addBinding(new KeyBinding('s', [], [InputState.DOWN], () => camera.move(new Vector(0, .01))));
 		input.addBinding(new KeyBinding('q', [], [InputState.DOWN], () => camera.zoom(.03)));
 		input.addBinding(new KeyBinding('e', [], [InputState.DOWN], () => camera.zoom(-.03)));
+		input.addBinding(new MouseBinding(MouseButton.MIDDLE, [InputState.DOWN], () =>
+			camera.move(input.mousePosition.subtract(input.mouseLastPosition).scale(new Vector(-.002)))));
 		input.addBinding(new MouseWheelBinding(false, () => {
 			if (placer.state === PlacerState.EMPTY)
 				camera.zoom(-.3);
@@ -60,5 +62,4 @@ export default class Controller {
 	}
 }
 
-// todo middle click drag to move camera
 // todo allow clicking ui buttons
