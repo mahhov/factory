@@ -130,7 +130,7 @@ export class Wall extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.wallIron.texture);
+		return new Sprite(generatedTextures.ironWall.texture);
 	}
 }
 
@@ -151,7 +151,7 @@ export class Extractor extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.extractorT1.texture);
+		return new Sprite(generatedTextures.extractor.texture);
 	}
 }
 
@@ -169,7 +169,7 @@ export class Conveyor extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.transConveyorT1.texture);
+		return new Sprite(generatedTextures.conveyor.texture);
 	}
 
 	static spriteFull(resource: Resource) {
@@ -191,7 +191,7 @@ export class Distributor extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.transDistributor.texture);
+		return new Sprite(generatedTextures.distributor.texture);
 	}
 
 	static spriteFull(resource: Resource) {
@@ -213,7 +213,7 @@ export class Junction extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.transJunction.texture);
+		return new Sprite(generatedTextures.junction.texture);
 	}
 
 	static spriteFull(resource: Resource) {
@@ -239,7 +239,7 @@ export class Factory extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.factorySteel.texture);
+		return new Sprite(generatedTextures.steelSmelter.texture);
 	}
 }
 
@@ -251,7 +251,7 @@ export class Storage extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.storageMat.texture);
+		return new Sprite(generatedTextures.storage.texture);
 	}
 }
 
@@ -272,7 +272,7 @@ export class Dispenser extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.storageDispense.texture);
+		return new Sprite(generatedTextures.dispenser.texture);
 	}
 }
 
@@ -297,7 +297,7 @@ export class Generator extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.genMethane.texture);
+		return new Sprite(generatedTextures.methaneBurner.texture);
 	}
 }
 
@@ -308,7 +308,7 @@ export class Conductor extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.transConductor.texture);
+		return new Sprite(generatedTextures.conductor.texture);
 	}
 }
 
@@ -321,7 +321,7 @@ export class Battery extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.storageBatt.texture);
+		return new Sprite(generatedTextures.battery.texture);
 	}
 }
 
@@ -344,7 +344,7 @@ export class Vent extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.ventAir.texture);
+		return new Sprite(generatedTextures.airVent.texture);
 	}
 }
 
@@ -363,7 +363,7 @@ export class Pump extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.pumpBase.texture);
+		return new Sprite(generatedTextures.pump.texture);
 	}
 }
 
@@ -382,7 +382,7 @@ export class Well extends Building {
 	}
 
 	static get sprite() {
-		return new Sprite(generatedTextures.pumpWell.texture);
+		return new Sprite(generatedTextures.well.texture);
 	}
 }
 
