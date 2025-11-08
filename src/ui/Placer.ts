@@ -289,7 +289,10 @@ export default class Placer {
 			// redraw top row
 			Object.values(toolTree).forEach((tools, i) => {
 				let coordinates = Placer.toolUiCoordinates(true, i);
-				this.addToolUiButton(coordinates, this.toolGroupIconContainer, Placer.createToolEntity(tools[0]).container, this.toolGroupTextContainer, '^' + (i + 1));
+				let spriteContainer = Placer.createToolEntity(tools[0]).container;
+				this.addToolUiButton(coordinates, this.toolGroupIconContainer, spriteContainer, this.toolGroupTextContainer, '^' + (i + 1));
+				spriteContainer.eventMode = 'static';
+				spriteContainer.onpointertap = () => this.setToolGroupIndex(i);
 			});
 		}
 
@@ -304,6 +307,8 @@ export default class Placer {
 			toolTree[toolGroup].forEach((tool, i) => {
 				let coordinates = Placer.toolUiCoordinates(false, i);
 				this.addToolUiButton(coordinates, this.toolIconContainer, Placer.cachedToolEntities[tool].container, this.toolTextContainer, String(i + 1));
+				Placer.cachedToolEntities[tool].container.eventMode = 'static';
+				Placer.cachedToolEntities[tool].container.onpointertap = () => this.toggleToolIndex(i);
 			});
 		}
 

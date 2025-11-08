@@ -61,5 +61,3 @@ export default class Controller {
 		}));
 	}
 }
-
-// todo allow clicking ui buttons
