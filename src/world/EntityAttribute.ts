@@ -324,13 +324,12 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	}
 
 	get tooltip(): TextLine[] {
-		let tooltipLines = (Object.entries(this.quantities))
-			.filter(([resourceString, count]) => count)
-			.map(([resourceString, count]) => {
-				let resource = Number(resourceString);
-				let prefix = `${ResourceUtils.string(resource)} ${count}`;
-				let capacity = this.getResourceCapacity(resource);
-				return new TextLine(capacity !== Infinity ? `${prefix} / ${capacity}` : `${prefix}`);
+		let tooltipLines = this.resourceCapacities
+			.filter(capacity => capacity.quantity)
+			.map(capacity => {
+				let resource = Number(capacity.resource);
+				let prefix = `${ResourceUtils.string(resource)} ${this.quantities[capacity.resource]}`;
+				return new TextLine(capacity.quantity !== Infinity ? `${prefix} / ${capacity.quantity}` : `${prefix}`);
 			});
 		if (this.totalCapacity !== Infinity && this.orderedResourceAndRotations.length)
 			tooltipLines.push(new TextLine(`${this.orderedResourceAndRotations.length} / ${this.totalCapacity}`));
