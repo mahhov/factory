@@ -369,7 +369,7 @@ export default class Placer {
 	}
 
 	rotate(delta: number) {
-		if (this.started) {
+		if (this.state !== PlacerState.EMPTY) {
 			this.rotation = (this.rotation + delta + 4) % 4;
 			this.place(this.world.planning, false);
 		}

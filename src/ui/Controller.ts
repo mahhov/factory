@@ -15,11 +15,11 @@ export default class Controller {
 		input.addBinding(new KeyBinding('q', [], [InputState.DOWN], () => camera.zoom(.03)));
 		input.addBinding(new KeyBinding('e', [], [InputState.DOWN], () => camera.zoom(-.03)));
 		input.addBinding(new MouseWheelBinding(false, () => {
-			if (placer.state !== PlacerState.STARTED)
+			if (placer.state === PlacerState.EMPTY)
 				camera.zoom(-.3);
 		}));
 		input.addBinding(new MouseWheelBinding(true, () => {
-			if (placer.state !== PlacerState.STARTED)
+			if (placer.state === PlacerState.EMPTY)
 				camera.zoom(.3);
 		}));
 
