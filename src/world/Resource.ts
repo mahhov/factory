@@ -2,35 +2,49 @@ import {ColorSource} from 'pixi.js';
 import Color from '../graphics/Color.js';
 
 // todo rename Material
-export enum Resource {
+export enum Material {
 	IRON, FLUX_SAND, SULPHUR,
 	STEEL, TITANIUM,
 	METAGLASS, PLASTEEL, GRAPHITE,
 	THERMITE, EXIDIUM,
+}
+
+export enum Liquid {
 	WATER, METHANE,
 }
 
+export type Resource = Material | Liquid;
+
 export namespace ResourceUtils {
-	export class Count {
-		readonly resource: Resource;
+	export class Count<T extends Resource> {
+		readonly resource: T;
 		readonly quantity: number;
 
-		constructor(resource: Resource, quantity: number) {
+		constructor(resource: T, quantity: number) {
 			this.resource = resource;
 			this.quantity = quantity;
 		}
 
-		static fromTuples(tuples: [Resource, number][]): Count[] {
+		static fromTuples<T extends Resource>(tuples: [T, number][]): Count<T>[] {
 			return tuples.map(tuple => new Count(...tuple));
 		}
 	}
 
-	export let string = (resource: Resource): string => {
-		return Resource[resource];
+	export let materialString = (material: Material): string => {
+		return Material[material];
 	};
 
-	export let color = (resource: Resource): ColorSource => {
-		let key = `RESOURCE_${Resource[resource]}` as unknown as keyof typeof Color;
+	export let liquidString = (liquid: Liquid): string => {
+		return Liquid[liquid];
+	};
+
+	export let materialColor = (material: Material): ColorSource => {
+		let key = `MATERIAL_${Material[material]}` as unknown as keyof typeof Color;
+		return Color[key];
+	};
+
+	export let liquidColor = (liquid: Liquid): ColorSource => {
+		let key = `LIQUID_${Liquid[liquid]}` as unknown as keyof typeof Color;
 		return Color[key];
 	};
 }

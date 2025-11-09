@@ -7,7 +7,7 @@ import Vector from '../util/Vector.js';
 import {Battery, Conductor, Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Generator, Junction, Pump, Storage, Turret, Vent, Wall, Well} from '../world/Entity.js';
 import {EntityNameAttribute} from '../world/EntityAttribute.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
-import {Resource, ResourceUtils} from '../world/Resource.js';
+import {Liquid, Material, ResourceUtils} from '../world/Resource.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
 import {GridWorldLayer, World} from '../world/World.js';
 import {Input} from './Input.js';
@@ -195,7 +195,7 @@ export default class Placer {
 	}
 
 	private static createToolFactory(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Factory(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.output as ResourceUtils.Count);
+		return new Factory(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.output as ResourceUtils.Count<Material>);
 	}
 
 	private static createToolStorage(metadata: ParsedLine<typeof sectionFields.buildings>) {
@@ -219,7 +219,7 @@ export default class Placer {
 	}
 
 	private static createToolVent(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Vent(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput?.[0], metadata.powerInput, metadata.output as number);
+		return new Vent(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.liquidInput?.[0], metadata.powerInput, metadata.output as number);
 	}
 
 	private static createToolPump(metadata: ParsedLine<typeof sectionFields.buildings>) {
@@ -227,7 +227,7 @@ export default class Placer {
 	}
 
 	private static createToolWell(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Well(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, new ResourceUtils.Count(Resource.WATER, metadata.output as number));
+		return new Well(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, new ResourceUtils.Count(Liquid.WATER, metadata.output as number));
 	}
 
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {

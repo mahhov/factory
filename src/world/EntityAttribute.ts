@@ -4,8 +4,8 @@ import TextLine from '../ui/TextLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Empty, Entity, Projectile, ResourceDeposit} from './Entity.js';
-import {Resource, ResourceUtils} from './Resource.js';
+import {Empty, Entity, LiquidDeposit, MaterialDeposit, Projectile} from './Entity.js';
+import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, World} from './World.js';
 
@@ -87,10 +87,10 @@ export class EntityNameAttribute extends EntityAttribute {
 // todo don't move resources into storage that's still being built. don't act upon entities that are still being built. maybe move them from the live layer to an in-progress layer
 export class EntityBuildableAttribute extends EntityAttribute {
 	private readonly counter: Counter;
-	private readonly materialCost: ResourceUtils.Count[];
+	private readonly materialCost: ResourceUtils.Count<Material>[];
 	doneBuilding = false;
 
-	constructor(duration: number, materialCost: ResourceUtils.Count[]) {
+	constructor(duration: number, materialCost: ResourceUtils.Count<Material>[]) {
 		super();
 		this.counter = new Counter(duration * 20);
 		this.materialCost = materialCost;
@@ -173,19 +173,19 @@ export class EntityTimedAttribute extends EntityAttribute {
 
 export class EntityMaterialProduceAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
-	private readonly outputs: ResourceUtils.Count[];
+	private readonly outputs: ResourceUtils.Count<Material>[];
 
-	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, outputs: ResourceUtils.Count[]) {
+	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, outputs: ResourceUtils.Count<Material>[]) {
 		super();
 		console.assert(outputs.length > 0);
-		console.assert(outputs.every(resourceCount => resourceCount.quantity > 0));
+		console.assert(outputs.every(materialCount => materialCount.quantity > 0));
 		this.materialStorageAttribute = materialStorageAttribute;
 		this.outputs = outputs;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.outputs.every(resourceCount => this.materialStorageAttribute.hasCapacity(resourceCount))) {
-			this.outputs.forEach(resourceCount => this.materialStorageAttribute.add(resourceCount));
+		if (this.outputs.every(materialCount => this.materialStorageAttribute.hasCapacity(materialCount))) {
+			this.outputs.forEach(materialCount => this.materialStorageAttribute.add(materialCount));
 			return true;
 		}
 		return false;
@@ -195,7 +195,7 @@ export class EntityMaterialProduceAttribute extends EntityAttribute {
 export class EntityMaterialExtractorAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
 	private readonly outputPerTier: number[];
-	private readonly quantities: Record<Resource, number>;
+	private readonly quantities: Record<Material, number>;
 
 	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, outputPerTier: number[]) {
 		super();
@@ -203,42 +203,42 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 		console.assert(outputPerTier.every(output => output >= 0));
 		this.materialStorageAttribute = materialStorageAttribute;
 		this.outputPerTier = outputPerTier;
-		this.quantities = Object.fromEntries(util.enumValues(Resource)
-			.map(resource => [resource, 0])) as Record<Resource, number>;
+		this.quantities = Object.fromEntries(util.enumValues(Material)
+			.map(material => [material, 0])) as Record<Material, number>;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		tile.position.iterate(tile.tileable.size).forEach(position => {
 			let tile = world.terrain.getTile(position);
-			if (!(tile?.tileable instanceof ResourceDeposit)) return;
-			this.quantities[tile.tileable.resource] += this.outputPerTier[tile.tileable.materialResourceTier];
+			if (!(tile?.tileable instanceof MaterialDeposit)) return;
+			this.quantities[tile.tileable.material] += this.outputPerTier[tile.tileable.materialTier];
 		});
-		util.enumValues(Resource).forEach(resource => {
-			let n = Math.floor(this.quantities[resource]);
+		util.enumValues(Material).forEach(material => {
+			let n = Math.floor(this.quantities[material]);
 			if (!n) return;
-			this.quantities[resource] -= n;
-			this.materialStorageAttribute.add(new ResourceUtils.Count(resource, n));
+			this.quantities[material] -= n;
+			this.materialStorageAttribute.add(new ResourceUtils.Count(material, n));
 		});
 		return true;
 	}
 }
 
 export class EntityMaterialSourceAttribute extends EntityAttribute {
-	private readonly resourcePickerAttribute: EntityResourcePickerAttribute;
+	private readonly materialPickerAttribute: EntityMaterialPickerAttribute;
 
-	constructor(resourcePickerAttribute: EntityResourcePickerAttribute) {
+	constructor(materialPickerAttribute: EntityMaterialPickerAttribute) {
 		super();
-		this.resourcePickerAttribute = resourcePickerAttribute;
+		this.materialPickerAttribute = materialPickerAttribute;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let resourceCount = new ResourceUtils.Count(this.resourcePickerAttribute.resource, 1);
+		let materialCount = new ResourceUtils.Count(this.materialPickerAttribute.material, 1);
 		util.enumValues(Rotation).forEach(rotation =>
 			getAdjacentDestinations(tile.position, tile.tileable.size, rotation)
 				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityMaterialStorageAttribute))
 				.forEach(destinationContainerAttribute => {
-					if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount))
-						destinationContainerAttribute.add(resourceCount);
+					if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(materialCount))
+						destinationContainerAttribute.add(materialCount);
 				}));
 		return true;
 	}
@@ -246,19 +246,19 @@ export class EntityMaterialSourceAttribute extends EntityAttribute {
 
 export class EntityMaterialConsumeAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
-	private readonly inputs: ResourceUtils.Count[];
+	private readonly inputs: ResourceUtils.Count<Material>[];
 
-	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, inputs: ResourceUtils.Count[]) {
+	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, inputs: ResourceUtils.Count<Material>[]) {
 		super();
 		console.assert(inputs.length > 0);
-		console.assert(inputs.every(resourceCount => resourceCount.quantity > 0));
+		console.assert(inputs.every(materialCount => materialCount.quantity > 0));
 		this.materialStorageAttribute = materialStorageAttribute;
 		this.inputs = inputs;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.inputs.every(resourceCount => this.materialStorageAttribute.hasQuantity(resourceCount))) {
-			this.inputs.forEach(resourceCount => this.materialStorageAttribute.remove(resourceCount));
+		if (this.inputs.every(materialCount => this.materialStorageAttribute.hasQuantity(materialCount))) {
+			this.inputs.forEach(materialCount => this.materialStorageAttribute.remove(materialCount));
 			return true;
 		}
 		return false;
@@ -267,56 +267,56 @@ export class EntityMaterialConsumeAttribute extends EntityAttribute {
 
 export class EntityMaterialStorageAttribute extends EntityAttribute {
 	private readonly totalCapacity: number;
-	private readonly resourceCapacities: ResourceUtils.Count[];
+	private readonly materialCapacities: ResourceUtils.Count<Material>[];
 	private readonly inputRotations: Rotation[];
-	private readonly quantities: Record<Resource, number>;
-	private readonly orderedResourceAndRotations: [Resource, Rotation][] = [];
+	private readonly quantities: Record<Material, number>;
+	private readonly orderedAndRotations: [Material, Rotation][] = [];
 
 	constructor(totalCapacity: number,
-	            resourceCapacities: ResourceUtils.Count[],
+	            materialCapacities: ResourceUtils.Count<Material>[],
 	            inputRotations: Rotation[] = util.enumValues(Rotation)) {
 		super();
 		console.assert(totalCapacity > 0);
-		console.assert(resourceCapacities.length > 0);
-		console.assert(resourceCapacities.every(resourceCount => resourceCount.quantity > 0));
+		console.assert(materialCapacities.length > 0);
+		console.assert(materialCapacities.every(materialCount => materialCount.quantity > 0));
 		this.totalCapacity = totalCapacity;
-		this.resourceCapacities = resourceCapacities;
+		this.materialCapacities = materialCapacities;
 		this.inputRotations = inputRotations;
-		this.quantities = Object.fromEntries(util.enumValues(Resource)
-			.map(resource => [resource, 0])) as Record<Resource, number>;
+		this.quantities = Object.fromEntries(util.enumValues(Material)
+			.map(material => [material, 0])) as Record<Material, number>;
 	}
 
-	private getResourceCapacity(resource: Resource): number {
-		return this.resourceCapacities.find(capacity => capacity.resource === resource)?.quantity ?? 0;
+	private getMaterialCapacity(material: Material): number {
+		return this.materialCapacities.find(capacity => capacity.resource === material)?.quantity ?? 0;
 	}
 
 	get empty() {
-		return !this.orderedResourceAndRotations.length;
+		return !this.orderedAndRotations.length;
 	}
 
-	get peek(): [Resource, Rotation] | undefined {
-		return this.orderedResourceAndRotations.at(-1);
+	get peek(): [Material, Rotation] | undefined {
+		return this.orderedAndRotations.at(-1);
 	}
 
-	hasCapacity(resourceCount: ResourceUtils.Count): boolean {
-		return this.orderedResourceAndRotations.length + resourceCount.quantity <= this.totalCapacity &&
-			this.quantities[resourceCount.resource] + resourceCount.quantity <= this.getResourceCapacity(resourceCount.resource);
+	hasCapacity(materialCount: ResourceUtils.Count<Material>): boolean {
+		return this.orderedAndRotations.length + materialCount.quantity <= this.totalCapacity &&
+			this.quantities[materialCount.resource] + materialCount.quantity <= this.getMaterialCapacity(materialCount.resource);
 	}
 
-	hasQuantity(resourceCount: ResourceUtils.Count): boolean {
-		return this.quantities[resourceCount.resource] >= resourceCount.quantity;
+	hasQuantity(materialCount: ResourceUtils.Count<Material>): boolean {
+		return this.quantities[materialCount.resource] >= materialCount.quantity;
 	}
 
-	add(resourceCount: ResourceUtils.Count, rotation: Rotation = Rotation.RIGHT) {
-		this.quantities[resourceCount.resource] += resourceCount.quantity;
-		util.arr(resourceCount.quantity).forEach(() =>
-			this.orderedResourceAndRotations.push([resourceCount.resource, rotation]));
+	add(materialCount: ResourceUtils.Count<Material>, rotation: Rotation = Rotation.RIGHT) {
+		this.quantities[materialCount.resource] += materialCount.quantity;
+		util.arr(materialCount.quantity).forEach(() =>
+			this.orderedAndRotations.push([materialCount.resource, rotation]));
 	}
 
-	remove(resourceCount: ResourceUtils.Count) {
-		this.quantities[resourceCount.resource] -= resourceCount.quantity;
-		for (let i = 0; i < resourceCount.quantity; i++)
-			this.orderedResourceAndRotations.splice(this.orderedResourceAndRotations.findLastIndex(resourceAndRotation => resourceAndRotation[0] === resourceCount.resource), 1);
+	remove(materialCount: ResourceUtils.Count<Material>) {
+		this.quantities[materialCount.resource] -= materialCount.quantity;
+		for (let i = 0; i < materialCount.quantity; i++)
+			this.orderedAndRotations.splice(this.orderedAndRotations.findLastIndex(materialAndRotation => materialAndRotation[0] === materialCount.resource), 1);
 	}
 
 	acceptsRotation(rotation: Rotation): boolean {
@@ -324,15 +324,15 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	}
 
 	get tooltip(): TextLine[] {
-		let tooltipLines = this.resourceCapacities
+		let tooltipLines = this.materialCapacities
 			.filter(capacity => capacity.quantity)
 			.map(capacity => {
-				let resource = Number(capacity.resource);
-				let prefix = `${ResourceUtils.string(resource)} ${this.quantities[capacity.resource]}`;
+				let material = Number(capacity.resource);
+				let prefix = `${ResourceUtils.materialString(material)} ${this.quantities[capacity.resource]}`;
 				return new TextLine(capacity.quantity !== Infinity ? `${prefix} / ${capacity.quantity}` : `${prefix}`);
 			});
-		if (this.totalCapacity !== Infinity && this.orderedResourceAndRotations.length)
-			tooltipLines.push(new TextLine(`${this.orderedResourceAndRotations.length} / ${this.totalCapacity}`));
+		if (this.totalCapacity !== Infinity && this.orderedAndRotations.length)
+			tooltipLines.push(new TextLine(`${this.orderedAndRotations.length} / ${this.totalCapacity}`));
 		return tooltipLines;
 	}
 
@@ -341,20 +341,20 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityHasAnyOfResourceAttribute extends EntityAttribute {
+export class EntityHasAnyOfMaterialAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
-	private readonly resourceCounts: ResourceUtils.Count[];
+	private readonly materialCounts: ResourceUtils.Count<Material>[];
 
-	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, resourceCounts: ResourceUtils.Count[]) {
+	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, materialCounts: ResourceUtils.Count<Material>[]) {
 		super();
-		console.assert(resourceCounts.length > 0);
-		console.assert(resourceCounts.every(resourceCount => resourceCount.quantity > 0));
+		console.assert(materialCounts.length > 0);
+		console.assert(materialCounts.every(materialCount => materialCount.quantity > 0));
 		this.materialStorageAttribute = materialStorageAttribute;
-		this.resourceCounts = resourceCounts;
+		this.materialCounts = materialCounts;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		return this.resourceCounts.some(resourceCount => this.materialStorageAttribute.hasQuantity(resourceCount));
+		return this.materialCounts.some(materialCount => this.materialStorageAttribute.hasQuantity(materialCount));
 	}
 }
 
@@ -369,15 +369,15 @@ export class EntityTransportAttribute extends EntityAttribute {
 		this.outputRotations = outputRotations;
 	}
 
-	static move(fromContainer: EntityMaterialStorageAttribute, outputRotations: Rotation[], resourceCounts: ResourceUtils.Count[], world: World, tile: Tile<Entity>): boolean {
+	static move(fromContainer: EntityMaterialStorageAttribute, outputRotations: Rotation[], materialCounts: ResourceUtils.Count<Material>[], world: World, tile: Tile<Entity>): boolean {
 		return util.shuffle(outputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
 				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityMaterialStorageAttribute))
 				.some(destinationContainerAttribute =>
-					util.shuffle(resourceCounts).some(resourceCount => {
-						if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(resourceCount)) {
-							fromContainer.remove(resourceCount);
-							destinationContainerAttribute.add(resourceCount, rotation);
+					util.shuffle(materialCounts).some(materialCount => {
+						if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(materialCount)) {
+							fromContainer.remove(materialCount);
+							destinationContainerAttribute.add(materialCount, rotation);
 							return true;
 						}
 						return false;
@@ -386,8 +386,8 @@ export class EntityTransportAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.materialStorageAttribute.empty) return false;
-		let [resource] = this.materialStorageAttribute.peek!;
-		return EntityTransportAttribute.move(this.materialStorageAttribute, this.outputRotations, [new ResourceUtils.Count(resource, 1)], world, tile);
+		let [material] = this.materialStorageAttribute.peek!;
+		return EntityTransportAttribute.move(this.materialStorageAttribute, this.outputRotations, [new ResourceUtils.Count(material, 1)], world, tile);
 	}
 }
 
@@ -401,54 +401,54 @@ export class EntityJunctionTransportAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.materialStorageAttribute.empty) return false;
-		let [resource, rotation] = this.materialStorageAttribute.peek!;
-		return EntityTransportAttribute.move(this.materialStorageAttribute, [rotation], [new ResourceUtils.Count(resource, 1)], world, tile);
+		let [material, rotation] = this.materialStorageAttribute.peek!;
+		return EntityTransportAttribute.move(this.materialStorageAttribute, [rotation], [new ResourceUtils.Count(material, 1)], world, tile);
 	}
 }
 
 export class EntityOutflowAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
-	private readonly resourceCounts: ResourceUtils.Count[];
+	private readonly materialCounts: ResourceUtils.Count<Material>[];
 
-	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, resourceCounts: ResourceUtils.Count[]) {
+	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, materialCounts: ResourceUtils.Count<Material>[]) {
 		super();
-		console.assert(resourceCounts.length > 0);
-		console.assert(resourceCounts.every(resourceCount => resourceCount.quantity > 0));
+		console.assert(materialCounts.length > 0);
+		console.assert(materialCounts.every(materialCount => materialCount.quantity > 0));
 		this.materialStorageAttribute = materialStorageAttribute;
-		this.resourceCounts = resourceCounts;
+		this.materialCounts = materialCounts;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.materialStorageAttribute.empty) return false;
 		let outputRotations: Rotation[] = util.enumValues(Rotation);
-		let resourceCounts = this.resourceCounts.filter(resourceCount => this.materialStorageAttribute.hasQuantity(resourceCount));
-		return EntityTransportAttribute.move(this.materialStorageAttribute, outputRotations, resourceCounts, world, tile);
+		let materialCounts = this.materialCounts.filter(materialCount => this.materialStorageAttribute.hasQuantity(materialCount));
+		return EntityTransportAttribute.move(this.materialStorageAttribute, outputRotations, materialCounts, world, tile);
 	}
 }
 
 export class EntityInflowAttribute extends EntityAttribute {
-	private readonly resourcePickerAttribute: EntityResourcePickerAttribute;
+	private readonly materialPickerAttribute: EntityMaterialPickerAttribute;
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
 	private readonly inputRotations: Rotation[];
 
-	constructor(resourcePickerAttribute: EntityResourcePickerAttribute, materialStorageAttribute: EntityMaterialStorageAttribute, inputRotations: Rotation[]) {
+	constructor(materialPickerAttribute: EntityMaterialPickerAttribute, materialStorageAttribute: EntityMaterialStorageAttribute, inputRotations: Rotation[]) {
 		super();
 		console.assert(inputRotations.length > 0);
-		this.resourcePickerAttribute = resourcePickerAttribute;
+		this.materialPickerAttribute = materialPickerAttribute;
 		this.materialStorageAttribute = materialStorageAttribute;
 		this.inputRotations = inputRotations;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let resourceCount = new ResourceUtils.Count(this.resourcePickerAttribute.resource, 1);
-		if (!this.materialStorageAttribute.hasCapacity(resourceCount)) return false;
+		let materialCount = new ResourceUtils.Count(this.materialPickerAttribute.material, 1);
+		if (!this.materialStorageAttribute.hasCapacity(materialCount)) return false;
 		return util.shuffle(this.inputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, RotationUtils.opposite(rotation)))
 				.map(source => world.live.getTile(source)?.tileable.getAttribute(EntityMaterialStorageAttribute))
 				.some(sourceContainerAttribute => {
-					if (sourceContainerAttribute?.hasQuantity(resourceCount)) {
-						sourceContainerAttribute.remove(resourceCount);
-						this.materialStorageAttribute.add(resourceCount, rotation);
+					if (sourceContainerAttribute?.hasQuantity(materialCount)) {
+						sourceContainerAttribute.remove(materialCount);
+						this.materialStorageAttribute.add(materialCount, rotation);
 						return true;
 					}
 					return false;
@@ -662,8 +662,8 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 		let area = tile.tileable.size.x * tile.tileable.size.y;
 		tile.position.iterate(tile.tileable.size).forEach(position => {
 			let tile = world.terrain.getTile(position);
-			if (!(tile?.tileable instanceof ResourceDeposit)) return;
-			this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count(tile.tileable.resource, this.quantity / area));
+			if (!(tile?.tileable instanceof LiquidDeposit)) return;
+			this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count<Liquid>(tile.tileable.liquid, this.quantity / area));
 		});
 		return true;
 	}
@@ -671,33 +671,33 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 
 export class EntityLiquidDryExtractorAttribute extends EntityAttribute {
 	private readonly liquidStorageAttribute: EntityLiquidStorageAttribute;
-	private readonly resourceCount: ResourceUtils.Count;
+	private readonly liquidCount: ResourceUtils.Count<Liquid>;
 
-	constructor(liquidStorageAttribute: EntityLiquidStorageAttribute, resourceCount: ResourceUtils.Count) {
+	constructor(liquidStorageAttribute: EntityLiquidStorageAttribute, liquidCount: ResourceUtils.Count<Liquid>) {
 		super();
 		this.liquidStorageAttribute = liquidStorageAttribute;
-		this.resourceCount = resourceCount;
+		this.liquidCount = liquidCount;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count(this.resourceCount.resource, this.resourceCount.quantity));
+		this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count<Liquid>(this.liquidCount.resource, this.liquidCount.quantity));
 		return true;
 	}
 }
 
 export class EntityLiquidConsumeAttribute extends EntityAttribute {
 	private readonly liquidStorageAttribute: EntityLiquidStorageAttribute;
-	private readonly resourceCount: ResourceUtils.Count;
+	private readonly liquidCount: ResourceUtils.Count<Liquid>;
 
-	constructor(liquidStorageAttribute: EntityLiquidStorageAttribute, resourceCount: ResourceUtils.Count) {
+	constructor(liquidStorageAttribute: EntityLiquidStorageAttribute, liquidCount: ResourceUtils.Count<Liquid>) {
 		super();
 		this.liquidStorageAttribute = liquidStorageAttribute;
-		this.resourceCount = resourceCount;
+		this.liquidCount = liquidCount;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.liquidStorageAttribute.resourceCount.resource === this.resourceCount.resource && this.liquidStorageAttribute.resourceCount.quantity >= this.resourceCount.quantity) {
-			this.liquidStorageAttribute.resourceCount = new ResourceUtils.Count(this.liquidStorageAttribute.resourceCount.resource, this.liquidStorageAttribute.resourceCount.quantity - this.resourceCount.quantity);
+		if (this.liquidStorageAttribute.liquidCount.resource === this.liquidCount.resource && this.liquidStorageAttribute.liquidCount.quantity >= this.liquidCount.quantity) {
+			this.liquidStorageAttribute.liquidCount = new ResourceUtils.Count<Liquid>(this.liquidStorageAttribute.liquidCount.resource, this.liquidStorageAttribute.liquidCount.quantity - this.liquidCount.quantity);
 			return true;
 		}
 		return false;
@@ -705,45 +705,45 @@ export class EntityLiquidConsumeAttribute extends EntityAttribute {
 }
 
 export class EntityLiquidStorageAttribute extends EntityAttribute {
-	private readonly liquidsAllowed: Resource[];
+	private readonly liquidsAllowed: Liquid[];
 	private readonly maxQuantity: number;
-	resourceCount = new ResourceUtils.Count(Resource.WATER, 0);
+	liquidCount = new ResourceUtils.Count<Liquid>(Liquid.WATER, 0);
 
-	constructor(liquidsAllowed: Resource[], quantity: number) {
+	constructor(liquidsAllowed: Liquid[], quantity: number) {
 		super();
 		this.liquidsAllowed = liquidsAllowed;
 		this.maxQuantity = quantity;
 	}
 
-	tryToAdd(resourceCount: ResourceUtils.Count): number {
-		if (!this.liquidsAllowed.includes(resourceCount.resource)) return 0;
-		if (resourceCount.resource === this.resourceCount.resource) {
-			let take = Math.min(resourceCount.quantity, this.maxQuantity - this.resourceCount.quantity);
-			this.resourceCount = new ResourceUtils.Count(this.resourceCount.resource, this.resourceCount.quantity + take);
+	tryToAdd(liquidCount: ResourceUtils.Count<Liquid>): number {
+		if (!this.liquidsAllowed.includes(liquidCount.resource)) return 0;
+		if (liquidCount.resource === this.liquidCount.resource) {
+			let take = Math.min(liquidCount.quantity, this.maxQuantity - this.liquidCount.quantity);
+			this.liquidCount = new ResourceUtils.Count<Liquid>(this.liquidCount.resource, this.liquidCount.quantity + take);
 			return take;
 		}
-		if (resourceCount.quantity > this.resourceCount.quantity && this.resourceCount.quantity < 10) {
-			let take = Math.min(resourceCount.quantity, this.maxQuantity);
-			this.resourceCount = new ResourceUtils.Count(resourceCount.resource, take);
+		if (liquidCount.quantity > this.liquidCount.quantity && this.liquidCount.quantity < 10) {
+			let take = Math.min(liquidCount.quantity, this.maxQuantity);
+			this.liquidCount = new ResourceUtils.Count<Liquid>(liquidCount.resource, take);
 			return take;
 		}
 		return 0;
 	}
 
 	get tooltip(): TextLine[] {
-		return [new TextLine(`${ResourceUtils.string(this.resourceCount.resource)} ${this.resourceCount.quantity} / ${this.maxQuantity}`)];
+		return [new TextLine(`${ResourceUtils.liquidString(this.liquidCount.resource)} ${this.liquidCount.quantity} / ${this.maxQuantity}`)];
 	}
 }
 
 // Resource attributes
 
-export class EntityResourcePickerAttribute extends EntityAttribute {
-	resource: Resource = 0;
+export class EntityMaterialPickerAttribute extends EntityAttribute {
+	material: Material = 0;
 
 	get tooltip(): TextLine[] {
-		return util.enumValues(Resource).map(resource => {
-			let color = resource === this.resource ? Color.SELECTED_TEXT : undefined;
-			return new TextLine(ResourceUtils.string(resource), () => this.resource = resource, undefined, color);
+		return util.enumValues(Material).map(material => {
+			let color = material === this.material ? Color.SELECTED_TEXT : undefined;
+			return new TextLine(ResourceUtils.materialString(material), () => this.material = material, undefined, color);
 		});
 	}
 
@@ -752,16 +752,16 @@ export class EntityResourcePickerAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityResourceDisplayAttribute extends EntityAttribute {
-	resource: Resource;
+export class EntityMaterialDisplayAttribute extends EntityAttribute {
+	material: Material;
 
-	constructor(resource: Resource) {
+	constructor(material: Material) {
 		super();
-		this.resource = resource;
+		this.material = material;
 	}
 
 	get tooltip(): TextLine[] {
-		return [new TextLine(ResourceUtils.string(this.resource))];
+		return [new TextLine(ResourceUtils.materialString(this.material))];
 	}
 
 	get selectable(): boolean {
@@ -769,12 +769,29 @@ export class EntityResourceDisplayAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityResourceFullSpriteAttribute extends EntityAttribute {
+export class EntityLiquidDisplayAttribute extends EntityAttribute {
+	liquid: Liquid;
+
+	constructor(liquid: Liquid) {
+		super();
+		this.liquid = liquid;
+	}
+
+	get tooltip(): TextLine[] {
+		return [new TextLine(ResourceUtils.liquidString(this.liquid))];
+	}
+
+	get selectable(): boolean {
+		return true;
+	}
+}
+
+export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
 	private readonly sprite: Sprite;
-	private readonly spriteFull: (resource: Resource) => Sprite;
+	private readonly spriteFull: (material: Material) => Sprite;
 
-	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, sprite: Sprite, spriteFull: (resource: Resource) => Sprite) {
+	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, sprite: Sprite, spriteFull: (material: Material) => Sprite) {
 		super();
 		this.materialStorageAttribute = materialStorageAttribute;
 		this.sprite = sprite;

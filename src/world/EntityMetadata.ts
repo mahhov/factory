@@ -1,4 +1,4 @@
-import {Resource, ResourceUtils} from './Resource.js';
+import {Liquid, Material, Resource, ResourceUtils} from './Resource.js';
 
 type StringRecord = Record<string, string>;
 type FieldHandler<R> = (data: StringRecord) => R;
@@ -20,18 +20,18 @@ let dashCaseToSnakeCase = (str: string): string => str.split('-').join('_').toUp
 
 let parseNumber = (str: string): number => str === '-' ? 0 : Number(str);
 
-let parseResourceCount = (str: string): ResourceUtils.Count => {
+let parseResourceCount = <T extends Resource>(str: string, resourceEnum: Record<string, string | T>): ResourceUtils.Count<T> => {
 	console.assert(/^\d+ [\w\-]+$/.test(str));
-	let [count, resource] = str.split(' ') as [string, string];
-	let resourceStr = dashCaseToSnakeCase(resource);
-	console.assert(resourceStr in Resource);
-	return new ResourceUtils.Count(Resource[resourceStr as keyof typeof Resource], Number(count));
+	let [count, resourceDash] = str.split(' ');
+	let resourceStr = dashCaseToSnakeCase(resourceDash);
+	console.assert(resourceStr in resourceEnum);
+	return new ResourceUtils.Count(resourceEnum[resourceStr] as T, Number(count));
 };
 
-let parseMaterialCounts = (str: string): ResourceUtils.Count[] =>
-	str === '-' ? [] : str.split(', ').map(parseResourceCount);
+let parseResourceCounts = <T extends Resource>(str: string, resourceEnum: Record<string, string | T>): ResourceUtils.Count<T>[] =>
+	str === '-' ? [] : str.split(', ').map(str => parseResourceCount(str, resourceEnum));
 
-let parseBuildingOutput = (str: string): ResourceUtils.Count | number[] | number => {
+let parseBuildingOutput = (str: string): ResourceUtils.Count<Material> | number[] | number => {
 	if (str === '-') return [];
 	if (/^\d*\.?\d+ t\d+(, \d*\.?\d+ t\d+)* material \/ area$/.test(str)) {
 		return [...str
@@ -43,7 +43,7 @@ let parseBuildingOutput = (str: string): ResourceUtils.Count | number[] | number
 	}
 	if (/^\d+ (rate|power|range|capacity|coolant|liquid)$/.test(str))
 		return Number(str.split(' ')[0]);
-	return parseResourceCount(str);
+	return parseResourceCount(str, Material);
 };
 
 let parseSection = <F extends FieldHandlerDictionary>(mdString: string, fields: F): ParsedSection<F> => {
@@ -75,10 +75,11 @@ export let sectionFields = {
 	buildings: {
 		name: (data: StringRecord) => lowerCaseToTitleCase(data.name),
 		buildTime: (data: StringRecord) => parseNumber(data['build time']),
-		buildCost: (data: StringRecord) => parseMaterialCounts(data['build cost']),
-		materialInput: (data: StringRecord) => parseMaterialCounts(data['material / second']),
+		buildCost: (data: StringRecord) => parseResourceCounts(data['build cost'], Material),
+		materialInput: (data: StringRecord) => parseResourceCounts(data['material / second'], Material),
 		powerInput: (data: StringRecord) => parseNumber(data['power / second']),
 		heatOutput: (data: StringRecord) => parseNumber(data['heat / second']),
+		liquidInput: (data: StringRecord) => parseResourceCounts(data['liquid / second'], Liquid),
 		output: (data: StringRecord) => parseBuildingOutput(data['output / second']),
 		boost: (data: StringRecord) => !!data.boost,
 		size: (data: StringRecord) => parseNumber(data.size),

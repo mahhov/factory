@@ -14,11 +14,8 @@ let scoreMapping: Record<string, number> = {
 	Junction: .1,
 	Bridge: .1,
 	Extractor: 1,
-	Source: 0,
-	Void: 0,
 	GlassFactory: 2,
 	MegaFactory: 3,
-	ResourceDeposit: 0,
 };
 
 export class MobLogic {
