@@ -1,7 +1,6 @@
 import {ColorSource} from 'pixi.js';
 import Color from '../graphics/Color.js';
 
-// todo rename Material
 export enum Material {
 	IRON, FLUX_SAND, SULPHUR,
 	STEEL, TITANIUM,

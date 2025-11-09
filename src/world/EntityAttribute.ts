@@ -236,9 +236,9 @@ export class EntityMaterialSourceAttribute extends EntityAttribute {
 		util.enumValues(Rotation).forEach(rotation =>
 			getAdjacentDestinations(tile.position, tile.tileable.size, rotation)
 				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityMaterialStorageAttribute))
-				.forEach(destinationContainerAttribute => {
-					if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(materialCount))
-						destinationContainerAttribute.add(materialCount);
+				.forEach(materialStorageAttribute => {
+					if (materialStorageAttribute?.acceptsRotation(rotation) && materialStorageAttribute.hasCapacity(materialCount))
+						materialStorageAttribute.add(materialCount);
 				}));
 		return true;
 	}
@@ -341,20 +341,16 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityHasAnyOfMaterialAttribute extends EntityAttribute {
+export class EntityNonEmptyMaterialStorage extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
-	private readonly materialCounts: ResourceUtils.Count<Material>[];
 
-	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, materialCounts: ResourceUtils.Count<Material>[]) {
+	constructor(materialStorageAttribute: EntityMaterialStorageAttribute) {
 		super();
-		console.assert(materialCounts.length > 0);
-		console.assert(materialCounts.every(materialCount => materialCount.quantity > 0));
 		this.materialStorageAttribute = materialStorageAttribute;
-		this.materialCounts = materialCounts;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		return this.materialCounts.some(materialCount => this.materialStorageAttribute.hasQuantity(materialCount));
+		return !this.materialStorageAttribute.empty;
 	}
 }
 
@@ -369,15 +365,15 @@ export class EntityTransportAttribute extends EntityAttribute {
 		this.outputRotations = outputRotations;
 	}
 
-	static move(fromContainer: EntityMaterialStorageAttribute, outputRotations: Rotation[], materialCounts: ResourceUtils.Count<Material>[], world: World, tile: Tile<Entity>): boolean {
+	static move(fromMaterialStorageAttribute: EntityMaterialStorageAttribute, outputRotations: Rotation[], materialCounts: ResourceUtils.Count<Material>[], world: World, tile: Tile<Entity>): boolean {
 		return util.shuffle(outputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
 				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityMaterialStorageAttribute))
-				.some(destinationContainerAttribute =>
+				.some(destinationMaterialStorageAttribute =>
 					util.shuffle(materialCounts).some(materialCount => {
-						if (destinationContainerAttribute?.acceptsRotation(rotation) && destinationContainerAttribute.hasCapacity(materialCount)) {
-							fromContainer.remove(materialCount);
-							destinationContainerAttribute.add(materialCount, rotation);
+						if (destinationMaterialStorageAttribute?.acceptsRotation(rotation) && destinationMaterialStorageAttribute.hasCapacity(materialCount)) {
+							fromMaterialStorageAttribute.remove(materialCount);
+							destinationMaterialStorageAttribute.add(materialCount, rotation);
 							return true;
 						}
 						return false;
@@ -445,9 +441,9 @@ export class EntityInflowAttribute extends EntityAttribute {
 		return util.shuffle(this.inputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, RotationUtils.opposite(rotation)))
 				.map(source => world.live.getTile(source)?.tileable.getAttribute(EntityMaterialStorageAttribute))
-				.some(sourceContainerAttribute => {
-					if (sourceContainerAttribute?.hasQuantity(materialCount)) {
-						sourceContainerAttribute.remove(materialCount);
+				.some(sourceMaterialStorageAttribute => {
+					if (sourceMaterialStorageAttribute?.hasQuantity(materialCount)) {
+						sourceMaterialStorageAttribute.remove(materialCount);
 						this.materialStorageAttribute.add(materialCount, rotation);
 						return true;
 					}
@@ -707,12 +703,14 @@ export class EntityLiquidConsumeAttribute extends EntityAttribute {
 export class EntityLiquidStorageAttribute extends EntityAttribute {
 	private readonly liquidsAllowed: Liquid[];
 	private readonly maxQuantity: number;
+	private readonly inputRotations: Rotation[];
 	liquidCount = new ResourceUtils.Count<Liquid>(Liquid.WATER, 0);
 
-	constructor(liquidsAllowed: Liquid[], quantity: number) {
+	constructor(liquidsAllowed: Liquid[], quantity: number, inputRotations: Rotation[]) {
 		super();
 		this.liquidsAllowed = liquidsAllowed;
 		this.maxQuantity = quantity;
+		this.inputRotations = inputRotations;
 	}
 
 	tryToAdd(liquidCount: ResourceUtils.Count<Liquid>): number {
@@ -730,8 +728,60 @@ export class EntityLiquidStorageAttribute extends EntityAttribute {
 		return 0;
 	}
 
+	acceptsRotation(rotation: Rotation): boolean {
+		return this.inputRotations.includes(rotation);
+	}
+
 	get tooltip(): TextLine[] {
 		return [new TextLine(`${ResourceUtils.liquidString(this.liquidCount.resource)} ${this.liquidCount.quantity} / ${this.maxQuantity}`)];
+	}
+}
+
+export class EntityNonEmptyLiquidStorage extends EntityAttribute {
+	private readonly liquidStorageAttribute: EntityLiquidStorageAttribute;
+
+	constructor(liquidStorageAttribute: EntityLiquidStorageAttribute) {
+		super();
+		this.liquidStorageAttribute = liquidStorageAttribute;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		return !!this.liquidStorageAttribute.liquidCount.quantity;
+	}
+}
+
+export class EntityLiquidTransportAttribute extends EntityAttribute {
+	private readonly liquidStorageAttribute: EntityLiquidStorageAttribute;
+	private readonly outputRotations: Rotation[];
+
+	constructor(liquidStorageAttribute: EntityLiquidStorageAttribute, outputRotations: Rotation[]) {
+		super();
+		console.assert(outputRotations.length > 0);
+		this.liquidStorageAttribute = liquidStorageAttribute;
+		this.outputRotations = outputRotations;
+	}
+
+	static move(fromLiquidStorageAttribute: EntityLiquidStorageAttribute, outputRotations: Rotation[], world: World, tile: Tile<Entity>): boolean {
+		return util.shuffle(outputRotations).some(rotation =>
+			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
+				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityLiquidStorageAttribute))
+				.some(destinationLiquidStorageAttribute => {
+					let liquidCount = fromLiquidStorageAttribute.liquidCount;
+					if (destinationLiquidStorageAttribute?.acceptsRotation(rotation)) {
+						let take = destinationLiquidStorageAttribute.tryToAdd(liquidCount);
+						if (take) {
+							fromLiquidStorageAttribute.liquidCount = new ResourceUtils.Count<Liquid>(liquidCount.resource, liquidCount.quantity - take);
+							return true;
+						}
+					}
+					return false;
+				}));
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		let liquidCount = this.liquidStorageAttribute.liquidCount;
+		if (!liquidCount.quantity) return false;
+		return EntityLiquidTransportAttribute.move(this.liquidStorageAttribute, this.outputRotations, world, tile);
 	}
 }
 

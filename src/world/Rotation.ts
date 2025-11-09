@@ -1,3 +1,4 @@
+import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 
 export enum Rotation { RIGHT, DOWN, LEFT, UP }
@@ -17,4 +18,6 @@ export namespace RotationUtils {
 	};
 
 	export let opposite = (rotation: Rotation): Rotation => (rotation + 2) % 4;
+
+	export let except = (rotation: Rotation): Rotation[] => util.enumValues(Rotation).filter(r => r !== rotation);
 }

@@ -4,7 +4,29 @@ import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Battery, Conductor, Conveyor, Dispenser, Distributor, Empty, Entity, Extractor, Factory, Generator, Junction, Pump, Storage, Turret, Vent, Wall, Well} from '../world/Entity.js';
+import {
+	Battery,
+	Conductor,
+	Conveyor,
+	Dispenser,
+	Distributor,
+	Empty,
+	Entity,
+	Extractor,
+	Factory,
+	Generator,
+	Junction,
+	Pipe,
+	PipeDistributor,
+	PipeJunction,
+	Pump,
+	Storage,
+	Tank,
+	Turret,
+	Vent,
+	Wall,
+	Well,
+} from '../world/Entity.js';
 import {EntityNameAttribute} from '../world/EntityAttribute.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {Liquid, Material, ResourceUtils} from '../world/Resource.js';
@@ -27,8 +49,7 @@ enum Tool {
 	STORAGE, DISPENSER,
 	THERMAL_GENERATOR, SOLAR_ARRAY, METHANE_BURNER, THERMITE_REACTOR, CONDUCTOR, BATTERY,
 	AIR_VENT, WATER_VENT, METHANE_VENT,
-	// todo pipe & liquid storage
-	PUMP, POWERED_PUMP, WELL, PIPE, LIQUID_STORAGE,
+	PUMP, POWERED_PUMP, WELL, PIPE, PIPE_DISTRIBUTOR, PIPE_JUNCTION, TANK,
 	// todo turrets
 	TURRET,
 }
@@ -41,7 +62,7 @@ let toolTree = {
 	storage: [Tool.STORAGE, Tool.DISPENSER],
 	power: [Tool.THERMAL_GENERATOR, Tool.SOLAR_ARRAY, Tool.METHANE_BURNER, Tool.THERMITE_REACTOR, Tool.CONDUCTOR, Tool.BATTERY],
 	vents: [Tool.AIR_VENT, Tool.WATER_VENT, Tool.METHANE_VENT],
-	liquids: [Tool.PUMP, Tool.POWERED_PUMP, Tool.WELL, Tool.PIPE, Tool.LIQUID_STORAGE],
+	liquids: [Tool.PUMP, Tool.POWERED_PUMP, Tool.WELL, Tool.PIPE, Tool.PIPE_DISTRIBUTOR, Tool.PIPE_JUNCTION, Tool.TANK],
 	turrets: [Tool.TURRET],
 };
 type ToolGroup = keyof typeof toolTree;
@@ -162,11 +183,13 @@ export default class Placer {
 			case Tool.WELL:
 				return Placer.createToolWell(findEntityMetadata('buildings', 'Well'));
 			case Tool.PIPE:
-				// return Placer.createToolLiquid(findEntityMetadata('buildings', 'Pipe'));
-				return new Turret();
-			case Tool.LIQUID_STORAGE:
-				return new Turret();
-			// return Placer.createToolLiquid(findEntityMetadata('buildings', 'Liquid Storage'));
+				return Placer.createToolPipe(findEntityMetadata('buildings', 'Pipe'), rotation);
+			case Tool.PIPE_DISTRIBUTOR:
+				return Placer.createToolPipeDistributor(findEntityMetadata('buildings', 'Pipe Distributor'));
+			case Tool.PIPE_JUNCTION:
+				return Placer.createToolPipeJunction(findEntityMetadata('buildings', 'Pipe Junction'));
+			case Tool.TANK:
+				return Placer.createToolTank(findEntityMetadata('buildings', 'Tank'));
 
 
 			case Tool.TURRET:
@@ -228,6 +251,22 @@ export default class Placer {
 
 	private static createToolWell(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		return new Well(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, new ResourceUtils.Count(Liquid.WATER, metadata.output as number));
+	}
+
+	private static createToolPipe(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
+		return new Pipe(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
+	}
+
+	private static createToolPipeDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new PipeDistributor(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+	}
+
+	private static createToolPipeJunction(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new PipeJunction(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+	}
+
+	private static createToolTank(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Tank(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {
