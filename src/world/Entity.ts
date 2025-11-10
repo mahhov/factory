@@ -60,8 +60,17 @@ export class Entity implements Tileable {
 	constructor(name: string, size: Vector = Vector.V1, rotation: Rotation = Rotation.UP) {
 		this.size = size;
 		this.rotation = rotation;
-		if (name)
+		if (name) {
 			this.attributes.push([new EntityNameAttribute(name)]);
+			let spriteName = util.titleCaseToCamelCase(name);
+			if (spriteName in animatedGeneratedTextures) {
+				let animatedSprite = new AnimatedSprite(animatedGeneratedTextures[spriteName as keyof typeof animatedGeneratedTextures]);
+				animatedSprite.animationSpeed = .1;
+				animatedSprite.play();
+				this.setSprite(animatedSprite);
+			} else if (spriteName in generatedTextures)
+				this.setSprite(new Sprite(generatedTextures[spriteName as keyof typeof generatedTextures].texture));
+		}
 	}
 
 	setSprite(sprite: Sprite) {
@@ -110,14 +119,6 @@ export abstract class Building extends Entity {
 		super(name, size, rotation);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
-		let spriteName = util.titleCaseToCamelCase(name);
-		if (spriteName in animatedGeneratedTextures) {
-			let animatedSprite = new AnimatedSprite(animatedGeneratedTextures[spriteName as keyof typeof animatedGeneratedTextures]);
-			animatedSprite.animationSpeed = .1;
-			animatedSprite.play();
-			this.setSprite(animatedSprite);
-		} else if (spriteName in generatedTextures)
-			this.setSprite(new Sprite(generatedTextures[spriteName as keyof typeof generatedTextures].texture));
 	}
 
 	tick(world: World, tile: Tile<Entity>) {
@@ -501,8 +502,7 @@ export class LiquidDeposit extends Entity {
 
 export class Mob extends Entity {
 	constructor() {
-		super('');
-		this.setSprite(new Sprite(generatedTextures.lowTierMob));
+		super('Low Tier Mob');
 		this.attributes.push([new EntityMobChaseTargetAttribute(.1, 6)]);
 		this.attributes.push([
 			new EntityTimedAttribute(30),

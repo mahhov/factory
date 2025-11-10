@@ -373,382 +373,466 @@ export let coloredGeneratedTextures = {
 };
 
 export let animatedGeneratedTextures = {
-	pump: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, '#475569'],
-		[2, 2, 12, 12, '#1f2937'],
-		[7, 0, 2, 16, '#3b82f6'],
-		[0, 7, 16, 2, '#3b82f6'],
-		[6, 6, 4, 4, '#0ea5e9'], // Fluid Impeller Core
-		// Impeller Blades (Diagonal Corners)
-		[4, 4, 2, 2, '#ecfdf5'],
-		[10, 4, 2, 2, '#ecfdf5'],
-		[4, 10, 2, 2, '#ecfdf5'],
-		[10, 10, 2, 2, '#ecfdf5'],
+	// --- COLOR KEY ---
+	// P-DARK: #1A1C20 (Base/Shadow)
+	// P-MID: #4C5056 (Casing/Rock)
+	// P-LIGHT: #9AA0AA (Highlight/Pipe)
+	// ACCENT-HEAT: #D83030 (Red/Danger)
+	// ACCENT-POWER: #FACA10 (Yellow/Energy)
+	// ACCENT-LIFE: #30D850 (Green/Methane)
+	// ACCENT-FLUID: #4070D0 (Blue/Water)
+	// P-WHITE: #F0F0F0 (Spark/Glow)
+
+	// --- WALLS (Static - one frame) ---
+	ironWall: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4C5056'], // Mid Casing
+		[1, 1, 14, 14, '#1A1C20'], // Inner Wall Shadow
+		[4, 4, 8, 8, '#9AA0AA'], // Central Block Highlight
+	]]),
+	steelWall: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4C5056'],
+		[1, 1, 14, 14, '#1A1C20'],
+		[3, 3, 10, 10, '#1A1C20'], // Inner Core
+		[7, 1, 2, 14, '#D83030'],
+		[1, 7, 14, 2, '#D83030'], // Plus Reinforcement
+	]]),
+	bunker: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, '#4C5056'],
+		[2, 2, 28, 28, '#1A1C20'],
+		[4, 4, 24, 24, '#D83030'], // Red Inner Core
+		[10, 10, 12, 12, '#4C5056'], // Central Bunker Block
+	]]),
+
+	// --- EXTRACTORS (2 Frames: Internal Pulse) ---
+	extractor: new AnimatedGeneratedTextures(16, [[
+		[4, 4, 8, 8, '#30D850'], // Green Casing
+		[7, 0, 2, 16, '#FACA10'],
+		[0, 7, 16, 2, '#FACA10'],
+		[6, 6, 4, 4, '#D83030'], // Core (Frame 1: Darker Red)
 	], [
-		[0, 0, 16, 16, '#475569'],
-		[2, 2, 12, 12, '#1f2937'],
-		[7, 0, 2, 16, '#3b82f6'],
-		[0, 7, 16, 2, '#3b82f6'],
-		[6, 6, 4, 4, '#0ea5e9'], // Fluid Impeller Core
-		// Impeller Blades (Up/Down/Left/Right)
-		[7, 4, 2, 2, '#ecfdf5'],
-		[7, 10, 2, 2, '#ecfdf5'],
-		[4, 7, 2, 2, '#ecfdf5'],
-		[10, 7, 2, 2, '#ecfdf5'],
+		[4, 4, 8, 8, '#30D850'],
+		[7, 0, 2, 16, '#FACA10'],
+		[0, 7, 16, 2, '#FACA10'],
+		[6, 6, 4, 4, '#FACA10'], // Core (Frame 2: Yellow pulse)
+	]]),
+	reinforcedExtractor: new AnimatedGeneratedTextures(32, [[
+		[4, 4, 24, 24, '#30D850'],
+		[14, 0, 4, 32, '#FACA10'],
+		[0, 14, 32, 4, '#FACA10'],
+		[10, 10, 12, 12, '#D83030'],
+		[12, 1, 8, 4, '#D83030'], [12, 27, 8, 4, '#D83030'],
+		[1, 12, 4, 8, '#D83030'], [27, 12, 4, 8, '#D83030'],
+		[11, 11, 10, 10, '#F0F0F0'], // Pulse 1 (Smaller, brighter)
+	], [
+		[4, 4, 24, 24, '#30D850'],
+		[14, 0, 4, 32, '#FACA10'],
+		[0, 14, 32, 4, '#FACA10'],
+		[10, 10, 12, 12, '#D83030'],
+		[12, 1, 8, 4, '#D83030'], [12, 27, 8, 4, '#D83030'],
+		[1, 12, 4, 8, '#D83030'], [27, 12, 4, 8, '#D83030'],
+		[9, 9, 14, 14, '#FACA10'], // Pulse 2 (Larger yellow)
+	]]),
+	quadraticExtractor: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, '#1A1C20'], [4, 4, 24, 24, '#30D850'],
+		[14, 0, 4, 32, '#FACA10'], [0, 14, 32, 4, '#FACA10'],
+		[10, 10, 12, 12, '#D83030'], [8, 8, 16, 16, '#1A1C20'],
+		[7, 7, 18, 18, '#30D850'], // Outer ring (Frame 1: lighter green)
+	], [
+		[0, 0, 32, 32, '#1A1C20'], [4, 4, 24, 24, '#30D850'],
+		[14, 0, 4, 32, '#FACA10'], [0, 14, 32, 4, '#FACA10'],
+		[10, 10, 12, 12, '#D83030'], [8, 8, 16, 16, '#1A1C20'],
+		[8, 8, 16, 16, '#1A1C20'], // Outer ring (Frame 2: Darker/Normal)
+	]]),
+	laserExtractor: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, '#1A1C20'], [4, 4, 24, 24, '#30D850'],
+		[14, 0, 4, 32, '#FACA10'], [0, 14, 32, 4, '#FACA10'],
+		[12, 12, 8, 8, '#D83030'], [1, 1, 4, 4, '#4070D0'],
+		[27, 1, 4, 4, '#4070D0'], [1, 27, 4, 4, '#4070D0'],
+		[27, 27, 4, 4, '#4070D0'],
+		[15, 15, 2, 2, '#F0F0F0'], // Central Laser Spark (Frame 1)
+	], [
+		[0, 0, 32, 32, '#1A1C20'], [4, 4, 24, 24, '#30D850'],
+		[14, 0, 4, 32, '#FACA10'], [0, 14, 32, 4, '#FACA10'],
+		[12, 12, 8, 8, '#D83030'], [1, 1, 4, 4, '#4070D0'],
+		[27, 1, 4, 4, '#4070D0'], [1, 27, 4, 4, '#4070D0'],
+		[27, 27, 4, 4, '#4070D0'],
+		[14, 14, 4, 4, '#F0F0F0'], // Central Laser Spark (Frame 2: Larger spark)
+	]]),
+
+	// --- TRANSPORT (2 Frames: Chevron Movement) ---
+	conveyor: new AnimatedGeneratedTextures(8, [[
+		[3, 0, 2, 8, '#9AA0AA'],
+		[3, 1, 2, 1, '#FACA10'],
+		[3, 4, 2, 1, '#FACA10'],
+		[3, 7, 2, 1, '#FACA10'], // Arrows (Frame 1)
+	], [
+		[3, 0, 2, 8, '#9AA0AA'],
+		[3, 0, 2, 1, '#FACA10'],
+		[3, 3, 2, 1, '#FACA10'],
+		[3, 6, 2, 1, '#FACA10'], // Arrows shift down (Frame 2)
+	]]),
+	highSpeedConveyor: new AnimatedGeneratedTextures(8, [[
+		[3, 0, 2, 8, '#4C5056'],
+		[3, 1, 2, 1, '#FACA10'], [3, 2, 2, 1, '#FACA10'],
+		[3, 5, 2, 1, '#FACA10'], [3, 6, 2, 1, '#FACA10'], // Double Chevrons (Frame 1)
+	], [
+		[3, 0, 2, 8, '#4C5056'],
+		[3, 0, 2, 1, '#FACA10'], [3, 1, 2, 1, '#FACA10'],
+		[3, 4, 2, 1, '#FACA10'], [3, 5, 2, 1, '#FACA10'], // Double Chevrons shift down (Frame 2)
+	]]),
+	packedConveyor: new AnimatedGeneratedTextures(8, [[
+		[2, 0, 4, 8, '#1A1C20'],
+		[3, 1, 2, 1, '#4070D0'], [3, 3, 2, 1, '#4070D0'],
+		[3, 5, 2, 1, '#4070D0'], [3, 7, 2, 1, '#4070D0'], // Blue Arrows (Frame 1)
+	], [
+		[2, 0, 4, 8, '#1A1C20'],
+		[3, 0, 2, 1, '#4070D0'], [3, 2, 2, 1, '#4070D0'],
+		[3, 4, 2, 1, '#4070D0'], [3, 6, 2, 1, '#4070D0'], // Blue Arrows shift down (Frame 2)
+	]]),
+	distributor: new AnimatedGeneratedTextures(8, [[
+		[3, 3, 2, 2, '#D83030'], [3, 0, 2, 3, '#9AA0AA'],
+		[3, 5, 2, 3, '#9AA0AA'], [0, 3, 3, 2, '#9AA0AA'],
+		[5, 3, 3, 2, '#9AA0AA'],
+		[3, 4, 2, 1, '#FACA10'], // Indicator pulse (Frame 1)
+	], [
+		[3, 3, 2, 2, '#D83030'], [3, 0, 2, 3, '#9AA0AA'],
+		[3, 5, 2, 3, '#9AA0AA'], [0, 3, 3, 2, '#9AA0AA'],
+		[5, 3, 3, 2, '#9AA0AA'],
+		[3, 3, 2, 2, '#F0F0F0'], // Indicator pulse (Frame 2: Brighter)
+	]]),
+	junction: new AnimatedGeneratedTextures(8, [[
+		[0, 3, 8, 2, '#4C5056'], [3, 0, 2, 8, '#4C5056'],
+		[3, 3, 2, 2, '#FACA10'],
+		[3, 3, 2, 2, '#F0F0F0'], // Center flash (Frame 1: White)
+	], [
+		[0, 3, 8, 2, '#4C5056'], [3, 0, 2, 8, '#4C5056'],
+		[3, 3, 2, 2, '#FACA10'],
+		[3, 3, 2, 2, '#D83030'], // Center flash (Frame 2: Red)
+	]]),
+
+	// --- FACTORIES (2 Frames: Heat/Mixer Animation) ---
+	steelSmelter: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[4, 4, 8, 8, '#D83030'], [7, 0, 2, 16, '#FACA10'],
+		[0, 7, 16, 2, '#FACA10'],
+		[7, 7, 2, 2, '#F0F0F0'], // Smelt pulse (Frame 1)
+	], [
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[4, 4, 8, 8, '#D83030'], [7, 0, 2, 16, '#FACA10'],
+		[0, 7, 16, 2, '#FACA10'],
+		[6, 6, 4, 4, '#FACA10'], // Smelt pulse (Frame 2: Larger yellow pulse)
+	]]),
+	metaglassFoundry: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4070D0'], [2, 2, 12, 12, '#9AA0AA'],
+		[4, 4, 8, 8, '#F0F0F0'], [1, 1, 2, 2, '#F0F0F0'],
+		[13, 1, 2, 2, '#F0F0F0'], [1, 13, 2, 2, '#F0F0F0'],
+		[13, 13, 2, 2, '#F0F0F0'],
+		[5, 5, 6, 6, '#4070D0'], // Glass shimmer (Frame 1: Fluid color)
+	], [
+		[0, 0, 16, 16, '#4070D0'], [2, 2, 12, 12, '#9AA0AA'],
+		[4, 4, 8, 8, '#F0F0F0'], [1, 1, 2, 2, '#F0F0F0'],
+		[13, 1, 2, 2, '#F0F0F0'], [1, 13, 2, 2, '#F0F0F0'],
+		[13, 13, 2, 2, '#F0F0F0'],
+		[6, 6, 4, 4, '#9AA0AA'], // Glass shimmer (Frame 2: Light Grey)
+	]]),
+	plasteelMixer: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, '#30D850'], [4, 4, 24, 24, '#1A1C20'],
+		[14, 1, 4, 30, '#4070D0'], [1, 14, 30, 4, '#4070D0'],
+		[12, 12, 8, 8, '#FACA10'],
+		[13, 13, 6, 6, '#F0F0F0'], // White flash in center
+	], [
+		[0, 0, 32, 32, '#30D850'], [4, 4, 24, 24, '#1A1C20'],
+		[14, 1, 4, 30, '#4070D0'],
+		[1, 14, 30, 4, '#4070D0'],
+		[12, 12, 8, 8, '#FACA10'], // Reset
+		[14, 14, 4, 4, '#FACA10'],
+	]]),
+	thermiteForge: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, '#1A1C20'], [4, 4, 24, 24, '#D83030'],
+		[8, 8, 16, 16, '#FACA10'], [12, 12, 8, 8, '#F0F0F0'],
+		[14, 14, 4, 4, '#D83030'], // Inner glow 1
+	], [
+		[0, 0, 32, 32, '#1A1C20'], [4, 4, 24, 24, '#D83030'],
+		[8, 8, 16, 16, '#FACA10'], [12, 12, 8, 8, '#F0F0F0'],
+		[13, 13, 6, 6, '#FACA10'], // Inner glow 2 (Larger yellow)
+	]]),
+	exidiumCatalyst: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, '#4C5056'], [4, 4, 24, 24, '#1A1C20'], // Simplified casing colors
+		[10, 10, 12, 12, '#FACA10'], [15, 1, 2, 30, '#F0F0F0'],
+		[1, 15, 30, 2, '#F0F0F0'],
+		[15, 0, 2, 32, '#4C5056'], // Energy cross less visible (Frame 1)
+	], [
+		[0, 0, 32, 32, '#4C5056'], [4, 4, 24, 24, '#1A1C20'],
+		[10, 10, 12, 12, '#FACA10'],
+		[15, 0, 2, 32, '#F0F0F0'], // Energy cross fully charged (Frame 2: Bright white)
+		[0, 15, 32, 2, '#F0F0F0'],
+	]]),
+
+	// --- STORAGE (Static) ---
+	storage: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#FACA10'], [2, 2, 12, 12, '#D83030'],
+		[4, 4, 8, 2, '#F0F0F0'], [4, 8, 8, 2, '#F0F0F0'],
+		[7, 0, 2, 4, '#1A1C20'], // Access Hatch (Dark)
+	]]),
+	dispenser: new AnimatedGeneratedTextures(8, [[
+		[1, 1, 6, 6, '#4C5056'], [3, 3, 2, 2, '#FACA10'],
+		[3, 5, 2, 3, '#D83030'],
+		[3, 5, 2, 1, '#F0F0F0'], // Output flash (Frame 1)
+	], [
+		[1, 1, 6, 6, '#4C5056'], [3, 3, 2, 2, '#FACA10'],
+		[3, 5, 2, 3, '#D83030'],
+		[3, 7, 2, 1, '#F0F0F0'], // Output flash (Frame 2: Shifted down)
+	]]),
+
+	// --- POWER (2 Frames: Energy Flow/Pulse) ---
+	thermalGenerator: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[5, 5, 6, 6, '#D83030'], [6, 4, 4, 8, '#FACA10'],
+		[4, 6, 8, 4, '#FACA10'],
+		[7, 7, 2, 2, '#FACA10'], // Heat center (Frame 1: Yellow)
+	], [
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[5, 5, 6, 6, '#D83030'], [6, 4, 4, 8, '#FACA10'],
+		[4, 6, 8, 4, '#FACA10'],
+		[6, 6, 4, 4, '#F0F0F0'], // Heat center (Frame 2: White hot pulse)
+	]]),
+	solarArray: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#1A1C20'], [1, 1, 14, 14, '#30D850'],
+		[3, 0, 2, 16, '#F0F0F0'], [7, 0, 2, 16, '#F0F0F0'],
+		[11, 0, 2, 16, '#F0F0F0'],
+		[1, 1, 2, 2, '#FACA10'], // Corner charge pulse (Frame 1)
+	], [
+		[0, 0, 16, 16, '#1A1C20'], [1, 1, 14, 14, '#30D850'],
+		[3, 0, 2, 16, '#F0F0F0'], [7, 0, 2, 16, '#F0F0F0'],
+		[11, 0, 2, 16, '#F0F0F0'],
+		[3, 3, 2, 2, '#FACA10'], // Corner charge pulse (Frame 2: Shifted down/right)
+	]]),
+	methaneBurner: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, '#4C5056'], [4, 4, 24, 24, '#30D850'],
+		[10, 10, 12, 12, '#D83030'], [14, 14, 4, 4, '#F0F0F0'],
+		[2, 2, 4, 4, '#FACA10'], [26, 2, 4, 4, '#FACA10'],
+		[2, 26, 4, 4, '#FACA10'], [26, 26, 4, 4, '#FACA10'],
+		[12, 12, 8, 8, '#D83030'], // Burner pulse (Frame 1: Red flame)
+	], [
+		[0, 0, 32, 32, '#4C5056'], [4, 4, 24, 24, '#30D850'],
+		[10, 10, 12, 12, '#D83030'], [14, 14, 4, 4, '#F0F0F0'],
+		[2, 2, 4, 4, '#FACA10'], [26, 2, 4, 4, '#FACA10'],
+		[2, 26, 4, 4, '#FACA10'], [26, 26, 4, 4, '#FACA10'],
+		[11, 11, 10, 10, '#FACA10'], // Burner pulse (Frame 2: Larger yellow flame)
+	]]),
+	thermiteReactor: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, '#1A1C20'], [2, 2, 28, 28, '#4C5056'],
+		[6, 6, 20, 20, '#D83030'], [10, 10, 12, 12, '#F0F0F0'],
+		[15, 0, 2, 32, '#FACA10'], [0, 15, 32, 2, '#FACA10'],
+		[14, 14, 4, 4, '#D83030'], // Core blink (Frame 1: Red Center)
+	], [
+		[0, 0, 32, 32, '#1A1C20'], [2, 2, 28, 28, '#4C5056'],
+		[6, 6, 20, 20, '#D83030'], [10, 10, 12, 12, '#F0F0F0'],
+		[15, 0, 2, 32, '#FACA10'], [0, 15, 32, 2, '#FACA10'],
+		[14, 14, 4, 4, '#F0F0F0'], // Core blink (Frame 2: White Hot Center)
+	]]),
+	conductor: new AnimatedGeneratedTextures(8, [[
+		[3, 0, 2, 8, '#FACA10'], [0, 3, 8, 2, '#FACA10'],
+		[3, 3, 2, 2, '#D83030'],
+		[3, 3, 2, 2, '#F0F0F0'], // Power blink (Frame 1)
+	], [
+		[3, 0, 2, 8, '#FACA10'], [0, 3, 8, 2, '#FACA10'],
+		[3, 3, 2, 2, '#D83030'],
+		[3, 3, 2, 2, '#FACA10'], // Power blink (Frame 2: Yellow)
+	]]),
+	battery: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#30D850'], [1, 1, 14, 14, '#1A1C20'],
+		[4, 4, 8, 8, '#FACA10'], [7, 1, 2, 14, '#F0F0F0'],
+		[1, 7, 14, 2, '#F0F0F0'],
+		[4, 4, 8, 2, '#F0F0F0'], // Charge bar 1
+	], [
+		[0, 0, 16, 16, '#30D850'], [1, 1, 14, 14, '#1A1C20'],
+		[4, 4, 8, 8, '#FACA10'], [7, 1, 2, 14, '#F0F0F0'],
+		[1, 7, 14, 2, '#F0F0F0'],
+		[4, 6, 8, 2, '#F0F0F0'], // Charge bar 2 (Shifted down)
+	]]),
+
+	// --- FLUID/AIR (2 Frames: Gas/Fluid Pulse) ---
+	airVent: new AnimatedGeneratedTextures(8, [[
+		[1, 1, 6, 6, '#9AA0AA'], [3, 0, 2, 1, '#4070D0'],
+		[3, 7, 2, 1, '#4070D0'], [0, 3, 1, 2, '#4070D0'],
+		[7, 3, 1, 2, '#4070D0'],
+		[3, 0, 2, 1, '#F0F0F0'], // Air pulse (Frame 1)
+	], [
+		[1, 1, 6, 6, '#9AA0AA'], [3, 0, 2, 1, '#4070D0'],
+		[3, 7, 2, 1, '#4070D0'], [0, 3, 1, 2, '#4070D0'],
+		[7, 3, 1, 2, '#4070D0'],
+		[3, 7, 2, 1, '#F0F0F0'], // Air pulse (Frame 2: Output end)
+	]]),
+	waterVent: new AnimatedGeneratedTextures(8, [[
+		[1, 1, 6, 6, '#4070D0'], [3, 0, 2, 1, '#F0F0F0'],
+		[3, 7, 2, 1, '#F0F0F0'], [0, 3, 1, 2, '#F0F0F0'],
+		[7, 3, 1, 2, '#F0F0F0'],
+		[3, 0, 2, 1, '#F0F0F0'], // Water pulse (Frame 1)
+	], [
+		[1, 1, 6, 6, '#4070D0'], [3, 0, 2, 1, '#F0F0F0'],
+		[3, 7, 2, 1, '#F0F0F0'], [0, 3, 1, 2, '#F0F0F0'],
+		[7, 3, 1, 2, '#F0F0F0'],
+		[3, 7, 2, 1, '#F0F0F0'], // Water pulse (Frame 2: Output end)
+	]]),
+	methaneVent: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#30D850'], [2, 2, 12, 12, '#1A1C20'],
+		[7, 0, 2, 4, '#D83030'], [0, 7, 4, 2, '#D83030'],
+		[7, 12, 2, 4, '#D83030'], [12, 7, 4, 2, '#D83030'],
+		[8, 1, 2, 2, '#FACA10'], // Methane pulse (Frame 1)
+	], [
+		[0, 0, 16, 16, '#30D850'], [2, 2, 12, 12, '#1A1C20'],
+		[7, 0, 2, 4, '#D83030'], [0, 7, 4, 2, '#D83030'],
+		[7, 12, 2, 4, '#D83030'], [12, 7, 4, 2, '#D83030'],
+		[1, 8, 2, 2, '#FACA10'], // Methane pulse (Frame 2: Rotated)
+	]]),
+	pump: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[7, 0, 2, 16, '#4070D0'], [0, 7, 16, 2, '#4070D0'],
+		[6, 6, 4, 4, '#4070D0'],
+		[7, 4, 2, 2, '#F0F0F0'], [7, 10, 2, 2, '#F0F0F0'],
+		[4, 7, 2, 2, '#F0F0F0'], [10, 7, 2, 2, '#F0F0F0'], // Impeller: Cross
+	], [
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[7, 0, 2, 16, '#4070D0'], [0, 7, 16, 2, '#4070D0'],
+		[6, 6, 4, 4, '#4070D0'],
+		[4, 4, 2, 2, '#F0F0F0'], [10, 4, 2, 2, '#F0F0F0'],
+		[4, 10, 2, 2, '#F0F0F0'], [10, 10, 2, 2, '#F0F0F0'], // Impeller: Diagonal
+	]]),
+	poweredPump: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[7, 0, 2, 16, '#4070D0'], [0, 7, 16, 2, '#4070D0'],
+		[6, 6, 4, 4, '#FACA10'], [1, 1, 2, 2, '#D83030'],
+		[7, 4, 2, 2, '#F0F0F0'], [7, 10, 2, 2, '#F0F0F0'],
+		[4, 7, 2, 2, '#F0F0F0'], [10, 7, 2, 2, '#F0F0F0'], // Impeller: Cross
+	], [
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[7, 0, 2, 16, '#4070D0'], [0, 7, 16, 2, '#4070D0'],
+		[6, 6, 4, 4, '#FACA10'], [1, 1, 2, 2, '#D83030'],
+		[4, 4, 2, 2, '#F0F0F0'], [10, 4, 2, 2, '#F0F0F0'],
+		[4, 10, 2, 2, '#F0F0F0'], [10, 10, 2, 2, '#F0F0F0'], // Impeller: Diagonal
+	]]),
+	well: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, '#4C5056'], [4, 4, 24, 24, '#4C5056'],
+		[10, 10, 12, 12, '#4070D0'], [14, 0, 4, 32, '#4070D0'],
+		[0, 14, 32, 4, '#4070D0'], [1, 1, 6, 6, '#FACA10'],
+		[25, 1, 6, 6, '#FACA10'], [1, 25, 6, 6, '#FACA10'],
+		[25, 25, 6, 6, '#FACA10'],
+		[15, 15, 2, 2, '#F0F0F0'], // Water pulse (Frame 1)
+	], [
+		[0, 0, 32, 32, '#4C5056'], [4, 4, 24, 24, '#4C5056'],
+		[10, 10, 12, 12, '#4070D0'], [14, 0, 4, 32, '#4070D0'],
+		[0, 14, 32, 4, '#4070D0'], [1, 1, 6, 6, '#FACA10'],
+		[25, 1, 6, 6, '#FACA10'], [1, 25, 6, 6, '#FACA10'],
+		[25, 25, 6, 6, '#FACA10'],
+		[14, 14, 4, 4, '#F0F0F0'], // Water pulse (Frame 2: Larger)
+	]]),
+	pipe: new AnimatedGeneratedTextures(8, [[
+		[3, 0, 2, 8, '#4070D0'],
+		[3, 1, 2, 2, '#F0F0F0'], // Fluid pulse (Frame 1)
+	], [
+		[3, 0, 2, 8, '#4070D0'],
+		[3, 5, 2, 2, '#F0F0F0'], // Fluid pulse (Frame 2: Shifted down)
+	]]),
+	pipeDistributor: new AnimatedGeneratedTextures(8, [[
+		[3, 3, 2, 2, '#4070D0'], [3, 0, 2, 3, '#9AA0AA'],
+		[3, 5, 2, 3, '#9AA0AA'], [0, 3, 3, 2, '#9AA0AA'],
+		[5, 3, 3, 2, '#9AA0AA'],
+		[3, 4, 2, 1, '#F0F0F0'], // Center pulse (Frame 1)
+	], [
+		[3, 3, 2, 2, '#4070D0'], [3, 0, 2, 3, '#9AA0AA'],
+		[3, 5, 2, 3, '#9AA0AA'], [0, 3, 3, 2, '#9AA0AA'],
+		[5, 3, 3, 2, '#9AA0AA'],
+		[3, 3, 2, 2, '#F0F0F0'], // Center pulse (Frame 2: Larger)
+	]]),
+	pipeJunction: new AnimatedGeneratedTextures(8, [[
+		[0, 3, 8, 2, '#4070D0'], [3, 0, 2, 8, '#4070D0'],
+		[3, 3, 2, 2, '#F0F0F0'], // Center flash (Frame 1)
+	], [
+		[0, 3, 8, 2, '#4070D0'], [3, 0, 2, 8, '#4070D0'],
+		[3, 3, 2, 2, '#FACA10'], // Center flash (Frame 2: Yellow)
+	]]),
+	tank: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4070D0'], [2, 2, 12, 12, '#9AA0AA'],
+		[4, 4, 8, 1, '#F0F0F0'], [4, 6, 8, 1, '#F0F0F0'],
+		[4, 8, 8, 1, '#F0F0F0'], [4, 10, 8, 1, '#F0F0F0'],
+		[5, 5, 6, 6, '#9AA0AA'], // Fluid surface ripple (Frame 1)
+	], [
+		[0, 0, 16, 16, '#4070D0'], [2, 2, 12, 12, '#9AA0AA'],
+		[4, 4, 8, 1, '#F0F0F0'], [4, 6, 8, 1, '#F0F0F0'],
+		[4, 8, 8, 1, '#F0F0F0'], [4, 10, 8, 1, '#F0F0F0'],
+		[4, 4, 8, 8, '#F0F0F0'], // Fluid surface ripple (Frame 2: White)
+	]]),
+
+	// --- TURRETS (2 Frames: Recoil/Charge) ---
+	shrapnelTurret: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[5, 5, 6, 6, '#9AA0AA'], [4, 0, 8, 4, '#D83030'],
+		[6, 4, 4, 2, '#FACA10'],
+		[5, 0, 6, 4, '#D83030'], // Barrel extended (Frame 1: Ready)
+	], [
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[5, 5, 6, 6, '#9AA0AA'], [4, 0, 8, 4, '#D83030'],
+		[6, 4, 4, 2, '#FACA10'],
+		[4, 1, 8, 3, '#D83030'], // Barrel recoiled (Frame 2: Fired)
+	]]),
+	piercingTurret: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[5, 5, 6, 6, '#9AA0AA'], [7, 0, 2, 8, '#D83030'],
+		[7, 8, 2, 2, '#FACA10'],
+		[7, 0, 2, 8, '#D83030'], // Barrel extended (Frame 1: Ready)
+	], [
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[5, 5, 6, 6, '#9AA0AA'], [7, 0, 2, 8, '#D83030'],
+		[7, 8, 2, 2, '#FACA10'],
+		[7, 1, 2, 7, '#D83030'], // Barrel recoiled (Frame 2: Fired)
+	]]),
+	arcTurret: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[5, 5, 6, 6, '#4070D0'], [7, 0, 2, 4, '#F0F0F0'],
+		[0, 7, 4, 2, '#F0F0F0'], [7, 12, 2, 4, '#F0F0F0'],
+		[12, 7, 4, 2, '#F0F0F0'],
+		[6, 6, 4, 4, '#F0F0F0'], // Central glow (Frame 1: Bright white)
+	], [
+		[0, 0, 16, 16, '#4C5056'], [2, 2, 12, 12, '#1A1C20'],
+		[5, 5, 6, 6, '#4070D0'], [7, 0, 2, 4, '#F0F0F0'],
+		[0, 7, 4, 2, '#F0F0F0'], [7, 12, 2, 4, '#F0F0F0'],
+		[12, 7, 4, 2, '#F0F0F0'],
+		[5, 5, 6, 6, '#4070D0'], // Central glow (Frame 2: Blue)
+	]]),
+	siegeTurret: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, '#1A1C20'], [4, 4, 24, 24, '#4C5056'],
+		[10, 10, 12, 12, '#4C5056'], [12, 0, 8, 16, '#FACA10'],
+		[14, 16, 4, 4, '#D83030'],
+		[12, 0, 8, 16, '#FACA10'], // Barrel extended (Frame 1: Ready)
+	], [
+		[0, 0, 32, 32, '#1A1C20'], [4, 4, 24, 24, '#4C5056'],
+		[10, 10, 12, 12, '#4C5056'], [12, 0, 8, 16, '#FACA10'],
+		[14, 16, 4, 4, '#D83030'],
+		[12, 2, 8, 14, '#FACA10'], // Barrel recoiled (Frame 2: Fired)
+	]]),
+	laserTurret: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, '#4C5056'], [4, 4, 24, 24, '#1A1C20'],
+		[12, 12, 8, 8, '#D83030'], [14, 0, 4, 32, '#D83030'],
+		[1, 1, 6, 6, '#D83030'], [25, 1, 6, 6, '#D83030'],
+		[1, 25, 6, 6, '#D83030'], [25, 25, 6, 6, '#D83030'],
+		[15, 15, 2, 2, '#F0F0F0'], // Central core spark (Frame 1)
+	], [
+		[0, 0, 32, 32, '#4C5056'], [4, 4, 24, 24, '#1A1C20'],
+		[12, 12, 8, 8, '#D83030'], [14, 0, 4, 32, '#D83030'],
+		[1, 1, 6, 6, '#F0F0F0'], [25, 1, 6, 6, '#F0F0F0'], // Capacitors charge white
+		[1, 25, 6, 6, '#F0F0F0'], [25, 25, 6, 6, '#F0F0F0'],
+		[14, 14, 4, 4, '#F0F0F0'], // Central core large spark (Frame 2)
+	]]),
+
+	// --- MOBS (2 Frames: Movement/Blink) ---
+	lowTierMob: new AnimatedGeneratedTextures(8, [[
+		[2, 2, 4, 4, '#D83030'], [1, 3, 2, 2, '#FACA10'],
+		[5, 3, 2, 2, '#FACA10'], [3, 6, 2, 1, '#1A1C20'],
+		[3, 6, 2, 1, '#F0F0F0'], // Feet/base 1
+	], [
+		[2, 2, 4, 4, '#D83030'], [1, 3, 2, 2, '#FACA10'],
+		[5, 3, 2, 2, '#FACA10'], [3, 6, 2, 1, '#1A1C20'],
+		[3, 7, 2, 1, '#F0F0F0'], // Feet/base 2 (Shifted down for walking effect)
 	]]),
 };
-
-// Object.entries({
-// 	// Resource deposits
-// 	ironDeposit: new GeneratedTexture(24, [
-// 		[2, 4, 20, 14, '#3f434a'],
-// 		[6, 8, 5, 6, '#2b2f35'],
-// 		[13, 6, 6, 5, '#2b2f35'],
-// 		[4, 6, 4, 2, '#555a63'],
-// 	]),
-//
-// 	sulphateDeposit: new GeneratedTexture(24, [
-// 		[3, 3, 18, 18, '#b89f34'],
-// 		[6, 6, 5, 7, '#8c7a28'],
-// 		[13, 5, 5, 6, '#8c7a28'],
-// 		[5, 12, 6, 6, '#e0cf5b'],
-// 	]),
-//
-// 	fluxSandDeposit: new GeneratedTexture(24, [
-// 		[2, 2, 20, 20, '#d9d4c0'],
-// 		[6, 6, 7, 6, '#c3bda6'],
-// 		[13, 7, 5, 6, '#bfb9a4'],
-// 		[4, 14, 6, 4, '#f3eed7'],
-// 	]),
-//
-// 	// Liquids
-// 	waterLake: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2d6fa3'],
-// 		[2, 3, 20, 5, '#3a86be'],
-// 		[4, 12, 16, 6, '#3983bc'],
-// 		[3, 19, 10, 3, '#3fa6d8'],
-// 	]),
-//
-// 	methaneLake: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#3d1e72'],
-// 		[2, 4, 20, 5, '#572a95'],
-// 		[5, 12, 14, 6, '#6a3cb3'],
-// 		[3, 18, 12, 4, '#7d45cc'],
-// 	]),
-//
-// 	// Walls & bunker
-// 	ironWall: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#3d4248'],
-// 		[3, 3, 18, 18, '#2b2f34'],
-// 		[4, 4, 6, 6, '#555a5f'],
-// 		[14, 14, 6, 6, '#555a5f'],
-// 	]),
-//
-// 	steelWall: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2a2e34'],
-// 		[3, 3, 18, 18, '#1c1f24'],
-// 		[5, 5, 6, 6, '#737b85'],
-// 		[12, 11, 5, 6, '#8c96a1'],
-// 	]),
-//
-// 	bunker: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#26282c'],
-// 		[3, 3, 18, 18, '#3e4247'],
-// 		[6, 6, 12, 6, '#141618'],
-// 		[8, 12, 8, 6, '#4d5259'],
-// 	]),
-//
-// 	// Extractors
-// 	extractor: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#3a3d41'],
-// 		[4, 4, 16, 16, '#2a2d30'],
-// 		[8, 8, 8, 8, '#1c1e20'],
-// 		[5, 5, 14, 2, '#4c5055'],
-// 	]),
-//
-// 	reinforcedExtractor: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2c2f33'],
-// 		[3, 3, 18, 18, '#1d1f22'],
-// 		[4, 4, 6, 6, '#4d535a'],
-// 		[9, 9, 6, 6, '#2ab3f7'],
-// 	]),
-//
-// 	quadraticExtractor: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#33363a'],
-// 		[5, 5, 5, 5, '#1f2225'],
-// 		[14, 5, 5, 5, '#1f2225'],
-// 		[5, 14, 5, 5, '#1f2225'],
-// 		[14, 14, 5, 5, '#1f2225'],
-// 	]),
-//
-// 	laserExtractor: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#26282d'],
-// 		[4, 4, 16, 16, '#1d1f24'],
-// 		[8, 8, 8, 8, '#6a3c9f'],
-// 		[11, 11, 2, 2, '#ff1744'],
-// 	]),
-//
-// 	// Conveyors & transport
-// 	conveyor: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2a2d31'],
-// 		[0, 0, 3, 24, '#3b3f44'],
-// 		[21, 0, 3, 24, '#3b3f44'],
-// 		[3, 0, 18, 24, '#1f2225'],
-// 	]),
-//
-// 	highSpeedConveyor: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#33373c'],
-// 		[0, 0, 3, 24, '#4d5257'],
-// 		[21, 0, 3, 24, '#4d5257'],
-// 		[3, 0, 18, 24, '#1b1d21'],
-// 		[3, 2, 18, 2, '#636b75'],
-// 	]),
-//
-// 	distributor: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2d3135'],
-// 		[8, 8, 8, 8, '#1e2023'],
-// 		[11, 0, 2, 8, '#45494e'],
-// 		[0, 11, 8, 2, '#45494e'],
-// 	]),
-//
-// 	junction: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2c2f33'],
-// 		[0, 10, 24, 4, '#1f2225'],
-// 		[10, 0, 4, 24, '#1f2225'],
-// 		[0, 9, 24, 1, '#3b3f44'],
-// 	]),
-//
-// 	// Processing buildings
-// 	steelSmelter: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2d3036'],
-// 		[4, 4, 16, 16, '#1c1e22'],
-// 		[6, 10, 12, 8, '#3b3f46'],
-// 		[8, 12, 8, 4, '#d46a1c'],
-// 	]),
-//
-// 	metaglassFoundry: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2e3136'],
-// 		[4, 4, 16, 16, '#202226'],
-// 		[6, 6, 12, 6, '#2f9bd6'],
-// 		[8, 9, 8, 3, '#6fc5ff'],
-// 	]),
-//
-// 	plasteelMixer: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#30343a'],
-// 		[4, 4, 16, 16, '#1f2226'],
-// 		[6, 8, 12, 8, '#5a7b9a'],
-// 		[9, 11, 6, 4, '#f0b04e'],
-// 	]),
-//
-// 	thermiteForge: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2b2e32'],
-// 		[4, 4, 16, 16, '#191b20'],
-// 		[7, 10, 10, 6, '#b63b11'],
-// 		[9, 12, 6, 3, '#ff6f2a'],
-// 	]),
-//
-// 	exidiumCatalyst: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2a2d30'],
-// 		[5, 5, 14, 14, '#1b1d21'],
-// 		[8, 8, 8, 8, '#7b2e8e'],
-// 		[10, 10, 4, 4, '#ff3f6b'],
-// 	]),
-//
-// 	// Storage & dispenser
-// 	storage: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2f3337'],
-// 		[4, 4, 16, 16, '#202326'],
-// 		[6, 6, 12, 12, '#3b3f44'],
-// 		[9, 9, 6, 6, '#2e3237'],
-// 	]),
-//
-// 	dispenser: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2f3337'],
-// 		[4, 4, 16, 16, '#1f2226'],
-// 		[9, 9, 6, 6, '#e09a3a'],
-// 		[10, 10, 4, 4, '#ffd27a'],
-// 	]),
-//
-// 	// Power generation & storage
-// 	thermalGenerator: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2b2f33'],
-// 		[4, 4, 16, 16, '#1c1f22'],
-// 		[7, 7, 10, 10, '#2f9bd6'],
-// 		[9, 12, 6, 4, '#66c4ff'],
-// 	]),
-//
-// 	solarArray: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2c2f33'],
-// 		[3, 6, 18, 12, '#1a2230'],
-// 		[6, 8, 12, 8, '#2a9be6'],
-// 		[8, 10, 8, 4, '#66c4ff'],
-// 	]),
-//
-// 	methaneBurner: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2d2f33'],
-// 		[4, 4, 16, 16, '#191b20'],
-// 		[8, 10, 8, 6, '#6a3cb3'],
-// 		[10, 12, 4, 2, '#9f6df0'],
-// 	]),
-//
-// 	thermiteReactor: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#27292d'],
-// 		[3, 3, 18, 18, '#16171a'],
-// 		[7, 7, 10, 10, '#c43a12'],
-// 		[9, 11, 6, 6, '#ff7a2f'],
-// 	]),
-//
-// 	conductor: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2b2e33'],
-// 		[10, 0, 4, 24, '#4b5158'],
-// 		[0, 10, 24, 4, '#4b5158'],
-// 		[11, 11, 2, 2, '#ffd24a'],
-// 	]),
-//
-// 	battery: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2a2e33'],
-// 		[4, 4, 16, 16, '#1f2226'],
-// 		[8, 6, 8, 12, '#3b3f44'],
-// 		[10, 8, 4, 8, '#ffd24a'],
-// 	]),
-//
-// 	// Vents
-// 	airVent: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2c2f33'],
-// 		[4, 4, 16, 16, '#1d2024'],
-// 		[6, 6, 12, 4, '#4a4f54'],
-// 		[6, 14, 12, 4, '#3b4045'],
-// 	]),
-//
-// 	waterVent: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2c2f33'],
-// 		[4, 4, 16, 16, '#172833'],
-// 		[6, 6, 12, 4, '#2d6fa3'],
-// 		[6, 14, 12, 4, '#3fa6d8'],
-// 	]),
-//
-// 	methaneVent: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2c2f33'],
-// 		[4, 4, 16, 16, '#1b1030'],
-// 		[6, 6, 12, 4, '#5a2a91'],
-// 		[6, 14, 12, 4, '#7d45cc'],
-// 	]),
-//
-// 	// Pumps & wells
-// 	pump: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#33363a'],
-// 		[5, 5, 14, 14, '#1f2225'],
-// 		[9, 9, 6, 6, '#2f9bd6'],
-// 		[10, 10, 4, 4, '#66c4ff'],
-// 	]),
-//
-// 	poweredPump: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2b2e33'],
-// 		[4, 4, 16, 16, '#1c1f22'],
-// 		[7, 7, 10, 10, '#4c9be6'],
-// 		[10, 10, 4, 4, '#ffd24a'],
-// 	]),
-//
-// 	well: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2e3136'],
-// 		[6, 6, 12, 12, '#1f2428'],
-// 		[8, 8, 8, 8, '#2d6fa3'],
-// 		[10, 10, 4, 4, '#66c4ff'],
-// 	]),
-//
-// 	// Pipes & tanks
-// 	pipe: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2b2e32'],
-// 		[10, 0, 4, 24, '#4b4f54'],
-// 		[0, 10, 24, 4, '#4b4f54'],
-// 		[11, 11, 2, 2, '#6f6f73'],
-// 	]),
-//
-// 	pipeDistributor: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2b2e32'],
-// 		[8, 8, 8, 8, '#1f2226'],
-// 		[11, 0, 2, 8, '#45494e'],
-// 		[0, 11, 8, 2, '#45494e'],
-// 	]),
-//
-// 	pipeJunction: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2b2e32'],
-// 		[0, 10, 24, 4, '#4b4f54'],
-// 		[10, 0, 4, 24, '#4b4f54'],
-// 		[11, 11, 2, 2, '#9aa0a6'],
-// 	]),
-//
-// 	tank: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2f3337'],
-// 		[4, 4, 16, 16, '#1f2226'],
-// 		[6, 6, 12, 12, '#3b3f44'],
-// 		[8, 8, 8, 8, '#2d6fa3'],
-// 	]),
-//
-// 	// Turrets
-// 	shrapnelTurret: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2d3034'],
-// 		[6, 6, 12, 12, '#1d2023'],
-// 		[8, 8, 8, 8, '#7a2f2f'],
-// 		[10, 10, 4, 4, '#ff6b4d'],
-// 	]),
-//
-// 	piercingTurret: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2d3034'],
-// 		[5, 5, 14, 14, '#1c1f22'],
-// 		[8, 7, 8, 10, '#26343f'],
-// 		[11, 9, 2, 6, '#ffd24a'],
-// 	]),
-//
-// 	arcTurret: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#26282c'],
-// 		[5, 5, 14, 14, '#1a1c1f'],
-// 		[8, 8, 8, 8, '#2a9be6'],
-// 		[10, 10, 4, 4, '#66c4ff'],
-// 	]),
-//
-// 	siegeTurret: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#2a2d31'],
-// 		[4, 4, 16, 16, '#1b1d20'],
-// 		[6, 6, 12, 6, '#4b4f54'],
-// 		[8, 9, 8, 6, '#9a9fa4'],
-// 	]),
-//
-// 	laserTurret: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#26282c'],
-// 		[5, 5, 14, 14, '#191b1f'],
-// 		[9, 8, 6, 8, '#6a3c9f'],
-// 		[11, 10, 2, 4, '#ff1744'],
-// 	]),
-//
-// 	// Enemies (variety)
-// 	enemySmall: new GeneratedTexture(24, [
-// 		[4, 4, 16, 16, '#3a3b3f'],
-// 		[7, 7, 10, 10, '#2b2d30'],
-// 		[9, 9, 6, 6, '#ffd6a6'],
-// 	]),
-//
-// 	enemySpitter: new GeneratedTexture(24, [
-// 		[3, 3, 18, 18, '#5a2a2a'],
-// 		[7, 7, 10, 10, '#3b1a1a'],
-// 		[10, 9, 4, 6, '#ff6b4d'],
-// 	]),
-//
-// 	enemyTank: new GeneratedTexture(24, [
-// 		[0, 0, 24, 24, '#323639'],
-// 		[4, 6, 16, 12, '#1f2225'],
-// 		[7, 8, 10, 8, '#4b4f54'],
-// 		[10, 9, 4, 6, '#ff6b4d'],
-// 	]),
-//
-// 	enemyDrone: new GeneratedTexture(24, [
-// 		[6, 6, 12, 12, '#2b2f33'],
-// 		[8, 8, 8, 8, '#1f2226'],
-// 		[10, 10, 4, 4, '#ff3f6b'],
-// 	]),
-// }).forEach(([name, texture]) => {
-// 	let c = texture.texture.source.resource;
-// 	c.title = name;
-// 	document.body.appendChild(c);
-// });
-
