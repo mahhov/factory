@@ -123,12 +123,12 @@ export abstract class Building extends Entity {
 	}
 
 	tick(world: World, tile: Tile<Entity>) {
-		if (this.getAttribute(EntityBuildableAttribute)!.doneBuilding)
+		let buildableAttribute = this.getAttribute(EntityBuildableAttribute)!;
+		if (buildableAttribute.doneBuilding)
 			super.tick(world, tile);
 		else {
-			this.attributes.slice(0, 2)
-				.filter(attributeChain => attributeChain.every(attribute => attribute.tick(world, tile)))
-				.forEach(attributeChain => attributeChain.forEach(attribute => attribute.reset()));
+			buildableAttribute.reset();
+			buildableAttribute.tick(world, tile);
 		}
 	}
 }
