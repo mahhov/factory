@@ -4,7 +4,6 @@ import Vector from '../util/Vector.js';
 import {Mob} from './Entity.js';
 import {EntityMobChaseTargetAttribute} from './EntityAttribute.js';
 import {World} from './World.js';
-import arr = util.arr;
 
 let scoreMapping: Record<string, number> = {
 	Empty: 0,
@@ -43,7 +42,7 @@ export class MobLogic {
 	private target(world: World) {
 		if (!this.targetingCounter.tick()) return;
 
-		let density = arr(world.width).map(() => arr(world.height).map(() => 0));
+		let density = util.arr(world.width).map(() => util.arr(world.height).map(() => 0));
 		let targets: Vector[] = [];
 		for (let x = 0; x < world.width; x++)
 			for (let y = 0; y < world.height; y++) {

@@ -8,7 +8,6 @@ import {Tile, World} from '../world/World.js';
 import {Input} from './Input.js';
 import MultilineText from './MultilineText.js';
 import uiUtil from './uiUtil.js';
-import mouseInContainer = uiUtil.mouseInContainer;
 
 class Selection {
 	readonly tile: Tile<Entity>;
@@ -51,7 +50,7 @@ export default class Tooltip {
 	}
 
 	toggleSelect() {
-		if (mouseInContainer(this.input.mousePosition, this.multilineText.textContainer)) return;
+		if (uiUtil.mouseInContainer(this.input.mousePosition, this.multilineText.textContainer)) return;
 		let selection = this.createInputSelection;
 		if (!selection || !this.selection || this.selection.tile !== selection.tile)
 			this.selection = selection;

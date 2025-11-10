@@ -35,7 +35,6 @@ import {GridWorldLayer, World} from '../world/World.js';
 import {Input} from './Input.js';
 import MultilineText, {Anchor} from './MultilineText.js';
 import TextLine from './TextLine.js';
-import lowerCaseToTitleCase = util.lowerCaseToTitleCase;
 
 export enum PlacerState {
 	EMPTY, ENTITY_SELECTED, STARTED
@@ -474,7 +473,7 @@ export default class Placer {
 	}
 
 	showToolGroupTooltip(index: number) {
-		this.multilineText.lines = [new TextLine(lowerCaseToTitleCase(Object.keys(toolTree)[index] as ToolGroup))];
+		this.multilineText.lines = [new TextLine(util.lowerCaseToTitleCase(Object.keys(toolTree)[index] as ToolGroup))];
 		let coordinates = Placer.toolUiCoordinates(true, index);
 		this.multilineText.position = new Vector(coordinates[0][0], coordinates[0][1]);
 		this.multilineText.tick();
