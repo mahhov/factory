@@ -1,3 +1,4 @@
+import util from '../util/util.js';
 import {Liquid, Material, Resource, ResourceUtils} from './Resource.js';
 
 type StringRecord = Record<string, string>;
@@ -12,18 +13,12 @@ type ParsedSection2<T extends FieldHandlerDictionary2> = {
 	[K in keyof T]: ParsedSection<T[K]>;
 };
 
-// 'iron wall' => 'Iron Wall'
-let lowerCaseToTitleCase = (str: string): string => str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
-
-// 'flux-sand' -> 'FLUX_SAND'
-let dashCaseToSnakeCase = (str: string): string => str.split('-').join('_').toUpperCase();
-
 let parseNumber = (str: string): number => str === '-' ? 0 : Number(str);
 
 let parseResourceCount = <T extends Resource>(str: string, resourceEnum: Record<string, string | T>): ResourceUtils.Count<T> => {
 	console.assert(/^\d+ [\w\-]+$/.test(str));
 	let [count, resourceDash] = str.split(' ');
-	let resourceStr = dashCaseToSnakeCase(resourceDash);
+	let resourceStr = util.dashCaseToSnakeCase(resourceDash);
 	console.assert(resourceStr in resourceEnum);
 	return new ResourceUtils.Count(resourceEnum[resourceStr] as T, Number(count));
 };
@@ -73,7 +68,7 @@ let parseSection2 = <F2 extends FieldHandlerDictionary2>(mdString: string, field
 
 export let sectionFields = {
 	buildings: {
-		name: (data: StringRecord) => lowerCaseToTitleCase(data.name),
+		name: (data: StringRecord) => util.lowerCaseToTitleCase(data.name),
 		buildTime: (data: StringRecord) => parseNumber(data['build time']),
 		buildCost: (data: StringRecord) => parseResourceCounts(data['build cost'], Material),
 		materialInput: (data: StringRecord) => parseResourceCounts(data['material / second'], Material),

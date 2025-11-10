@@ -1,5 +1,4 @@
 import {Container, Sprite} from 'pixi.js';
-import Color from '../graphics/Color.js';
 import {generatedTextures} from '../graphics/generatedTextures.js';
 import SpriteLoader from '../graphics/SpriteLoader.js';
 import TextLine from '../ui/TextLine.js';
@@ -25,7 +24,6 @@ import {
 	EntityMaterialConsumeAttribute,
 	EntityMaterialDisplayAttribute,
 	EntityMaterialExtractorAttribute,
-	EntityMaterialFullSpriteAttribute,
 	EntityMaterialPickerAttribute,
 	EntityMaterialProduceAttribute,
 	EntityMaterialSourceAttribute,
@@ -61,14 +59,13 @@ export class Entity implements Tileable {
 	constructor(name: string, size: Vector = Vector.V1, rotation: Rotation = Rotation.RIGHT) {
 		this.size = size;
 		this.rotation = rotation;
-		let sprite = (this.constructor as typeof Entity).sprite;
-		if (sprite)
-			this.sprite = sprite;
 		if (name)
 			this.attributes.push([new EntityNameAttribute(name)]);
 	}
 
-	static get sprite(): Sprite | null {return null;}
+	static rotationToAngle(rotation: Rotation) {
+		return [...Array(4)].map((_, i) => i * Math.PI / 2)[rotation];
+	}
 
 	set sprite(sprite: Sprite) {
 		let halfSize = new Vector(sprite.width, sprite.height).scale(new Vector(.5));
@@ -77,10 +74,6 @@ export class Entity implements Tileable {
 		sprite.rotation = Entity.rotationToAngle(this.rotation);
 		this.container.removeChildren();
 		this.container.addChild(sprite);
-	}
-
-	static rotationToAngle(rotation: Rotation) {
-		return [...Array(4)].map((_, i) => i * Math.PI / 2)[rotation];
 	}
 
 	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | undefined {
@@ -107,14 +100,16 @@ export class Empty extends Entity {
 		super('');
 	}
 
-	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'square.png', [Color.ENTITY_EMPTY]);}
 }
 
-export class Building extends Entity {
-	constructor(name: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rotation: Rotation = Rotation.RIGHT) {
+export abstract class Building extends Entity {
+	protected constructor(name: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rotation: Rotation = Rotation.RIGHT) {
 		super(name, size, rotation);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
+		let spriteName = util.titleCaseToCamelCase(name);
+		if (spriteName in generatedTextures)
+			this.sprite = new Sprite(generatedTextures[spriteName as keyof typeof generatedTextures].texture);
 	}
 
 	tick(world: World, tile: Tile<Entity>) {
@@ -131,10 +126,6 @@ export class Building extends Entity {
 export class Wall extends Building {
 	constructor(name: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number) {
 		super(name, size, buildTime, buildCost, health);
-	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.ironWall.texture);
 	}
 }
 
@@ -158,10 +149,6 @@ export class Extractor extends Building {
 		if (powerInput)
 			this.attributes.push([new EntityPowerConductAttribute(0)]);
 	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.extractor.texture);
-	}
 }
 
 export class Conveyor extends Building {
@@ -174,15 +161,6 @@ export class Conveyor extends Building {
 			new EntityTimedAttribute(40 / rate),
 			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
 		]);
-		this.attributes.push([new EntityMaterialFullSpriteAttribute(materialStorageAttribute, Conveyor.sprite, material => Conveyor.spriteFull(material))]);
-	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.conveyor.texture);
-	}
-
-	static spriteFull(material: Material) {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'conveyor-full.png', [ResourceUtils.materialColor(material)]);
 	}
 }
 
@@ -196,15 +174,6 @@ export class Distributor extends Building {
 			new EntityTimedAttribute(40 / rate),
 			new EntityTransportAttribute(materialStorageAttribute, util.enumValues(Rotation)),
 		]);
-		this.attributes.push([new EntityMaterialFullSpriteAttribute(materialStorageAttribute, Distributor.sprite, material => Distributor.spriteFull(material))]);
-	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.distributor.texture);
-	}
-
-	static spriteFull(material: Material) {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'distributor-full.png', [ResourceUtils.materialColor(material)]);
 	}
 }
 
@@ -218,15 +187,6 @@ export class Junction extends Building {
 			new EntityTimedAttribute(40 / rate),
 			new EntityJunctionTransportAttribute(materialStorageAttribute),
 		]);
-		this.attributes.push([new EntityMaterialFullSpriteAttribute(materialStorageAttribute, Junction.sprite, material => Junction.spriteFull(material))]);
-	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.junction.texture);
-	}
-
-	static spriteFull(material: Material) {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'junction-full.png', [ResourceUtils.materialColor(material)]);
 	}
 }
 
@@ -251,10 +211,6 @@ export class Factory extends Building {
 		if (powerInput)
 			this.attributes.push([new EntityPowerConductAttribute(0)]);
 	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.steelSmelter.texture);
-	}
 }
 
 export class Storage extends Building {
@@ -262,10 +218,6 @@ export class Storage extends Building {
 		super(name, size, buildTime, buildCost, health);
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(capacity, getMaterialCounts(Infinity));
 		this.attributes.push([materialStorageAttribute]);
-	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.storage.texture);
 	}
 }
 
@@ -282,11 +234,6 @@ export class Dispenser extends Building {
 			new EntityTimedAttribute(40 / rate),
 			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
 		]);
-		this.attributes.push([new EntityMaterialFullSpriteAttribute(materialStorageAttribute, Dispenser.sprite, material => Dispenser.sprite)]);
-	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.dispenser.texture);
 	}
 }
 
@@ -314,20 +261,12 @@ export class Generator extends Building {
 		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([new EntityPowerConductAttribute(0)]);
 	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.methaneBurner.texture);
-	}
 }
 
 export class Conductor extends Building {
 	constructor(name: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, range: number) {
 		super(name, size, buildTime, buildCost, health);
 		this.attributes.push([new EntityPowerConductAttribute(range)]);
-	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.conductor.texture);
 	}
 }
 
@@ -336,10 +275,6 @@ export class Battery extends Building {
 		super(name, size, buildTime, buildCost, health);
 		this.attributes.push([new EntityPowerStorageAttribute(capacity * 40, EntityPowerStorageAttributePriority.STORAGE)]);
 		this.attributes.push([new EntityPowerConductAttribute(0)]);
-	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.battery.texture);
 	}
 }
 
@@ -365,10 +300,6 @@ export class Vent extends Building {
 		if (powerInput)
 			this.attributes.push([new EntityPowerConductAttribute(0)]);
 	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.airVent.texture);
-	}
 }
 
 export class Pump extends Building {
@@ -392,10 +323,6 @@ export class Pump extends Building {
 		]);
 		if (powerInput)
 			this.attributes.push([new EntityPowerConductAttribute(0)]);
-	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.pump.texture);
 	}
 }
 
@@ -421,10 +348,6 @@ export class Well extends Building {
 		if (powerInput)
 			this.attributes.push([new EntityPowerConductAttribute(0)]);
 	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.well.texture);
-	}
 }
 
 export class Pipe extends Building {
@@ -437,10 +360,6 @@ export class Pipe extends Building {
 			new EntityTimedAttribute(40),
 			new EntityLiquidTransportAttribute(liquidStorageAttribute, [rotation]),
 		]);
-	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.pipe.texture);
 	}
 }
 
@@ -457,10 +376,6 @@ export class PipeDistributor extends Building {
 			]);
 		});
 	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.pipe.texture);
-	}
 }
 
 export class PipeJunction extends Building {
@@ -475,10 +390,6 @@ export class PipeJunction extends Building {
 				new EntityLiquidTransportAttribute(liquidStorageAttribute, [rotation]),
 			]);
 		});
-	}
-
-	static get sprite() {
-		return new Sprite(generatedTextures.pipe.texture);
 	}
 }
 
@@ -506,10 +417,6 @@ export class Turret extends Entity {
 			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, true),
 		]);
 	}
-
-	static get sprite() {
-		return SpriteLoader.getSprite(SpriteLoader.Resource.TERRAIN, 'turret.png');
-	}
 }
 
 export class Source extends Entity {
@@ -523,7 +430,6 @@ export class Source extends Entity {
 		]);
 	}
 
-	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'source.png', [Color.ENTITY_SOURCE]);}
 }
 
 export class Void extends Entity {
@@ -532,7 +438,6 @@ export class Void extends Entity {
 		this.attributes.push([new EntityMaterialStorageAttribute(Infinity, getMaterialCounts(Infinity))]);
 	}
 
-	static get sprite() {return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'void.png', [Color.ENTITY_VOID]);}
 }
 
 export class MaterialDeposit extends Entity {
@@ -586,10 +491,6 @@ export class Mob extends Entity {
 		]);
 		this.attributes.push([new EntityMobHealthAttribute(10)]);
 	}
-
-	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'circle.png', [Color.MOB_YELLOW]);
-	}
 }
 
 export class Projectile extends Entity {
@@ -604,10 +505,6 @@ export class Projectile extends Entity {
 			new EntityTimedAttribute(duration),
 			new EntityExpireProjectileAttribute(),
 		]);
-	}
-
-	static get sprite() {
-		return SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'circle.png', [Color.PROJECTILE_RED]);
 	}
 }
 

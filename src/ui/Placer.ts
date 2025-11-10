@@ -43,7 +43,7 @@ enum Tool {
 	// todo bunker
 	IRON_WALL, STEEL_WALL,
 	EXTRACTOR, REINFORCED_EXTRACTOR, QUADRATIC_EXTRACTOR, LASER_EXTRACTOR,
-	// todo packed conveyor
+	// todo packed conveyor & bridge
 	CONVEYOR, HIGH_SPEED_CONVEYOR, DISTRIBUTOR, JUNCTION,
 	STEEL_SMELTER, METAGLASS_FOUNDRY, PLASTEEL_MIXER, THERMITE_FORGE, EXIDIUM_CATALYST,
 	STORAGE, DISPENSER,
@@ -136,9 +136,9 @@ export default class Placer {
 			case Tool.HIGH_SPEED_CONVEYOR:
 				return Placer.createToolConveyor(findEntityMetadata('buildings', 'High Speed Conveyor'), rotation);
 			case Tool.DISTRIBUTOR:
-				return Placer.createToolDistributor(findEntityMetadata('buildings', 'High Speed Conveyor'));
+				return Placer.createToolDistributor(findEntityMetadata('buildings', 'Distributor'));
 			case Tool.JUNCTION:
-				return Placer.createToolJunction(findEntityMetadata('buildings', 'High Speed Conveyor'));
+				return Placer.createToolJunction(findEntityMetadata('buildings', 'Junction'));
 
 			case Tool.STEEL_SMELTER:
 				return Placer.createToolFactory(findEntityMetadata('buildings', 'Steel Smelter'));
@@ -462,3 +462,9 @@ export default class Placer {
 //   use different sprites or colors for different tier walls, extractors, etc
 //   consistently apply timed delay to attributes
 //   make pipes leak
+
+// todo blurry sprites
+// todo dispenser rotation
+// todo full / empty sprites
+// todo animate sprites
+// todo missing sprites for liquid distributor, junction, tank, and turret
