@@ -1,4 +1,6 @@
-import {CanvasSource, Texture} from 'pixi.js';
+import {CanvasSource, Texture, TextureStyle} from 'pixi.js';
+
+TextureStyle.defaultOptions.scaleMode = 'nearest';
 
 class GeneratedTexture {
 	texture: Texture;

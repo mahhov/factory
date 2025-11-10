@@ -42,7 +42,6 @@ class Loop {
 		width: 1400,
 		height: 1400,
 	});
-	TextureStyle.defaultOptions.scaleMode = 'nearest';
 	document.body.appendChild(app.canvas);
 	await SpriteLoader.init(app.renderer);
 	let painter = new Painter(app.renderer.width, app.stage);
