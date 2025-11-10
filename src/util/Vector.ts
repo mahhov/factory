@@ -44,7 +44,7 @@ export default class Vector {
 			util.arr(delta.y).flatMap(y =>
 				new Vector(x, y).add(this)));
 	}
-	
+
 	setMagnitude2(magnitude2: number) {
 		return this.magnitude2 ?
 			this.scale(new Vector(Math.sqrt(magnitude2 / this.magnitude2))) :

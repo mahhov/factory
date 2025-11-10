@@ -209,12 +209,13 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		tile.position.iterate(tile.tileable.size).forEach(position => {
+		let some = tile.position.iterate(tile.tileable.size).some(position => {
 			let tile = world.terrain.getTile(position);
 			if (!(tile?.tileable instanceof MaterialDeposit)) return;
 			let capacity = this.materialStorageAttribute.capacity(tile.tileable.material) - this.quantities[tile.tileable.material];
 			this.quantities[tile.tileable.material] += Math.min(this.outputPerTier[tile.tileable.materialTier], capacity);
 		});
+		if (!some) return false;
 		util.enumValues(Material).forEach(material => {
 			let n = Math.floor(this.quantities[material]);
 			if (!n) return;
@@ -662,12 +663,11 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let area = tile.tileable.size.x * tile.tileable.size.y;
-		tile.position.iterate(tile.tileable.size).forEach(position => {
+		return tile.position.iterate(tile.tileable.size).some(position => {
 			let tile = world.terrain.getTile(position);
 			if (!(tile?.tileable instanceof LiquidDeposit)) return;
-			this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count<Liquid>(tile.tileable.liquid, this.quantity / area));
+			return this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count<Liquid>(tile.tileable.liquid, this.quantity / area));
 		});
-		return true;
 	}
 }
 
@@ -682,8 +682,7 @@ export class EntityLiquidDryExtractorAttribute extends EntityAttribute {
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count<Liquid>(this.liquidCount.resource, this.liquidCount.quantity));
-		return true;
+		return !!this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count<Liquid>(this.liquidCount.resource, this.liquidCount.quantity));
 	}
 }
 
