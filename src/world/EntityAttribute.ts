@@ -11,19 +11,19 @@ import {Tile, World} from './World.js';
 
 let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation): Vector[] => {
 	switch (rotation) {
-		case Rotation.RIGHT:
-			origin = new Vector(origin.x + size.x - 1, origin.y);
+		case Rotation.UP:
+			size = new Vector(size.x, 1);
+			break;
+		case Rotation.LEFT:
 			size = new Vector(1, size.y);
 			break;
 		case Rotation.DOWN:
 			origin = new Vector(origin.x, origin.y + size.y - 1);
 			size = new Vector(size.x, 1);
 			break;
-		case Rotation.LEFT:
+		case Rotation.RIGHT:
+			origin = new Vector(origin.x + size.x - 1, origin.y);
 			size = new Vector(1, size.y);
-			break;
-		case Rotation.UP:
-			size = new Vector(size.x, 1);
 			break;
 	}
 	let shift = RotationUtils.positionShift(rotation);
@@ -307,7 +307,7 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 		return this.quantities[materialCount.resource] >= materialCount.quantity;
 	}
 
-	add(materialCount: ResourceUtils.Count<Material>, rotation: Rotation = Rotation.RIGHT) {
+	add(materialCount: ResourceUtils.Count<Material>, rotation: Rotation = Rotation.UP) {
 		this.quantities[materialCount.resource] += materialCount.quantity;
 		util.arr(materialCount.quantity).forEach(() =>
 			this.orderedAndRotations.push([materialCount.resource, rotation]));

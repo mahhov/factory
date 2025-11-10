@@ -80,7 +80,7 @@ export default class Placer {
 	private readonly toolTextContainer = new Container();
 	private readonly toolSelectionRect = new Container();
 	private started = false;
-	private rotation = Rotation.RIGHT;
+	private rotation = Rotation.UP;
 	private toolGroup!: ToolGroup;
 	private tool!: Tool;
 	private startPosition = Vector.V0;
@@ -113,7 +113,7 @@ export default class Placer {
 		return Placer.cachedToolEntities_;
 	}
 
-	private static createToolEntity(tool: Tool, rotation: Rotation = Rotation.RIGHT): Entity {
+	private static createToolEntity(tool: Tool, rotation: Rotation = Rotation.UP): Entity {
 		switch (tool) {
 			case Tool.EMPTY:
 				return new Empty();

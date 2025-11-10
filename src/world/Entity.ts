@@ -56,22 +56,18 @@ export class Entity implements Tileable {
 	protected readonly attributes: EntityAttribute[][] = [];
 	readonly container = new Container();
 
-	constructor(name: string, size: Vector = Vector.V1, rotation: Rotation = Rotation.RIGHT) {
+	constructor(name: string, size: Vector = Vector.V1, rotation: Rotation = Rotation.UP) {
 		this.size = size;
 		this.rotation = rotation;
 		if (name)
 			this.attributes.push([new EntityNameAttribute(name)]);
 	}
 
-	static rotationToAngle(rotation: Rotation) {
-		return [...Array(4)].map((_, i) => i * Math.PI / 2)[rotation];
-	}
-
 	set sprite(sprite: Sprite) {
 		let halfSize = new Vector(sprite.width, sprite.height).scale(new Vector(.5));
 		sprite.pivot = halfSize;
 		sprite.position = halfSize;
-		sprite.rotation = Entity.rotationToAngle(this.rotation);
+		sprite.rotation = this.rotation * Math.PI / 2;
 		this.container.removeChildren();
 		this.container.addChild(sprite);
 	}
@@ -103,7 +99,7 @@ export class Empty extends Entity {
 }
 
 export abstract class Building extends Entity {
-	protected constructor(name: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rotation: Rotation = Rotation.RIGHT) {
+	protected constructor(name: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rotation: Rotation = Rotation.UP) {
 		super(name, size, rotation);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
