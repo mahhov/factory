@@ -209,11 +209,11 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		// todo check capacity
 		tile.position.iterate(tile.tileable.size).forEach(position => {
 			let tile = world.terrain.getTile(position);
 			if (!(tile?.tileable instanceof MaterialDeposit)) return;
-			this.quantities[tile.tileable.material] += this.outputPerTier[tile.tileable.materialTier];
+			let capacity = this.materialStorageAttribute.capacity(tile.tileable.material) - this.quantities[tile.tileable.material];
+			this.quantities[tile.tileable.material] += Math.min(this.outputPerTier[tile.tileable.materialTier], capacity);
 		});
 		util.enumValues(Material).forEach(material => {
 			let n = Math.floor(this.quantities[material]);
@@ -301,9 +301,12 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 		return this.orderedAndRotations.at(-1);
 	}
 
+	capacity(material: Material): number {
+		return Math.min(this.totalCapacity - this.orderedAndRotations.length, this.getMaterialCapacity(material) - this.quantities[material]);
+	}
+
 	hasCapacity(materialCount: ResourceUtils.Count<Material>): boolean {
-		return this.orderedAndRotations.length + materialCount.quantity <= this.totalCapacity &&
-			this.quantities[materialCount.resource] + materialCount.quantity <= this.getMaterialCapacity(materialCount.resource);
+		return this.capacity(materialCount.resource) >= materialCount.quantity;
 	}
 
 	hasQuantity(materialCount: ResourceUtils.Count<Material>): boolean {
