@@ -308,13 +308,46 @@ export let generatedTextures = {
 		[4, 10, 8, 1, '#ecfdf5'], // Fill Lines
 	]),
 
-	// --- DEFENSES (16x16) ---
-	turret: new GeneratedTexture(16, [
-		[0, 0, 16, 16, '#4b5563'], // Base Casing (Dark Grey)
+	// --- DEFENSE TURRETS (16x16 / 32x32) ---
+	shrapnelTurret: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#4b5563'], // Base Casing
 		[2, 2, 12, 12, '#374151'], // Inner Base
-		[5, 0, 6, 6, '#9ca3af'], // Rotating Turret Head
-		[6, 6, 4, 10, '#f87171'], // Projectile Barrel (Red)
-		[7, 10, 2, 2, '#fff'], // Muzzle Flash/Indicator
+		[5, 5, 6, 6, '#9ca3af'], // Turret Swivel
+		[4, 0, 8, 4, '#f97316'], // Wide Barrel (Orange for spread)
+		[6, 4, 4, 2, '#d97706'], // Barrel Opening
+	]),
+	piercingTurret: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#374151'], // Base Casing
+		[2, 2, 12, 12, '#1f2937'], // Inner Base
+		[5, 5, 6, 6, '#6b7280'], // Turret Swivel
+		[7, 0, 2, 8, '#f87171'], // Long, Thin Barrel (Red for precision)
+		[7, 8, 2, 2, '#dc2626'], // Muzzle
+	]),
+	arcTurret: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#475569'], // Base Casing
+		[2, 2, 12, 12, '#374151'], // Inner Base
+		[5, 5, 6, 6, '#0ea5e9'], // Central Arc Generator (Cyan)
+		[7, 0, 2, 4, '#ecfdf5'],
+		[0, 7, 4, 2, '#ecfdf5'], // Arc Emitters (White)
+		[7, 12, 2, 4, '#ecfdf5'],
+		[12, 7, 4, 2, '#ecfdf5'],
+	]),
+	siegeTurret: new GeneratedTexture(32, [
+		[0, 0, 32, 32, '#1f2937'], // Heavy Base
+		[4, 4, 24, 24, '#374151'], // Reinforced Inner Base
+		[10, 10, 12, 12, '#4b5563'], // Turret Mount
+		[12, 0, 8, 16, '#facc15'], // Massive Cannon Barrel (Yellow for heavy projectile)
+		[14, 16, 4, 4, '#d97706'], // Muzzle Indicator
+	]),
+	laserTurret: new GeneratedTexture(32, [
+		[0, 0, 32, 32, '#4b5563'], // Base Casing
+		[4, 4, 24, 24, '#374151'], // Inner Base
+		[12, 12, 8, 8, '#f87171'], // Central Laser Core (Red)
+		[14, 0, 4, 32, '#ef4444'], // Long Laser Emitter
+		[1, 1, 6, 6, '#dc2626'],
+		[25, 1, 6, 6, '#dc2626'], // Power Capacitors
+		[1, 25, 6, 6, '#dc2626'],
+		[25, 25, 6, 6, '#dc2626'],
 	]),
 };
 
