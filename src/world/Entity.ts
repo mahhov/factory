@@ -223,7 +223,7 @@ export class Storage extends Building {
 
 export class Dispenser extends Building {
 	constructor(name: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number, rotation: Rotation) {
-		super(name, size, buildTime, buildCost, health);
+		super(name, size, buildTime, buildCost, health, rotation);
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), []);
 		this.attributes.push([materialStorageAttribute]);
 		let materialPickerAttribute = new EntityMaterialPickerAttribute();

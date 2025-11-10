@@ -463,8 +463,6 @@ export default class Placer {
 //   consistently apply timed delay to attributes
 //   make pipes leak
 
-// todo blurry sprites
-// todo dispenser rotation
 // todo full / empty sprites
 // todo animate sprites
 // todo missing sprites for liquid distributor, junction, tank, and turret
