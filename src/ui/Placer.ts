@@ -190,8 +190,7 @@ export default class Placer {
 				return Placer.createToolPipeJunction(findEntityMetadata('buildings', 'Pipe Junction'));
 			case Tool.TANK:
 				return Placer.createToolTank(findEntityMetadata('buildings', 'Tank'));
-
-
+				
 			case Tool.TURRET:
 				return new Turret();
 		}

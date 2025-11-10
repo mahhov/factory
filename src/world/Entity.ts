@@ -24,6 +24,7 @@ import {
 	EntityMaterialConsumeAttribute,
 	EntityMaterialDisplayAttribute,
 	EntityMaterialExtractorAttribute,
+	EntityMaterialFullSpriteAttribute,
 	EntityMaterialPickerAttribute,
 	EntityMaterialProduceAttribute,
 	EntityMaterialSourceAttribute,
@@ -63,13 +64,20 @@ export class Entity implements Tileable {
 			this.attributes.push([new EntityNameAttribute(name)]);
 	}
 
+	// todo make this not a setter
 	set sprite(sprite: Sprite) {
 		let halfSize = new Vector(sprite.width, sprite.height).scale(new Vector(.5));
 		sprite.pivot = halfSize;
 		sprite.position = halfSize;
 		sprite.rotation = this.rotation * Math.PI / 2;
-		this.container.removeChildren();
 		this.container.addChild(sprite);
+	}
+
+	addOverlaySprite(sprite: Sprite | null) {
+		if (this.container.children.length > 1)
+			this.container.removeChildAt(1);
+		if (sprite)
+			this.container.addChild(sprite);
 	}
 
 	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | undefined {
@@ -95,7 +103,6 @@ export class Empty extends Entity {
 	constructor() {
 		super('');
 	}
-
 }
 
 export abstract class Building extends Entity {
@@ -157,6 +164,7 @@ export class Conveyor extends Building {
 			new EntityTimedAttribute(40 / rate),
 			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
 		]);
+		this.attributes.push([new EntityMaterialFullSpriteAttribute(materialStorageAttribute)]);
 	}
 }
 

@@ -286,4 +286,18 @@ export let generatedTextures = {
 		[4, 8, 8, 1, '#ecfdf5'],
 		[4, 10, 8, 1, '#ecfdf5'], // Fill Lines
 	]),
+
+	// --- DEFENSES (16x16) ---
+	turret: new GeneratedTexture(16, [
+		[0, 0, 16, 16, '#4b5563'], // Base Casing (Dark Grey)
+		[2, 2, 12, 12, '#374151'], // Inner Base
+		[5, 0, 6, 6, '#9ca3af'], // Rotating Turret Head
+		[6, 6, 4, 10, '#f87171'], // Projectile Barrel (Red)
+		[7, 10, 2, 2, '#fff'], // Muzzle Flash/Indicator
+	]),
+
+	// --- OVERLAYS (8x8) ---
+	materialIndicator: new GeneratedTexture(8, [
+		[2, 2, 4, 4, '#facc15'], // Small Yellow Square
+	]),
 };

@@ -1,5 +1,6 @@
 import {Sprite} from 'pixi.js';
 import Color from '../graphics/Color.js';
+import {generatedTextures} from '../graphics/generatedTextures.js';
 import TextLine from '../ui/TextLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
@@ -838,18 +839,16 @@ export class EntityLiquidDisplayAttribute extends EntityAttribute {
 
 export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
-	private readonly sprite: Sprite;
-	private readonly spriteFull: (material: Material) => Sprite;
 
-	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, sprite: Sprite, spriteFull: (material: Material) => Sprite) {
+	constructor(materialStorageAttribute: EntityMaterialStorageAttribute) {
 		super();
 		this.materialStorageAttribute = materialStorageAttribute;
-		this.sprite = sprite;
-		this.spriteFull = spriteFull;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		tile.tileable.sprite = this.materialStorageAttribute.empty ? this.sprite : this.spriteFull(this.materialStorageAttribute.peek![0]);
+		// todo color
+		// todo cache
+		tile.tileable.addOverlaySprite(!this.materialStorageAttribute.empty ? new Sprite(generatedTextures.materialIndicator.texture) : null);
 		return true;
 	}
 }
