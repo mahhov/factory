@@ -497,6 +497,7 @@ export class LiquidDeposit extends Entity {
 export class Mob extends Entity {
 	constructor() {
 		super('');
+		this.setSprite(new Sprite(generatedTextures.lowTierMob));
 		this.attributes.push([new EntityMobChaseTargetAttribute(.1, 6)]);
 		this.attributes.push([
 			new EntityTimedAttribute(30),

@@ -349,6 +349,12 @@ export let generatedTextures = {
 		[1, 25, 6, 6, '#dc2626'],
 		[25, 25, 6, 6, '#dc2626'],
 	]),
+	lowTierMob: new GeneratedTexture(8, [
+		[2, 2, 4, 4, '#dc2626'], // Main Body (Red)
+		[1, 3, 2, 2, '#ef4444'], // Left Eye/Sensor
+		[5, 3, 2, 2, '#ef4444'], // Right Eye/Sensor
+		[3, 6, 2, 1, '#facc15'], // Small Feet/Base
+	]),
 };
 
 export let coloredGeneratedTextures = {
