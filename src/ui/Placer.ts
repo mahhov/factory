@@ -460,3 +460,5 @@ export default class Placer {
 //   shadow empty being left when right click dragging resource tiles
 //   bigger tier extractors not working
 //   use different sprites or colors for different tier walls, extractors, etc
+//   consistently apply timed delay to attributes
+//   make pipes leak

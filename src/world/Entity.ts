@@ -386,6 +386,10 @@ export class Pump extends Building {
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
 			new EntityLiquidExtractorAttribute(liquidStorageAttribute, liquidOutput * 40),
 		].filter(v => v) as EntityAttribute[]);
+		this.attributes.push([
+			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
+			new EntityLiquidTransportAttribute(liquidStorageAttribute, util.enumValues(Rotation)),
+		]);
 		if (powerInput)
 			this.attributes.push([new EntityPowerConductAttribute(0)]);
 	}
@@ -410,6 +414,10 @@ export class Well extends Building {
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
 			new EntityLiquidDryExtractorAttribute(liquidStorageAttribute, new ResourceUtils.Count(liquidOutput.resource, liquidOutput.quantity * 40)),
 		].filter(v => v) as EntityAttribute[]);
+		this.attributes.push([
+			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
+			new EntityLiquidTransportAttribute(liquidStorageAttribute, util.enumValues(Rotation)),
+		]);
 		if (powerInput)
 			this.attributes.push([new EntityPowerConductAttribute(0)]);
 	}
@@ -477,7 +485,13 @@ export class PipeJunction extends Building {
 export class Tank extends Building {
 	constructor(name: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
 		super(name, size, buildTime, buildCost, health);
-		this.attributes.push([new EntityLiquidStorageAttribute(util.enumValues(Liquid), capacity, util.enumValues(Rotation))]);
+		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), capacity, util.enumValues(Rotation));
+		this.attributes.push([liquidStorageAttribute]);
+		this.attributes.push([
+			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
+			new EntityTimedAttribute(40),
+			new EntityLiquidTransportAttribute(liquidStorageAttribute, util.enumValues(Rotation)),
+		]);
 	}
 }
 
