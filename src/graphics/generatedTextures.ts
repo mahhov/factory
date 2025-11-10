@@ -23,9 +23,9 @@ class GeneratedTexture {
 	}
 }
 
-// todo cache
 // todo ensure same number of colors
 class ColoredGeneratedTexture {
+	private readonly textureCache: Record<string, Texture> = {};
 	protected readonly size: number;
 	private readonly rectsHandler: (...colors: string[]) => [number, number, number, number, string][];
 
@@ -35,7 +35,9 @@ class ColoredGeneratedTexture {
 	}
 
 	texture(...colors: string[]): Texture {
-		return GeneratedTexture.texture(this.size, this.rectsHandler(...colors));
+		let key = colors.join();
+		this.textureCache[key] ||= GeneratedTexture.texture(this.size, this.rectsHandler(...colors));
+		return this.textureCache[key];
 	}
 }
 
