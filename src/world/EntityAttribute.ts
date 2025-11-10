@@ -211,9 +211,11 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let some = tile.position.iterate(tile.tileable.size).some(position => {
 			let tile = world.terrain.getTile(position);
-			if (!(tile?.tileable instanceof MaterialDeposit)) return;
+			if (!(tile?.tileable instanceof MaterialDeposit)) return false;
 			let capacity = this.materialStorageAttribute.capacity(tile.tileable.material) - this.quantities[tile.tileable.material];
-			this.quantities[tile.tileable.material] += Math.min(this.outputPerTier[tile.tileable.materialTier], capacity);
+			let add = Math.min(this.outputPerTier[tile.tileable.materialTier], capacity);
+			this.quantities[tile.tileable.material] += add;
+			return add;
 		});
 		if (!some) return false;
 		util.enumValues(Material).forEach(material => {
