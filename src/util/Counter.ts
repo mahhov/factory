@@ -7,6 +7,10 @@ export default class Counter {
 		this.n = n;
 	}
 
+	get ratio() {
+		return this.i / this.n;
+	}
+
 	// will consume 1 tick() call if it were to return false
 	prepare() {
 		if (this.i < this.n - 1)

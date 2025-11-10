@@ -1,5 +1,5 @@
 import {AnimatedSprite, Container, Sprite} from 'pixi.js';
-import {animatedGeneratedTextures, generatedTextures} from '../graphics/generatedTextures.js';
+import {animatedGeneratedTextures} from '../graphics/generatedTextures.js';
 import SpriteLoader from '../graphics/SpriteLoader.js';
 import TextLine from '../ui/TextLine.js';
 import util from '../util/util.js';
@@ -65,11 +65,10 @@ export class Entity implements Tileable {
 			let spriteName = util.titleCaseToCamelCase(name);
 			if (spriteName in animatedGeneratedTextures) {
 				let animatedSprite = new AnimatedSprite(animatedGeneratedTextures[spriteName as keyof typeof animatedGeneratedTextures]);
-				animatedSprite.animationSpeed = .1;
+				animatedSprite.animationSpeed = .05;
 				animatedSprite.play();
 				this.setSprite(animatedSprite);
-			} else if (spriteName in generatedTextures)
-				this.setSprite(new Sprite(generatedTextures[spriteName as keyof typeof generatedTextures].texture));
+			}
 		}
 	}
 
@@ -165,12 +164,13 @@ export class Conveyor extends Building {
 		super(name, size, buildTime, buildCost, health, rotation);
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), RotationUtils.except(RotationUtils.opposite(rotation)));
 		this.attributes.push([materialStorageAttribute]);
+		let timedAttribute = new EntityTimedAttribute(40 / rate);
 		this.attributes.push([
 			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
-			new EntityTimedAttribute(40 / rate),
+			timedAttribute,
 			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
 		]);
-		this.attributes.push([new EntityMaterialFullSpriteAttribute(materialStorageAttribute)]);
+		this.attributes.push([new EntityMaterialFullSpriteAttribute(materialStorageAttribute, timedAttribute, rotation)]);
 	}
 }
 
@@ -528,3 +528,5 @@ export class Projectile extends Entity {
 }
 
 // todo allow boosting entities with eg water
+// todo tie in material overlay animation with item movement
+// todo animate buildings only when active

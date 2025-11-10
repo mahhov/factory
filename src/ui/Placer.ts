@@ -472,7 +472,3 @@ export default class Placer {
 //   use different sprites or colors for different tier walls, extractors, etc
 //   consistently apply timed delay to attributes
 //   make pipes leak
-
-// todo full / empty sprites
-// todo animate sprites
-// todo missing sprites for turret

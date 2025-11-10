@@ -103,7 +103,7 @@ export class EntityBuildableAttribute extends EntityAttribute {
 		if (world.playerLogic.built) return false;
 		world.playerLogic.built = true;
 
-		let lastRatio = this.counter.i / this.counter.n;
+		let lastRatio = this.counter.ratio;
 		let ratio = (this.counter.i + 1) / this.counter.n;
 		let costs = this.materialCost.map(cost => new ResourceUtils.Count(
 			cost.resource, Math.floor(cost.quantity * ratio) - Math.floor(cost.quantity * lastRatio)));
@@ -119,7 +119,7 @@ export class EntityBuildableAttribute extends EntityAttribute {
 
 	get tooltip(): TextLine[] {
 		if (this.doneBuilding) return [];
-		let percent = Math.floor(this.counter.i / this.counter.n * 100);
+		let percent = Math.floor(this.counter.ratio * 100);
 		return this.doneBuilding ? [] : [new TextLine(`Building ${percent}%`)];
 	}
 }
@@ -153,7 +153,7 @@ export class EntityHealthAttribute extends EntityAttribute {
 }
 
 export class EntityTimedAttribute extends EntityAttribute {
-	private readonly counter: Counter;
+	readonly counter: Counter;
 
 	constructor(duration: number) {
 		super();
@@ -839,10 +839,14 @@ export class EntityLiquidDisplayAttribute extends EntityAttribute {
 
 export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
+	private readonly timedAttribute: EntityTimedAttribute;
+	private readonly rotation: Rotation;
 
-	constructor(materialStorageAttribute: EntityMaterialStorageAttribute) {
+	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, timedAttribute: EntityTimedAttribute, rotation: Rotation) {
 		super();
 		this.materialStorageAttribute = materialStorageAttribute;
+		this.timedAttribute = timedAttribute;
+		this.rotation = rotation;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
@@ -850,7 +854,11 @@ export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 			tile.tileable.addOverlaySprite(null);
 		else {
 			let color = ResourceUtils.materialColor(this.materialStorageAttribute.peek![0]);
-			tile.tileable.addOverlaySprite(new Sprite(coloredGeneratedTextures.materialIndicator.texture(color)));
+			let sprite = new Sprite(coloredGeneratedTextures.materialIndicator.texture(color));
+			let shiftRatio = this.timedAttribute.counter.ratio || 1;
+			sprite.position = RotationUtils.positionShift(this.rotation).scale(new Vector((shiftRatio - .5) * sprite.width));
+			console.log(sprite.position);
+			tile.tileable.addOverlaySprite(sprite);
 		}
 		return true;
 	}
