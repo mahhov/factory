@@ -65,8 +65,6 @@ export class Entity implements Tileable {
 			let spriteName = util.titleCaseToCamelCase(name);
 			if (spriteName in animatedGeneratedTextures) {
 				let animatedSprite = new AnimatedSprite(animatedGeneratedTextures[spriteName as keyof typeof animatedGeneratedTextures]);
-				animatedSprite.animationSpeed = .05;
-				animatedSprite.play();
 				this.setSprite(animatedSprite);
 			}
 		}
@@ -528,5 +526,3 @@ export class Projectile extends Entity {
 }
 
 // todo allow boosting entities with eg water
-// todo tie in material overlay animation with item movement
-// todo animate buildings only when active

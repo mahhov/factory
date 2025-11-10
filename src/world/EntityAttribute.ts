@@ -1,4 +1,4 @@
-import {Sprite} from 'pixi.js';
+import {AnimatedSprite, Sprite} from 'pixi.js';
 import Color from '../graphics/Color.js';
 import {coloredGeneratedTextures} from '../graphics/generatedTextures.js';
 import TextLine from '../ui/TextLine.js';
@@ -837,33 +837,6 @@ export class EntityLiquidDisplayAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
-	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
-	private readonly timedAttribute: EntityTimedAttribute;
-	private readonly rotation: Rotation;
-
-	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, timedAttribute: EntityTimedAttribute, rotation: Rotation) {
-		super();
-		this.materialStorageAttribute = materialStorageAttribute;
-		this.timedAttribute = timedAttribute;
-		this.rotation = rotation;
-	}
-
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.materialStorageAttribute.empty)
-			tile.tileable.addOverlaySprite(null);
-		else {
-			let color = ResourceUtils.materialColor(this.materialStorageAttribute.peek![0]);
-			let sprite = new Sprite(coloredGeneratedTextures.materialIndicator.texture(color));
-			let shiftRatio = this.timedAttribute.counter.ratio || 1;
-			sprite.position = RotationUtils.positionShift(this.rotation).scale(new Vector((shiftRatio - .5) * sprite.width));
-			console.log(sprite.position);
-			tile.tileable.addOverlaySprite(sprite);
-		}
-		return true;
-	}
-}
-
 // Mob and combat attributes
 
 export class EntityMobHealthAttribute extends EntityAttribute {
@@ -1003,6 +976,51 @@ export class EntityDamageAttribute extends EntityAttribute {
 export class EntityExpireProjectileAttribute extends EntityAttribute {
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		world.mobLayer.removeTile(tile);
+		return true;
+	}
+}
+
+// Sprite attributes
+
+export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
+	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
+	private readonly timedAttribute: EntityTimedAttribute;
+	private readonly rotation: Rotation;
+
+	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, timedAttribute: EntityTimedAttribute, rotation: Rotation) {
+		super();
+		this.materialStorageAttribute = materialStorageAttribute;
+		this.timedAttribute = timedAttribute;
+		this.rotation = rotation;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (this.materialStorageAttribute.empty)
+			tile.tileable.addOverlaySprite(null);
+		else {
+			let color = ResourceUtils.materialColor(this.materialStorageAttribute.peek![0]);
+			let sprite = new Sprite(coloredGeneratedTextures.materialIndicator.texture(color));
+			let shiftRatio = this.timedAttribute.counter.ratio || 1;
+			sprite.position = RotationUtils.positionShift(this.rotation).scale(new Vector((shiftRatio - .5) * sprite.width));
+			console.log(sprite.position);
+			tile.tileable.addOverlaySprite(sprite);
+		}
+		return true;
+	}
+}
+
+export class EntityActiveSpriteAttribute extends EntityAttribute {
+	private readonly sprite: AnimatedSprite;
+	private readonly timedAttribute: EntityTimedAttribute;
+
+	constructor(sprite: AnimatedSprite, timedAttribute: EntityTimedAttribute) {
+		super();
+		this.sprite = sprite;
+		this.timedAttribute = timedAttribute;
+	}
+
+	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		this.sprite.currentFrame = Math.floor(this.timedAttribute.counter.ratio * this.sprite.textures.length);
 		return true;
 	}
 }
