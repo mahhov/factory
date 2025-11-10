@@ -64,8 +64,8 @@ export class Entity implements Tileable {
 			this.attributes.push([new EntityNameAttribute(name)]);
 	}
 
-	// todo make this not a setter
-	set sprite(sprite: Sprite) {
+	setSprite(sprite: Sprite) {
+		console.assert(!this.container.children.length);
 		let halfSize = new Vector(sprite.width, sprite.height).scale(new Vector(.5));
 		sprite.pivot = halfSize;
 		sprite.position = halfSize;
@@ -112,7 +112,7 @@ export abstract class Building extends Entity {
 		this.attributes.push([new EntityHealthAttribute(health)]);
 		let spriteName = util.titleCaseToCamelCase(name);
 		if (spriteName in generatedTextures)
-			this.sprite = new Sprite(generatedTextures[spriteName as keyof typeof generatedTextures].texture);
+			this.setSprite(new Sprite(generatedTextures[spriteName as keyof typeof generatedTextures].texture));
 	}
 
 	tick(world: World, tile: Tile<Entity>) {
@@ -449,7 +449,7 @@ export class MaterialDeposit extends Entity {
 
 	constructor(material: Material) {
 		super('');
-		this.sprite = SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [ResourceUtils.materialColor(material)]);
+		this.setSprite(SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [ResourceUtils.materialColor(material)]));
 		this.material = material;
 		this.attributes.push([new EntityMaterialDisplayAttribute(material)]);
 	}
@@ -479,7 +479,7 @@ export class LiquidDeposit extends Entity {
 
 	constructor(liquid: Liquid) {
 		super('');
-		this.sprite = SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [ResourceUtils.liquidColor(liquid)]);
+		this.setSprite(SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [ResourceUtils.liquidColor(liquid)]));
 		this.liquid = liquid;
 		this.attributes.push([new EntityLiquidDisplayAttribute(liquid)]);
 	}
