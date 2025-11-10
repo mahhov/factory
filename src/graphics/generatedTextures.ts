@@ -266,7 +266,19 @@ export let generatedTextures = {
 		[3, 0, 2, 8, '#3b82f6'], // Blue Pipe
 		[3, 3, 2, 2, '#ecfdf5'], // White Pulse
 	]),
-	liquidStorage: new GeneratedTexture(16, [
+	pipeDistributor: new GeneratedTexture(8, [
+		[3, 3, 2, 2, '#3b82f6'], // Blue Hub
+		[3, 0, 2, 3, '#0ea5e9'],
+		[3, 5, 2, 3, '#0ea5e9'],
+		[0, 3, 3, 2, '#0ea5e9'],
+		[5, 3, 3, 2, '#0ea5e9'], // Cyan Cross path
+	]),
+	pipeJunction: new GeneratedTexture(8, [
+		[0, 3, 8, 2, '#3b82f6'],
+		[3, 0, 2, 8, '#3b82f6'], // Blue Cross
+		[3, 3, 2, 2, '#ecfdf5'], // White Center
+	]),
+	tank: new GeneratedTexture(16, [
 		[0, 0, 16, 16, '#3b82f6'],
 		[2, 2, 12, 12, '#0ea5e9'],
 		[4, 4, 8, 1, '#ecfdf5'],

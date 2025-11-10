@@ -465,4 +465,4 @@ export default class Placer {
 
 // todo full / empty sprites
 // todo animate sprites
-// todo missing sprites for liquid distributor, junction, tank, and turret
+// todo missing sprites for turret
