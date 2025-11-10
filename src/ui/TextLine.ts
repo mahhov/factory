@@ -1,16 +1,22 @@
 import {FillInput} from 'pixi.js';
 import Color from '../graphics/Color.js';
 
+interface Options {
+	callback?: () => void;
+	size?: number;
+	color?: FillInput;
+}
+
 export default class TextLine {
 	readonly string: String;
 	readonly callback: () => void;
 	readonly size: number;
 	readonly color: FillInput;
 
-	constructor(string: String, callback: () => void = () => 0, size: number = 14, color: FillInput = Color.DEFAULT_TEXT) {
+	constructor(string: string, options?: Options) {
 		this.string = string;
-		this.callback = callback;
-		this.size = size;
-		this.color = color;
+		this.callback = options?.callback || (() => {});
+		this.size = options?.size || 14;
+		this.color = options?.color || Color.DEFAULT_TEXT;
 	}
 }

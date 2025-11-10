@@ -77,7 +77,7 @@ export class EntityNameAttribute extends EntityAttribute {
 	}
 
 	tooltip(verbose: boolean): TextLine[] {
-		return [new TextLine(this.name)];
+		return [new TextLine(this.name, {color: Color.IMPORTANT_TEXT})];
 	}
 }
 
@@ -814,7 +814,7 @@ export class EntityMaterialPickerAttribute extends EntityAttribute {
 	tooltip(verbose: boolean): TextLine[] {
 		return util.enumValues(Material).map(material => {
 			let color = material === this.material ? Color.SELECTED_TEXT : undefined;
-			return new TextLine(ResourceUtils.materialString(material), () => this.material = material, undefined, color);
+			return new TextLine(ResourceUtils.materialString(material), {callback: () => this.material = material, color});
 		});
 	}
 

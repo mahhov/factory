@@ -1,4 +1,5 @@
 enum Color {
+	IMPORTANT_TEXT = '#ffff00',
 	SELECTED_TEXT = '#567cc1',
 	DEFAULT_TEXT = '#ffffff',
 	TEXT_RECT_BACKGROUND = '#000000',
