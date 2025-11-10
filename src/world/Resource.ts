@@ -1,4 +1,3 @@
-import {ColorSource} from 'pixi.js';
 import Color from '../graphics/Color.js';
 
 export enum Material {
@@ -37,12 +36,12 @@ export namespace ResourceUtils {
 		return Liquid[liquid];
 	};
 
-	export let materialColor = (material: Material): ColorSource => {
+	export let materialColor = (material: Material): string => {
 		let key = `MATERIAL_${Material[material]}` as unknown as keyof typeof Color;
 		return Color[key];
 	};
 
-	export let liquidColor = (liquid: Liquid): ColorSource => {
+	export let liquidColor = (liquid: Liquid): string => {
 		let key = `LIQUID_${Liquid[liquid]}` as unknown as keyof typeof Color;
 		return Color[key];
 	};
