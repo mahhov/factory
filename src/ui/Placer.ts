@@ -27,7 +27,7 @@ import {
 	Wall,
 	Well,
 } from '../world/Entity.js';
-import {EntityDescriptionAttribute, EntityNameAttribute} from '../world/EntityAttribute.js';
+import {EntityNameAttribute} from '../world/EntityAttribute.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {Liquid, Material, ResourceUtils} from '../world/Resource.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
@@ -482,12 +482,7 @@ export default class Placer {
 
 	showToolTooltip(index: number) {
 		let toolEntity = Placer.cachedToolEntities[toolTree[this.toolGroup][index]];
-		let nameAttribute = toolEntity.getAttribute(EntityNameAttribute);
-		let descriptionAttribute = toolEntity.getAttribute(EntityDescriptionAttribute);
-		this.multilineText.lines = [
-			nameAttribute ? new TextLine(nameAttribute.name) : null,
-			descriptionAttribute ? new TextLine(descriptionAttribute.description) : null,
-		].filter(v => v) as TextLine[];
+		this.multilineText.lines = toolEntity.tooltip(true);
 		let coordinates = Placer.toolUiCoordinates(false, index);
 		this.multilineText.position = new Vector(coordinates[0][0], coordinates[0][1]);
 		this.multilineText.tick();

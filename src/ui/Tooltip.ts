@@ -82,7 +82,7 @@ export default class Tooltip {
 		let size = bottomRight.subtract(topLeft);
 
 		this.multilineText.position = bottomRightShift;
-		this.multilineText.lines = this.selection.tile.tileable.tooltip;
+		this.multilineText.lines = this.selection.tile.tileable.tooltip(false);
 		this.multilineText.tick();
 
 		this.selectionRect.addChild(new Graphics()

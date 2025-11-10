@@ -56,7 +56,7 @@ export abstract class EntityAttribute {
 		return true;
 	}
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		return [];
 	}
 
@@ -76,18 +76,22 @@ export class EntityNameAttribute extends EntityAttribute {
 		this.name = name;
 	}
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		return [new TextLine(this.name)];
 	}
 }
 
 export class EntityDescriptionAttribute extends EntityAttribute {
-	readonly description: string;
+	private readonly text: string;
 
-	constructor(description: string) {
+	constructor(text: string) {
 		super();
-		console.assert(!!description);
-		this.description = description;
+		console.assert(!!text);
+		this.text = text;
+	}
+
+	tooltip(verbose: boolean): TextLine[] {
+		return verbose ? [new TextLine(this.text)] : [];
 	}
 }
 
@@ -127,7 +131,7 @@ export class EntityBuildableAttribute extends EntityAttribute {
 		return true;
 	}
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		if (this.doneBuilding) return [];
 		let percent = Math.floor(this.counter.ratio * 100);
 		return this.doneBuilding ? [] : [new TextLine(`Building ${percent}%`)];
@@ -153,7 +157,7 @@ export class EntityHealthAttribute extends EntityAttribute {
 		return true;
 	}
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		return [new TextLine(`Health ${this.health} / ${this.maxHealth}`)];
 	}
 
@@ -175,7 +179,7 @@ export class EntityTimedAttribute extends EntityAttribute {
 		return this.counter.tick();
 	}
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		return [new TextLine(`Cooldown ${this.counter.i} / ${this.counter.n}`)];
 	}
 }
@@ -342,7 +346,7 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 		return this.inputRotations.includes(rotation);
 	}
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		let tooltipLines = this.materialCapacities
 			.filter(capacity => capacity.quantity && this.verboseTooltip || this.quantities[capacity.resource])
 			.map(capacity => {
@@ -560,7 +564,7 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 		return true;
 	}
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		return [new TextLine(`Power ${this.quantity} / ${this.capacity}`)];
 	}
 }
@@ -601,7 +605,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 		return this.connections.concat(this.oldConnections).filter(util.unique);
 	}
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		return [new TextLine(`Connections ${this.allConnections.length}`)];
 	}
 }
@@ -623,7 +627,7 @@ export class EntityCoolantProduceAttribute extends EntityAttribute {
 		return true;
 	}
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		return [new TextLine(`Coolant ${this.quantity} / ${this.maxQuantity}`)];
 	}
 }
@@ -656,7 +660,7 @@ export class EntityCoolantConsumeAttribute extends EntityAttribute {
 		return false;
 	}
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		return [new TextLine(`Coolant ${this.consumed} / ${this.quantity}`)];
 	}
 }
@@ -749,7 +753,7 @@ export class EntityLiquidStorageAttribute extends EntityAttribute {
 		return this.inputRotations.includes(rotation);
 	}
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		return [new TextLine(`${ResourceUtils.liquidString(this.liquidCount.resource)} ${this.liquidCount.quantity} / ${this.maxQuantity}`)];
 	}
 }
@@ -807,7 +811,7 @@ export class EntityLiquidTransportAttribute extends EntityAttribute {
 export class EntityMaterialPickerAttribute extends EntityAttribute {
 	material: Material = 0;
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		return util.enumValues(Material).map(material => {
 			let color = material === this.material ? Color.SELECTED_TEXT : undefined;
 			return new TextLine(ResourceUtils.materialString(material), () => this.material = material, undefined, color);
@@ -827,7 +831,7 @@ export class EntityMaterialDisplayAttribute extends EntityAttribute {
 		this.material = material;
 	}
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		return [new TextLine(ResourceUtils.materialString(this.material))];
 	}
 
@@ -844,7 +848,7 @@ export class EntityLiquidDisplayAttribute extends EntityAttribute {
 		this.liquid = liquid;
 	}
 
-	get tooltip(): TextLine[] {
+	tooltip(verbose: boolean): TextLine[] {
 		return [new TextLine(ResourceUtils.liquidString(this.liquid))];
 	}
 

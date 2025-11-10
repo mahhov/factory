@@ -100,8 +100,8 @@ export class Entity implements Tileable {
 			.forEach(attributeChain => attributeChain.forEach(attribute => attribute.reset()));
 	}
 
-	get tooltip(): TextLine[] {
-		return this.attributes.flat().map(attribute => attribute.tooltip).flat();
+	tooltip(verbose: boolean): TextLine[] {
+		return this.attributes.flat().flatMap(attribute => attribute.tooltip(verbose));
 	}
 
 	get selectable(): boolean {

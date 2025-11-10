@@ -21,7 +21,7 @@ export class PlayerLogic {
 
 	tick() {
 		this.built = false;
-		this.multilineText.lines = this.materials.tooltip;
+		this.multilineText.lines = this.materials.tooltip(false);
 		this.multilineText.tick();
 	}
 }
