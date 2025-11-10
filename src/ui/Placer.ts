@@ -51,7 +51,7 @@ enum Tool {
 	AIR_VENT, WATER_VENT, METHANE_VENT,
 	PUMP, POWERED_PUMP, WELL, PIPE, PIPE_DISTRIBUTOR, PIPE_JUNCTION, TANK,
 	// todo turrets
-	TURRET,
+	SHRAPNEL_TURRET, PIERCING_TURRET, ARC_TURRET, SIEGE_TURRET, LASER_TURRET,
 }
 
 let toolTree = {
@@ -63,7 +63,7 @@ let toolTree = {
 	power: [Tool.THERMAL_GENERATOR, Tool.SOLAR_ARRAY, Tool.METHANE_BURNER, Tool.THERMITE_REACTOR, Tool.CONDUCTOR, Tool.BATTERY],
 	vents: [Tool.AIR_VENT, Tool.WATER_VENT, Tool.METHANE_VENT],
 	liquids: [Tool.PUMP, Tool.POWERED_PUMP, Tool.WELL, Tool.PIPE, Tool.PIPE_DISTRIBUTOR, Tool.PIPE_JUNCTION, Tool.TANK],
-	turrets: [Tool.TURRET],
+	turrets: [Tool.SHRAPNEL_TURRET, Tool.PIERCING_TURRET, Tool.ARC_TURRET, Tool.SIEGE_TURRET, Tool.LASER_TURRET],
 };
 type ToolGroup = keyof typeof toolTree;
 
@@ -190,9 +190,17 @@ export default class Placer {
 				return Placer.createToolPipeJunction(findEntityMetadata('buildings', 'Pipe Junction'));
 			case Tool.TANK:
 				return Placer.createToolTank(findEntityMetadata('buildings', 'Tank'));
-				
-			case Tool.TURRET:
-				return new Turret();
+
+			case Tool.SHRAPNEL_TURRET:
+				return Placer.createToolTurret(findEntityMetadata('turrets', 'Shrapnel Turret'));
+			case Tool.PIERCING_TURRET:
+				return Placer.createToolTurret(findEntityMetadata('turrets', 'Piercing Turret'));
+			case Tool.ARC_TURRET:
+				return Placer.createToolTurret(findEntityMetadata('turrets', 'Arc Turret'));
+			case Tool.SIEGE_TURRET:
+				return Placer.createToolTurret(findEntityMetadata('turrets', 'Siege Turret'));
+			case Tool.LASER_TURRET:
+				return Placer.createToolTurret(findEntityMetadata('turrets', 'Laser Turret'));
 		}
 	}
 
@@ -266,6 +274,10 @@ export default class Placer {
 
 	private static createToolTank(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		return new Tank(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+	}
+
+	private static createToolTurret(metadata: ParsedLine<typeof sectionFields.turrets>) {
+		return new Turret(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.attackRate, metadata.damage, metadata.materialInput, metadata.accuracy, metadata.range, metadata.projectileSpeed);
 	}
 
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {

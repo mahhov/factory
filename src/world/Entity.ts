@@ -410,9 +410,18 @@ export class Tank extends Building {
 	}
 }
 
-export class Turret extends Entity {
-	constructor() {
-		super('Turret', new Vector(2));
+export class Turret extends Building {
+	constructor(name: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, attackRate: number, damage: number, materialInput: number, accuracy: number, range: number, projectileSpeed: number) {
+		super(name, size, buildTime, buildCost, health);
+
+		// todo
+		//   attackRate
+		//   damage
+		//   materialInput
+		//   accuracy
+		//   range
+		//   projectileSpeed
+
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, [new ResourceUtils.Count(Material.IRON, 10)]);
 		this.attributes.push([materialStorageAttribute]);
 		this.attributes.push([

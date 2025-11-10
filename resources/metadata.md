@@ -73,14 +73,14 @@
 
 # turrets
 
-| name            | cost to build | attacks / second | damage / attack | dps | materials / attack | mps        | alternative ammo    | damage boost | size | health | accuracy - spray cone in degrees | range | projectile speed | description                                                   |
-|-----------------|---------------|------------------|-----------------|-----|--------------------|------------|---------------------|--------------|------|--------|----------------------------------|-------|------------------|---------------------------------------------------------------|
-| shrapnel turret |               | 5                | 1               | 5   | 1 iron             | 5 iron     | sulphur 25% 2x2 aoe | water 50%    | 2    | 100    | 90                               | 8     | 1                |                                                               |
-| piercing turret |               | .5               | 15              | 7.5 | 10 iron            | 5 iron     |                     | water 50%    | 2    | 100    | 0                                | 16    | 1                |                                                               |
-| arc turret      |               | .25              | 0               | 0   | 500 power          | 125 power  |                     |              | 2    | 100    | 0                                | 8     | instant          | chains 4 times. stuns for 2 seconds per 4 seconds.            |
-| siege turret    |               | .1               | 20              | 18  | 250 sulphur        | 25 sulphur |                     | methane 50%  | 4    | 200    | 10                               | 48    | .5               | 3x3 area damage                                               |
-| laser turret    |               | 20               | .5              | 40  | .1 thermite        | 2 thermite |                     | methane 50%  | 4    | 200    | 0                                | 24    | instant          | requires 100 coolants / s, 4x damage against armoured enemies |
-|                 |               |                  |                 |     |                    |            |                     |              |      |        |                                  |       |                  |                                                               |
+| name            | build time | build cost               | attacks / second | damage / attack | dps | materials / attack | mps        | damage boost | size | health | accuracy - spray cone in degrees | range | projectile speed | description                                                   |
+|-----------------|------------|--------------------------|------------------|-----------------|-----|--------------------|------------|--------------|------|--------|----------------------------------|-------|------------------|---------------------------------------------------------------|
+| shrapnel turret | 10         | 50 iron, 50 steel        | 5                | 1               | 5   | 1 iron             | 5 iron     | water 50%    | 2    | 100    | 90                               | 8     | 1                |                                                               |
+| piercing turret | 10         | 50 iron, 50 steel        | .5               | 15              | 7.5 | 10 iron            | 5 iron     | water 50%    | 2    | 100    | 0                                | 16    | 1                |                                                               |
+| arc turret      | 20         | 100 steel, 100 metaglass | .25              | 0               | 0   | 500 power          | 125 power  | -            | 2    | 100    | 0                                | 8     | instant          | chains 4 times. stuns for 2 seconds per 4 seconds.            |
+| siege turret    | 20         | 100 steel, 100 titanium  | .1               | 20              | 18  | 250 sulphur        | 25 sulphur | methane 50%  | 4    | 200    | 10                               | 48    | .5               | 3x3 area damage                                               |
+| laser turret    | 40         | 200 steel, 200 plasteel  | 20               | .5              | 40  | .1 thermite        | 2 thermite | methane 50%  | 4    | 200    | 0                                | 24    | instant          | requires 100 coolants / s, 4x damage against armoured enemies |
+|                 |            |                          |                  |                 |     |                    |            |              |      |        |                                  |       |                  |                                                               |
 
 # ammo
 
@@ -89,7 +89,7 @@
 | iron      | shrapnel & piercing turrets |                                                 |
 | flux-sand | can't be used as ammo       |                                                 |
 | sulphur   | siege turret                | 25% 2x2 aoe for shrapnel & piercing turret      |
-| titanium  |                             | 59% more damage for shrapnel & piercing turret  |
+| titanium  |                             | 50% more damage for shrapnel & piercing turret  |
 | graphite  |                             |                                                 |
 | metaglass |                             |                                                 |
 | steel     |                             |                                                 |

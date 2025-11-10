@@ -80,6 +80,19 @@ export let sectionFields = {
 		size: (data: StringRecord) => parseNumber(data.size),
 		health: (data: StringRecord) => parseNumber(data.health),
 	},
+	turrets: {
+		name: (data: StringRecord) => util.lowerCaseToTitleCase(data.name),
+		buildTime: (data: StringRecord) => parseNumber(data['build time']),
+		buildCost: (data: StringRecord) => parseResourceCounts(data['build cost'], Material),
+		attackRate: (data: StringRecord) => parseNumber(data['attacks / second']),
+		damage: (data: StringRecord) => parseNumber(data['damage / attack']),
+		materialInput: (data: StringRecord) => parseNumber(data['materials / attack']),
+		size: (data: StringRecord) => parseNumber(data.size),
+		health: (data: StringRecord) => parseNumber(data.health),
+		accuracy: (data: StringRecord) => parseNumber(data['accuracy - spray cone in degrees']),
+		range: (data: StringRecord) => parseNumber(data.range),
+		projectileSpeed: (data: StringRecord) => parseNumber(data['projectile speed']),
+	},
 };
 
 let mdString = await (await fetch('../../resources/metadata.md')).text();
