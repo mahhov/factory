@@ -97,3 +97,12 @@
 | exidium   |                             |                                                 |
 | thermite  | laser turret                | 100% more damage for siege turret               |
 |           |                             |                                                 |
+
+# enemies
+
+| name | size | health | movement speed | attack range | attack rate | attack damage | description                                             |
+|------|------|--------|----------------|--------------|-------------|---------------|---------------------------------------------------------|
+| boom |      |        |                |              |             |               | slow moving, low health self explodes to do area damage |
+| flea |      |        |                |              |             |               | fast moving, low health swarm                           |
+|      |      |        |                |              |             |               |                                                         |
+|      |      |        |                |              |             |               |                                                         |

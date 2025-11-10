@@ -1,5 +1,5 @@
-import {Container, Sprite} from 'pixi.js';
-import {generatedTextures} from '../graphics/generatedTextures.js';
+import {AnimatedSprite, Container, Sprite} from 'pixi.js';
+import {animatedGeneratedTextures, generatedTextures} from '../graphics/generatedTextures.js';
 import SpriteLoader from '../graphics/SpriteLoader.js';
 import TextLine from '../ui/TextLine.js';
 import util from '../util/util.js';
@@ -111,7 +111,12 @@ export abstract class Building extends Entity {
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
 		let spriteName = util.titleCaseToCamelCase(name);
-		if (spriteName in generatedTextures)
+		if (spriteName in animatedGeneratedTextures) {
+			let animatedSprite = new AnimatedSprite(animatedGeneratedTextures[spriteName as keyof typeof animatedGeneratedTextures]);
+			animatedSprite.animationSpeed = .1;
+			animatedSprite.play();
+			this.setSprite(animatedSprite);
+		} else if (spriteName in generatedTextures)
 			this.setSprite(new Sprite(generatedTextures[spriteName as keyof typeof generatedTextures].texture));
 	}
 
