@@ -6,6 +6,10 @@ class GeneratedTexture {
 	texture: Texture;
 
 	constructor(size: number, rects: [number, number, number, number, string][]) {
+		this.texture = GeneratedTexture.texture(size, rects);
+	}
+
+	static texture(size: number, rects: [number, number, number, number, string][]): Texture {
 		let canvas = document.createElement('canvas');
 		canvas.width = size;
 		canvas.height = size;
@@ -15,11 +19,10 @@ class GeneratedTexture {
 			ctx!.fillRect(x, y, width, height);
 		});
 		let source = new CanvasSource({resource: canvas});
-		this.texture = new Texture({source});
+		return new Texture({source});
 	}
 }
 
-// todo dedupe
 // todo cache
 // todo ensure same number of colors
 class ColoredGeneratedTexture {
@@ -32,16 +35,7 @@ class ColoredGeneratedTexture {
 	}
 
 	texture(...colors: string[]): Texture {
-		let canvas = document.createElement('canvas');
-		canvas.width = this.size;
-		canvas.height = this.size;
-		let ctx = canvas.getContext('2d');
-		this.rectsHandler(...colors).forEach(([x, y, width, height, color]) => {
-			ctx!.fillStyle = color;
-			ctx!.fillRect(x, y, width, height);
-		});
-		let source = new CanvasSource({resource: canvas});
-		return new Texture({source});
+		return GeneratedTexture.texture(this.size, this.rectsHandler(...colors));
 	}
 }
 
