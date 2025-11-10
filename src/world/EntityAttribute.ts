@@ -209,6 +209,7 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		// todo check capacity
 		tile.position.iterate(tile.tileable.size).forEach(position => {
 			let tile = world.terrain.getTile(position);
 			if (!(tile?.tileable instanceof MaterialDeposit)) return;
@@ -270,12 +271,12 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	private readonly totalCapacity: number;
 	private readonly materialCapacities: ResourceUtils.Count<Material>[];
 	private readonly inputRotations: Rotation[];
+	private readonly verboseTooltip: boolean;
 	private readonly quantities: Record<Material, number>;
 	private readonly orderedAndRotations: [Material, Rotation][] = [];
 
 	constructor(totalCapacity: number,
-	            materialCapacities: ResourceUtils.Count<Material>[],
-	            inputRotations: Rotation[] = util.enumValues(Rotation)) {
+	            materialCapacities: ResourceUtils.Count<Material>[], inputRotations: Rotation[], verboseTooltip: boolean) {
 		super();
 		console.assert(totalCapacity > 0);
 		console.assert(materialCapacities.length > 0);
@@ -283,6 +284,7 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 		this.totalCapacity = totalCapacity;
 		this.materialCapacities = materialCapacities;
 		this.inputRotations = inputRotations;
+		this.verboseTooltip = verboseTooltip;
 		this.quantities = Object.fromEntries(util.enumValues(Material)
 			.map(material => [material, 0])) as Record<Material, number>;
 	}
@@ -326,7 +328,7 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 
 	get tooltip(): TextLine[] {
 		let tooltipLines = this.materialCapacities
-			.filter(capacity => capacity.quantity)
+			.filter(capacity => capacity.quantity && this.verboseTooltip || this.quantities[capacity.resource])
 			.map(capacity => {
 				let material = Number(capacity.resource);
 				let prefix = `${ResourceUtils.materialString(material)} ${this.quantities[capacity.resource]}`;
@@ -417,7 +419,7 @@ export class EntityOutflowAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.materialStorageAttribute.empty) return false;
-		let outputRotations: Rotation[] = util.enumValues(Rotation);
+		let outputRotations = util.enumValues(Rotation);
 		let materialCounts = this.materialCounts.filter(materialCount => this.materialStorageAttribute.hasQuantity(materialCount));
 		return EntityTransportAttribute.move(this.materialStorageAttribute, outputRotations, materialCounts, world, tile);
 	}
@@ -1002,7 +1004,6 @@ export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 			let sprite = new Sprite(coloredGeneratedTextures.materialIndicator.texture(color));
 			let shiftRatio = this.timedAttribute.counter.ratio || 1;
 			sprite.position = RotationUtils.positionShift(this.rotation).scale(new Vector((shiftRatio - .5) * sprite.width));
-			console.log(sprite.position);
 			tile.tileable.addOverlaySprite(sprite);
 		}
 		return true;
