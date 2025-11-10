@@ -79,6 +79,7 @@ export let sectionFields = {
 		boost: (data: StringRecord) => !!data.boost,
 		size: (data: StringRecord) => parseNumber(data.size),
 		health: (data: StringRecord) => parseNumber(data.health),
+		description: (data: StringRecord) => data.description,
 	},
 	turrets: {
 		name: (data: StringRecord) => util.lowerCaseToTitleCase(data.name),
@@ -92,6 +93,7 @@ export let sectionFields = {
 		accuracy: (data: StringRecord) => parseNumber(data['accuracy - spray cone in degrees']),
 		range: (data: StringRecord) => parseNumber(data.range),
 		projectileSpeed: (data: StringRecord) => parseNumber(data['projectile speed']),
+		description: (data: StringRecord) => data.description,
 	},
 };
 

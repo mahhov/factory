@@ -28,7 +28,6 @@ export default class Tooltip {
 	private readonly selectionRect = new Container();
 	private selection: Selection | null = null;
 
-
 	constructor(painter: Painter, camera: Camera, input: Input, world: World) {
 		this.painter = painter;
 		this.camera = camera;

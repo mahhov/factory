@@ -81,6 +81,16 @@ export class EntityNameAttribute extends EntityAttribute {
 	}
 }
 
+export class EntityDescriptionAttribute extends EntityAttribute {
+	readonly description: string;
+
+	constructor(description: string) {
+		super();
+		console.assert(!!description);
+		this.description = description;
+	}
+}
+
 // todo some graphical indicator for buildings queued, buildings in progress, buildings active
 // todo partial health for partially built buildings
 // todo gets stuck building when out of resources

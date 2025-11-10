@@ -27,12 +27,15 @@ import {
 	Wall,
 	Well,
 } from '../world/Entity.js';
-import {EntityNameAttribute} from '../world/EntityAttribute.js';
+import {EntityDescriptionAttribute, EntityNameAttribute} from '../world/EntityAttribute.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {Liquid, Material, ResourceUtils} from '../world/Resource.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
 import {GridWorldLayer, World} from '../world/World.js';
 import {Input} from './Input.js';
+import MultilineText, {Anchor} from './MultilineText.js';
+import TextLine from './TextLine.js';
+import lowerCaseToTitleCase = util.lowerCaseToTitleCase;
 
 export enum PlacerState {
 	EMPTY, ENTITY_SELECTED, STARTED
@@ -78,6 +81,7 @@ export default class Placer {
 	private readonly toolIconContainer = new Container();
 	private readonly toolTextContainer = new Container();
 	private readonly toolSelectionRect = new Container();
+	private readonly multilineText;
 	private started = false;
 	private rotation = Rotation.UP;
 	private toolGroup!: ToolGroup;
@@ -103,6 +107,9 @@ export default class Placer {
 		this.toolSelectionRect.addChild(new Graphics()
 			.rect(0, 0, ...Placer.toolUiCoordinates(false, 0)[1])
 			.stroke({width: 3 / painter.canvasWidth, color: Color.SELECTED_RECT_OUTLINE}));
+
+		this.multilineText = new MultilineText(painter);
+		this.multilineText.anchor = Anchor.BOTTOM_LEFT;
 
 		this.setToolGroupAndTool('walls', Tool.EMPTY);
 	}
@@ -204,79 +211,79 @@ export default class Placer {
 	}
 
 	private static createToolWall(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Wall(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health);
+		return new Wall(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health);
 	}
 
 	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Extractor(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.heatOutput, metadata.output as number[]);
+		return new Extractor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.heatOutput, metadata.output as number[]);
 	}
 
 	private static createToolConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Conveyor(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
+		return new Conveyor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
 	}
 
 	private static createToolDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Distributor(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+		return new Distributor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolJunction(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Junction(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+		return new Junction(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolFactory(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Factory(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.output as ResourceUtils.Count<Material>);
+		return new Factory(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.output as ResourceUtils.Count<Material>);
 	}
 
 	private static createToolStorage(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Storage(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+		return new Storage(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolDispenser(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Dispenser(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
+		return new Dispenser(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
 	}
 
 	private static createToolGenerator(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Generator(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.output as number);
+		return new Generator(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.output as number);
 	}
 
 	private static createToolConductor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Conductor(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+		return new Conductor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolBattery(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Battery(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+		return new Battery(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolVent(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Vent(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.liquidInput?.[0], metadata.powerInput, metadata.output as number);
+		return new Vent(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.liquidInput?.[0], metadata.powerInput, metadata.output as number);
 	}
 
 	private static createToolPump(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Pump(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.output as number);
+		return new Pump(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.output as number);
 	}
 
 	private static createToolWell(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Well(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, new ResourceUtils.Count(Liquid.WATER, metadata.output as number));
+		return new Well(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, new ResourceUtils.Count(Liquid.WATER, metadata.output as number));
 	}
 
 	private static createToolPipe(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Pipe(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
+		return new Pipe(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
 	}
 
 	private static createToolPipeDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new PipeDistributor(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+		return new PipeDistributor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolPipeJunction(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new PipeJunction(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+		return new PipeJunction(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolTank(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Tank(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+		return new Tank(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolTurret(metadata: ParsedLine<typeof sectionFields.turrets>) {
-		return new Turret(metadata.name, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.attackRate, metadata.damage, metadata.materialInput, metadata.accuracy, metadata.range, metadata.projectileSpeed);
+		return new Turret(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.attackRate, metadata.damage, metadata.materialInput, metadata.accuracy, metadata.range, metadata.projectileSpeed);
 	}
 
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {
@@ -296,8 +303,7 @@ export default class Placer {
 	}
 
 	setToolGroupIndex(index: number) {
-		let toolGroup = Object.keys(toolTree)[index] as ToolGroup | undefined;
-		if (!toolGroup) return;
+		let toolGroup = Object.keys(toolTree)[index] as ToolGroup;
 		let tool = toolTree[toolGroup][0];
 		this.setToolGroupAndTool(toolGroup, tool);
 	}
@@ -342,6 +348,8 @@ export default class Placer {
 				this.addToolUiButton(coordinates, this.toolGroupIconContainer, spriteContainer, this.toolGroupTextContainer, '^' + (i + 1));
 				spriteContainer.eventMode = 'static';
 				spriteContainer.onpointertap = () => this.setToolGroupIndex(i);
+				spriteContainer.onpointerenter = () => this.showToolGroupTooltip(i);
+				spriteContainer.onpointerleave = () => this.hideTooltip();
 			});
 		}
 
@@ -358,6 +366,8 @@ export default class Placer {
 				this.addToolUiButton(coordinates, this.toolIconContainer, Placer.cachedToolEntities[tool].container, this.toolTextContainer, String(i + 1));
 				Placer.cachedToolEntities[tool].container.eventMode = 'static';
 				Placer.cachedToolEntities[tool].container.onpointertap = () => this.toggleToolIndex(i);
+				Placer.cachedToolEntities[tool].container.onpointerenter = () => this.showToolTooltip(i);
+				Placer.cachedToolEntities[tool].container.onpointerleave = () => this.hideTooltip();
 			});
 		}
 
@@ -461,6 +471,31 @@ export default class Placer {
 		if (this.tool !== Tool.EMPTY)
 			return PlacerState.ENTITY_SELECTED;
 		return PlacerState.EMPTY;
+	}
+
+	showToolGroupTooltip(index: number) {
+		this.multilineText.lines = [new TextLine(lowerCaseToTitleCase(Object.keys(toolTree)[index] as ToolGroup))];
+		let coordinates = Placer.toolUiCoordinates(true, index);
+		this.multilineText.position = new Vector(coordinates[0][0], coordinates[0][1]);
+		this.multilineText.tick();
+	}
+
+	showToolTooltip(index: number) {
+		let toolEntity = Placer.cachedToolEntities[toolTree[this.toolGroup][index]];
+		let nameAttribute = toolEntity.getAttribute(EntityNameAttribute);
+		let descriptionAttribute = toolEntity.getAttribute(EntityDescriptionAttribute);
+		this.multilineText.lines = [
+			nameAttribute ? new TextLine(nameAttribute.name) : null,
+			descriptionAttribute ? new TextLine(descriptionAttribute.description) : null,
+		].filter(v => v) as TextLine[];
+		let coordinates = Placer.toolUiCoordinates(false, index);
+		this.multilineText.position = new Vector(coordinates[0][0], coordinates[0][1]);
+		this.multilineText.tick();
+	}
+
+	hideTooltip() {
+		this.multilineText.lines = [];
+		this.multilineText.tick();
 	}
 }
 
