@@ -1,6 +1,6 @@
 import {Sprite} from 'pixi.js';
 import Color from '../graphics/Color.js';
-import {generatedTextures} from '../graphics/generatedTextures.js';
+import {coloredGeneratedTextures, generatedTextures} from '../graphics/generatedTextures.js';
 import TextLine from '../ui/TextLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
@@ -846,9 +846,8 @@ export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		// todo color
-		// todo cache
-		tile.tileable.addOverlaySprite(!this.materialStorageAttribute.empty ? new Sprite(generatedTextures.materialIndicator.texture) : null);
+		// todo use material color
+		tile.tileable.addOverlaySprite(!this.materialStorageAttribute.empty ? new Sprite(coloredGeneratedTextures.materialIndicator.texture('#ff0000')) : null);
 		return true;
 	}
 }

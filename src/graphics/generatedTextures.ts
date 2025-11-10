@@ -19,6 +19,32 @@ class GeneratedTexture {
 	}
 }
 
+// todo dedupe
+// todo cache
+// todo ensure same number of colors
+class ColoredGeneratedTexture {
+	protected readonly size: number;
+	private readonly rectsHandler: (...colors: string[]) => [number, number, number, number, string][];
+
+	constructor(size: number, rectsHandler: (...colors: string[]) => [number, number, number, number, string][]) {
+		this.size = size;
+		this.rectsHandler = rectsHandler;
+	}
+
+	texture(...colors: string[]): Texture {
+		let canvas = document.createElement('canvas');
+		canvas.width = this.size;
+		canvas.height = this.size;
+		let ctx = canvas.getContext('2d');
+		this.rectsHandler(...colors).forEach(([x, y, width, height, color]) => {
+			ctx!.fillStyle = color;
+			ctx!.fillRect(x, y, width, height);
+		});
+		let source = new CanvasSource({resource: canvas});
+		return new Texture({source});
+	}
+}
+
 // AI generated
 export let generatedTextures = {
 	// Empty tile for background
@@ -295,9 +321,11 @@ export let generatedTextures = {
 		[6, 6, 4, 10, '#f87171'], // Projectile Barrel (Red)
 		[7, 10, 2, 2, '#fff'], // Muzzle Flash/Indicator
 	]),
+};
 
+export let coloredGeneratedTextures = {
 	// --- OVERLAYS (8x8) ---
-	materialIndicator: new GeneratedTexture(8, [
-		[2, 2, 4, 4, '#facc15'], // Small Yellow Square
+	materialIndicator: new ColoredGeneratedTexture(8, color => [
+		[2, 2, 4, 4, color], // Small Yellow Square
 	]),
 };
