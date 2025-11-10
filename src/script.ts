@@ -1,4 +1,4 @@
-import {Application, Container} from 'pixi.js';
+import {Application, Container, TextureStyle} from 'pixi.js';
 import Camera from './Camera.js';
 import Painter from './graphics/Painter.js';
 import SpriteLoader from './graphics/SpriteLoader.js';

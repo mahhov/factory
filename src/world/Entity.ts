@@ -148,9 +148,9 @@ export class Extractor extends Building {
 		}
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
-			timedAttribute,
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
 			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 40) : null,
+			timedAttribute,
 			new EntityMaterialExtractorAttribute(materialStorageAttribute, outputPerTier),
 		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([new EntityOutflowAttribute(materialStorageAttribute, getMaterialCounts(1))]);
@@ -214,10 +214,10 @@ export class Factory extends Building {
 		}
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
-			timedAttribute,
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
 			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 40) : null,
 			new EntityMaterialConsumeAttribute(materialStorageAttribute, materialInput),
+			timedAttribute,
 			new EntityMaterialProduceAttribute(materialStorageAttribute, [materialOutput]),
 		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([new EntityOutflowAttribute(materialStorageAttribute, [materialOutput])]);
@@ -270,10 +270,10 @@ export class Generator extends Building {
 		this.attributes.push([outputPowerStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
-			timedAttribute,
 			inputPowerStorageAttribute ? new EntityPowerConsumeAttribute(inputPowerStorageAttribute, powerInput * 40) : null,
 			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 40) : null,
 			materialStorageAttribute ? new EntityMaterialConsumeAttribute(materialStorageAttribute, materialInput) : null,
+			timedAttribute,
 			new EntityPowerProduceAttribute(outputPowerStorageAttribute, powerOutput * 40),
 		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([new EntityPowerConductAttribute(0)]);
@@ -311,9 +311,9 @@ export class Vent extends Building {
 		}
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
-			timedAttribute,
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
 			liquidStorageAttribute ? new EntityLiquidConsumeAttribute(liquidStorageAttribute, liquidInput) : null,
+			timedAttribute,
 			new EntityCoolantProduceAttribute(coolantOutput * 40),
 		].filter(v => v) as EntityAttribute[]);
 		if (powerInput)
@@ -334,8 +334,8 @@ export class Pump extends Building {
 		this.attributes.push([liquidStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
-			timedAttribute,
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
+			timedAttribute,
 			new EntityLiquidExtractorAttribute(liquidStorageAttribute, liquidOutput * 40),
 		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([
@@ -360,8 +360,8 @@ export class Well extends Building {
 		this.attributes.push([liquidStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
-			timedAttribute,
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
+			timedAttribute,
 			new EntityLiquidDryExtractorAttribute(liquidStorageAttribute, new ResourceUtils.Count(liquidOutput.resource, liquidOutput.quantity * 40)),
 		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([
@@ -447,8 +447,8 @@ export class Turret extends Building {
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, [new ResourceUtils.Count(Material.IRON, 10)], util.enumValues(Rotation), true);
 		this.attributes.push([materialStorageAttribute]);
 		this.attributes.push([
-			new EntityTimedAttribute(30),
 			new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
+			new EntityTimedAttribute(30),
 			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, true),
 		]);
 	}
@@ -544,4 +544,3 @@ export class Projectile extends Entity {
 }
 
 // todo allow boosting entities with eg water
-// todo double check all timed attributes
