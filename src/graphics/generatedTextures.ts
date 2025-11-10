@@ -23,18 +23,17 @@ class GeneratedTexture {
 	}
 }
 
-// todo ensure same number of colors
-class ColoredGeneratedTexture {
+class ColoredGeneratedTexture<T extends string[]> {
 	private readonly textureCache: Record<string, Texture> = {};
 	protected readonly size: number;
-	private readonly rectsHandler: (...colors: string[]) => [number, number, number, number, string][];
+	private readonly rectsHandler: (...colors: T) => [number, number, number, number, string][];
 
-	constructor(size: number, rectsHandler: (...colors: string[]) => [number, number, number, number, string][]) {
+	constructor(size: number, rectsHandler: (...colors: T) => [number, number, number, number, string][]) {
 		this.size = size;
 		this.rectsHandler = rectsHandler;
 	}
 
-	texture(...colors: string[]): Texture {
+	texture(...colors: T): Texture {
 		let key = colors.join();
 		this.textureCache[key] ||= GeneratedTexture.texture(this.size, this.rectsHandler(...colors));
 		return this.textureCache[key];
