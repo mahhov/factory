@@ -4,6 +4,7 @@ import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
+import {EntityBuildableAttribute} from './EntityAttribute.js';
 import {MobLogic} from './MobLogic.js';
 import {PlayerLogic} from './PlayerLogic.js';
 
@@ -172,11 +173,11 @@ export class World {
 
 		this.queue = new OrderedGridWorldLayer(new Empty(), true, size);
 		cameraContainer.addChild(this.queue.container);
-		this.queue.container.alpha = .5;
+		this.queue.container.alpha = .4;
 
 		this.planning = new GridWorldLayer(new Empty(), true, size);
 		cameraContainer.addChild(this.planning.container);
-		this.planning.container.alpha = .5;
+		this.planning.container.alpha = .4;
 
 		this.mobLayer = new FreeWorldLayer<Entity>(size);
 		cameraContainer.addChild(this.mobLayer.container);
@@ -215,16 +216,19 @@ export class World {
 	}
 
 	private tickQueue() {
-		if (!this.queue.order.length) return;
-		if (this.playerLogic.built) return;
-		while (this.queue.order.length) {
-			let position = this.queue.order.shift()!;
-			let currentTile = this.live.getTile(position)!;
-			let nextTile = this.queue.getTile(position)!;
-			if (currentTile.equals(nextTile)) continue;
-			this.live.replaceTileable(position, nextTile.tileable);
-			return;
-		}
+		this.queue.order.some(position => {
+			let liveTile = this.live.getTile(position)!;
+			let queueTile = this.queue.getTile(position)!;
+			if (liveTile.equals(queueTile)) return false;
+			let buildableAttribute = queueTile.tileable.getAttribute(EntityBuildableAttribute);
+			if (!buildableAttribute || buildableAttribute.doneBuilding) {
+				this.live.replaceTileable(position, queueTile.tileable);
+				return true;
+			} else {
+				buildableAttribute.reset();
+				return buildableAttribute.tick(this, queueTile);
+			}
+		});
 		// todo slower building if further from player base
 		// todo cancel in-progress building if queued for removal
 		// todo allow replacing queued buildings

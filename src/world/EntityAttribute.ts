@@ -131,7 +131,6 @@ export class EntityBuildableAttribute extends EntityAttribute {
 	// returns true if building. returns false if done building or insufficient material
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.doneBuilding) return false;
-		if (world.playerLogic.built) return false;
 
 		let lastRatio = this.counter.ratio;
 		let ratio = (this.counter.i + 1) / this.counter.n;
@@ -144,7 +143,6 @@ export class EntityBuildableAttribute extends EntityAttribute {
 		costs.forEach(cost => world.playerLogic.materials.remove(cost));
 		if (this.counter.tick())
 			this.doneBuilding = true;
-		world.playerLogic.built = true;
 		return true;
 	}
 

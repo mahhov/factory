@@ -8,7 +8,6 @@ import {Material, ResourceUtils} from './Resource.js';
 export class PlayerLogic {
 	// todo make base non-salvageable
 	readonly base: Base = new Base();
-	built: boolean = false;
 	private readonly multilineText: MultilineText;
 
 	constructor(painter: Painter) {
@@ -23,7 +22,6 @@ export class PlayerLogic {
 	}
 
 	tick() {
-		this.built = false;
 		this.multilineText.lines = this.materials.tooltip(TooltipType.WORLD);
 		this.multilineText.tick();
 	}
