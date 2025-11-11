@@ -216,22 +216,29 @@ export class World {
 	}
 
 	private tickQueue() {
-		this.queue.order.some((position, i) => {
+		let i = 0;
+		while (i < this.queue.order.length) {
+			let position = this.queue.order[i];
 			let liveTile = this.live.getTile(position)!;
 			let queueTile = this.queue.getTile(position)!;
-			if (liveTile.equals(queueTile)) return false;
+			if (liveTile.equals(queueTile)) {
+				// todo remove from queue.grid
+				this.queue.order.splice(i, 1);
+				continue;
+			}
 			let buildableAttribute = queueTile.tileable.getAttribute(EntityBuildableAttribute);
 			if (!buildableAttribute || buildableAttribute.doneBuilding) {
 				this.live.replaceTileable(position, queueTile.tileable);
-				this.queue.order.splice(i, 1);
-				// todo not properly cleaning queue.order
 				// todo remove from queue.grid
-				return true;
+				this.queue.order.splice(i, 1);
+				continue;
 			} else {
 				buildableAttribute.reset();
-				return buildableAttribute.tick(this, queueTile);
+				if (buildableAttribute.tick(this, queueTile))
+					break;
 			}
-		});
+			i++;
+		}
 		// todo slower building if further from player base
 		// todo cancel in-progress building if queued for removal
 		// todo allow replacing queued buildings
