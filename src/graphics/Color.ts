@@ -1,5 +1,10 @@
 enum Color {
-	IMPORTANT_TEXT = '#ffff00',
+	NAME_TEXT = '#ffff00',
+	DESCRIPTION_TEXT = '#cccccc',
+	HEALTH_TEXT = '#ff5555',
+	POWER_TEXT = '#ff8800',
+	COOLANT_TEXT = '#00e1ff',
+	LIQUID_TEXT = '#006fff',
 	SELECTED_TEXT = '#567cc1',
 	DEFAULT_TEXT = '#ffffff',
 	TEXT_RECT_BACKGROUND = '#000000',

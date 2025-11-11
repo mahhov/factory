@@ -45,6 +45,7 @@ import {
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
 	EntityTransportAttribute,
+	TooltipType,
 } from './EntityAttribute.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
@@ -100,8 +101,8 @@ export class Entity implements Tileable {
 			.forEach(attributeChain => attributeChain.forEach(attribute => attribute.reset()));
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
-		return this.attributes.flat().flatMap(attribute => attribute.tooltip(verbose));
+	tooltip(type: TooltipType): TextLine[] {
+		return this.attributes.flat().flatMap(attribute => attribute.tooltip(type));
 	}
 
 	get selectable(): boolean {
@@ -146,13 +147,13 @@ export class Extractor extends Building {
 		this.attributes.push([materialStorageAttribute]);
 		let powerStorageAttribute;
 		if (powerInput) {
-			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput * 40, EntityPowerStorageAttributePriority.CONSUME);
+			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput * 400, EntityPowerStorageAttributePriority.CONSUME);
 			this.attributes.push([powerStorageAttribute]);
 		}
-		let timedAttribute = new EntityTimedAttribute(40);
+		let timedAttribute = new EntityTimedAttribute(400);
 		this.attributes.push([
-			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
-			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 40) : null,
+			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 400) : null,
+			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 400) : null,
 			timedAttribute,
 			new EntityMaterialExtractorAttribute(materialStorageAttribute, outputPerTier),
 		].filter(v => v) as EntityAttribute[]);
@@ -166,7 +167,7 @@ export class Extractor extends Building {
 export class Conveyor extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number, rotation: Rotation) {
 		super(name, description, size, buildTime, buildCost, health, rotation);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), RotationUtils.except(RotationUtils.opposite(rotation)), false);
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), RotationUtils.except(RotationUtils.opposite(rotation)), true);
 		this.attributes.push([materialStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40 / rate);
 		this.attributes.push([
@@ -182,7 +183,7 @@ export class Conveyor extends Building {
 export class Distributor extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number) {
 		super(name, description, size, buildTime, buildCost, health);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), util.enumValues(Rotation), false);
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), util.enumValues(Rotation), true);
 		this.attributes.push([materialStorageAttribute]);
 		this.attributes.push([
 			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
@@ -195,7 +196,7 @@ export class Distributor extends Building {
 export class Junction extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number) {
 		super(name, description, size, buildTime, buildCost, health);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), util.enumValues(Rotation), false);
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), util.enumValues(Rotation), true);
 		this.attributes.push([materialStorageAttribute]);
 		this.attributes.push([
 			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
@@ -233,7 +234,7 @@ export class Factory extends Building {
 export class Storage extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
 		super(name, description, size, buildTime, buildCost, health);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(capacity, getMaterialCounts(Infinity), util.enumValues(Rotation), false);
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, getMaterialCounts(capacity), util.enumValues(Rotation), true);
 		this.attributes.push([materialStorageAttribute]);
 	}
 }

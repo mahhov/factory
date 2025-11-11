@@ -4,6 +4,7 @@ import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
 import Vector from '../util/Vector.js';
 import {Entity} from '../world/Entity.js';
+import {TooltipType} from '../world/EntityAttribute.js';
 import {Tile, World} from '../world/World.js';
 import {Input} from './Input.js';
 import MultilineText from './MultilineText.js';
@@ -81,7 +82,7 @@ export default class Tooltip {
 		let size = bottomRight.subtract(topLeft);
 
 		this.multilineText.position = bottomRightShift;
-		this.multilineText.lines = this.selection.tile.tileable.tooltip(false);
+		this.multilineText.lines = this.selection.tile.tileable.tooltip(TooltipType.WORLD);
 		this.multilineText.tick();
 
 		this.selectionRect.addChild(new Graphics()

@@ -3,7 +3,7 @@ import MultilineText from '../ui/MultilineText.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {getMaterialCounts} from './Entity.js';
-import {EntityMaterialStorageAttribute} from './EntityAttribute.js';
+import {EntityMaterialStorageAttribute, TooltipType} from './EntityAttribute.js';
 import {Material, ResourceUtils} from './Resource.js';
 
 export class PlayerLogic {
@@ -13,6 +13,7 @@ export class PlayerLogic {
 
 	constructor(painter: Painter) {
 		this.materials = new EntityMaterialStorageAttribute(Infinity, getMaterialCounts(500), [], false);
+		this.materials.add(new ResourceUtils.Count(Material.IRON, 500));
 		util.enumValues(Material).forEach(material =>
 			this.materials.add(new ResourceUtils.Count(material, 500)));
 
@@ -21,7 +22,7 @@ export class PlayerLogic {
 
 	tick() {
 		this.built = false;
-		this.multilineText.lines = this.materials.tooltip(false);
+		this.multilineText.lines = this.materials.tooltip(TooltipType.WORLD);
 		this.multilineText.tick();
 	}
 }

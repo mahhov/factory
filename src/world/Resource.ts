@@ -1,4 +1,5 @@
 import Color from '../graphics/Color.js';
+import util from '../util/util.js';
 
 export enum Material {
 	IRON, FLUX_SAND, SULPHUR,
@@ -29,11 +30,11 @@ export namespace ResourceUtils {
 	}
 
 	export let materialString = (material: Material): string => {
-		return Material[material];
+		return util.snakeCaseToTitleCase(Material[material]);
 	};
 
 	export let liquidString = (liquid: Liquid): string => {
-		return Liquid[liquid];
+		return util.snakeCaseToTitleCase(Liquid[liquid]);
 	};
 
 	export let materialColor = (material: Material): string => {

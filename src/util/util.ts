@@ -59,6 +59,11 @@ namespace util {
 		.split(' ')
 		.map((s, i) => i ? s[0].toUpperCase() + s.slice(1).toLowerCase() : s.toLowerCase())
 		.join('');
+	export let snakeCaseToTitleCase = (str: string): string => lowerCaseToTitleCase(str.split('_').join(' '));
+	export let textPercent = (ratio: number, size: number = 6): string => {
+		let n = Math.floor(ratio * size);
+		return `${'█'.repeat(n)}${'░'.repeat(size - n)}`;
+	};
 }
 
 export default util;

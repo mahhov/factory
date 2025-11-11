@@ -1,4 +1,5 @@
 import {AnimatedSprite, Sprite} from 'pixi.js';
+import color from '../graphics/Color.js';
 import Color from '../graphics/Color.js';
 import {coloredGeneratedTextures} from '../graphics/generatedTextures.js';
 import TextLine from '../ui/TextLine.js';
@@ -9,6 +10,22 @@ import {Empty, Entity, LiquidDeposit, MaterialDeposit, Projectile} from './Entit
 import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, World} from './World.js';
+
+
+export enum TooltipType {
+	PLACER, WORLD
+}
+
+let materialCountsString = (materialCounts: ResourceUtils.Count<Material>[]) =>
+	materialCounts.map(materialCount => `${materialCount.quantity} ${ResourceUtils.materialString(materialCount.resource)}`).join(', ');
+
+let liquidCountsString = (liquidCounts: ResourceUtils.Count<Liquid>[]) =>
+	liquidCounts.map(liquidCount => `${liquidCount.quantity} ${ResourceUtils.liquidString(liquidCount.resource)}`).join(', ');
+
+let materialRatiosString = (materialTuples: [Material, number, number][]) =>
+	materialTuples
+		.map(materialTuple => `${materialTuple[1]} / ${materialTuple[2]} ${ResourceUtils.materialString(materialTuple[0])}`)
+		.join(', ');
 
 let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation): Vector[] => {
 	switch (rotation) {
@@ -56,7 +73,7 @@ export abstract class EntityAttribute {
 		return true;
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
+	tooltip(type: TooltipType): TextLine[] {
 		return [];
 	}
 
@@ -76,8 +93,8 @@ export class EntityNameAttribute extends EntityAttribute {
 		this.name = name;
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
-		return [new TextLine(this.name, {color: Color.IMPORTANT_TEXT})];
+	tooltip(type: TooltipType): TextLine[] {
+		return [new TextLine(this.name, {color: Color.NAME_TEXT})];
 	}
 }
 
@@ -90,8 +107,10 @@ export class EntityDescriptionAttribute extends EntityAttribute {
 		this.text = text;
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
-		return verbose ? [new TextLine(this.text)] : [];
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(this.text, {color: Color.DESCRIPTION_TEXT})] :
+			[];
 	}
 }
 
@@ -131,10 +150,14 @@ export class EntityBuildableAttribute extends EntityAttribute {
 		return true;
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
-		if (this.doneBuilding) return [];
-		let percent = Math.floor(this.counter.ratio * 100);
-		return this.doneBuilding ? [] : [new TextLine(`Building ${percent}%`)];
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[
+				new TextLine(`Build time ${this.counter.n}`),
+				new TextLine(`Build cost ${materialCountsString(this.materialCost)}`),
+			] :
+			this.doneBuilding ? [] : [new TextLine(`Building ${util.textPercent(this.counter.ratio)}`)];
+		// todo text when insufficient materials
 	}
 }
 
@@ -157,8 +180,10 @@ export class EntityHealthAttribute extends EntityAttribute {
 		return true;
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
-		return [new TextLine(`Health ${this.health} / ${this.maxHealth}`)];
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Health ${this.maxHealth}`, {color: Color.HEALTH_TEXT})] :
+			[new TextLine(`Health ${util.textPercent(this.health / this.maxHealth)}`, {color: Color.HEALTH_TEXT})];
 	}
 
 	get selectable(): boolean {
@@ -179,8 +204,10 @@ export class EntityTimedAttribute extends EntityAttribute {
 		return this.counter.tick();
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
-		return [new TextLine(`Cooldown ${this.counter.i} / ${this.counter.n}`)];
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[] :
+			[new TextLine(`Progress ${util.textPercent(this.counter.ratio)}`)];
 	}
 }
 
@@ -204,6 +231,12 @@ export class EntityMaterialProduceAttribute extends EntityAttribute {
 			return true;
 		}
 		return false;
+	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Produces ${materialCountsString(this.outputs)}`)] :
+			[];
 	}
 }
 
@@ -239,6 +272,12 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 			this.materialStorageAttribute.add(new ResourceUtils.Count(material, n));
 		});
 		return true;
+	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Mines tier ${this.outputPerTier.length} materials`)] :
+			[];
 	}
 }
 
@@ -282,32 +321,39 @@ export class EntityMaterialConsumeAttribute extends EntityAttribute {
 		}
 		return false;
 	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Requires ${materialCountsString(this.inputs)}`)] :
+			[new TextLine(materialRatiosString(this.inputs
+				.map(materialCount => [materialCount.resource, this.materialStorageAttribute.quantity(materialCount.resource), materialCount.quantity])))];
+	}
 }
 
 export class EntityMaterialStorageAttribute extends EntityAttribute {
 	private readonly totalCapacity: number;
-	private readonly materialCapacities: ResourceUtils.Count<Material>[];
+	private readonly capacities: ResourceUtils.Count<Material>[];
 	private readonly inputRotations: Rotation[];
-	private readonly verboseTooltip: boolean;
+	private readonly showTooltip: boolean;
 	private readonly quantities: Record<Material, number>;
 	private readonly orderedAndRotations: [Material, Rotation][] = [];
 
 	constructor(totalCapacity: number,
-	            materialCapacities: ResourceUtils.Count<Material>[], inputRotations: Rotation[], verboseTooltip: boolean) {
+	            materialCapacities: ResourceUtils.Count<Material>[], inputRotations: Rotation[], showTooltip: boolean) {
 		super();
 		console.assert(totalCapacity > 0);
 		console.assert(materialCapacities.length > 0);
 		console.assert(materialCapacities.every(materialCount => materialCount.quantity > 0));
 		this.totalCapacity = totalCapacity;
-		this.materialCapacities = materialCapacities;
+		this.capacities = materialCapacities;
 		this.inputRotations = inputRotations;
-		this.verboseTooltip = verboseTooltip;
+		this.showTooltip = showTooltip;
 		this.quantities = Object.fromEntries(util.enumValues(Material)
 			.map(material => [material, 0])) as Record<Material, number>;
 	}
 
 	private getMaterialCapacity(material: Material): number {
-		return this.materialCapacities.find(capacity => capacity.resource === material)?.quantity ?? 0;
+		return this.capacities.find(capacity => capacity.resource === material)?.quantity ?? 0;
 	}
 
 	get empty() {
@@ -324,6 +370,10 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 
 	hasCapacity(materialCount: ResourceUtils.Count<Material>): boolean {
 		return this.capacity(materialCount.resource) >= materialCount.quantity;
+	}
+
+	quantity(material: Material): number {
+		return this.quantities[material];
 	}
 
 	hasQuantity(materialCount: ResourceUtils.Count<Material>): boolean {
@@ -346,17 +396,18 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 		return this.inputRotations.includes(rotation);
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
-		let tooltipLines = this.materialCapacities
-			.filter(capacity => capacity.quantity && this.verboseTooltip || this.quantities[capacity.resource])
-			.map(capacity => {
-				let material = Number(capacity.resource);
-				let prefix = `${ResourceUtils.materialString(material)} ${this.quantities[capacity.resource]}`;
-				return new TextLine(capacity.quantity !== Infinity ? `${prefix} / ${capacity.quantity}` : `${prefix}`);
-			});
-		if (this.totalCapacity !== Infinity && this.orderedAndRotations.length)
-			tooltipLines.push(new TextLine(`${this.orderedAndRotations.length} / ${this.totalCapacity}`));
-		return tooltipLines;
+	tooltip(type: TooltipType): TextLine[] {
+		if (!this.showTooltip) return [];
+		if (type === TooltipType.PLACER)
+			return [new TextLine(`Stores ${this.capacities[0].quantity} of each material`)];
+		let line = this.totalCapacity === Infinity ?
+			materialRatiosString(this.capacities
+				.filter(materialCount => this.quantities[materialCount.resource])
+				.map(materialCount => [materialCount.resource, this.quantities[materialCount.resource], materialCount.quantity])) :
+			materialCountsString(Object.entries(this.quantities)
+				.filter(([_, quantity]) => quantity)
+				.map(([material, quantity]) => new ResourceUtils.Count<Material>(Number(material) as Material, quantity)));
+		return line ? [new TextLine(line)] : [];
 	}
 
 	get selectable() {
@@ -443,6 +494,14 @@ export class EntityOutflowAttribute extends EntityAttribute {
 		let materialCounts = this.materialCounts.filter(materialCount => this.materialStorageAttribute.hasQuantity(materialCount));
 		return EntityTransportAttribute.move(this.materialStorageAttribute, outputRotations, materialCounts, world, tile);
 	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[] :
+			[new TextLine(materialCountsString(this.materialCounts
+				.filter(materialCount => this.materialStorageAttribute.quantity(materialCount.resource))
+				.map(materialCount => new ResourceUtils.Count<Material>(materialCount.resource, this.materialStorageAttribute.quantity(materialCount.resource)))))];
+	}
 }
 
 export class EntityInflowAttribute extends EntityAttribute {
@@ -495,6 +554,12 @@ export class EntityPowerProduceAttribute extends EntityAttribute {
 		}
 		return false;
 	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Produces ${this.quantity} power`, {color: color.POWER_TEXT})] :
+			[];
+	}
 }
 
 export class EntityPowerConsumeAttribute extends EntityAttribute {
@@ -514,6 +579,12 @@ export class EntityPowerConsumeAttribute extends EntityAttribute {
 			return true;
 		}
 		return false;
+	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Consumes ${this.quantity} power`, {color: color.POWER_TEXT})] :
+			[];
 	}
 }
 
@@ -564,8 +635,10 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 		return true;
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
-		return [new TextLine(`Power ${this.quantity} / ${this.capacity}`)];
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			this.priority === EntityPowerStorageAttributePriority.STORAGE ? [new TextLine(`Stores ${this.capacity} power`, {color: color.POWER_TEXT})] : [] :
+			[new TextLine(`Power ${util.textPercent(this.quantity / this.capacity)}`, {color: color.POWER_TEXT})];
 	}
 }
 
@@ -605,8 +678,10 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 		return this.connections.concat(this.oldConnections).filter(util.unique);
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
-		return [new TextLine(`Connections ${this.allConnections.length}`)];
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[] :
+			[new TextLine(`Connections ${this.allConnections.length}`, {color: color.POWER_TEXT})];
 	}
 }
 
@@ -623,12 +698,15 @@ export class EntityCoolantProduceAttribute extends EntityAttribute {
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (this.quantity === this.maxQuantity) return false;
 		this.quantity = this.maxQuantity;
 		return true;
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
-		return [new TextLine(`Coolant ${this.quantity} / ${this.maxQuantity}`)];
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Produces ${this.maxQuantity} coolant`, {color: color.COOLANT_TEXT})] :
+			[new TextLine(`Coolant ${util.textPercent(this.quantity / this.maxQuantity)}`, {color: color.COOLANT_TEXT})];
 	}
 }
 
@@ -660,8 +738,10 @@ export class EntityCoolantConsumeAttribute extends EntityAttribute {
 		return false;
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
-		return [new TextLine(`Coolant ${this.consumed} / ${this.quantity}`)];
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Consumes ${this.quantity} coolant`, {color: color.COOLANT_TEXT})] :
+			[new TextLine(`Coolant ${util.textPercent(this.consumed / this.quantity)}`, {color: color.COOLANT_TEXT})];
 	}
 }
 
@@ -685,6 +765,12 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 			return this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count<Liquid>(tile.tileable.liquid, this.quantity / area));
 		});
 	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Pumps ${this.quantity} liquid`, {color: color.LIQUID_TEXT})] :
+			[];
+	}
 }
 
 export class EntityLiquidDryExtractorAttribute extends EntityAttribute {
@@ -699,6 +785,12 @@ export class EntityLiquidDryExtractorAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		return !!this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count<Liquid>(this.liquidCount.resource, this.liquidCount.quantity));
+	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Pumps ${liquidCountsString([this.liquidCount])}`, {color: color.LIQUID_TEXT})] :
+			[];
 	}
 }
 
@@ -718,6 +810,12 @@ export class EntityLiquidConsumeAttribute extends EntityAttribute {
 			return true;
 		}
 		return false;
+	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Requires ${liquidCountsString([this.liquidCount])}`, {color: color.LIQUID_TEXT})] :
+			[];
 	}
 }
 
@@ -753,8 +851,10 @@ export class EntityLiquidStorageAttribute extends EntityAttribute {
 		return this.inputRotations.includes(rotation);
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
-		return [new TextLine(`${ResourceUtils.liquidString(this.liquidCount.resource)} ${this.liquidCount.quantity} / ${this.maxQuantity}`)];
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[] :
+			[new TextLine(`${ResourceUtils.liquidString(this.liquidCount.resource)} ${util.textPercent(this.liquidCount.quantity / this.maxQuantity)}`, {color: color.LIQUID_TEXT})];
 	}
 }
 
@@ -811,11 +911,13 @@ export class EntityLiquidTransportAttribute extends EntityAttribute {
 export class EntityMaterialPickerAttribute extends EntityAttribute {
 	material: Material = 0;
 
-	tooltip(verbose: boolean): TextLine[] {
-		return util.enumValues(Material).map(material => {
-			let color = material === this.material ? Color.SELECTED_TEXT : undefined;
-			return new TextLine(ResourceUtils.materialString(material), {callback: () => this.material = material, color});
-		});
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[] :
+			util.enumValues(Material).map(material => {
+				let color = material === this.material ? Color.SELECTED_TEXT : undefined;
+				return new TextLine(ResourceUtils.materialString(material), {callback: () => this.material = material, color});
+			});
 	}
 
 	get selectable(): boolean {
@@ -831,7 +933,7 @@ export class EntityMaterialDisplayAttribute extends EntityAttribute {
 		this.material = material;
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
+	tooltip(type: TooltipType): TextLine[] {
 		return [new TextLine(ResourceUtils.materialString(this.material))];
 	}
 
@@ -848,7 +950,7 @@ export class EntityLiquidDisplayAttribute extends EntityAttribute {
 		this.liquid = liquid;
 	}
 
-	tooltip(verbose: boolean): TextLine[] {
+	tooltip(type: TooltipType): TextLine[] {
 		return [new TextLine(ResourceUtils.liquidString(this.liquid))];
 	}
 

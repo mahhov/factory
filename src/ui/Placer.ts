@@ -27,7 +27,7 @@ import {
 	Wall,
 	Well,
 } from '../world/Entity.js';
-import {EntityNameAttribute} from '../world/EntityAttribute.js';
+import {EntityNameAttribute, TooltipType} from '../world/EntityAttribute.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {Liquid, Material, ResourceUtils} from '../world/Resource.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
@@ -473,23 +473,29 @@ export default class Placer {
 	}
 
 	showToolGroupTooltip(index: number) {
-		this.multilineText.lines = [new TextLine(util.lowerCaseToTitleCase(Object.keys(toolTree)[index] as ToolGroup))];
+		this.multilineText.lines = [new TextLine(util.lowerCaseToTitleCase(Object.keys(toolTree)[index] as ToolGroup), {color: Color.NAME_TEXT})];
 		let coordinates = Placer.toolUiCoordinates(true, index);
 		this.multilineText.position = new Vector(coordinates[0][0], coordinates[0][1]);
 		this.multilineText.tick();
+		this.painter.textUiContainer.removeChild(this.toolGroupTextContainer);
+		this.painter.textUiContainer.removeChild(this.toolTextContainer);
 	}
 
 	showToolTooltip(index: number) {
 		let toolEntity = Placer.cachedToolEntities[toolTree[this.toolGroup][index]];
-		this.multilineText.lines = toolEntity.tooltip(true);
+		this.multilineText.lines = toolEntity.tooltip(TooltipType.PLACER);
 		let coordinates = Placer.toolUiCoordinates(false, index);
 		this.multilineText.position = new Vector(coordinates[0][0], coordinates[0][1]);
 		this.multilineText.tick();
+		this.painter.textUiContainer.removeChild(this.toolGroupTextContainer);
+		this.painter.textUiContainer.removeChild(this.toolTextContainer);
 	}
 
 	hideTooltip() {
 		this.multilineText.lines = [];
 		this.multilineText.tick();
+		this.painter.textUiContainer.addChild(this.toolGroupTextContainer);
+		this.painter.textUiContainer.addChild(this.toolTextContainer);
 	}
 }
 
