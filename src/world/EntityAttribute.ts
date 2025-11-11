@@ -367,7 +367,7 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	get quantityCounts(): ResourceUtils.Count<Material>[] {
 		return Object.entries(this.quantities)
 			.filter(([_, quantity]) => quantity)
-			.map(([material, quantity]) => new ResourceUtils.Count<Material>(Number(material) as Material, quantity));
+			.map(([material, quantity]) => new ResourceUtils.Count(Number(material) as Material, quantity));
 	}
 
 	quantity(material: Material): number {
@@ -742,7 +742,7 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 			let tile = world.terrain.getTile(position);
 			if (!(tile?.tileable instanceof LiquidDeposit)) return false;
 			let quantity = this.outputPerTier[tile.tileable.liquidTier] || 0;
-			return this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count<Liquid>(tile.tileable.liquid, quantity));
+			return this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count(tile.tileable.liquid, quantity));
 		}).some(v => v);
 	}
 }
@@ -758,7 +758,7 @@ export class EntityLiquidDryExtractorAttribute extends EntityAttribute {
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		return !!this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count<Liquid>(this.liquidCount.resource, this.liquidCount.quantity));
+		return !!this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count(this.liquidCount.resource, this.liquidCount.quantity));
 	}
 }
 
@@ -774,7 +774,7 @@ export class EntityLiquidConsumeAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.liquidStorageAttribute.liquidCount.resource === this.liquidCount.resource && this.liquidStorageAttribute.liquidCount.quantity >= this.liquidCount.quantity) {
-			this.liquidStorageAttribute.liquidCount = new ResourceUtils.Count<Liquid>(this.liquidStorageAttribute.liquidCount.resource, this.liquidStorageAttribute.liquidCount.quantity - this.liquidCount.quantity);
+			this.liquidStorageAttribute.liquidCount = new ResourceUtils.Count(this.liquidStorageAttribute.liquidCount.resource, this.liquidStorageAttribute.liquidCount.quantity - this.liquidCount.quantity);
 			return true;
 		}
 		return false;
@@ -804,12 +804,12 @@ export class EntityLiquidStorageAttribute extends EntityAttribute {
 		if (!this.liquidsAllowed.includes(liquidCount.resource)) return 0;
 		if (liquidCount.resource === this.liquidCount.resource) {
 			let take = Math.min(liquidCount.quantity, this.maxQuantity - this.liquidCount.quantity);
-			this.liquidCount = new ResourceUtils.Count<Liquid>(this.liquidCount.resource, this.liquidCount.quantity + take);
+			this.liquidCount = new ResourceUtils.Count(this.liquidCount.resource, this.liquidCount.quantity + take);
 			return take;
 		}
 		if (liquidCount.quantity > this.liquidCount.quantity && this.liquidCount.quantity < 10) {
 			let take = Math.min(liquidCount.quantity, this.maxQuantity);
-			this.liquidCount = new ResourceUtils.Count<Liquid>(liquidCount.resource, take);
+			this.liquidCount = new ResourceUtils.Count(liquidCount.resource, take);
 			return take;
 		}
 		return 0;
@@ -859,7 +859,7 @@ export class EntityLiquidTransportAttribute extends EntityAttribute {
 					let liquidCount = fromLiquidStorageAttribute.liquidCount;
 					let take = destinationLiquidStorageAttribute!.tryToAdd(liquidCount);
 					if (take) {
-						fromLiquidStorageAttribute.liquidCount = new ResourceUtils.Count<Liquid>(liquidCount.resource, liquidCount.quantity - take);
+						fromLiquidStorageAttribute.liquidCount = new ResourceUtils.Count(liquidCount.resource, liquidCount.quantity - take);
 						return true;
 					}
 					return false;
