@@ -1,19 +1,19 @@
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 
-export enum Rotation { UP, LEFT, DOWN, RIGHT}
+export enum Rotation { UP, RIGHT, DOWN, LEFT}
 
 export namespace RotationUtils {
 	export let positionShift = (rotation: Rotation): Vector => {
 		switch (rotation) {
 			case Rotation.UP:
 				return new Vector(0, -1);
-			case Rotation.LEFT:
-				return new Vector(-1, 0);
-			case Rotation.DOWN:
-				return new Vector(0, 1);
 			case Rotation.RIGHT:
 				return new Vector(1, 0);
+			case Rotation.DOWN:
+				return new Vector(0, 1);
+			case Rotation.LEFT:
+				return new Vector(-1, 0);
 		}
 	};
 

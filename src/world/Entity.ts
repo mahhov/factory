@@ -79,7 +79,7 @@ export class Entity implements Tileable {
 		let halfSize = new Vector(sprite.width, sprite.height).scale(new Vector(.5));
 		sprite.pivot = halfSize;
 		sprite.position = halfSize;
-		sprite.rotation = this.rotation * Math.PI / 2;
+		sprite.angle = this.rotation * 90;
 		this.container.addChild(sprite);
 	}
 

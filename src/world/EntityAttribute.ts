@@ -30,15 +30,15 @@ let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation)
 		case Rotation.UP:
 			size = new Vector(size.x, 1);
 			break;
-		case Rotation.LEFT:
+		case Rotation.RIGHT:
+			origin = new Vector(origin.x + size.x - 1, origin.y);
 			size = new Vector(1, size.y);
 			break;
 		case Rotation.DOWN:
 			origin = new Vector(origin.x, origin.y + size.y - 1);
 			size = new Vector(size.x, 1);
 			break;
-		case Rotation.RIGHT:
-			origin = new Vector(origin.x + size.x - 1, origin.y);
+		case Rotation.LEFT:
 			size = new Vector(1, size.y);
 			break;
 	}
