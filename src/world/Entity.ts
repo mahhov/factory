@@ -209,7 +209,7 @@ export class Junction extends Building {
 export class Factory extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, materialInput: ResourceUtils.Count<Material>[], powerInput: number, heatOutput: number, materialOutput: ResourceUtils.Count<Material>) {
 		super(name, description, size, buildTime, buildCost, health);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, materialInput.concat(materialOutput).map(materialCount => new ResourceUtils.Count(materialCount.resource, 10)), util.enumValues(Rotation), true);
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, materialInput.concat(materialOutput).map(materialCount => new ResourceUtils.Count(materialCount.resource, 10)), util.enumValues(Rotation), false);
 		this.attributes.push([materialStorageAttribute]);
 		let powerStorageAttribute;
 		if (powerInput) {
@@ -242,7 +242,7 @@ export class Storage extends Building {
 export class Dispenser extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number, rotation: Rotation) {
 		super(name, description, size, buildTime, buildCost, health, rotation);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), [], false);
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), [], true);
 		this.attributes.push([materialStorageAttribute]);
 		let materialPickerAttribute = new EntityMaterialPickerAttribute();
 		this.attributes.push([materialPickerAttribute]);
@@ -262,7 +262,7 @@ export class Generator extends Building {
 		super(name, description, size, buildTime, buildCost, health);
 		let materialStorageAttribute;
 		if (materialInput.length) {
-			materialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, materialInput.map(materialCount => new ResourceUtils.Count(materialCount.resource, 10)), util.enumValues(Rotation), true);
+			materialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, materialInput.map(materialCount => new ResourceUtils.Count(materialCount.resource, 10)), util.enumValues(Rotation), false);
 			this.attributes.push([materialStorageAttribute]);
 		}
 		let inputPowerStorageAttribute;
@@ -326,6 +326,7 @@ export class Vent extends Building {
 	}
 }
 
+// todo restrict pump to water only
 export class Pump extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, powerInput: number, liquidOutput: number) {
 		super(name, description, size, buildTime, buildCost, health);
@@ -393,6 +394,7 @@ export class Pipe extends Building {
 	}
 }
 
+// todo PipeDistributor not working
 export class PipeDistributor extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
 		super(name, description, size, buildTime, buildCost, health);
@@ -408,6 +410,7 @@ export class PipeDistributor extends Building {
 	}
 }
 
+// todo PipeJunction not working
 export class PipeJunction extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
 		super(name, description, size, buildTime, buildCost, health);
@@ -448,7 +451,7 @@ export class Turret extends Building {
 		//   range
 		//   projectileSpeed
 
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, [new ResourceUtils.Count(Material.IRON, 10)], util.enumValues(Rotation), true);
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, [new ResourceUtils.Count(Material.IRON, 10)], util.enumValues(Rotation), false);
 		this.attributes.push([materialStorageAttribute]);
 		this.attributes.push([
 			new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),

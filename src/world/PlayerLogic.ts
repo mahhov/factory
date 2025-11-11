@@ -12,7 +12,7 @@ export class PlayerLogic {
 	private readonly multilineText: MultilineText;
 
 	constructor(painter: Painter) {
-		this.materials = new EntityMaterialStorageAttribute(Infinity, getMaterialCounts(500), [], false);
+		this.materials = new EntityMaterialStorageAttribute(Infinity, getMaterialCounts(500), [], true);
 		this.materials.add(new ResourceUtils.Count(Material.IRON, 500));
 		util.enumValues(Material).forEach(material =>
 			this.materials.add(new ResourceUtils.Count(material, 500)));

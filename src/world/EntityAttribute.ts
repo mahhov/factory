@@ -23,9 +23,7 @@ let liquidCountsString = (liquidCounts: ResourceUtils.Count<Liquid>[]) =>
 	liquidCounts.map(liquidCount => `${liquidCount.quantity} ${ResourceUtils.liquidString(liquidCount.resource)}`).join(', ');
 
 let materialRatiosString = (materialTuples: [Material, number, number][]) =>
-	materialTuples
-		.map(materialTuple => `${materialTuple[1]} / ${materialTuple[2]} ${ResourceUtils.materialString(materialTuple[0])}`)
-		.join(', ');
+	materialTuples.map(materialTuple => `${materialTuple[1]} / ${materialTuple[2]} ${ResourceUtils.materialString(materialTuple[0])}`);
 
 let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation): Vector[] => {
 	switch (rotation) {
@@ -326,7 +324,8 @@ export class EntityMaterialConsumeAttribute extends EntityAttribute {
 		return type === TooltipType.PLACER ?
 			[new TextLine(`Requires ${materialCountsString(this.inputs)}`)] :
 			[new TextLine(materialRatiosString(this.inputs
-				.map(materialCount => [materialCount.resource, this.materialStorageAttribute.quantity(materialCount.resource), materialCount.quantity])))];
+				.map(materialCount => [materialCount.resource, this.materialStorageAttribute.quantity(materialCount.resource), materialCount.quantity]))
+				.join(', '))];
 	}
 }
 
@@ -398,15 +397,17 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 
 	tooltip(type: TooltipType): TextLine[] {
 		if (!this.showTooltip) return [];
+		let line;
 		if (type === TooltipType.PLACER)
-			return [new TextLine(`Stores ${this.capacities[0].quantity} of each material`)];
-		let line = this.totalCapacity === Infinity ?
-			materialRatiosString(this.capacities
-				.filter(materialCount => this.quantities[materialCount.resource])
-				.map(materialCount => [materialCount.resource, this.quantities[materialCount.resource], materialCount.quantity])) :
-			materialCountsString(Object.entries(this.quantities)
-				.filter(([_, quantity]) => quantity)
-				.map(([material, quantity]) => new ResourceUtils.Count<Material>(Number(material) as Material, quantity)));
+			line = this.totalCapacity === Infinity ? `Stores ${this.capacities[0].quantity} of each material` : '';
+		else
+			line = this.totalCapacity === Infinity ?
+				materialRatiosString(this.capacities
+					.filter(materialCount => this.quantities[materialCount.resource])
+					.map(materialCount => [materialCount.resource, this.quantities[materialCount.resource], materialCount.quantity])).join('\n') :
+				materialCountsString(Object.entries(this.quantities)
+					.filter(([_, quantity]) => quantity)
+					.map(([material, quantity]) => new ResourceUtils.Count<Material>(Number(material) as Material, quantity)));
 		return line ? [new TextLine(line)] : [];
 	}
 
@@ -496,11 +497,10 @@ export class EntityOutflowAttribute extends EntityAttribute {
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
-		return type === TooltipType.PLACER ?
-			[] :
-			[new TextLine(materialCountsString(this.materialCounts
-				.filter(materialCount => this.materialStorageAttribute.quantity(materialCount.resource))
-				.map(materialCount => new ResourceUtils.Count<Material>(materialCount.resource, this.materialStorageAttribute.quantity(materialCount.resource)))))];
+		if (type === TooltipType.PLACER) return [];
+		let materialCounts = this.materialCounts.filter(materialCount => this.materialStorageAttribute.quantity(materialCount.resource));
+		if (!materialCounts.length) return [];
+		return [new TextLine(materialCountsString(materialCounts.map(materialCount => new ResourceUtils.Count<Material>(materialCount.resource, this.materialStorageAttribute.quantity(materialCount.resource)))))];
 	}
 }
 
