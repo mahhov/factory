@@ -329,7 +329,7 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	private readonly inputRotations: Rotation[];
 	private readonly showTooltip: boolean;
 	private readonly quantities: Record<Material, number>;
-	private readonly orderedAndRotations: [Material, Rotation][] = [];
+	private readonly ordered: Material[] = [];
 
 	constructor(totalCapacity: number, materialCapacities: ResourceUtils.Count<Material>[], inputRotations: Rotation[], showTooltip: boolean) {
 		super();
@@ -349,15 +349,15 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	}
 
 	get empty() {
-		return !this.orderedAndRotations.length;
+		return !this.ordered.length;
 	}
 
-	get peek(): [Material, Rotation] | undefined {
-		return this.orderedAndRotations.at(-1);
+	get peek(): Material | undefined {
+		return this.ordered.at(-1);
 	}
 
 	capacity(material: Material): number {
-		return Math.min(this.totalCapacity - this.orderedAndRotations.length, this.getMaterialCapacity(material) - this.quantities[material]);
+		return Math.min(this.totalCapacity - this.ordered.length, this.getMaterialCapacity(material) - this.quantities[material]);
 	}
 
 	hasCapacity(materialCount: ResourceUtils.Count<Material>): boolean {
@@ -380,14 +380,13 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 
 	add(materialCount: ResourceUtils.Count<Material>, rotation: Rotation = Rotation.UP) {
 		this.quantities[materialCount.resource] += materialCount.quantity;
-		util.arr(materialCount.quantity).forEach(() =>
-			this.orderedAndRotations.push([materialCount.resource, rotation]));
+		util.arr(materialCount.quantity).forEach(() => this.ordered.push(materialCount.resource));
 	}
 
 	remove(materialCount: ResourceUtils.Count<Material>) {
 		this.quantities[materialCount.resource] -= materialCount.quantity;
 		for (let i = 0; i < materialCount.quantity; i++)
-			this.orderedAndRotations.splice(this.orderedAndRotations.findLastIndex(materialAndRotation => materialAndRotation[0] === materialCount.resource), 1);
+			this.ordered.splice(this.ordered.findLastIndex(material => material === materialCount.resource), 1);
 	}
 
 	acceptsRotation(rotation: Rotation): boolean {
@@ -451,23 +450,8 @@ export class EntityTransportAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.materialStorageAttribute.empty) return false;
-		let [material] = this.materialStorageAttribute.peek!;
+		let material = this.materialStorageAttribute.peek!;
 		return EntityTransportAttribute.move(this.materialStorageAttribute, this.outputRotations, [new ResourceUtils.Count(material, 1)], world, tile);
-	}
-}
-
-export class EntityJunctionTransportAttribute extends EntityAttribute {
-	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
-
-	constructor(materialStorageAttribute: EntityMaterialStorageAttribute) {
-		super();
-		this.materialStorageAttribute = materialStorageAttribute;
-	}
-
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.materialStorageAttribute.empty) return false;
-		let [material, rotation] = this.materialStorageAttribute.peek!;
-		return EntityTransportAttribute.move(this.materialStorageAttribute, [rotation], [new ResourceUtils.Count(material, 1)], world, tile);
 	}
 }
 
@@ -1087,7 +1071,7 @@ export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 		if (this.materialStorageAttribute.empty)
 			tile.tileable.addOverlaySprite(null);
 		else {
-			let color = ResourceUtils.materialColor(this.materialStorageAttribute.peek![0]);
+			let color = ResourceUtils.materialColor(this.materialStorageAttribute.peek!);
 			let sprite = new Sprite(coloredGeneratedTextures.materialIndicator.texture(color));
 			let shiftRatio = this.timedAttribute.counter.ratio || 1;
 			sprite.position = RotationUtils.positionShift(this.rotation).scale(new Vector((shiftRatio - .5) * sprite.width));

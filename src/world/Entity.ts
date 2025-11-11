@@ -16,7 +16,6 @@ import {
 	EntityExpireProjectileAttribute,
 	EntityHealthAttribute,
 	EntityInflowAttribute,
-	EntityJunctionTransportAttribute,
 	EntityLiquidConsumeAttribute,
 	EntityLiquidDisplayAttribute,
 	EntityLiquidDryExtractorAttribute,
@@ -187,26 +186,30 @@ export class Conveyor extends Building {
 export class Distributor extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number) {
 		super(name, description, size, buildTime, buildCost, health);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), util.enumValues(Rotation), true);
-		this.attributes.push([materialStorageAttribute]);
-		this.attributes.push([
-			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
-			new EntityTimedAttribute(40 / rate),
-			new EntityTransportAttribute(materialStorageAttribute, util.enumValues(Rotation)),
-		]);
+		util.enumValues(Rotation).forEach(rotation => {
+			let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), [rotation], true);
+			this.attributes.push([materialStorageAttribute]);
+			this.attributes.push([
+				new EntityNonEmptyMaterialStorage(materialStorageAttribute),
+				new EntityTimedAttribute(40 / rate),
+				new EntityTransportAttribute(materialStorageAttribute, RotationUtils.except(RotationUtils.opposite(rotation))),
+			]);
+		});
 	}
 }
 
 export class Junction extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number) {
 		super(name, description, size, buildTime, buildCost, health);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), util.enumValues(Rotation), true);
-		this.attributes.push([materialStorageAttribute]);
-		this.attributes.push([
-			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
-			new EntityTimedAttribute(40 / rate),
-			new EntityJunctionTransportAttribute(materialStorageAttribute),
-		]);
+		util.enumValues(Rotation).forEach(rotation => {
+			let materialStorageAttribute = new EntityMaterialStorageAttribute(1, getMaterialCounts(Infinity), [rotation], true);
+			this.attributes.push([materialStorageAttribute]);
+			this.attributes.push([
+				new EntityNonEmptyMaterialStorage(materialStorageAttribute),
+				new EntityTimedAttribute(40 / rate),
+				new EntityTransportAttribute(materialStorageAttribute, [rotation]),
+			]);
+		});
 	}
 }
 
