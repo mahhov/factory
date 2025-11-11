@@ -95,6 +95,10 @@ export class Entity implements Tileable {
 		return this.attributes.flat().find(attribute => attribute.constructor === attributeClass) as T;
 	}
 
+	getAttributes<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T[] {
+		return this.attributes.flat().filter(attribute => attribute.constructor === attributeClass) as T[];
+	}
+
 	tick(world: World, tile: Tile<Entity>) {
 		this.attributes
 			.filter(attributeChain => attributeChain.every(attribute => attribute.tick(world, tile)))
@@ -326,7 +330,6 @@ export class Vent extends Building {
 	}
 }
 
-// todo restrict pump to water only
 export class Pump extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, powerInput: number, outputPerTier: number[]) {
 		super(name, description, size, buildTime, buildCost, health);
@@ -394,7 +397,6 @@ export class Pipe extends Building {
 	}
 }
 
-// todo PipeDistributor not working
 export class PipeDistributor extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
 		super(name, description, size, buildTime, buildCost, health);
@@ -410,7 +412,6 @@ export class PipeDistributor extends Building {
 	}
 }
 
-// todo PipeJunction not working
 export class PipeJunction extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
 		super(name, description, size, buildTime, buildCost, health);

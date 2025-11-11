@@ -507,3 +507,5 @@ export default class Placer {
 //   use different sprites or colors for different tier walls, extractors, etc
 //   consistently apply timed delay to attributes
 //   make pipes leak
+//   missing removal transparent empty overlay
+//   unintentionally placing when clicking on UI rows

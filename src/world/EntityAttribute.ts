@@ -653,6 +653,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 		util.enumValues(Rotation).forEach(rotation => {
 			getLineDestinations(tile.position, tile.tileable.size, rotation, this.range).some(destination => {
 				// todo this will only allow 1 connection in each direction. won't work when size is > 1
+				// todo visual indicator of connections
 				let searchTile = world.live.getTile(destination);
 				// todo some tiles should block
 				if (!searchTile)
@@ -867,15 +868,16 @@ export class EntityLiquidTransportAttribute extends EntityAttribute {
 	static move(fromLiquidStorageAttribute: EntityLiquidStorageAttribute, outputRotations: Rotation[], world: World, tile: Tile<Entity>): boolean {
 		return util.shuffle(outputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
-				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityLiquidStorageAttribute))
+				.map(destination => world.live.getTile(destination)?.tileable
+					.getAttributes(EntityLiquidStorageAttribute)
+					.find(destinationLiquidStorageAttribute => destinationLiquidStorageAttribute.acceptsRotation(rotation)))
+				.filter(destinationLiquidStorageAttribute => destinationLiquidStorageAttribute)
 				.some(destinationLiquidStorageAttribute => {
 					let liquidCount = fromLiquidStorageAttribute.liquidCount;
-					if (destinationLiquidStorageAttribute?.acceptsRotation(rotation)) {
-						let take = destinationLiquidStorageAttribute.tryToAdd(liquidCount);
-						if (take) {
-							fromLiquidStorageAttribute.liquidCount = new ResourceUtils.Count<Liquid>(liquidCount.resource, liquidCount.quantity - take);
-							return true;
-						}
+					let take = destinationLiquidStorageAttribute!.tryToAdd(liquidCount);
+					if (take) {
+						fromLiquidStorageAttribute.liquidCount = new ResourceUtils.Count<Liquid>(liquidCount.resource, liquidCount.quantity - take);
+						return true;
 					}
 					return false;
 				}));
