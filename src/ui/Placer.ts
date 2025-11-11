@@ -6,6 +6,7 @@ import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {
 	Battery,
+	Clear,
 	Conductor,
 	Conveyor,
 	Dispenser,
@@ -41,7 +42,7 @@ export enum PlacerState {
 }
 
 enum Tool {
-	EMPTY,
+	EMPTY, CLEAR,
 	// todo bunker
 	IRON_WALL, STEEL_WALL,
 	EXTRACTOR, REINFORCED_EXTRACTOR, QUADRATIC_EXTRACTOR, LASER_EXTRACTOR,
@@ -122,6 +123,9 @@ export default class Placer {
 		switch (tool) {
 			case Tool.EMPTY:
 				return new Empty();
+			case Tool.CLEAR:
+				return new Clear();
+
 			case Tool.IRON_WALL:
 				return Placer.createToolWall(findEntityMetadata('buildings', 'Iron Wall'));
 			case Tool.STEEL_WALL:
@@ -316,7 +320,7 @@ export default class Placer {
 	}
 
 	clearTool() {
-		this.setToolGroupAndTool(this.toolGroup, Tool.EMPTY);
+		this.setToolGroupAndTool(this.toolGroup, Tool.CLEAR);
 	}
 
 	pick() {
@@ -337,7 +341,7 @@ export default class Placer {
 	}
 
 	private setToolGroupAndTool(toolGroup: ToolGroup, tool: Tool) {
-		console.assert(tool === Tool.EMPTY || toolTree[toolGroup].includes(tool));
+		console.assert(tool === Tool.EMPTY || tool === Tool.CLEAR || toolTree[toolGroup].includes(tool));
 
 		if (this.toolGroupIconContainer.children.length === 1) {
 			// redraw top row
@@ -433,10 +437,11 @@ export default class Placer {
 	}
 
 	end() {
-		if (this.started) {
-			this.started = false;
-			this.place(this.world.queue, false);
-		}
+		if (!this.started) return;
+		this.started = false;
+		this.place(this.world.queue, false);
+		if (this.tool === Tool.CLEAR)
+			this.tool = Tool.EMPTY;
 	}
 
 	private place(worldLayer: GridWorldLayer<Entity>, updateRotation: boolean) {

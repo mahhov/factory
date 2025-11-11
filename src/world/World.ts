@@ -3,7 +3,7 @@ import Painter from '../graphics/Painter.js';
 import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Empty, Entity} from './Entity.js';
+import {Clear, Empty, Entity} from './Entity.js';
 import {EntityBuildableAttribute} from './EntityAttribute.js';
 import {MobLogic} from './MobLogic.js';
 import {PlayerLogic} from './PlayerLogic.js';
@@ -58,14 +58,12 @@ class WorldLayer {
 }
 
 export class GridWorldLayer<T extends Tileable> extends WorldLayer {
-	private readonly defaultTileable: T;
-	private readonly showDefaultTileable: boolean;
+	readonly defaultTileable: T;
 	readonly grid: Tile<T>[][] = [];
 
-	constructor(defaultTileable: T, showDefaultTileable: boolean, size: Vector) {
+	constructor(defaultTileable: T, size: Vector) {
 		super(size);
 		this.defaultTileable = defaultTileable;
-		this.showDefaultTileable = showDefaultTileable;
 		this.grid = util.arr(size.x).map(x => util.arr(size.y).map(y => new Tile(new Vector(x, y), defaultTileable)));
 	}
 
@@ -73,8 +71,8 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 		if (!this.inBounds(position, tileable.size)) return;
 
 		let replaceTiles = position.iterate(tileable.size).map(p => this.getTile(p)!);
-		replaceTiles.forEach(tile =>
-			tile.position.iterate(tile.tileable.size)
+		replaceTiles.forEach(replaceTile =>
+			replaceTile.position.iterate(replaceTile.tileable.size)
 				.forEach(emptyPosition => {
 					let tile = this.getTile(emptyPosition)!;
 					if (replaceTiles.includes(tile))
@@ -96,7 +94,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 				tile.position = position;
 			});
 
-		if (this.showDefaultTileable || tileable.constructor !== this.defaultTileable.constructor)
+		if (tileable.constructor !== this.defaultTileable.constructor)
 			this.addContainer(tileable.container, position, tileable.size);
 	}
 
@@ -123,7 +121,8 @@ class OrderedGridWorldLayer<T extends Tileable> extends GridWorldLayer<T> {
 	protected addTileable(position: Vector, tileable: T) {
 		super.addTileable(position, tileable);
 		this.order = this.order.filter(p => !p.equals(position));
-		this.order.push(position);
+		if (tileable !== this.defaultTileable)
+			this.order.push(position);
 	}
 }
 
@@ -163,19 +162,19 @@ export class World {
 	constructor(size: Vector, painter: Painter, cameraContainer: Container) {
 		this.playerLogic = new PlayerLogic(painter);
 
-		this.terrain = new GridWorldLayer(new Empty(), false, size);
+		this.terrain = new GridWorldLayer(new Empty(), size);
 		cameraContainer.addChild(this.terrain.container);
 		generateTerrain(this.terrain);
 
-		this.live = new GridWorldLayer(new Empty(), false, size);
+		this.live = new GridWorldLayer(new Empty(), size);
 		cameraContainer.addChild(this.live.container);
 		this.live.replaceTileable(new Vector(20), this.playerLogic.base);
 
-		this.queue = new OrderedGridWorldLayer(new Empty(), true, size);
+		this.queue = new OrderedGridWorldLayer(new Empty(), size);
 		cameraContainer.addChild(this.queue.container);
 		this.queue.container.alpha = .4;
 
-		this.planning = new GridWorldLayer(new Empty(), true, size);
+		this.planning = new GridWorldLayer(new Empty(), size);
 		cameraContainer.addChild(this.planning.container);
 		this.planning.container.alpha = .4;
 
@@ -222,15 +221,27 @@ export class World {
 			let liveTile = this.live.getTile(position)!;
 			let queueTile = this.queue.getTile(position)!;
 			if (liveTile.equals(queueTile)) {
-				// todo remove from queue.grid
+				this.queue.order.splice(i, 1);
+				this.queue.replaceTileable(position, this.queue.defaultTileable);
+				continue;
+			}
+			if (queueTile.tileable === this.queue.defaultTileable) {
+				console.warn('this happened?');
 				this.queue.order.splice(i, 1);
 				continue;
 			}
 			let buildableAttribute = queueTile.tileable.getAttribute(EntityBuildableAttribute);
-			if (!buildableAttribute || buildableAttribute.doneBuilding) {
-				this.live.replaceTileable(position, queueTile.tileable);
-				// todo remove from queue.grid
+			if (!buildableAttribute) {
+				console.assert(queueTile.tileable.constructor === Clear);
+				this.live.replaceTileable(position, this.live.defaultTileable);
 				this.queue.order.splice(i, 1);
+				this.queue.replaceTileable(position, this.queue.defaultTileable);
+				continue;
+			}
+			if (buildableAttribute.doneBuilding) {
+				this.live.replaceTileable(position, queueTile.tileable);
+				this.queue.order.splice(i, 1);
+				this.queue.replaceTileable(position, this.queue.defaultTileable);
 				continue;
 			} else {
 				buildableAttribute.reset();

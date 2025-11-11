@@ -59,6 +59,8 @@ export let animatedGeneratedTextures = {
 	// ACCENT-FLUID: #4070D0 (Blue/Water)
 	// P-WHITE: #F0F0F0 (Spark/Glow)
 
+	clear: new AnimatedGeneratedTextures(8, [[[0, 0, 8, 8, '#D83030']]]),
+
 	// --- WALLS (Static - Simplified Outline) ---
 	ironWall: new AnimatedGeneratedTextures(16, [[
 		[0, 0, 16, 1, '#4C5056'], [0, 15, 16, 1, '#4C5056'],
@@ -524,7 +526,7 @@ export let animatedGeneratedTextures = {
 		[15, 0, 2, 32, '#D83030'],
 		[15, 15, 2, 2, '#F0F0F0'], // White Charge Pulse 2 (Small)
 	]]),
-	
+
 	// --- RESOURCES (Ambient Pulse) ---
 	waterDeposit: new AnimatedGeneratedTextures(16, [[
 		[0, 0, 16, 16, '#4070D0'], // Fully filled with blue for seamless tiling

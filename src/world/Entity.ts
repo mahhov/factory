@@ -117,6 +117,12 @@ export class Empty extends Entity {
 	}
 }
 
+export class Clear extends Entity {
+	constructor() {
+		super('clear', '');
+	}
+}
+
 export abstract class Building extends Entity {
 	protected constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rotation: Rotation = Rotation.UP) {
 		super(name, description, size, rotation);
