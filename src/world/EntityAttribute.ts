@@ -716,6 +716,8 @@ export class EntityCoolantConsumeAttribute extends EntityAttribute {
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (this.consumed === this.quantity)
+			this.consumed = 0;
 		let coolantProduceAttributes: EntityCoolantProduceAttribute[] = util.enumValues(Rotation)
 			.flatMap(rotation => getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
 			.map(position => world.live.getTile(position))
@@ -726,11 +728,7 @@ export class EntityCoolantConsumeAttribute extends EntityAttribute {
 			this.consumed += take;
 			coolantProduceAttributes[i].quantity -= take;
 		}
-		if (this.consumed === this.quantity) {
-			this.consumed = 0;
-			return true;
-		}
-		return false;
+		return this.consumed === this.quantity;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
