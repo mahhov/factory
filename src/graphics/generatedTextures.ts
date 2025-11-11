@@ -134,28 +134,44 @@ export let animatedGeneratedTextures = {
 	// --- TRANSPORT (Chevron Movement) ---
 	conveyor: new AnimatedGeneratedTextures(8, [[
 		[3, 0, 2, 8, '#9AA0AA'], // Track
-		[3, 1, 2, 1, '#FACA10'], [3, 4, 2, 1, '#FACA10'], [3, 7, 2, 1, '#FACA10'], // Arrows (Frame 1)
+		// Directional Arrow (Y=1, 3, 5) - Pushes flow from Y=0 down
+		[3, 1, 2, 1, '#FACA10'],
+		[3, 3, 2, 1, '#FACA10'],
+		[3, 5, 2, 1, '#FACA10'],
+		[3, 7, 2, 1, '#F0F0F0'], // Small White indicator at the output end
 	], [
 		[3, 0, 2, 8, '#9AA0AA'],
-		[3, 0, 2, 1, '#FACA10'], [3, 3, 2, 1, '#FACA10'], [3, 6, 2, 1, '#FACA10'], // Arrows shift down (Frame 2)
+		// Arrows shift down by 1 pixel (Y=2, 4, 6)
+		[3, 2, 2, 1, '#FACA10'],
+		[3, 4, 2, 1, '#FACA10'],
+		[3, 6, 2, 1, '#FACA10'],
+		[3, 7, 2, 1, '#F0F0F0'],
 	]]),
 	highSpeedConveyor: new AnimatedGeneratedTextures(8, [[
 		[3, 0, 2, 8, '#4C5056'], // Darker Track
+		// Double Chevrons (Y=1, 2, 4, 5)
 		[3, 1, 2, 1, '#FACA10'], [3, 2, 2, 1, '#FACA10'],
-		[3, 5, 2, 1, '#FACA10'], [3, 6, 2, 1, '#FACA10'], // Double Chevrons (Frame 1)
+		[3, 4, 2, 1, '#FACA10'], [3, 5, 2, 1, '#FACA10'],
+		[3, 7, 2, 1, '#F0F0F0'], // Small White indicator at the output end
 	], [
 		[3, 0, 2, 8, '#4C5056'],
-		[3, 0, 2, 1, '#FACA10'], [3, 1, 2, 1, '#FACA10'],
-		[3, 4, 2, 1, '#FACA10'], [3, 5, 2, 1, '#FACA10'], // Double Chevrons shift down (Frame 2)
+		// Chevrons shift down by 1 pixel (Y=2, 3, 5, 6)
+		[3, 2, 2, 1, '#FACA10'], [3, 3, 2, 1, '#FACA10'],
+		[3, 5, 2, 1, '#FACA10'], [3, 6, 2, 1, '#FACA10'],
+		[3, 7, 2, 1, '#F0F0F0'],
 	]]),
 	packedConveyor: new AnimatedGeneratedTextures(8, [[
 		[2, 0, 4, 8, '#1A1C20'], // Packed Track
+		// Arrows (Y=1, 3, 5, 7)
 		[3, 1, 2, 1, '#4070D0'], [3, 3, 2, 1, '#4070D0'],
-		[3, 5, 2, 1, '#4070D0'], [3, 7, 2, 1, '#4070D0'], // Blue Arrows (Frame 1)
+		[3, 5, 2, 1, '#4070D0'], [3, 7, 2, 1, '#4070D0'],
+		[2, 7, 4, 1, '#F0F0F0'], // White indicator strip at output end
 	], [
 		[2, 0, 4, 8, '#1A1C20'],
+		// Arrows shift down by 1 pixel (Y=0, 2, 4, 6) - wrap around
 		[3, 0, 2, 1, '#4070D0'], [3, 2, 2, 1, '#4070D0'],
-		[3, 4, 2, 1, '#4070D0'], [3, 6, 2, 1, '#4070D0'], // Blue Arrows shift down (Frame 2)
+		[3, 4, 2, 1, '#4070D0'], [3, 6, 2, 1, '#4070D0'],
+		[2, 7, 4, 1, '#F0F0F0'],
 	]]),
 	distributor: new AnimatedGeneratedTextures(8, [[
 		[0, 3, 8, 2, '#9AA0AA'], [3, 0, 2, 8, '#9AA0AA'],
