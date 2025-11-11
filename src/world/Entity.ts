@@ -147,7 +147,7 @@ export class Wall extends Building {
 export class Extractor extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, powerInput: number, heatOutput: number, outputPerTier: number[]) {
 		super(name, description, size, buildTime, buildCost, health);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, getMaterialCounts(10), [], false);
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, getMaterialCounts(10), [], true);
 		this.attributes.push([materialStorageAttribute]);
 		let powerStorageAttribute;
 		if (powerInput) {
@@ -161,7 +161,7 @@ export class Extractor extends Building {
 			timedAttribute,
 			new EntityMaterialExtractorAttribute(materialStorageAttribute, outputPerTier),
 		].filter(v => v) as EntityAttribute[]);
-		this.attributes.push([new EntityOutflowAttribute(materialStorageAttribute, getMaterialCounts(1))]);
+		this.attributes.push([new EntityOutflowAttribute(materialStorageAttribute)]);
 		if (powerInput)
 			this.attributes.push([new EntityPowerConductAttribute(0)]);
 		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
@@ -213,8 +213,10 @@ export class Junction extends Building {
 export class Factory extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, materialInput: ResourceUtils.Count<Material>[], powerInput: number, heatOutput: number, materialOutput: ResourceUtils.Count<Material>) {
 		super(name, description, size, buildTime, buildCost, health);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, materialInput.concat(materialOutput).map(materialCount => new ResourceUtils.Count(materialCount.resource, 10)), util.enumValues(Rotation), false);
-		this.attributes.push([materialStorageAttribute]);
+		let inputMaterialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, materialInput.map(materialCount => new ResourceUtils.Count(materialCount.resource, 10)), util.enumValues(Rotation), false);
+		this.attributes.push([inputMaterialStorageAttribute]);
+		let outputMaterialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, [new ResourceUtils.Count(materialOutput.resource, 10)], [], true);
+		this.attributes.push([outputMaterialStorageAttribute]);
 		let powerStorageAttribute;
 		if (powerInput) {
 			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput * 40, EntityPowerStorageAttributePriority.CONSUME);
@@ -224,11 +226,11 @@ export class Factory extends Building {
 		this.attributes.push([
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
 			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 40) : null,
-			new EntityMaterialConsumeAttribute(materialStorageAttribute, materialInput),
+			new EntityMaterialConsumeAttribute(inputMaterialStorageAttribute, materialInput),
 			timedAttribute,
-			new EntityMaterialProduceAttribute(materialStorageAttribute, [materialOutput]),
+			new EntityMaterialProduceAttribute(outputMaterialStorageAttribute, [materialOutput]),
 		].filter(v => v) as EntityAttribute[]);
-		this.attributes.push([new EntityOutflowAttribute(materialStorageAttribute, [materialOutput])]);
+		this.attributes.push([new EntityOutflowAttribute(outputMaterialStorageAttribute)]);
 		if (powerInput)
 			this.attributes.push([new EntityPowerConductAttribute(0)]);
 		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);

@@ -331,8 +331,7 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	private readonly quantities: Record<Material, number>;
 	private readonly orderedAndRotations: [Material, Rotation][] = [];
 
-	constructor(totalCapacity: number,
-	            materialCapacities: ResourceUtils.Count<Material>[], inputRotations: Rotation[], showTooltip: boolean) {
+	constructor(totalCapacity: number, materialCapacities: ResourceUtils.Count<Material>[], inputRotations: Rotation[], showTooltip: boolean) {
 		super();
 		console.assert(totalCapacity > 0);
 		console.assert(materialCapacities.length > 0);
@@ -365,6 +364,12 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 		return this.capacity(materialCount.resource) >= materialCount.quantity;
 	}
 
+	get quantityCounts(): ResourceUtils.Count<Material>[] {
+		return Object.entries(this.quantities)
+			.filter(([_, quantity]) => quantity)
+			.map(([material, quantity]) => new ResourceUtils.Count<Material>(Number(material) as Material, quantity));
+	}
+
 	quantity(material: Material): number {
 		return this.quantities[material];
 	}
@@ -390,18 +395,12 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
-		if (!this.showTooltip) return [];
-		let line;
-		if (type === TooltipType.PLACER)
-			line = this.totalCapacity === Infinity ? `Stores ${this.capacities[0].quantity} of each material` : '';
-		else
-			line = this.totalCapacity === Infinity ?
-				materialRatiosString(this.capacities
-					.filter(materialCount => this.quantities[materialCount.resource])
-					.map(materialCount => [materialCount.resource, this.quantities[materialCount.resource], materialCount.quantity])).join('\n') :
-				materialCountsString(Object.entries(this.quantities)
-					.filter(([_, quantity]) => quantity)
-					.map(([material, quantity]) => new ResourceUtils.Count<Material>(Number(material) as Material, quantity)));
+		if (!this.showTooltip || type === TooltipType.PLACER) return [];
+		let line = this.totalCapacity === Infinity ?
+			materialRatiosString(this.capacities
+				.filter(materialCount => this.quantities[materialCount.resource])
+				.map(materialCount => [materialCount.resource, this.quantities[materialCount.resource], materialCount.quantity])).join('\n') :
+			materialCountsString(this.quantityCounts);
 		return line ? [new TextLine(line)] : [];
 	}
 
@@ -437,12 +436,13 @@ export class EntityTransportAttribute extends EntityAttribute {
 	static move(fromMaterialStorageAttribute: EntityMaterialStorageAttribute, outputRotations: Rotation[], materialCounts: ResourceUtils.Count<Material>[], world: World, tile: Tile<Entity>): boolean {
 		return util.shuffle(outputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
-				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityMaterialStorageAttribute))
+				.flatMap(destination => world.live.getTile(destination)?.tileable.getAttributes(EntityMaterialStorageAttribute) || [])
+				.filter(destinationMaterialStorageAttribute => destinationMaterialStorageAttribute.acceptsRotation(rotation))
 				.some(destinationMaterialStorageAttribute =>
 					util.shuffle(materialCounts).some(materialCount => {
-						if (destinationMaterialStorageAttribute?.acceptsRotation(rotation) && destinationMaterialStorageAttribute.hasCapacity(materialCount)) {
+						if (destinationMaterialStorageAttribute!.hasCapacity(materialCount)) {
 							fromMaterialStorageAttribute.remove(materialCount);
-							destinationMaterialStorageAttribute.add(materialCount, rotation);
+							destinationMaterialStorageAttribute!.add(materialCount, rotation);
 							return true;
 						}
 						return false;
@@ -473,28 +473,15 @@ export class EntityJunctionTransportAttribute extends EntityAttribute {
 
 export class EntityOutflowAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
-	private readonly materialCounts: ResourceUtils.Count<Material>[];
 
-	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, materialCounts: ResourceUtils.Count<Material>[]) {
+	constructor(materialStorageAttribute: EntityMaterialStorageAttribute) {
 		super();
-		console.assert(materialCounts.length > 0);
-		console.assert(materialCounts.every(materialCount => materialCount.quantity > 0));
 		this.materialStorageAttribute = materialStorageAttribute;
-		this.materialCounts = materialCounts;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.materialStorageAttribute.empty) return false;
-		let outputRotations = util.enumValues(Rotation);
-		let materialCounts = this.materialCounts.filter(materialCount => this.materialStorageAttribute.hasQuantity(materialCount));
-		return EntityTransportAttribute.move(this.materialStorageAttribute, outputRotations, materialCounts, world, tile);
-	}
-
-	tooltip(type: TooltipType): TextLine[] {
-		if (type === TooltipType.PLACER) return [];
-		let materialCounts = this.materialCounts.filter(materialCount => this.materialStorageAttribute.quantity(materialCount.resource));
-		if (!materialCounts.length) return [];
-		return [new TextLine(materialCountsString(materialCounts.map(materialCount => new ResourceUtils.Count<Material>(materialCount.resource, this.materialStorageAttribute.quantity(materialCount.resource)))))];
+		return EntityTransportAttribute.move(this.materialStorageAttribute, util.enumValues(Rotation), this.materialStorageAttribute.quantityCounts.map(materialCount => new ResourceUtils.Count(materialCount.resource, 1)), world, tile);
 	}
 }
 
@@ -866,10 +853,8 @@ export class EntityLiquidTransportAttribute extends EntityAttribute {
 	static move(fromLiquidStorageAttribute: EntityLiquidStorageAttribute, outputRotations: Rotation[], world: World, tile: Tile<Entity>): boolean {
 		return util.shuffle(outputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
-				.map(destination => world.live.getTile(destination)?.tileable
-					.getAttributes(EntityLiquidStorageAttribute)
-					.find(destinationLiquidStorageAttribute => destinationLiquidStorageAttribute.acceptsRotation(rotation)))
-				.filter(destinationLiquidStorageAttribute => destinationLiquidStorageAttribute)
+				.flatMap(destination => world.live.getTile(destination)?.tileable.getAttributes(EntityLiquidStorageAttribute) || [])
+				.filter(destinationLiquidStorageAttribute => destinationLiquidStorageAttribute.acceptsRotation(rotation))
 				.some(destinationLiquidStorageAttribute => {
 					let liquidCount = fromLiquidStorageAttribute.liquidCount;
 					let take = destinationLiquidStorageAttribute!.tryToAdd(liquidCount);
