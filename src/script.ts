@@ -108,3 +108,6 @@ class Loop {
 //   ui:
 //    - tooltips
 //    - click to select entity
+
+// todo save/load
+// todo full screen

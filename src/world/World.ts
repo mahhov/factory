@@ -1,11 +1,11 @@
 import {Container} from 'pixi.js';
 import Painter from '../graphics/Painter.js';
+import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Empty, Entity, LiquidDeposit, MaterialDeposit} from './Entity.js';
+import {Empty, Entity} from './Entity.js';
 import {MobLogic} from './MobLogic.js';
 import {PlayerLogic} from './PlayerLogic.js';
-import {Liquid, Material} from './Resource.js';
 
 export interface Tileable {
 	readonly container: Container;
@@ -164,18 +164,7 @@ export class World {
 
 		this.terrain = new GridWorldLayer(new Empty(), false, size);
 		cameraContainer.addChild(this.terrain.container);
-		util.enumValues(Material)
-			.forEach(material => {
-				for (let x = 0; x < 7; x++)
-					for (let y = 0; y < 7; y++)
-						this.terrain.replaceTileable(new Vector(material * 8 + x, y), new MaterialDeposit(material));
-			});
-		util.enumValues(Liquid)
-			.forEach(liquid => {
-				for (let x = 0; x < 7; x++)
-					for (let y = 0; y < 7; y++)
-						this.terrain.replaceTileable(new Vector((liquid + util.enumValues(Material).length) * 8 + x, y), new LiquidDeposit(liquid));
-			});
+		generateTerrain(this.terrain);
 
 		this.live = new GridWorldLayer(new Empty(), false, size);
 		cameraContainer.addChild(this.live.container);

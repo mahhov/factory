@@ -1,6 +1,5 @@
 import Painter from '../graphics/Painter.js';
 import MultilineText from '../ui/MultilineText.js';
-import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Base} from './Entity.js';
 import {EntityMaterialStorageAttribute, TooltipType} from './EntityAttribute.js';
@@ -13,8 +12,8 @@ export class PlayerLogic {
 
 	constructor(painter: Painter) {
 		this.materials.add(new ResourceUtils.Count(Material.IRON, 500));
-		util.enumValues(Material).forEach(material =>
-			this.materials.add(new ResourceUtils.Count(material, 500)));
+		// util.enumValues(Material).forEach(material =>
+		// 	this.materials.add(new ResourceUtils.Count(material, 500)));
 		this.multilineText = new MultilineText(painter, new Vector(.005));
 	}
 

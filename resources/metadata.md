@@ -1,20 +1,20 @@
 # materials
 
-| name      | usage | extraction                | recipe                                           | building use | ammo use       | fuel use | color                                      |
-|-----------|-------|---------------------------|--------------------------------------------------|--------------|----------------|----------|--------------------------------------------|
-| iron      | high  | abundant, t1 extractor    | -                                                | t1 buildings | t1 projectiles | -        | <span style="color:#D4A56E">&#9724;</span> |
-| flux-sand | high  | abundant, t1 extractor    | -                                                | -            |                |          | <span style="color:#F7E560">&#9724;</span> |
-| sulphur   | low   | medium-rare, t1 extractor | -                                                | -            | t1 aoe ammo    | t1       | <span style="color:#57a851">&#9724;</span> |
-|           |       |                           |                                                  |              |                |          |                                            |
-| steel     | high  | -                         | 2 iron, 1 flux-sand                              | t2 buildings |                | -        | <span style="color:#C7D4D7">&#9724;</span> |
-| titanium  | high  | rare, t2 extractor        | -                                                | t3 buildings | t2 projectiles | -        | <span style="color:#263cbd">&#9724;</span> |
-|           |       |                           |                                                  |              |                |          |                                            |
-| metaglass | high  | -                         | 1 steel, 2 flux-sand                             | t3 transport | t3 projectiles | -        | <span style="color:#00FFFF">&#9724;</span> |
-| plasteel  | low   | -                         | 1 titanium, 1 steel, 1 iron, 1 sulphur           | t4 buildings | t3 aoe ammo    | -        | <span style="color:#23851c">&#9724;</span> |
-| graphite  | high  | rare, t3 extractor        | -                                                | t4 buildings |                | t2       | <span style="color:#9772ad">&#9724;</span> |
-|           |       |                           |                                                  |              |                |          |                                            |
-| thermite  | low   | -                         | 1 graphite, 1 plasteel, 1 sulphur, 3 flux-sand   | -            | t4 laser       | t3       | <span style="color:#E74C3C">&#9724;</span> |
-| exidium   | low   | -                         | 2 graphite, 1 plasteel, 2 metaglass, 1 flux-sand | -            | t4 projectiles | -        | <span style="color:#FF33CC">&#9724;</span> |
+| name      | usage | frequency | patch size | recipe                                           | building use | ammo use       | fuel use | color                                      |
+|-----------|-------|-----------|------------|--------------------------------------------------|--------------|----------------|----------|--------------------------------------------|
+| iron      | high  | high      | medium     | -                                                | t1 buildings | t1 projectiles | -        | <span style="color:#D4A56E">&#9724;</span> |
+| flux-sand | high  | low       | large      | -                                                | -            |                |          | <span style="color:#F7E560">&#9724;</span> |
+| sulphur   | low   | low       | medium     | -                                                | -            | t1 aoe ammo    | t1       | <span style="color:#57a851">&#9724;</span> |
+|           |       |           |            |                                                  |              |                |          |                                            |
+| steel     | high  |           | -          | 2 iron, 1 flux-sand                              | t2 buildings |                | -        | <span style="color:#C7D4D7">&#9724;</span> |
+| titanium  | high  | medium    | low        | -                                                | t3 buildings | t2 projectiles | -        | <span style="color:#263cbd">&#9724;</span> |
+|           |       |           |            |                                                  |              |                |          |                                            |
+| metaglass | high  |           | -          | 1 steel, 2 flux-sand                             | t3 transport | t3 projectiles | -        | <span style="color:#00FFFF">&#9724;</span> |
+| plasteel  | low   |           | -          | 1 titanium, 1 steel, 1 iron, 1 sulphur           | t4 buildings | t3 aoe ammo    | -        | <span style="color:#23851c">&#9724;</span> |
+| graphite  | high  | low       | low        | -                                                | t4 buildings |                | t2       | <span style="color:#9772ad">&#9724;</span> |
+|           |       |           |            |                                                  |              |                |          |                                            |
+| thermite  | low   | low       | medium     | 1 graphite, 1 plasteel, 1 sulphur, 3 flux-sand   | -            | t4 laser       | t3       | <span style="color:#E74C3C">&#9724;</span> |
+| exidium   | low   | low       | low        | 2 graphite, 1 plasteel, 2 metaglass, 1 flux-sand | -            | t4 projectiles | -        | <span style="color:#FF33CC">&#9724;</span> |
 
 # liquids
 
