@@ -238,8 +238,7 @@ export class Factory extends Building {
 export class Storage extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
 		super(name, description, size, buildTime, buildCost, health);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(Infinity, getMaterialCounts(capacity), util.enumValues(Rotation), true);
-		this.attributes.push([materialStorageAttribute]);
+		this.attributes.push([new EntityMaterialStorageAttribute(Infinity, getMaterialCounts(capacity), util.enumValues(Rotation), true)]);
 	}
 }
 
@@ -437,6 +436,14 @@ export class Tank extends Building {
 			new EntityTimedAttribute(40),
 			new EntityLiquidTransportAttribute(liquidStorageAttribute, util.enumValues(Rotation)),
 		]);
+	}
+}
+
+export class Base extends Entity {
+	constructor() {
+		super('Base', '', new Vector(5));
+		this.attributes.push([new EntityHealthAttribute(4000)]);
+		this.attributes.push([new EntityMaterialStorageAttribute(Infinity, getMaterialCounts(500), util.enumValues(Rotation), true)]);
 	}
 }
 

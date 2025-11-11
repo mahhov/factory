@@ -179,6 +179,7 @@ export class World {
 
 		this.live = new GridWorldLayer(new Empty(), false, size);
 		cameraContainer.addChild(this.live.container);
+		this.live.replaceTileable(new Vector(20), this.playerLogic.base);
 
 		this.queue = new OrderedGridWorldLayer(new Empty(), true, size);
 		cameraContainer.addChild(this.queue.container);
