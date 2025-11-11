@@ -328,20 +328,20 @@ export class Vent extends Building {
 
 // todo restrict pump to water only
 export class Pump extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, powerInput: number, liquidOutput: number) {
+	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, powerInput: number, outputPerTier: number[]) {
 		super(name, description, size, buildTime, buildCost, health);
 		let powerStorageAttribute;
 		if (powerInput) {
 			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput * 40, EntityPowerStorageAttributePriority.CONSUME);
 			this.attributes.push([powerStorageAttribute]);
 		}
-		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), liquidOutput, []);
+		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), outputPerTier[0] * size.x * size.y * 40, []);
 		this.attributes.push([liquidStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
 			timedAttribute,
-			new EntityLiquidExtractorAttribute(liquidStorageAttribute, liquidOutput * 40),
+			new EntityLiquidExtractorAttribute(liquidStorageAttribute, outputPerTier),
 		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([
 			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
@@ -520,6 +520,15 @@ export class LiquidDeposit extends Entity {
 		this.setSprite(SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [ResourceUtils.liquidColor(liquid)]));
 		this.liquid = liquid;
 		this.attributes.push([new EntityLiquidDisplayAttribute(liquid)]);
+	}
+
+	get liquidTier(): number {
+		switch (this.liquid) {
+			case Liquid.WATER:
+				return 0;
+			case Liquid.METHANE:
+				return 1;
+		}
 	}
 }
 

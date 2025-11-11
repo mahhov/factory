@@ -258,7 +258,7 @@ export default class Placer {
 	}
 
 	private static createToolPump(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Pump(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.output as number);
+		return new Pump(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.output as number[]);
 	}
 
 	private static createToolWell(metadata: ParsedLine<typeof sectionFields.buildings>) {

@@ -254,6 +254,8 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+		// todo this some exits earlY??
+		// todo what if output per tier out of bounds
 		let some = tile.position.iterate(tile.tileable.size).some(position => {
 			let tile = world.terrain.getTile(position);
 			if (!(tile?.tileable instanceof MaterialDeposit)) return false;
@@ -270,12 +272,6 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 			this.materialStorageAttribute.add(new ResourceUtils.Count(material, n));
 		});
 		return true;
-	}
-
-	tooltip(type: TooltipType): TextLine[] {
-		return type === TooltipType.PLACER ?
-			[new TextLine(`Mines tier ${this.outputPerTier.length} materials`)] :
-			[];
 	}
 }
 
@@ -749,27 +745,21 @@ export class EntityCoolantConsumeAttribute extends EntityAttribute {
 
 export class EntityLiquidExtractorAttribute extends EntityAttribute {
 	private readonly liquidStorageAttribute: EntityLiquidStorageAttribute;
-	private readonly quantity: number;
+	private readonly outputPerTier: number[];
 
-	constructor(liquidStorageAttribute: EntityLiquidStorageAttribute, quantity: number) {
+	constructor(liquidStorageAttribute: EntityLiquidStorageAttribute, outputPerTier: number[]) {
 		super();
 		this.liquidStorageAttribute = liquidStorageAttribute;
-		this.quantity = quantity;
+		this.outputPerTier = outputPerTier;
 	}
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let area = tile.tileable.size.x * tile.tileable.size.y;
-		return tile.position.iterate(tile.tileable.size).some(position => {
+		return tile.position.iterate(tile.tileable.size).map(position => {
 			let tile = world.terrain.getTile(position);
-			if (!(tile?.tileable instanceof LiquidDeposit)) return;
-			return this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count<Liquid>(tile.tileable.liquid, this.quantity / area));
-		});
-	}
-
-	tooltip(type: TooltipType): TextLine[] {
-		return type === TooltipType.PLACER ?
-			[new TextLine(`Pumps ${this.quantity} liquid`, {color: color.LIQUID_TEXT})] :
-			[];
+			if (!(tile?.tileable instanceof LiquidDeposit)) return false;
+			let quantity = this.outputPerTier[tile.tileable.liquidTier];
+			return this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count<Liquid>(tile.tileable.liquid, quantity));
+		}).some(v => v);
 	}
 }
 
@@ -785,12 +775,6 @@ export class EntityLiquidDryExtractorAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		return !!this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count<Liquid>(this.liquidCount.resource, this.liquidCount.quantity));
-	}
-
-	tooltip(type: TooltipType): TextLine[] {
-		return type === TooltipType.PLACER ?
-			[new TextLine(`Pumps ${liquidCountsString([this.liquidCount])}`, {color: color.LIQUID_TEXT})] :
-			[];
 	}
 }
 

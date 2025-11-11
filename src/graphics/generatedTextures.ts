@@ -404,6 +404,60 @@ export let animatedGeneratedTextures = {
 		[4, 4, 8, 8, '#F0F0F0'], // Fluid surface ripple 2
 	]]),
 
+
+	// --- HOME BASE (Size 40 - Central Hub with Combined Themes) ---
+	base: new AnimatedGeneratedTextures(40, [[
+		[0, 0, 40, 40, '#1A1C20'], // Dark base for contrast
+
+		// Outer frame with subtle detail
+		[0, 0, 40, 2, '#4C5056'], [0, 38, 40, 2, '#4C5056'],
+		[0, 0, 2, 40, '#4C5056'], [38, 0, 2, 40, '#4C5056'],
+
+		// Inner glowing X for power theme
+		[4, 4, 2, 2, '#D83030'], [34, 34, 2, 2, '#D83030'], // X corners (top-left, bottom-right)
+		[34, 4, 2, 2, '#D83030'], [4, 34, 2, 2, '#D83030'], // X corners (top-right, bottom-left)
+		[10, 10, 2, 2, '#D83030'], [28, 28, 2, 2, '#D83030'],
+		[28, 10, 2, 2, '#D83030'], [10, 28, 2, 2, '#D83030'],
+
+		// Central pulsing core - White flash
+		[18, 18, 4, 4, '#F0F0F0'],
+
+		// Resource inflow/outflow indicators (green for extractors, yellow for factories)
+		// Top
+		[18, 0, 4, 4, '#30D850'],
+		// Bottom
+		[18, 36, 4, 4, '#30D850'],
+		// Left
+		[0, 18, 4, 4, '#FACA10'],
+		// Right
+		[36, 18, 4, 4, '#FACA10'],
+	], [
+		[0, 0, 40, 40, '#1A1C20'], // Dark base for contrast
+
+		// Outer frame with subtle detail
+		[0, 0, 40, 2, '#4C5056'], [0, 38, 40, 2, '#4C5056'],
+		[0, 0, 2, 40, '#4C5056'], [38, 0, 2, 40, '#4C5056'],
+
+		// Inner glowing X for power theme (slight pulsation/expansion)
+		[3, 3, 4, 4, '#D83030'], [33, 33, 4, 4, '#D83030'],
+		[33, 3, 4, 4, '#D83030'], [3, 33, 4, 4, '#D83030'],
+		[9, 9, 4, 4, '#D83030'], [27, 27, 4, 4, '#D83030'],
+		[27, 9, 4, 4, '#D83030'], [9, 27, 4, 4, '#D83030'],
+
+		// Central pulsing core - Yellow core expansion
+		[17, 17, 6, 6, '#FACA10'],
+
+		// Resource inflow/outflow indicators (green for extractors, yellow for factories) - Pulsate
+		// Top
+		[17, 0, 6, 6, '#30D850'],
+		// Bottom
+		[17, 34, 6, 6, '#30D850'],
+		// Left
+		[0, 17, 6, 6, '#FACA10'],
+		// Right
+		[34, 17, 6, 6, '#FACA10'],
+	]]),
+
 	// --- TURRETS (Central Focus) ---
 	shrapnelTurret: new AnimatedGeneratedTextures(16, [[
 		[0, 0, 16, 16, '#1A1C20'],
