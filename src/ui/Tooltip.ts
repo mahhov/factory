@@ -38,7 +38,7 @@ export default class Tooltip {
 	}
 
 	private get createInputSelection(): Selection | null {
-		let canvasPosition = this.input.mousePosition.scale(new Vector(1 / this.painter.canvasWidth));
+		let canvasPosition = this.input.mousePosition.scale(new Vector(1 / this.painter.minCanvasSize));
 		let worldPosition = this.camera.canvasToWorld(canvasPosition)
 			.scale(this.world.size).floor();
 		let tile = this.world.live.getTile(worldPosition);
@@ -87,7 +87,6 @@ export default class Tooltip {
 
 		this.selectionRect.addChild(new Graphics()
 			.rect(topLeft.x, topLeft.y, size.x, size.y)
-			.stroke({width: (this.selection.selected ? 3 : 1) / this.painter.canvasWidth, color: this.selection.selected ? Color.SELECTED_RECT_OUTLINE : Color.RECT_OUTLINE}));
-
+			.stroke({width: (this.selection.selected ? 3 : 1) / this.painter.minCanvasSize, color: this.selection.selected ? Color.SELECTED_RECT_OUTLINE : Color.RECT_OUTLINE}));
 	}
 }

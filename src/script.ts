@@ -35,37 +35,38 @@ class Loop {
 	}
 }
 
-(async () => {
-	let app = new Application();
-	await app.init({
-		background: 'black',
-		width: 1400,
-		height: 1400,
-	});
-	document.body.appendChild(app.canvas);
-	await SpriteLoader.init(app.renderer);
-	let painter = new Painter(app.renderer.width, app.stage);
-	let camera = new Camera(painter);
-	let uiContainer = new Container();
-	app.stage.addChild(uiContainer);
-	let input = new Input(app.canvas);
-	let world = new World(new Vector(100), painter, camera.container);
-	let placer = new Placer(painter, camera, input, world);
-	let tooltip = new Tooltip(painter, camera, input, world);
-	let controller = new Controller(camera, placer, tooltip, input);
+let resize = () => {
+	app.renderer.resize(window.innerWidth, window.innerHeight);
+	painter.resize(new Vector(app.renderer.width, app.renderer.height));
+};
+window.addEventListener('resize', resize);
 
-	let renderLoop = new Loop('render fps', () => {
-		camera.tick();
-		input.tick();
-		tooltip.tick();
-	});
-	app.ticker.add(() => renderLoop.run());
+let app = new Application();
+await app.init({background: 'black'});
+document.body.appendChild(app.canvas);
+await SpriteLoader.init(app.renderer);
+let painter = new Painter(app.stage);
+resize();
+let camera = new Camera(painter);
+let uiContainer = new Container();
+app.stage.addChild(uiContainer);
+let input = new Input(app.canvas);
+let world = new World(new Vector(100), painter, camera.container);
+let placer = new Placer(painter, camera, input, world);
+let tooltip = new Tooltip(painter, camera, input, world);
+let controller = new Controller(camera, placer, tooltip, input);
 
-	let updateLoop = new Loop('update fps', () => {
-		world.tick();
-	});
-	setInterval(() => updateLoop.run(), 10);
-})();
+let renderLoop = new Loop('render fps', () => {
+	camera.tick();
+	input.tick();
+	tooltip.tick();
+});
+app.ticker.add(() => renderLoop.run());
+
+let updateLoop = new Loop('update fps', () => {
+	world.tick();
+});
+setInterval(() => updateLoop.run(), 10);
 
 // todo
 //   buildings:

@@ -99,13 +99,13 @@ export default class Placer {
 		this.toolGroupIconContainer.addChild(this.toolGroupSelectionRect);
 		this.toolGroupSelectionRect.addChild(new Graphics()
 			.rect(0, 0, ...Placer.toolUiCoordinates(true, 0)[1])
-			.stroke({width: 3 / painter.canvasWidth, color: Color.SELECTED_RECT_OUTLINE}));
+			.stroke({width: 3 / painter.minCanvasSize, color: Color.SELECTED_RECT_OUTLINE}));
 		painter.uiContainer.addChild(this.toolIconContainer);
 		painter.textUiContainer.addChild(this.toolTextContainer);
 		this.toolIconContainer.addChild(this.toolSelectionRect);
 		this.toolSelectionRect.addChild(new Graphics()
 			.rect(0, 0, ...Placer.toolUiCoordinates(false, 0)[1])
-			.stroke({width: 3 / painter.canvasWidth, color: Color.SELECTED_RECT_OUTLINE}));
+			.stroke({width: 3 / painter.minCanvasSize, color: Color.SELECTED_RECT_OUTLINE}));
 
 		this.multilineText = new MultilineText(painter);
 		this.multilineText.anchor = Anchor.BOTTOM_LEFT;
@@ -296,7 +296,7 @@ export default class Placer {
 	}
 
 	private get position(): Vector {
-		let canvasPosition = this.input.mousePosition.scale(new Vector(1 / this.painter.canvasWidth));
+		let canvasPosition = this.input.mousePosition.scale(new Vector(1 / this.painter.minCanvasSize));
 		return this.camera.canvasToWorld(canvasPosition)
 			.scale(this.world.size).floor();
 	}
@@ -394,7 +394,7 @@ export default class Placer {
 		iconContainer.addChild(spriteContainer);
 		let rect = new Graphics()
 			.rect(...coordinates[0], ...coordinates[1])
-			.stroke({width: 1 / this.painter.canvasWidth, color: Color.RECT_OUTLINE});
+			.stroke({width: 1 / this.painter.minCanvasSize, color: Color.RECT_OUTLINE});
 		iconContainer.addChild(rect);
 		textContainer.addChild(new Text({
 			text,
