@@ -41,13 +41,14 @@ export default class Tooltip {
 		let canvasPosition = this.input.mousePosition.scale(new Vector(1 / this.painter.minCanvasSize));
 		let worldPosition = this.camera.canvasToWorld(canvasPosition)
 			.scale(this.world.size).floor();
-		let tile = this.world.live.getTile(worldPosition);
-		if (tile?.tileable.selectable)
-			return new Selection(tile);
-		tile = this.world.terrain.getTile(worldPosition);
-		if (tile?.tileable.selectable)
-			return new Selection(tile);
-		return null;
+		let tile = [
+			this.world.queue,
+			this.world.live,
+			this.world.terrain,
+		]
+			.map(worldLayer => worldLayer.getTile(worldPosition))
+			.find(tile => tile?.tileable.selectable);
+		return tile ? new Selection(tile) : null;
 	}
 
 	toggleSelect() {

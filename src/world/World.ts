@@ -216,13 +216,16 @@ export class World {
 	}
 
 	private tickQueue() {
-		this.queue.order.some(position => {
+		this.queue.order.some((position, i) => {
 			let liveTile = this.live.getTile(position)!;
 			let queueTile = this.queue.getTile(position)!;
 			if (liveTile.equals(queueTile)) return false;
 			let buildableAttribute = queueTile.tileable.getAttribute(EntityBuildableAttribute);
 			if (!buildableAttribute || buildableAttribute.doneBuilding) {
 				this.live.replaceTileable(position, queueTile.tileable);
+				this.queue.order.splice(i, 1);
+				// todo not properly cleaning queue.order
+				// todo remove from queue.grid
 				return true;
 			} else {
 				buildableAttribute.reset();
