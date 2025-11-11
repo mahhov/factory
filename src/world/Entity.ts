@@ -55,7 +55,7 @@ export let getMaterialCounts = (count: number): ResourceUtils.Count<Material>[] 
 
 export class Entity implements Tileable {
 	readonly size: Vector;
-	protected readonly rotation: Rotation;
+	readonly rotation: Rotation;
 	protected readonly attributes: EntityAttribute[][] = [];
 	readonly container = new Container();
 

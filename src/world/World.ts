@@ -7,10 +7,12 @@ import {Clear, Empty, Entity} from './Entity.js';
 import {EntityBuildableAttribute} from './EntityAttribute.js';
 import {MobLogic} from './MobLogic.js';
 import {PlayerLogic} from './PlayerLogic.js';
+import {Rotation} from './Rotation.js';
 
 export interface Tileable {
 	readonly container: Container;
 	readonly size: Vector;
+	readonly rotation: Rotation;
 
 	tick(world: World, tile: Tile<Tileable>): void;
 }
@@ -25,7 +27,9 @@ export class Tile<T extends Tileable> {
 	}
 
 	equals(tile: Tile<T>) {
-		return this.position.equals(tile.position) && this.tileable.constructor === tile.tileable.constructor;
+		return this.position.equals(tile.position) &&
+			this.tileable.constructor === tile.tileable.constructor &&
+			this.tileable.rotation === tile.tileable.rotation;
 	}
 }
 

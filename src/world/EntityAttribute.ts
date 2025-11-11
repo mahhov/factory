@@ -599,6 +599,7 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
+		// todo somehow ended up with quantity > capacity causing crash
 		return type === TooltipType.PLACER ?
 			this.priority === EntityPowerStorageAttributePriority.STORAGE ? [new TextLine(`Stores ${this.capacity} power`, {color: color.POWER_TEXT})] : [] :
 			[new TextLine(`Power ${util.textPercent(this.quantity / this.capacity)}`, {color: color.POWER_TEXT})];
