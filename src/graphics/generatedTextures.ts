@@ -524,6 +524,34 @@ export let animatedGeneratedTextures = {
 		[15, 0, 2, 32, '#D83030'],
 		[15, 15, 2, 2, '#F0F0F0'], // White Charge Pulse 2 (Small)
 	]]),
+	
+	// --- RESOURCES (Ambient Pulse) ---
+	waterDeposit: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4070D0'], // Fully filled with blue for seamless tiling
+
+		// Inner water shimmer 1 (White - contained within the filled area)
+		[7, 7, 2, 2, '#F0F0F0'],
+		[3, 8, 2, 1, '#F0F0F0'], [11, 7, 2, 1, '#F0F0F0'],
+	], [
+		[0, 0, 16, 16, '#4070D0'], // Fully filled with blue
+
+		// Inner water shimmer 2 (Blue, larger - contained within the filled area)
+		[6, 6, 4, 4, '#4070D0'],
+		[4, 7, 2, 2, '#4070D0'], [10, 7, 2, 2, '#4070D0'],
+	]]),
+	methaneDeposit: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#30D850'], // Fully filled with green for seamless tiling
+
+		// Inner gas pulse 1 (Yellow - contained within the filled area)
+		[7, 7, 2, 2, '#FACA10'],
+		[3, 3, 2, 2, '#FACA10'], [11, 11, 2, 2, '#FACA10'],
+	], [
+		[0, 0, 16, 16, '#30D850'], // Fully filled with green
+
+		// Inner gas pulse 2 (Green, larger - contained within the filled area)
+		[6, 6, 4, 4, '#30D850'],
+		[4, 4, 2, 2, '#30D850'], [10, 10, 2, 2, '#30D850'],
+	]]),
 
 	// --- MOBS (Movement/Blink) ---
 	lowTierMob: new AnimatedGeneratedTextures(8, [[

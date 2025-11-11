@@ -65,10 +65,8 @@ export class Entity implements Tileable {
 		if (name) {
 			this.attributes.push([new EntityNameAttribute(name)]);
 			let spriteName = util.titleCaseToCamelCase(name);
-			if (spriteName in animatedGeneratedTextures) {
-				let animatedSprite = new AnimatedSprite(animatedGeneratedTextures[spriteName as keyof typeof animatedGeneratedTextures]);
-				this.setSprite(animatedSprite);
-			}
+			if (spriteName in animatedGeneratedTextures)
+				this.setSprite(new AnimatedSprite(animatedGeneratedTextures[spriteName as keyof typeof animatedGeneratedTextures]));
 		}
 		if (description)
 			this.attributes.push([new EntityDescriptionAttribute(description)]);
@@ -530,7 +528,7 @@ export class LiquidDeposit extends Entity {
 
 	constructor(liquid: Liquid) {
 		super('', '');
-		this.setSprite(SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [ResourceUtils.liquidColor(liquid)]));
+		this.setSprite(new AnimatedSprite(liquid === Liquid.WATER ? animatedGeneratedTextures.waterDeposit : animatedGeneratedTextures.methaneDeposit));
 		this.liquid = liquid;
 		this.attributes.push([new EntityLiquidDisplayAttribute(liquid)]);
 	}
