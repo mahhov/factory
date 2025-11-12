@@ -6,6 +6,7 @@ import Controller from './ui/Controller.js';
 import {Input} from './ui/Input.js';
 import Placer from './ui/Placer.js';
 import Tooltip from './ui/Tooltip.js';
+import BackgroundMusic from './util/BackgroundMusic.js';
 import Vector from './util/Vector.js';
 import {World} from './world/World.js';
 
@@ -55,6 +56,7 @@ let world = new World(new Vector(100), painter, camera.container);
 let placer = new Placer(painter, camera, input, world);
 let tooltip = new Tooltip(painter, camera, input, world);
 let controller = new Controller(camera, placer, tooltip, input);
+BackgroundMusic.load();
 
 let renderLoop = new Loop('render fps', () => {
 	camera.tick();
