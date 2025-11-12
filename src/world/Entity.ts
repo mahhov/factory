@@ -285,7 +285,7 @@ export class Generator extends Building {
 		}
 		let liquidStorageAttribute;
 		if (liquidInput) {
-			liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidInput.resource], 200 * 40, util.enumValues(Rotation));
+			liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidInput.resource], liquidInput.quantity * 40, util.enumValues(Rotation));
 			this.attributes.push([liquidStorageAttribute]);
 		}
 		let outputPowerStorageAttribute = new EntityPowerStorageAttribute(powerOutput * 40, EntityPowerStorageAttributePriority.PRODUCE);
@@ -329,7 +329,7 @@ export class Vent extends Building {
 		}
 		let liquidStorageAttribute;
 		if (liquidInput) {
-			liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidInput.resource], 200 * 40, util.enumValues(Rotation));
+			liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidInput.resource], liquidInput.quantity * 40, util.enumValues(Rotation));
 			this.attributes.push([liquidStorageAttribute]);
 		}
 		let timedAttribute = new EntityTimedAttribute(40);
