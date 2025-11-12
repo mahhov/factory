@@ -246,7 +246,7 @@ export default class Placer {
 	}
 
 	private static createToolGenerator(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Generator(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.output as number);
+		return new Generator(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.liquidInput[0], metadata.output as number);
 	}
 
 	private static createToolConductor(metadata: ParsedLine<typeof sectionFields.buildings>) {
@@ -258,7 +258,7 @@ export default class Placer {
 	}
 
 	private static createToolVent(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Vent(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.liquidInput?.[0], metadata.powerInput, metadata.output as number);
+		return new Vent(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.liquidInput[0], metadata.powerInput, metadata.output as number);
 	}
 
 	private static createToolPump(metadata: ParsedLine<typeof sectionFields.buildings>) {
