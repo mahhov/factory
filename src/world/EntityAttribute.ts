@@ -11,7 +11,6 @@ import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, World} from './World.js';
 
-
 export enum TooltipType {
 	PLACER, WORLD
 }

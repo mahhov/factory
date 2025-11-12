@@ -224,9 +224,9 @@ export class World {
 			let queueTile = this.queue.getTile(position)!;
 			let buildableAttribute = queueTile.tileable.getAttribute(EntityBuildableAttribute);
 			if (!buildableAttribute) {
-				// todo don't remove base
 				console.assert(queueTile.tileable.constructor === Clear);
-				this.live.replaceTileable(position, this.live.defaultTileable);
+				if (liveTile.tileable !== this.playerLogic.base)
+					this.live.replaceTileable(position, this.live.defaultTileable);
 				this.queue.removeOrdered(i);
 				continue;
 			}
