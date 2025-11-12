@@ -134,7 +134,7 @@ export class EntityBuildableAttribute extends EntityAttribute {
 		let lastRatio = this.counter.ratio;
 		let ratio = (this.counter.i + 1) / this.counter.n;
 		let costs = this.materialCost.map(cost => new ResourceUtils.Count(
-			cost.resource, Math.floor(cost.quantity * ratio) - Math.floor(cost.quantity * lastRatio)));
+			cost.resource, Math.ceil(cost.quantity * ratio) - Math.ceil(cost.quantity * lastRatio)));
 
 		if (!costs.every(cost => world.playerLogic.materials.hasQuantity(cost)))
 			return false;
