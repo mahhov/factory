@@ -576,7 +576,7 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 			if (tileable !== consumer) {
 				let powerStorageAttribute = tileable.getAttribute(EntityPowerStorageAttribute);
 				if (powerStorageAttribute && powerStorageAttribute.priority < priority) {
-					let consume = Math.min(quantity, powerStorageAttribute.quantity);
+					let consume = Math.min(quantity - taken, powerStorageAttribute.quantity);
 					taken += consume;
 					powerStorageAttribute.quantity -= consume;
 					if (taken === quantity)
@@ -599,7 +599,6 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
-		// todo somehow ended up with quantity > capacity causing crash
 		return type === TooltipType.PLACER ?
 			this.priority === EntityPowerStorageAttributePriority.STORAGE ? [new TextLine(`Stores ${this.capacity} power`, {color: color.POWER_TEXT})] : [] :
 			[new TextLine(`Power ${util.textPercent(this.quantity / this.capacity)}`, {color: color.POWER_TEXT})];
