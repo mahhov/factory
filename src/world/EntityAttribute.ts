@@ -667,9 +667,11 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 					sprite.y = 0;
 					sprite.width = thickness;
 					sprite.height = s * (delta.y + 1);
-				}
+				} else
+					return null;
 				return sprite;
-			});
+			})
+			.filter(v => v) as Sprite[];
 		tile.tileable.addOverlaySprites('EntityPowerConductAttribute', sprites);
 		return true;
 	}
