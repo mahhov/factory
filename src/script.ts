@@ -7,8 +7,6 @@ import {Input} from './ui/Input.js';
 import Placer from './ui/Placer.js';
 import Tooltip from './ui/Tooltip.js';
 import BackgroundMusic from './util/BackgroundMusic.js';
-import Serializer from './util/Serializer.js';
-import Storage from './util/Storage.js';
 import Vector from './util/Vector.js';
 import {World} from './world/World.js';
 
@@ -73,6 +71,8 @@ let updateLoop = new Loop('update fps', () => {
 	world.tick();
 });
 setInterval(() => updateLoop.run(), 10);
+
+console.info('version', (await (await fetch('./version.txt')).text()).trim());
 
 // try {
 // 	let serialized = await Storage.read('save');
