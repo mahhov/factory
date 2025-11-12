@@ -21,7 +21,7 @@ export default class BackgroundMusic {
 	}
 
 	static load() {
-		let basePath = '../resources/music/';
+		let basePath = './resources/music/';
 		let files = [
 			'80s-pop-110346.mp3',
 			'Crazy - Patrick Patrikios.mp3',

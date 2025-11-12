@@ -9,7 +9,7 @@ namespace SpriteLoader {
 		TERRAIN = 'terrain',
 	}
 
-	let path = (resource: Resource) => `../resources/${resource}/${resource}.json`;
+	let path = (resource: Resource) => `./resources/${resource}/${resource}.json`;
 
 	let savedRenderer: Renderer | undefined = undefined;
 	export let init = (renderer: Renderer) => {
