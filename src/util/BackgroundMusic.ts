@@ -11,12 +11,12 @@ export default class BackgroundMusic {
 		this.shufflePlaylist();
 		this.audio.src = this.currentPath;
 		this.audio.addEventListener('ended', () => this.playNextTrack());
-		document.addEventListener('click', () => this.audio.play(), {once: true});
+		document.addEventListener('click', () => this.play(), {once: true});
 		document.addEventListener('visibilitychange', () => {
 			if (document.hidden)
 				this.audio.pause();
 			else
-				this.audio.play();
+				this.play();
 		});
 	}
 
@@ -55,6 +55,10 @@ export default class BackgroundMusic {
 		if (this.currentIndex === this.shuffledIndexes.length)
 			this.shufflePlaylist();
 		this.audio.src = this.currentPath;
-		this.audio.play();
+		this.play();
+	}
+
+	private play() {
+		this.audio.play().catch(e => console.warn(e));
 	}
 }
