@@ -81,11 +81,12 @@ export class Entity implements Tileable {
 		this.container.addChild(sprite);
 	}
 
-	addOverlaySprite(sprite: Sprite | null) {
-		if (this.container.children.length > 1)
-			this.container.removeChildAt(1);
-		if (sprite)
+	addOverlaySprites(label: string, sprites: Sprite[]) {
+		this.container.getChildrenByLabel(label).forEach(child => child.removeFromParent());
+		sprites.forEach(sprite => {
+			sprite.label = label;
 			this.container.addChild(sprite);
+		});
 	}
 
 	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | undefined {
