@@ -49,6 +49,14 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: out/
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: resources/
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: node_modules/
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
