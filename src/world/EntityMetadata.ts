@@ -97,7 +97,7 @@ export let sectionFields = {
 	},
 };
 
-let mdString = await (await fetch('./../resources/metadata.md')).text();
+let mdString = await (await fetch('./resources/metadata.md')).text();
 let parsed = parseSection2(mdString, sectionFields);
 
 export let findEntityMetadata = <T extends keyof typeof sectionFields>(type: T, name: string): ParsedLine<typeof sectionFields[T]> =>
