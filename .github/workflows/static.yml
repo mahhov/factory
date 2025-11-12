@@ -45,15 +45,15 @@ jobs:
         run: npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Upload artifact
+      - name: Upload out artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: out/
-      - name: Upload artifact
+      - name: Upload resources artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: resources/
-      - name: Upload artifact
+      - name: Upload node_modules artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: node_modules/
