@@ -155,13 +155,13 @@ export class Extractor extends Building {
 		this.attributes.push([materialStorageAttribute]);
 		let powerStorageAttribute;
 		if (powerInput) {
-			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput * 400, EntityPowerStorageAttributePriority.CONSUME);
+			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput * 40, EntityPowerStorageAttributePriority.CONSUME);
 			this.attributes.push([powerStorageAttribute]);
 		}
-		let timedAttribute = new EntityTimedAttribute(400);
+		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
-			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 400) : null,
-			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 400) : null,
+			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
+			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 40) : null,
 			timedAttribute,
 			new EntityMaterialExtractorAttribute(materialStorageAttribute, outputPerTier),
 		].filter(v => v) as EntityAttribute[]);
@@ -353,7 +353,7 @@ export class Pump extends Building {
 			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput * 40, EntityPowerStorageAttributePriority.CONSUME);
 			this.attributes.push([powerStorageAttribute]);
 		}
-		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), outputPerTier[0] * size.x * size.y * 40, []);
+		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), outputPerTier[0] * size.x * size.y, []);
 		this.attributes.push([liquidStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
@@ -479,7 +479,7 @@ export class Turret extends Building {
 		this.attributes.push([materialStorageAttribute]);
 		this.attributes.push([
 			new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
-			new EntityTimedAttribute(30),
+			new EntityTimedAttribute(40),
 			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, true),
 		]);
 	}
@@ -561,7 +561,7 @@ export class Mob extends Entity {
 		super('Low Tier Mob', '');
 		this.attributes.push([new EntityMobChaseTargetAttribute(.1, 6)]);
 		this.attributes.push([
-			new EntityTimedAttribute(30),
+			new EntityTimedAttribute(40),
 			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, false),
 		]);
 		this.attributes.push([new EntityMobHealthAttribute(10)]);
