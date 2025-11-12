@@ -268,6 +268,12 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 		});
 		return true;
 	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Extracts ${this.outputPerTier[0]} material / area`, {})] :
+			[];
+	}
 }
 
 export class EntityMaterialSourceAttribute extends EntityAttribute {
@@ -757,6 +763,12 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 			return this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count(tile.tileable.liquid, quantity));
 		}).some(v => v);
 	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Pumps ${this.outputPerTier[0]} liquid / area`, {color: color.LIQUID_TEXT})] :
+			[];
+	}
 }
 
 export class EntityLiquidDryExtractorAttribute extends EntityAttribute {
@@ -771,6 +783,12 @@ export class EntityLiquidDryExtractorAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		return !!this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count(this.liquidCount.resource, this.liquidCount.quantity));
+	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return type === TooltipType.PLACER ?
+			[new TextLine(`Pumps ${liquidCountsString([this.liquidCount])}`, {color: color.LIQUID_TEXT})] :
+			[];
 	}
 }
 
@@ -803,13 +821,14 @@ export class EntityLiquidStorageAttribute extends EntityAttribute {
 	private readonly liquidsAllowed: Liquid[];
 	private readonly maxQuantity: number;
 	private readonly inputRotations: Rotation[];
-	liquidCount = new ResourceUtils.Count<Liquid>(Liquid.WATER, 0);
+	liquidCount: ResourceUtils.Count<Liquid>;
 
 	constructor(liquidsAllowed: Liquid[], quantity: number, inputRotations: Rotation[]) {
 		super();
 		this.liquidsAllowed = liquidsAllowed;
 		this.maxQuantity = quantity;
 		this.inputRotations = inputRotations;
+		this.liquidCount = new ResourceUtils.Count(liquidsAllowed[0], 0);
 	}
 
 	tryToAdd(liquidCount: ResourceUtils.Count<Liquid>): number {
