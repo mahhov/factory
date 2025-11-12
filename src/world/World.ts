@@ -113,7 +113,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 	}
 }
 
-class OrderedGridWorldLayer<T extends Tileable> extends GridWorldLayer<T> {
+export class OrderedGridWorldLayer<T extends Tileable> extends GridWorldLayer<T> {
 	order: Vector[] = [];
 
 	protected addTileable(position: Vector, tileable: T) {
@@ -128,7 +128,7 @@ class OrderedGridWorldLayer<T extends Tileable> extends GridWorldLayer<T> {
 	}
 }
 
-class FreeWorldLayer<T extends Tileable> extends WorldLayer {
+export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	readonly tiles: Tile<T>[] = [];
 	readonly container = new Container();
 
