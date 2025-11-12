@@ -42,6 +42,7 @@ export default class Tooltip {
 		let worldPosition = this.camera.canvasToWorld(canvasPosition)
 			.scale(this.world.size).floor();
 		let tile = [
+			this.world.planning,
 			this.world.queue,
 			this.world.live,
 			this.world.terrain,
@@ -61,7 +62,8 @@ export default class Tooltip {
 	}
 
 	unselect() {
-		this.selection = null;
+		if (this.selection)
+			this.selection.selected = false;
 	}
 
 	hover() {
