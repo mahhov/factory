@@ -25,12 +25,6 @@ export class Tile<T extends Tileable> {
 		this.position = position;
 		this.tileable = tileable;
 	}
-
-	equals(tile: Tile<T>) {
-		return this.position.equals(tile.position) &&
-			this.tileable.constructor === tile.tileable.constructor &&
-			this.tileable.rotation === tile.tileable.rotation;
-	}
 }
 
 class WorldLayer {
@@ -128,6 +122,10 @@ class OrderedGridWorldLayer<T extends Tileable> extends GridWorldLayer<T> {
 		if (tileable !== this.defaultTileable)
 			this.order.push(position);
 	}
+
+	removeOrdered(index: number) {
+		this.replaceTileable(this.order[index], this.defaultTileable);
+	}
 }
 
 class FreeWorldLayer<T extends Tileable> extends WorldLayer {
@@ -224,34 +222,29 @@ export class World {
 			let position = this.queue.order[i];
 			let liveTile = this.live.getTile(position)!;
 			let queueTile = this.queue.getTile(position)!;
-			if (liveTile.equals(queueTile)) {
-				this.queue.order.splice(i, 1);
-				this.queue.replaceTileable(position, this.queue.defaultTileable);
-				continue;
-			}
-			if (queueTile.tileable === this.queue.defaultTileable) {
-				console.warn('this happened?');
-				this.queue.order.splice(i, 1);
-				continue;
-			}
 			let buildableAttribute = queueTile.tileable.getAttribute(EntityBuildableAttribute);
 			if (!buildableAttribute) {
+				// todo don't remove base
 				console.assert(queueTile.tileable.constructor === Clear);
 				this.live.replaceTileable(position, this.live.defaultTileable);
-				this.queue.order.splice(i, 1);
-				this.queue.replaceTileable(position, this.queue.defaultTileable);
+				this.queue.removeOrdered(i);
+				continue;
+			}
+			let allowed =
+				liveTile.tileable.constructor === queueTile.tileable.constructor && liveTile.position.equals(queueTile.position) && liveTile.tileable.rotation !== queueTile.tileable.rotation ||
+				position.iterate(queueTile.tileable.size).every(p => this.live.getTile(p)!.tileable.constructor === this.live.defaultTileable.constructor);
+			if (!allowed) {
+				this.queue.removeOrdered(i);
 				continue;
 			}
 			if (buildableAttribute.doneBuilding) {
 				this.live.replaceTileable(position, queueTile.tileable);
-				this.queue.order.splice(i, 1);
-				this.queue.replaceTileable(position, this.queue.defaultTileable);
+				this.queue.removeOrdered(i);
 				continue;
-			} else {
-				buildableAttribute.reset();
-				if (buildableAttribute.tick(this, queueTile))
-					break;
 			}
+			buildableAttribute.reset();
+			if (buildableAttribute.tick(this, queueTile))
+				break;
 			i++;
 		}
 		// todo slower building if further from player base
@@ -264,3 +257,4 @@ export class World {
 		this.mobLayer.tiles.forEach(tile => tile.tileable.tick(this, tile));
 	}
 }
+

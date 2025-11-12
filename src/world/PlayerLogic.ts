@@ -13,8 +13,8 @@ export class PlayerLogic {
 
 	constructor(painter: Painter) {
 		this.materials.add(new ResourceUtils.Count(Material.IRON, 500));
-		util.enumValues(Material).forEach(material =>
-			this.materials.add(new ResourceUtils.Count(material, 500)));
+		// util.enumValues(Material).forEach(material =>
+		// 	this.materials.add(new ResourceUtils.Count(material, 500)));
 		this.multilineText = new MultilineText(painter, new Vector(.005));
 	}
 
