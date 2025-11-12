@@ -607,6 +607,7 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 export class EntityPowerConductAttribute extends EntityAttribute {
 	private readonly range: number;
 	private connections: Entity[] = [];
+	private oldConnections: Entity[] = [];
 
 	constructor(range: number) {
 		super();
@@ -616,6 +617,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let connectionDeltas: Vector[] = [];
+		this.oldConnections = this.connections;
 		this.connections = [];
 		util.enumValues(Rotation).forEach(rotation => {
 			getLineDestinations(tile.position, tile.tileable.size, rotation, this.range).some(destination => {
@@ -635,21 +637,30 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 			});
 		});
 		let sprites = connectionDeltas
-			.filter(delta => delta.x > 1 || delta.y > 1)
 			.map(delta => {
 				let sprite = new Sprite(coloredGeneratedTextures.fullRect.texture(Color.POWER_TEXT));
 				let s = sprite.width;
 				let thickness = s / 16;
-				if (delta.x) {
+				if (delta.x > 1) {
 					sprite.x = s;
 					sprite.y = s / 2 - thickness / 2;
 					sprite.width = s * (delta.x - 1);
 					sprite.height = thickness;
-				} else if (delta.y) {
+				} else if (delta.x < -1) {
+					sprite.x = 0;
+					sprite.y = s / 2 - thickness / 2;
+					sprite.width = s * (delta.x + 1);
+					sprite.height = thickness;
+				} else if (delta.y > 1) {
 					sprite.x = s / 2 - thickness / 2;
 					sprite.y = s;
 					sprite.width = thickness;
 					sprite.height = s * (delta.y - 1);
+				} else if (delta.y < -1) {
+					sprite.x = s / 2 - thickness / 2;
+					sprite.y = 0;
+					sprite.width = thickness;
+					sprite.height = s * (delta.y + 1);
 				}
 				return sprite;
 			});
@@ -658,7 +669,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 	}
 
 	get allConnections() {
-		return this.connections.filter(util.unique);
+		return this.connections.concat(this.oldConnections).filter(util.unique);
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
