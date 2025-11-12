@@ -1,3 +1,4 @@
+import {Container} from 'pixi.js';
 import Vector from '../util/Vector.js';
 
 export enum InputState {
@@ -139,7 +140,7 @@ export class Input {
 	mousePosition = Vector.V0;
 	shiftDown = false;
 
-	constructor(mouseTarget: HTMLCanvasElement) {
+	constructor(mouseTarget: Container) {
 		window.addEventListener('blur', () =>
 			Object.values(this.bindings).forEach(binding => binding.release()));
 
@@ -157,16 +158,16 @@ export class Input {
 			Object.values(this.bindings).forEach(binding => binding.keyUp(e));
 		});
 
-		mouseTarget.addEventListener('mousedown', e => {
+		mouseTarget.addEventListener('pointerdown', e => {
 			Object.values(this.bindings).forEach(binding => binding.mouseDown(e.button));
 			this.mouseLastPosition = this.mousePosition;
 			this.mouseDownPosition = this.mousePosition;
 		});
-		window.addEventListener('mouseup', e =>
+		window.addEventListener('pointerup', e =>
 			Object.values(this.bindings).forEach(binding => binding.mouseUp(e.button)));
-		mouseTarget.addEventListener('mousemove', e => {
+		mouseTarget.addEventListener('pointermove', e => {
 			this.shiftDown = e.shiftKey;
-			this.mousePosition = new Vector((e.x - mouseTarget.offsetLeft), e.y - mouseTarget.offsetTop);
+			this.mousePosition = new Vector(e.x, e.y);
 		});
 		mouseTarget.addEventListener('wheel', e => {
 			if (e.deltaY < 0)
@@ -176,7 +177,7 @@ export class Input {
 		});
 
 		document.addEventListener('contextmenu', e => e.preventDefault());
-		document.addEventListener('mousedown', e => e.preventDefault());
+		document.addEventListener('pointerdown', e => e.preventDefault());
 		document.addEventListener('wheel', e => e.preventDefault(), {passive: false});
 	}
 

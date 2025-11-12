@@ -1,4 +1,4 @@
-import {Application, Container} from 'pixi.js';
+import {Application, Container, Rectangle} from 'pixi.js';
 import Camera from './Camera.js';
 import Painter from './graphics/Painter.js';
 import SpriteLoader from './graphics/SpriteLoader.js';
@@ -38,12 +38,14 @@ class Loop {
 
 let resize = () => {
 	app.renderer.resize(window.innerWidth, window.innerHeight);
+	app.stage.hitArea = new Rectangle(0, 0, app.renderer.width, app.renderer.height);
 	painter.resize(new Vector(app.renderer.width, app.renderer.height));
 };
 window.addEventListener('resize', resize);
 
 let app = new Application();
 await app.init({background: 'black'});
+app.stage.eventMode = 'static';
 document.body.appendChild(app.canvas);
 await SpriteLoader.init(app.renderer);
 let painter = new Painter(app.stage);
@@ -51,7 +53,7 @@ resize();
 let camera = new Camera(painter);
 let uiContainer = new Container();
 app.stage.addChild(uiContainer);
-let input = new Input(app.canvas);
+let input = new Input(app.stage);
 let world = new World(new Vector(100), painter, camera.container);
 let placer = new Placer(painter, camera, input, world);
 let tooltip = new Tooltip(painter, camera, input, world);
@@ -79,6 +81,7 @@ setInterval(() => updateLoop.run(), 10);
 //    - wall
 //    - power
 //    - radar, purifier, storage, unloader
+//    - modular weapons
 //   resources:
 //    - deposit
 //    - wall mining
@@ -108,9 +111,5 @@ setInterval(() => updateLoop.run(), 10);
 //    - piercing lasers
 //    - aoe attacks
 //    - stationary towers
-//   ui:
-//    - tooltips
-//    - click to select entity
 
 // todo save/load
-// todo full screen

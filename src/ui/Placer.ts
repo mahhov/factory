@@ -350,7 +350,12 @@ export default class Placer {
 				let spriteContainer = Placer.createToolEntity(tools[0]).container;
 				this.addToolUiButton(coordinates, this.toolGroupIconContainer, spriteContainer, this.toolGroupTextContainer, '^' + (i + 1));
 				spriteContainer.eventMode = 'static';
-				spriteContainer.onpointertap = () => this.setToolGroupIndex(i);
+				spriteContainer.onpointerdown = e => e.stopPropagation();
+				spriteContainer.onpointerup = e => e.stopPropagation();
+				spriteContainer.onpointertap = e => {
+					this.setToolGroupIndex(i);
+					e.stopPropagation();
+				};
 				spriteContainer.onpointerenter = () => this.showToolGroupTooltip(i);
 				spriteContainer.onpointerleave = () => this.hideTooltip();
 			});
@@ -368,7 +373,12 @@ export default class Placer {
 				let coordinates = Placer.toolUiCoordinates(false, i);
 				this.addToolUiButton(coordinates, this.toolIconContainer, Placer.cachedToolEntities[tool].container, this.toolTextContainer, String(i + 1));
 				Placer.cachedToolEntities[tool].container.eventMode = 'static';
-				Placer.cachedToolEntities[tool].container.onpointertap = () => this.toggleToolIndex(i);
+				Placer.cachedToolEntities[tool].container.onpointerdown = e => e.stopPropagation();
+				Placer.cachedToolEntities[tool].container.onpointerup = e => e.stopPropagation();
+				Placer.cachedToolEntities[tool].container.onpointertap = (e) => {
+					this.toggleToolIndex(i);
+					e.stopPropagation();
+				};
 				Placer.cachedToolEntities[tool].container.onpointerenter = () => this.showToolTooltip(i);
 				Placer.cachedToolEntities[tool].container.onpointerleave = () => this.hideTooltip();
 			});
@@ -506,11 +516,5 @@ export default class Placer {
 
 // todo:
 //   only add if world empty or replaceable
-//   replacing entity not working
-//   shadow empty being left when right click dragging resource tiles
-//   bigger tier extractors not working
-//   use different sprites or colors for different tier walls, extractors, etc
-//   consistently apply timed delay to attributes
 //   make pipes leak
 //   missing removal transparent empty overlay
-//   unintentionally placing when clicking on UI rows
