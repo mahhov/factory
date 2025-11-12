@@ -58,7 +58,7 @@ let world = new World(new Vector(100), painter, camera.container);
 let placer = new Placer(painter, camera, input, world);
 let tooltip = new Tooltip(painter, camera, input, world);
 let controller = new Controller(camera, placer, tooltip, input);
-BackgroundMusic.load();
+let backgroundMusic = BackgroundMusic.load();
 
 let renderLoop = new Loop('render fps', () => {
 	camera.tick();
@@ -68,7 +68,8 @@ let renderLoop = new Loop('render fps', () => {
 app.ticker.add(() => renderLoop.run());
 
 let updateLoop = new Loop('update fps', () => {
-	world.tick();
+	if (!document.hidden)
+		world.tick();
 });
 setInterval(() => updateLoop.run(), 10);
 
@@ -131,3 +132,4 @@ console.info('version', (await (await fetch('./version.txt')).text()).trim());
 //    - stationary towers
 
 // todo save/load
+// todo pause on focus lost or esc press
