@@ -164,30 +164,30 @@ let typeMap: TypeMap = {
 	Counter,
 	Count: ResourceUtils.Count,
 
-	MultilineText: {
-		serialize: (multilineText: MultilineText): string => 'serialized',
-		deserialize: (text: string): MultilineText => {
-			let multilineText = new MultilineText();
-			multilineText.type(text);
-			return multilineText;
-		},
-	} as CustomSerializerType<MultilineText, string>,
-	Container: {
-		serialize: (container: Container): string => 'serialized',
-		deserialize: (text: string): Container => {
-			let container = new Container();
-			container.type(text);
-			return container;
-		},
-	} as CustomSerializerType<Container, string>,
-	AnimatedSprite: {
-		serialize: (animatedSprite: AnimatedSprite): string => 'serialized',
-		deserialize: (text: string): AnimatedSprite => {
-			let animatedSprite = new AnimatedSprite();
-			animatedSprite.type(text);
-			return animatedSprite;
-		},
-	} as CustomSerializerType<AnimatedSprite, string>,
+	// MultilineText: {
+	// 	serialize: (multilineText: MultilineText): string => 'serialized',
+	// 	deserialize: (text: string): MultilineText => {
+	// 		let multilineText = new MultilineText();
+	// 		multilineText.type(text);
+	// 		return multilineText;
+	// 	},
+	// } as CustomSerializerType<MultilineText, string>,
+	// Container: {
+	// 	serialize: (container: Container): string => 'serialized',
+	// 	deserialize: (text: string): Container => {
+	// 		let container = new Container();
+	// 		container.type(text);
+	// 		return container;
+	// 	},
+	// } as CustomSerializerType<Container, string>,
+	// AnimatedSprite: {
+	// 	serialize: (animatedSprite: AnimatedSprite): string => 'serialized',
+	// 	deserialize: (text: string): AnimatedSprite => {
+	// 		let animatedSprite = new AnimatedSprite();
+	// 		animatedSprite.type(text);
+	// 		return animatedSprite;
+	// 	},
+	// } as CustomSerializerType<AnimatedSprite, string>,
 };
 
 export default class Serializer {
