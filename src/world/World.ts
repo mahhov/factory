@@ -27,7 +27,7 @@ export class Tile<T extends Tileable> {
 	}
 }
 
-class WorldLayer {
+abstract class WorldLayer {
 	readonly size: Vector;
 	readonly container = new Container();
 

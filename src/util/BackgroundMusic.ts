@@ -24,9 +24,14 @@ export default class BackgroundMusic {
 		let basePath = '../resources/music/';
 		let files = [
 			'80s-pop-110346.mp3',
+			'Crazy - Patrick Patrikios.mp3',
+			'Demon - JVNA.mp3',
 			'funk-break-432949.mp3',
+			'Koto San - Ofshane.mp3',
+			'Lights - Patrick Patrikios.mp3',
 			'soft-background-music-432715.mp3',
 			'synth-pop-110351.mp3',
+			'Tropic Fuse - French Fuse.mp3',
 			'upbeat-technology-413665.mp3',
 		];
 		return new BackgroundMusic(files.map(file => `${basePath}/${file}`));
