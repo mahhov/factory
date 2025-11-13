@@ -12,10 +12,11 @@ import uiUtil from './uiUtil.js';
 
 class Selection {
 	readonly tile: Tile<Entity>;
-	selected = false;
+	readonly selected: boolean;
 
-	constructor(tile: Tile<Entity>) {
+	constructor(tile: Tile<Entity>, selected: boolean) {
 		this.tile = tile;
+		this.selected = selected;
 	}
 }
 
@@ -26,6 +27,7 @@ export default class Tooltip {
 	private readonly world: World;
 	private readonly multilineText: MultilineText;
 	private readonly selectionRect = new Container();
+	private cachedSelection: Selection | null = null;
 	private selection: Selection | null = null;
 
 	constructor(painter: Painter, camera: Camera, input: Input, world: World) {
@@ -37,42 +39,46 @@ export default class Tooltip {
 		painter.uiContainer.addChild(this.selectionRect);
 	}
 
-	private get createInputSelection(): Selection | null {
+	private get inputTile(): Tile<Entity> | null {
 		let canvasPosition = this.input.mousePosition.scale(new Vector(1 / this.painter.minCanvasSize));
 		let worldPosition = this.camera.canvasToWorld(canvasPosition)
 			.scale(this.world.size).floor();
-		let tile = [
+		return [
 			this.world.planning,
 			this.world.queue,
 			this.world.live,
 			this.world.terrain,
 		]
 			.map(worldLayer => worldLayer.getTile(worldPosition))
-			.find(tile => tile?.tileable.selectable);
-		return tile ? new Selection(tile) : null;
+			.find(tile => tile?.tileable.selectable) || null;
 	}
 
 	toggleSelect() {
 		if (uiUtil.mouseInContainer(this.input.mousePosition, this.multilineText.textContainer)) return;
-		let selection = this.createInputSelection;
-		if (!selection || !this.selection || this.selection.tile !== selection.tile)
-			this.selection = selection;
-		if (this.selection)
-			this.selection.selected = !this.selection.selected;
+		let tile = this.inputTile;
+		if (!tile)
+			this.selection = null;
+		else if (this.selection?.tile === tile)
+			this.selection = new Selection(tile, !this.selection.selected);
+		else
+			this.selection = new Selection(tile, true);
 	}
 
 	unselect() {
-		if (this.selection)
-			this.selection.selected = false;
+		if (this.selection?.selected)
+			this.selection = new Selection(this.selection.tile, false);
 	}
 
 	hover() {
 		if (this.selection?.selected) return;
-		this.selection = this.createInputSelection;
+		let tile = this.inputTile;
+		if (!tile)
+			this.selection = null;
+		else if (this.selection?.tile !== tile)
+			this.selection = new Selection(tile, false);
 	}
 
 	tick() {
-		this.selectionRect.removeChildren();
 		if (!this.selection) {
 			this.multilineText.lines = [];
 			this.multilineText.tick();
@@ -88,8 +94,12 @@ export default class Tooltip {
 		this.multilineText.lines = this.selection.tile.tileable.tooltip(this.input.shiftDown ? TooltipType.PLACER : TooltipType.WORLD);
 		this.multilineText.tick();
 
-		this.selectionRect.addChild(new Graphics()
-			.rect(topLeft.x, topLeft.y, size.x, size.y)
-			.stroke({width: (this.selection.selected ? 3 : 1) / this.painter.minCanvasSize, color: this.selection.selected ? Color.SELECTED_RECT_OUTLINE : Color.RECT_OUTLINE}));
+		if (this.cachedSelection !== this.selection) {
+			this.cachedSelection = this.selection;
+			this.selectionRect.removeChildren();
+			this.selectionRect.addChild(new Graphics()
+				.rect(topLeft.x, topLeft.y, size.x, size.y)
+				.stroke({width: (this.selection.selected ? 3 : 1) / this.painter.minCanvasSize, color: this.selection.selected ? Color.SELECTED_RECT_OUTLINE : Color.RECT_OUTLINE}));
+		}
 	}
 }
