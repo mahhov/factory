@@ -28,7 +28,7 @@ let resourceSettings = [
 ];
 
 export let generateTerrain = (terrainLayer: GridWorldLayer<Entity>) => {
-	new Vector(0).iterate(terrainLayer.size).forEach(v => {
+	Vector.V0.iterate(terrainLayer.size).forEach(v => {
 		for (let setting of resourceSettings) {
 			let {resource, scale, threshold, offset, isLiquid} = setting;
 			let noiceV = v.scale(new Vector(scale)).add(new Vector(offset));
