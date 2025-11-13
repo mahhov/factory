@@ -17,6 +17,7 @@ import {
 	Factory,
 	Generator,
 	Junction,
+	PackedConveyor,
 	Pipe,
 	PipeDistributor,
 	PipeJunction,
@@ -46,8 +47,8 @@ enum Tool {
 	// todo bunker
 	IRON_WALL, STEEL_WALL,
 	EXTRACTOR, REINFORCED_EXTRACTOR, QUADRATIC_EXTRACTOR, LASER_EXTRACTOR,
-	// todo packed conveyor & bridge
-	CONVEYOR, HIGH_SPEED_CONVEYOR, DISTRIBUTOR, JUNCTION,
+	// todo bridge
+	CONVEYOR, HIGH_SPEED_CONVEYOR, PACKED_CONVEYOR, DISTRIBUTOR, JUNCTION,
 	STEEL_SMELTER, METAGLASS_FOUNDRY, PLASTEEL_MIXER, THERMITE_FORGE, EXIDIUM_CATALYST,
 	STORAGE, DISPENSER,
 	THERMAL_GENERATOR, SOLAR_ARRAY, METHANE_BURNER, THERMITE_REACTOR, CONDUCTOR, BATTERY,
@@ -59,7 +60,7 @@ enum Tool {
 let toolTree = {
 	walls: [Tool.IRON_WALL, Tool.STEEL_WALL],
 	extractors: [Tool.EXTRACTOR, Tool.REINFORCED_EXTRACTOR, Tool.QUADRATIC_EXTRACTOR, Tool.LASER_EXTRACTOR],
-	transport: [Tool.CONVEYOR, Tool.HIGH_SPEED_CONVEYOR, Tool.DISTRIBUTOR, Tool.JUNCTION],
+	transport: [Tool.CONVEYOR, Tool.HIGH_SPEED_CONVEYOR, Tool.DISTRIBUTOR, Tool.JUNCTION, Tool.PACKED_CONVEYOR],
 	factories: [Tool.STEEL_SMELTER, Tool.METAGLASS_FOUNDRY, Tool.PLASTEEL_MIXER, Tool.THERMITE_FORGE, Tool.EXIDIUM_CATALYST],
 	storage: [Tool.STORAGE, Tool.DISPENSER],
 	power: [Tool.THERMAL_GENERATOR, Tool.SOLAR_ARRAY, Tool.METHANE_BURNER, Tool.THERMITE_REACTOR, Tool.CONDUCTOR, Tool.BATTERY],
@@ -148,6 +149,8 @@ export default class Placer {
 				return Placer.createToolDistributor(findEntityMetadata('buildings', 'Distributor'));
 			case Tool.JUNCTION:
 				return Placer.createToolJunction(findEntityMetadata('buildings', 'Junction'));
+			case Tool.PACKED_CONVEYOR:
+				return Placer.createToolPackedConveyor(findEntityMetadata('buildings', 'Packed Conveyor'), rotation);
 
 			case Tool.STEEL_SMELTER:
 				return Placer.createToolFactory(findEntityMetadata('buildings', 'Steel Smelter'));
@@ -231,6 +234,10 @@ export default class Placer {
 
 	private static createToolJunction(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		return new Junction(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+	}
+
+	private static createToolPackedConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
+		return new PackedConveyor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
 	}
 
 	private static createToolFactory(metadata: ParsedLine<typeof sectionFields.buildings>) {
@@ -405,11 +412,13 @@ export default class Placer {
 	private addToolUiButton(coordinates: [number, number][], iconContainer: Container, spriteContainer: Container, textContainer: Container, text: string) {
 		[spriteContainer.x, spriteContainer.y] = coordinates[0];
 		[spriteContainer.width, spriteContainer.height] = coordinates[1];
-		iconContainer.addChild(spriteContainer);
-		let rect = new Graphics()
+		iconContainer.addChild(new Graphics()
 			.rect(...coordinates[0], ...coordinates[1])
-			.stroke({width: 1 / this.painter.minCanvasSize, color: Color.RECT_OUTLINE});
-		iconContainer.addChild(rect);
+			.fill({width: 1 / this.painter.minCanvasSize, color: Color.TEXT_RECT_BACKGROUND}));
+		iconContainer.addChild(spriteContainer);
+		iconContainer.addChild(new Graphics()
+			.rect(...coordinates[0], ...coordinates[1])
+			.stroke({width: 1 / this.painter.minCanvasSize, color: Color.RECT_OUTLINE}));
 		textContainer.addChild(new Text({
 			text,
 			style: {
@@ -518,3 +527,4 @@ export default class Placer {
 //   only add if world empty or replaceable
 //   make pipes leak
 //   missing removal transparent empty overlay
+//   add backgrounds to ui rects
