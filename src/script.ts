@@ -4,20 +4,25 @@ import Painter from './graphics/Painter.js';
 import SpriteLoader from './graphics/SpriteLoader.js';
 import Controller from './ui/Controller.js';
 import {Input} from './ui/Input.js';
+import MultilineText, {Anchor} from './ui/MultilineText.js';
 import Placer from './ui/Placer.js';
+import TextLine from './ui/TextLine.js';
 import Tooltip from './ui/Tooltip.js';
 import BackgroundMusic from './util/BackgroundMusic.js';
 import Vector from './util/Vector.js';
 import {World} from './world/World.js';
 
 class Loop {
-	private label: string;
+	private readonly multilineText: MultilineText;
+	private readonly index: number;
+	private readonly label: string;
 	private frames = 0;
 	private last = 0;
-	mostRecentFps = 0;
 	private readonly handler: () => void;
 
-	constructor(label: string, handler: () => void) {
+	constructor(multilineText: MultilineText, index: number, label: string, handler: () => void) {
+		this.multilineText = multilineText;
+		this.index = index;
 		this.label = label;
 		this.handler = handler;
 	}
@@ -27,7 +32,8 @@ class Loop {
 		let elapsed = now - this.last;
 		if (elapsed > 1000) {
 			let fps = this.frames / elapsed * 1000;
-			// console.log(this.label, fps);
+			this.multilineText.lines[this.index] = new TextLine(`${this.label} ${Math.floor(fps)}`, {size: 10});
+			this.multilineText.tick();
 			this.frames = 0;
 			this.last = now;
 		}
@@ -58,10 +64,10 @@ let tooltip = new Tooltip(painter, camera, input, world);
 let controller = new Controller(camera, placer, tooltip, input);
 let backgroundMusic = BackgroundMusic.load();
 
-let renderLoop = new Loop('render fps', () => {});
+let fpsText = new MultilineText(painter, new Vector(1, 0), [], Anchor.TOP_RIGHT);
+let renderLoop = new Loop(fpsText, 0, 'render fps', () => {});
 app.ticker.add(() => renderLoop.run());
-
-let updateLoop = new Loop('update fps', () => {
+let updateLoop = new Loop(fpsText, 1, 'update fps', () => {
 	if (!document.hidden) {
 		world.tick();
 		camera.tick();
@@ -130,4 +136,6 @@ console.info('version', (await (await fetch('./version.txt')).text()).trim());
 //    - stationary towers
 
 // todo save/load
-// todo pause on focus lost or esc press
+// todo display fps
+// todo packed conveyor
+// todo manual culling
