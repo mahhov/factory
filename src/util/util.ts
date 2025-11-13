@@ -61,8 +61,18 @@ namespace util {
 		.join('');
 	export let snakeCaseToTitleCase = (str: string): string => lowerCaseToTitleCase(str.split('_').join(' '));
 	export let textPercent = (ratio: number, size: number = 6): string => {
-		let n = Math.floor(ratio * size);
-		return `${'█'.repeat(n)}${'░'.repeat(size - n)}`;
+		let chars = '░▒▓█';
+		let value = ratio * size;
+		let filled = Math.floor(value);
+		let empty = size - filled;
+		let partialChar = '';
+		if (value > filled) {
+			partialChar = chars[Math.floor((value % 1) * 3)];
+			empty -= 1;
+		}
+		let filledStr = chars[3].repeat(filled);
+		let emptyStr = chars[0].repeat(empty);
+		return `${filledStr}${partialChar}${emptyStr}`;
 	};
 }
 
