@@ -1,4 +1,5 @@
 import {Container} from 'pixi.js';
+import Painter from '../graphics/Painter.js';
 import Vector from '../util/Vector.js';
 
 export enum InputState {
@@ -134,13 +135,16 @@ export class MouseWheelBinding extends Binding {
 }
 
 export class Input {
+	private readonly painter: Painter;
 	private readonly bindings: Binding[] = [];
 	mouseDownPosition = Vector.V0;
 	mouseLastPosition = Vector.V0;
 	mousePosition = Vector.V0;
 	shiftDown = false;
 
-	constructor(mouseTarget: Container) {
+	constructor(mouseTarget: Container, painter: Painter) {
+		this.painter = painter;
+
 		window.addEventListener('blur', () =>
 			Object.values(this.bindings).forEach(binding => binding.release()));
 
@@ -185,8 +189,8 @@ export class Input {
 		this.bindings.push(binding);
 	}
 
-	get mouseMoved() {
-		return !this.mousePosition.equals(this.mouseLastPosition);
+	get mouseCanvasPosition() {
+		return this.mousePosition.scale(new Vector(1 / this.painter.minCanvasSize));
 	}
 
 	tick() {

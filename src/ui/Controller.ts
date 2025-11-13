@@ -19,17 +19,17 @@ export default class Controller {
 		input.addBinding(new KeyBinding('d', [], [InputState.DOWN], () => camera.move(new Vector(.01, 0))));
 		input.addBinding(new KeyBinding('w', [], [InputState.DOWN], () => camera.move(new Vector(0, -.01))));
 		input.addBinding(new KeyBinding('s', [], [InputState.DOWN], () => camera.move(new Vector(0, .01))));
-		input.addBinding(new KeyBinding('q', [], [InputState.DOWN], () => camera.zoom(.03, this.mousePosition)));
-		input.addBinding(new KeyBinding('e', [], [InputState.DOWN], () => camera.zoom(-.03, this.mousePosition)));
+		input.addBinding(new KeyBinding('q', [], [InputState.DOWN], () => camera.zoom(.03, this.input.mouseCanvasPosition)));
+		input.addBinding(new KeyBinding('e', [], [InputState.DOWN], () => camera.zoom(-.03, this.input.mouseCanvasPosition)));
 		input.addBinding(new MouseBinding(MouseButton.MIDDLE, [InputState.DOWN], () =>
 			camera.move(input.mousePosition.subtract(input.mouseLastPosition).scale(new Vector(-.002)))));
 		input.addBinding(new MouseWheelBinding(false, () => {
 			if (placer.state === PlacerState.EMPTY)
-				camera.zoom(-.3, this.mousePosition);
+				camera.zoom(-.3, this.input.mouseCanvasPosition);
 		}));
 		input.addBinding(new MouseWheelBinding(true, () => {
 			if (placer.state === PlacerState.EMPTY)
-				camera.zoom(.3, this.mousePosition);
+				camera.zoom(.3, this.input.mouseCanvasPosition);
 		}));
 		// todo also dirty tooltip on placer tool changes
 		camera.addListener('change', () => tooltip.dirty());
@@ -67,10 +67,5 @@ export default class Controller {
 			if (placer.state === PlacerState.EMPTY)
 				tooltip.toggleSelect();
 		}));
-	}
-
-	// todo move to input since its used at most callsites
-	private get mousePosition() {
-		return this.input.mousePosition.scale(new Vector(1 / this.painter.minCanvasSize));
 	}
 }

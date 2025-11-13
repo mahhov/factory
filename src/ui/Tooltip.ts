@@ -41,9 +41,7 @@ export default class Tooltip {
 	}
 
 	private get inputTile(): Tile<Entity> | null {
-		let canvasPosition = this.input.mousePosition.scale(new Vector(1 / this.painter.minCanvasSize));
-		let worldPosition = this.camera.canvasToWorld(canvasPosition)
-			.scale(this.world.size).floor();
+		let worldPosition = this.camera.canvasToWorld(this.input.mouseCanvasPosition).scale(this.world.size).floor();
 		return [
 			this.world.planning,
 			this.world.queue,

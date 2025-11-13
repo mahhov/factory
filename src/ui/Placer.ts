@@ -312,8 +312,7 @@ export default class Placer {
 	}
 
 	private get position(): Vector {
-		let canvasPosition = this.input.mousePosition.scale(new Vector(1 / this.painter.minCanvasSize));
-		return this.camera.canvasToWorld(canvasPosition).scale(this.world.size).floor();
+		return this.camera.canvasToWorld(this.input.mouseCanvasPosition).scale(this.world.size).floor();
 	}
 
 	setToolGroupIndex(index: number) {
