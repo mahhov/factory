@@ -78,7 +78,7 @@ export class KeyBinding extends Binding {
 	}
 
 	keyUp(e: KeyboardEvent) {
-		if (this.filter(e).some(v => v))
+		if (this.key === e.key.toLowerCase())
 			this.release();
 	}
 
