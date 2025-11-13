@@ -74,6 +74,8 @@ namespace util {
 		let emptyStr = chars[0].repeat(empty);
 		return `${filledStr}${partialChar}${emptyStr}`;
 	};
+
+	export let debug = new URLSearchParams(window.location.search).has('debug');
 }
 
 export default util;

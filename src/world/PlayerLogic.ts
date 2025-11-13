@@ -12,9 +12,7 @@ export class PlayerLogic {
 	private readonly multilineText: MultilineText;
 
 	constructor(painter: Painter) {
-		this.materials.add(new ResourceUtils.Count(Material.IRON, 500));
-		// util.enumValues(Material).forEach(material =>
-		// 	this.materials.add(new ResourceUtils.Count(material, 500)));
+		this.materials.add(new ResourceUtils.Count(Material.IRON, util.debug ? 500000 : 500));
 		this.multilineText = new MultilineText(painter, new Vector(.005));
 	}
 

@@ -119,7 +119,7 @@ export class EntityDescriptionAttribute extends EntityAttribute {
 export class EntityBuildableAttribute extends EntityAttribute {
 	private readonly counter: Counter;
 	private readonly materialCost: ResourceUtils.Count<Material>[];
-	doneBuilding = false;
+	doneBuilding = util.debug || false;
 
 	constructor(duration: number, materialCost: ResourceUtils.Count<Material>[]) {
 		super();
