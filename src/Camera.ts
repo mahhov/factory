@@ -45,11 +45,20 @@ export default class Camera {
 	}
 
 	tick() {
-		let lazy = .85;
-		this.width = this.width * lazy + this.targetWidth * (1 - lazy);
-		this.leftTop = this.leftTop
-			.scale(new Vector(lazy))
-			.add(this.targetLeftTop.scale(new Vector(1 - lazy)));
+		let lazy = .75;
+		let e = .0001;
+
+		if (Math.abs(this.width - this.targetWidth) < e)
+			this.width = this.targetWidth;
+		else
+			this.width = this.width * lazy + this.targetWidth * (1 - lazy);
+
+		if (this.leftTop.subtract(this.targetLeftTop).magnitude2 < e ** 2)
+			this.leftTop = this.targetLeftTop;
+		else
+			this.leftTop = this.leftTop
+				.scale(new Vector(lazy))
+				.add(this.targetLeftTop.scale(new Vector(1 - lazy)));
 
 		this.container.scale = 1 / this.width;
 		this.container.position = this.worldToCanvas(Vector.V0);
