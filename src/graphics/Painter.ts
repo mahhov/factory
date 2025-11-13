@@ -9,6 +9,8 @@ export default class Painter {
 	readonly textUiContainer: Container = new Container(); // (0,0) is the top-left of the canvas; (1000,1000) is the bottom-right of the canvas
 
 	constructor(container: Container) {
+		this.foregroundContainer.eventMode = 'none';
+		this.textUiContainer.eventMode = 'none';
 		container.addChild(this.foregroundContainer);
 		container.addChild(this.uiContainer);
 		container.addChild(this.textUiContainer);
