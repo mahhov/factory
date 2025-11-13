@@ -37,6 +37,7 @@ export default class Tooltip {
 		this.world = world;
 		this.multilineText = new MultilineText(painter);
 		painter.uiContainer.addChild(this.selectionRect);
+		painter.addListener('resize', () => this.dirty());
 	}
 
 	private get inputTile(): Tile<Entity> | null {

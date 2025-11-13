@@ -46,9 +46,7 @@ let resize = () => {
 	app.renderer.resize(window.innerWidth, window.innerHeight);
 	app.stage.hitArea = new Rectangle(0, 0, app.renderer.width, app.renderer.height);
 	painter.resize(new Vector(app.renderer.width, app.renderer.height));
-	fpsText.position = new Vector(app.renderer.width / app.renderer.height, 0);
 };
-window.addEventListener('resize', resize);
 
 let app = new Application();
 await app.init({background: 'black'});
@@ -56,6 +54,7 @@ app.stage.eventMode = 'static';
 document.body.appendChild(app.canvas);
 await SpriteLoader.init(app.renderer);
 let painter = new Painter(app.stage);
+painter.addListener('resize', (size: Vector) => fpsText.position = new Vector(size.x / size.y, 0));
 let camera = new Camera(painter);
 let input = new Input(app.stage);
 let world = new World(new Vector(300), painter, camera.container);
@@ -63,7 +62,6 @@ let placer = new Placer(painter, camera, input, world);
 let tooltip = new Tooltip(painter, camera, input, world);
 let controller = new Controller(camera, placer, tooltip, input, painter);
 let backgroundMusic = BackgroundMusic.load();
-
 let fpsText = new MultilineText(painter, new Vector(1, 0), [], Anchor.TOP_RIGHT);
 let renderLoop = new Loop(fpsText, 0, 'render fps', () => {});
 app.ticker.add(() => renderLoop.run());
@@ -75,8 +73,9 @@ let updateLoop = new Loop(fpsText, 1, 'update fps', () => {
 		tooltip.tick();
 	}
 });
-resize();
 setInterval(() => updateLoop.run(), 10);
+window.addEventListener('resize', resize);
+resize();
 
 console.info('version', (await (await fetch('./version.txt')).text()).trim());
 
@@ -137,6 +136,5 @@ console.info('version', (await (await fetch('./version.txt')).text()).trim());
 //    - stationary towers
 
 // todo save/load
-// todo display fps
 // todo packed conveyor
 // todo manual culling

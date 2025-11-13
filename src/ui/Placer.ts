@@ -78,10 +78,10 @@ export default class Placer {
 	private readonly world: World;
 	private readonly toolGroupIconContainer = new Container();
 	private readonly toolGroupTextContainer = new Container();
-	private readonly toolGroupSelectionRect = new Container();
+	private readonly toolGroupSelectionRect = new Graphics();
 	private readonly toolIconContainer = new Container();
 	private readonly toolTextContainer = new Container();
-	private readonly toolSelectionRect = new Container();
+	private readonly toolSelectionRect = new Graphics();
 	private readonly multilineText;
 	private started = false;
 	private rotation = Rotation.UP;
@@ -99,15 +99,20 @@ export default class Placer {
 		painter.uiContainer.addChild(this.toolGroupIconContainer);
 		painter.textUiContainer.addChild(this.toolGroupTextContainer);
 		this.toolGroupIconContainer.addChild(this.toolGroupSelectionRect);
-		this.toolGroupSelectionRect.addChild(new Graphics()
-			.rect(0, 0, ...Placer.toolUiCoordinates(true, 0)[1])
-			.stroke({width: 3 / painter.minCanvasSize, color: Color.SELECTED_RECT_OUTLINE}));
 		painter.uiContainer.addChild(this.toolIconContainer);
 		painter.textUiContainer.addChild(this.toolTextContainer);
 		this.toolIconContainer.addChild(this.toolSelectionRect);
-		this.toolSelectionRect.addChild(new Graphics()
-			.rect(0, 0, ...Placer.toolUiCoordinates(false, 0)[1])
-			.stroke({width: 3 / painter.minCanvasSize, color: Color.SELECTED_RECT_OUTLINE}));
+
+		painter.addListener('resize', () => {
+			this.toolGroupSelectionRect
+				.clear()
+				.rect(0, 0, ...Placer.toolUiCoordinates(true, 0)[1])
+				.stroke({width: 3 / painter.minCanvasSize, color: Color.SELECTED_RECT_OUTLINE});
+			this.toolSelectionRect
+				.clear()
+				.rect(0, 0, ...Placer.toolUiCoordinates(false, 0)[1])
+				.stroke({width: 3 / painter.minCanvasSize, color: Color.SELECTED_RECT_OUTLINE});
+		});
 
 		this.multilineText = new MultilineText(painter);
 		this.multilineText.anchor = Anchor.BOTTOM_LEFT;
@@ -308,8 +313,7 @@ export default class Placer {
 
 	private get position(): Vector {
 		let canvasPosition = this.input.mousePosition.scale(new Vector(1 / this.painter.minCanvasSize));
-		return this.camera.canvasToWorld(canvasPosition)
-			.scale(this.world.size).floor();
+		return this.camera.canvasToWorld(canvasPosition).scale(this.world.size).floor();
 	}
 
 	setToolGroupIndex(index: number) {
