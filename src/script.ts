@@ -46,6 +46,7 @@ let resize = () => {
 	app.renderer.resize(window.innerWidth, window.innerHeight);
 	app.stage.hitArea = new Rectangle(0, 0, app.renderer.width, app.renderer.height);
 	painter.resize(new Vector(app.renderer.width, app.renderer.height));
+	fpsText.position = new Vector(app.renderer.width / app.renderer.height, 0);
 };
 window.addEventListener('resize', resize);
 
@@ -55,7 +56,6 @@ app.stage.eventMode = 'static';
 document.body.appendChild(app.canvas);
 await SpriteLoader.init(app.renderer);
 let painter = new Painter(app.stage);
-resize();
 let camera = new Camera(painter);
 let input = new Input(app.stage);
 let world = new World(new Vector(300), painter, camera.container);
@@ -75,6 +75,7 @@ let updateLoop = new Loop(fpsText, 1, 'update fps', () => {
 		tooltip.tick();
 	}
 });
+resize();
 setInterval(() => updateLoop.run(), 10);
 
 console.info('version', (await (await fetch('./version.txt')).text()).trim());
