@@ -326,7 +326,10 @@ export class EntityMaterialConsumeAttribute extends EntityAttribute {
 	}
 }
 
+export enum EntityMaterialStorageAttributeType {NORMAL, PACKED, ANY}
+
 export class EntityMaterialStorageAttribute extends EntityAttribute {
+	readonly type: EntityMaterialStorageAttributeType;
 	private readonly totalCapacity: number;
 	private readonly capacities: ResourceUtils.Count<Material>[];
 	private readonly inputRotations: Rotation[];
@@ -334,11 +337,12 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	private readonly quantities: Record<Material, number>;
 	private readonly ordered: Material[] = [];
 
-	constructor(totalCapacity: number, materialCapacities: ResourceUtils.Count<Material>[], inputRotations: Rotation[], showTooltip: boolean) {
+	constructor(type: EntityMaterialStorageAttributeType, totalCapacity: number, materialCapacities: ResourceUtils.Count<Material>[], inputRotations: Rotation[], showTooltip: boolean) {
 		super();
 		console.assert(totalCapacity > 0);
 		console.assert(materialCapacities.length > 0);
 		console.assert(materialCapacities.every(materialCount => materialCount.quantity > 0));
+		this.type = type;
 		this.totalCapacity = totalCapacity;
 		this.capacities = materialCapacities;
 		this.inputRotations = inputRotations;
@@ -440,6 +444,10 @@ export class EntityTransportAttribute extends EntityAttribute {
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
 				.flatMap(destination => world.live.getTile(destination)?.tileable.getAttributes(EntityMaterialStorageAttribute) || [])
 				.filter(destinationMaterialStorageAttribute => destinationMaterialStorageAttribute.acceptsRotation(rotation))
+				.filter(destinationMaterialStorageAttribute =>
+					fromMaterialStorageAttribute.type === destinationMaterialStorageAttribute.type ||
+					fromMaterialStorageAttribute.type === EntityMaterialStorageAttributeType.ANY ||
+					destinationMaterialStorageAttribute.type === EntityMaterialStorageAttributeType.ANY)
 				.some(destinationMaterialStorageAttribute =>
 					util.shuffle(materialCounts).some(materialCount => {
 						if (destinationMaterialStorageAttribute!.hasCapacity(materialCount)) {
