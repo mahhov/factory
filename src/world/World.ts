@@ -233,6 +233,7 @@ export class World {
 			}
 			let allowed =
 				liveTile.tileable.name === queueTile.tileable.name && liveTile.position.equals(queueTile.position) && liveTile.tileable.rotation !== queueTile.tileable.rotation ||
+				liveTile.tileable.name !== queueTile.tileable.name && liveTile.tileable.size.equals(Vector.V1) && queueTile.tileable.size.equals(Vector.V1) ||
 				position.iterate(queueTile.tileable.size).every(p => this.live.getTile(p)!.tileable.name === this.live.defaultTileable.name);
 			if (!allowed) {
 				this.queue.removeOrdered(i);
