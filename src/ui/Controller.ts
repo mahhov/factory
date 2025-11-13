@@ -1,4 +1,5 @@
 import Camera from '../Camera.js';
+import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Input, InputState, KeyBinding, KeyModifier, MouseBinding, MouseButton, MouseWheelBinding} from './Input.js';
@@ -6,23 +7,29 @@ import Placer, {PlacerState} from './Placer.js';
 import Tooltip from './Tooltip.js';
 
 export default class Controller {
-	constructor(camera: Camera, placer: Placer, tooltip: Tooltip, input: Input) {
+	private readonly input: Input;
+	private readonly painter: Painter;
+
+	constructor(camera: Camera, placer: Placer, tooltip: Tooltip, input: Input, painter: Painter) {
+		this.input = input;
+		this.painter = painter;
+
 		// camera
 		input.addBinding(new KeyBinding('a', [], [InputState.DOWN], () => camera.move(new Vector(-.01, 0))));
 		input.addBinding(new KeyBinding('d', [], [InputState.DOWN], () => camera.move(new Vector(.01, 0))));
 		input.addBinding(new KeyBinding('w', [], [InputState.DOWN], () => camera.move(new Vector(0, -.01))));
 		input.addBinding(new KeyBinding('s', [], [InputState.DOWN], () => camera.move(new Vector(0, .01))));
-		input.addBinding(new KeyBinding('q', [], [InputState.DOWN], () => camera.zoom(.03)));
-		input.addBinding(new KeyBinding('e', [], [InputState.DOWN], () => camera.zoom(-.03)));
+		input.addBinding(new KeyBinding('q', [], [InputState.DOWN], () => camera.zoom(.03, this.mousePosition)));
+		input.addBinding(new KeyBinding('e', [], [InputState.DOWN], () => camera.zoom(-.03, this.mousePosition)));
 		input.addBinding(new MouseBinding(MouseButton.MIDDLE, [InputState.DOWN], () =>
 			camera.move(input.mousePosition.subtract(input.mouseLastPosition).scale(new Vector(-.002)))));
 		input.addBinding(new MouseWheelBinding(false, () => {
 			if (placer.state === PlacerState.EMPTY)
-				camera.zoom(-.3);
+				camera.zoom(-.3, this.mousePosition);
 		}));
 		input.addBinding(new MouseWheelBinding(true, () => {
 			if (placer.state === PlacerState.EMPTY)
-				camera.zoom(.3);
+				camera.zoom(.3, this.mousePosition);
 		}));
 		camera.addListener('change', () => tooltip.dirty());
 
@@ -59,5 +66,10 @@ export default class Controller {
 			if (placer.state === PlacerState.EMPTY)
 				tooltip.toggleSelect();
 		}));
+	}
+
+	// todo move to input since its used at most callsites
+	private get mousePosition() {
+		return this.input.mousePosition.scale(new Vector(1 / this.painter.minCanvasSize));
 	}
 }

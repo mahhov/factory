@@ -61,7 +61,7 @@ let input = new Input(app.stage);
 let world = new World(new Vector(300), painter, camera.container);
 let placer = new Placer(painter, camera, input, world);
 let tooltip = new Tooltip(painter, camera, input, world);
-let controller = new Controller(camera, placer, tooltip, input);
+let controller = new Controller(camera, placer, tooltip, input, painter);
 let backgroundMusic = BackgroundMusic.load();
 
 let fpsText = new MultilineText(painter, new Vector(1, 0), [], Anchor.TOP_RIGHT);

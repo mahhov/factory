@@ -6,7 +6,6 @@ import Vector from './util/Vector.js';
 
 let padding = .25;
 
-// todo zoom towards pointer
 export default class Camera extends Emitter<{ change: void }> {
 	private targetLeftTop: Vector = new Vector(.4);
 	private targetWidth: number = .2;
@@ -30,10 +29,10 @@ export default class Camera extends Emitter<{ change: void }> {
 		this.clamp();
 	}
 
-	zoom(delta: number) {
-		let centerWorld = this.canvasToWorld(new Vector(.5));
+	zoom(delta: number, centerCanvas: Vector) {
+		let centerWorld = this.canvasToWorld(centerCanvas);
 		this.targetWidth = util.clamp(this.targetWidth + delta, .1, 1 + padding * 2);
-		this.targetLeftTop = centerWorld.subtract(new Vector(this.targetWidth / 2));
+		this.targetLeftTop = centerWorld.subtract(centerCanvas.scale(new Vector(this.targetWidth)));
 		this.clamp();
 	}
 
