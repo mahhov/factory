@@ -22,7 +22,7 @@ export default class Controller {
 		input.addBinding(new KeyBinding('q', [], [InputState.DOWN], () => camera.zoom(.03, this.input.mouseCanvasPosition)));
 		input.addBinding(new KeyBinding('e', [], [InputState.DOWN], () => camera.zoom(-.03, this.input.mouseCanvasPosition)));
 		input.addBinding(new MouseBinding(MouseButton.MIDDLE, [InputState.DOWN], () =>
-			camera.move(input.mousePosition.subtract(input.mouseLastPosition).scale(new Vector(-.002)))));
+			camera.move(input.mousePosition.subtract(input.mouseLastPosition).scale(new Vector(-1 / this.painter.minCanvasSize)))));
 		input.addBinding(new MouseWheelBinding(false, () => {
 			if (placer.state === PlacerState.EMPTY)
 				camera.zoom(-.3, this.input.mouseCanvasPosition);
