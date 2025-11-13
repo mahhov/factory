@@ -47,8 +47,7 @@ abstract class WorldLayer {
 	protected addContainer(container: Container, position: Vector, size: Vector) {
 		let sizeInv = this.size.invert();
 		position = position.scale(sizeInv);
-		container.x = position.x;
-		container.y = position.y;
+ 		container.position = position;
 		size = sizeInv.scale(size);
 		container.width = size.x;
 		container.height = size.y;

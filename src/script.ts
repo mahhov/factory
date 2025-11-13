@@ -1,4 +1,4 @@
-import {Application, Container, Rectangle} from 'pixi.js';
+import {Application, Rectangle} from 'pixi.js';
 import Camera from './Camera.js';
 import Painter from './graphics/Painter.js';
 import SpriteLoader from './graphics/SpriteLoader.js';
@@ -51,25 +51,23 @@ await SpriteLoader.init(app.renderer);
 let painter = new Painter(app.stage);
 resize();
 let camera = new Camera(painter);
-let uiContainer = new Container();
-app.stage.addChild(uiContainer);
 let input = new Input(app.stage);
-let world = new World(new Vector(200), painter, camera.container);
+let world = new World(new Vector(300), painter, camera.container);
 let placer = new Placer(painter, camera, input, world);
 let tooltip = new Tooltip(painter, camera, input, world);
 let controller = new Controller(camera, placer, tooltip, input);
 let backgroundMusic = BackgroundMusic.load();
 
-let renderLoop = new Loop('render fps', () => {
-	camera.tick();
-	input.tick();
-	tooltip.tick();
-});
+let renderLoop = new Loop('render fps', () => {});
 app.ticker.add(() => renderLoop.run());
 
 let updateLoop = new Loop('update fps', () => {
-	if (!document.hidden)
+	if (!document.hidden) {
 		world.tick();
+		camera.tick();
+		input.tick();
+		tooltip.tick();
+	}
 });
 setInterval(() => updateLoop.run(), 10);
 
