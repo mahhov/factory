@@ -39,6 +39,10 @@ export default class Vector {
 		return this.atLeast(minInclusive) && this.lessThan(maxExclusive);
 	}
 
+	min(v: Vector) {
+		return new Vector(Math.min(this.x, v.x), Math.min(this.y, v.y));
+	}
+
 	iterate(delta: Vector) {
 		return util.arr(delta.x).flatMap(x =>
 			util.arr(delta.y).flatMap(y =>

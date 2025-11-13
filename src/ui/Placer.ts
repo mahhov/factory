@@ -43,6 +43,7 @@ export enum PlacerState {
 }
 
 enum Tool {
+	// todo copy/paste
 	EMPTY, CLEAR,
 	// todo bunker
 	IRON_WALL, STEEL_WALL,
@@ -474,20 +475,30 @@ export default class Placer {
 			.floor()
 			.abs()
 			.add(Vector.V1);
-		let vertical = Math.abs(iterations.y) > Math.abs(iterations.x);
-		let rotation = vertical ?
-			delta.y > 0 ? Rotation.DOWN : Rotation.UP :
-			delta.x > 0 ? Rotation.RIGHT : Rotation.LEFT;
-		if (updateRotation && (delta.y || delta.x))
-			this.rotation = rotation;
-
 		this.world.planning.clearAllEntities();
-		let position = this.startPosition;
-		let n = vertical ? iterations.y : iterations.x;
-		let iterDelta = RotationUtils.positionShift(rotation).scale(toolEntity.size);
-		for (let i = 0; i < n; i++) {
-			worldLayer.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation));
-			position = position.add(iterDelta);
+
+		if (this.tool === Tool.CLEAR) {
+			let startPosition = this.startPosition.min(this.endPosition);
+			Vector.V0.iterate(iterations).forEach(iteration => {
+				let position = startPosition.add(iteration.scale(toolEntity.size));
+				worldLayer.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation));
+			});
+
+		} else {
+			let vertical = Math.abs(iterations.y) > Math.abs(iterations.x);
+			let rotation = vertical ?
+				delta.y > 0 ? Rotation.DOWN : Rotation.UP :
+				delta.x > 0 ? Rotation.RIGHT : Rotation.LEFT;
+			if (updateRotation && (delta.y || delta.x))
+				this.rotation = rotation;
+
+			let position = this.startPosition;
+			let n = vertical ? iterations.y : iterations.x;
+			let iterDelta = RotationUtils.positionShift(rotation).scale(toolEntity.size);
+			for (let i = 0; i < n; i++) {
+				worldLayer.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation));
+				position = position.add(iterDelta);
+			}
 		}
 	}
 
