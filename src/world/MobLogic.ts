@@ -50,7 +50,7 @@ export class MobLogic {
 				let tile = world.live.grid[position.x][position.y];
 				if (!tile.position.equals(position)) continue;
 				let center = position.add(tile.tileable.size.scale(new Vector(.5))).floor();
-				let score = scoreMapping[tile.tileable.constructor.name] || 0;
+				let score = scoreMapping[tile.tileable.constructor.name] || 0; // todo use entity name
 				if (!score) continue;
 				new Vector(-10).iterate(new Vector(21)).forEach(delta => {
 					let p = center.add(delta);

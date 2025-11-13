@@ -54,22 +54,24 @@ export let getMaterialCounts = (count: number): ResourceUtils.Count<Material>[] 
 	util.enumValues(Material).map(material => new ResourceUtils.Count(material, count));
 
 export class Entity implements Tileable {
+	readonly name: string;
 	readonly size: Vector;
 	readonly rotation: Rotation;
 	protected readonly attributes: EntityAttribute[][] = [];
 	readonly container = new Container();
 
 	constructor(name: string, description: string, size: Vector = Vector.V1, rotation: Rotation = Rotation.UP) {
+		console.assert(!!name);
+		this.name = name;
 		this.size = size;
 		this.rotation = rotation;
-		if (name) {
-			this.attributes.push([new EntityNameAttribute(name)]);
-			let spriteName = util.titleCaseToCamelCase(name);
-			if (spriteName in animatedGeneratedTextures)
-				this.setSprite(new AnimatedSprite(animatedGeneratedTextures[spriteName as keyof typeof animatedGeneratedTextures]));
-		}
+
+		this.attributes.push([new EntityNameAttribute(name)]);
 		if (description)
 			this.attributes.push([new EntityDescriptionAttribute(description)]);
+		let spriteName = util.titleCaseToCamelCase(name);
+		if (spriteName in animatedGeneratedTextures)
+			this.setSprite(new AnimatedSprite(animatedGeneratedTextures[spriteName as keyof typeof animatedGeneratedTextures]));
 	}
 
 	setSprite(sprite: Sprite) {
@@ -114,13 +116,13 @@ export class Entity implements Tileable {
 
 export class Empty extends Entity {
 	constructor() {
-		super('', '');
+		super('Empty', '');
 	}
 }
 
 export class Clear extends Entity {
 	constructor() {
-		super('clear', '');
+		super('Clear', '');
 	}
 }
 
@@ -510,7 +512,7 @@ export class MaterialDeposit extends Entity {
 	readonly material: Material;
 
 	constructor(material: Material) {
-		super('', '');
+		super('Material Deposit', '');
 		this.setSprite(SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [ResourceUtils.materialColor(material)]));
 		this.material = material;
 		this.attributes.push([new EntityMaterialDisplayAttribute(material)]);
@@ -540,7 +542,7 @@ export class LiquidDeposit extends Entity {
 	readonly liquid: Liquid;
 
 	constructor(liquid: Liquid) {
-		super('', '');
+		super('Liquid Deposit', '');
 		this.setSprite(new AnimatedSprite(liquid === Liquid.WATER ? animatedGeneratedTextures.waterDeposit : animatedGeneratedTextures.methaneDeposit));
 		this.liquid = liquid;
 		this.attributes.push([new EntityLiquidDisplayAttribute(liquid)]);
@@ -570,7 +572,7 @@ export class Mob extends Entity {
 
 export class Projectile extends Entity {
 	constructor(velocity: Vector, duration: number, range: number, maxTargets: number, damage: number, friendly: boolean) {
-		super('', '');
+		super('Projectile', '');
 		this.attributes.push([new EntityDirectionMovementAttribute(velocity)]);
 		this.attributes.push([
 			new EntityDamageAttribute(range, maxTargets, damage, friendly),

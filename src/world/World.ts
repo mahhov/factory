@@ -10,6 +10,7 @@ import {PlayerLogic} from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
 
 export interface Tileable {
+	readonly name: string;
 	readonly container: Container;
 	readonly size: Vector;
 	readonly rotation: Rotation;
@@ -75,7 +76,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 					let tile = this.getTile(emptyPosition)!;
 					if (replaceTiles.includes(tile))
 						this.container.removeChild(tile.tileable.container);
-					else if (tile.tileable.constructor !== this.defaultTileable.constructor) {
+					else if (tile.tileable.name !== this.defaultTileable.name) {
 						this.container.removeChild(tile.tileable.container);
 						this.addTileable(emptyPosition, this.defaultTileable);
 					}
@@ -92,7 +93,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 				tile.position = position;
 			});
 
-		if (tileable.constructor !== this.defaultTileable.constructor)
+		if (tileable.name !== this.defaultTileable.name)
 			this.addContainer(tileable.container, position, tileable.size);
 	}
 
@@ -224,15 +225,15 @@ export class World {
 			let queueTile = this.queue.getTile(position)!;
 			let buildableAttribute = queueTile.tileable.getAttribute(EntityBuildableAttribute);
 			if (!buildableAttribute) {
-				console.assert(queueTile.tileable.constructor === Clear);
+				console.assert(queueTile.tileable.name === 'Clear');
 				if (liveTile.tileable !== this.playerLogic.base)
 					this.live.replaceTileable(position, this.live.defaultTileable);
 				this.queue.removeOrdered(i);
 				continue;
 			}
 			let allowed =
-				liveTile.tileable.constructor === queueTile.tileable.constructor && liveTile.position.equals(queueTile.position) && liveTile.tileable.rotation !== queueTile.tileable.rotation ||
-				position.iterate(queueTile.tileable.size).every(p => this.live.getTile(p)!.tileable.constructor === this.live.defaultTileable.constructor);
+				liveTile.tileable.name === queueTile.tileable.name && liveTile.position.equals(queueTile.position) && liveTile.tileable.rotation !== queueTile.tileable.rotation ||
+				position.iterate(queueTile.tileable.size).every(p => this.live.getTile(p)!.tileable.name === this.live.defaultTileable.name);
 			if (!allowed) {
 				this.queue.removeOrdered(i);
 				continue;
