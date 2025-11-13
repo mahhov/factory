@@ -78,8 +78,13 @@ export default class Tooltip {
 			this.selection = new Selection(tile, false);
 	}
 
+	dirty() {
+		this.cachedSelection = null;
+	}
+
 	tick() {
 		if (!this.selection) {
+			this.selectionRect.removeChildren();
 			this.multilineText.lines = [];
 			this.multilineText.tick();
 			return;

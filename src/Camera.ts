@@ -1,19 +1,28 @@
 import {Container} from 'pixi.js';
 import Painter from './graphics/Painter.js';
+import Emitter from './util/Emitter.js';
 import util from './util/util.js';
 import Vector from './util/Vector.js';
 
 let padding = .25;
 
-export default class Camera {
-	private targetLeftTop: Vector = Vector.V0;
-	private targetWidth: number = 1;
-	private leftTop: Vector = Vector.V0;
-	private width: number = 1;
+// todo zoom towards pointer
+export default class Camera extends Emitter<{ change: void }> {
+	private targetLeftTop: Vector = new Vector(.4);
+	private targetWidth: number = .2;
+	private leftTop: Vector = new Vector(.4);
+	private width: number = .2;
 	readonly container: Container = new Container();
 
 	constructor(painter: Painter) {
+		super();
 		painter.foregroundContainer.addChild(this.container);
+		this.updateContainer();
+	}
+
+	private updateContainer() {
+		this.container.scale = 1 / this.width;
+		this.container.position = this.worldToCanvas(Vector.V0);
 	}
 
 	move(delta: Vector) {
@@ -45,6 +54,9 @@ export default class Camera {
 	}
 
 	tick() {
+		if (this.width === this.targetWidth && this.leftTop.equals(this.targetLeftTop))
+			return;
+
 		let lazy = .75;
 		let e = .0001;
 
@@ -60,7 +72,7 @@ export default class Camera {
 				.scale(new Vector(lazy))
 				.add(this.targetLeftTop.scale(new Vector(1 - lazy)));
 
-		this.container.scale = 1 / this.width;
-		this.container.position = this.worldToCanvas(Vector.V0);
+		this.updateContainer();
+		this.emit('change');
 	}
 }

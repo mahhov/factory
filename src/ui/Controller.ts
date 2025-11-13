@@ -24,6 +24,7 @@ export default class Controller {
 			if (placer.state === PlacerState.EMPTY)
 				camera.zoom(.3);
 		}));
+		camera.addListener('change', () => tooltip.dirty());
 
 		// placer
 		util.arr(9)

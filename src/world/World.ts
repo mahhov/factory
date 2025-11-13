@@ -47,7 +47,7 @@ abstract class WorldLayer {
 	protected addContainer(container: Container, position: Vector, size: Vector) {
 		let sizeInv = this.size.invert();
 		position = position.scale(sizeInv);
- 		container.position = position;
+		container.position = position;
 		size = sizeInv.scale(size);
 		container.width = size.x;
 		container.height = size.y;
@@ -170,7 +170,7 @@ export class World {
 
 		this.live = new GridWorldLayer(new Empty(), size);
 		cameraContainer.addChild(this.live.container);
-		this.live.replaceTileable(new Vector(20), this.playerLogic.base);
+		this.live.replaceTileable(size.scale(new Vector(.5)).floor(), this.playerLogic.base);
 
 		this.queue = new OrderedGridWorldLayer(new Empty(), size);
 		cameraContainer.addChild(this.queue.container);
