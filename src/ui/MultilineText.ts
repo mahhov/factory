@@ -14,7 +14,7 @@ export enum Anchor {
 
 export default class MultilineText {
 	readonly textContainer = new Container();
-	private readonly textBackground = new Container();
+	private readonly textBackgroundContainer = new Container();
 	position: Vector;
 	lines: TextLine[];
 	anchor: Anchor;
@@ -24,30 +24,34 @@ export default class MultilineText {
 		this.lines = lines;
 		this.anchor = anchor;
 		painter.textUiContainer.addChild(this.textContainer);
-		painter.uiContainer.addChild(this.textBackground);
+		painter.uiContainer.addChild(this.textBackgroundContainer);
+		this.textBackgroundContainer.visible = false;
+		this.textBackgroundContainer.addChild(new Graphics()
+			.rect(0, 0, 1, 1)
+			.fill({color: Color.TEXT_RECT_BACKGROUND}));
 	}
 
 	tick() {
-		this.textBackground.removeChildren();
 		if (!this.lines) {
 			this.textContainer.removeChildren();
+			this.textBackgroundContainer.visible = false;
 			return;
 		}
 
 		let y = 0;
 		util.replace<TextLine, Text>(this.textContainer.children as Text[], this.lines,
 			(i: number, tooltipLines: TextLine[]) => {
-				let text = new Text({eventMode: 'static'});
+				let text = new Text();
+				text.style.fontFamily = 'Arial';
 				this.textContainer.addChild(text);
 				text.on('pointertap', () => tooltipLines[i].callback());
 			},
 			(text: Text, i: number, tooltipLine: TextLine) => {
 				text.text = tooltipLine.string;
-				text.style = {
-					fontFamily: 'Arial',
-					fontSize: tooltipLine.size,
-					fill: tooltipLine.color,
-				};
+				if (text.style.fontSize !== tooltipLine.size)
+					text.style.fontSize = tooltipLine.size;
+				if (text.style.fill !== tooltipLine.color)
+					text.style.fill = tooltipLine.color;
 				text.y = y;
 				y += text.height;
 			},
@@ -60,10 +64,10 @@ export default class MultilineText {
 			position = position.subtract(new Vector(this.textContainer.width / 1000, 0));
 
 		this.textContainer.position = position.scale(new Vector(1000));
-		let textContainerSize = new Vector(this.textContainer.width / 1000, this.textContainer.height / 1000);
+		let size = new Vector(this.textContainer.width / 1000, this.textContainer.height / 1000);
 
-		this.textBackground.addChild(new Graphics()
-			.rect(position.x, position.y, textContainerSize.x, textContainerSize.y)
-			.fill({color: Color.TEXT_RECT_BACKGROUND}));
+		this.textBackgroundContainer.position = position;
+		this.textBackgroundContainer.scale = size;
+		this.textBackgroundContainer.visible = true;
 	}
 }
