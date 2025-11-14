@@ -52,7 +52,7 @@ enum Tool {
 	CONVEYOR, HIGH_SPEED_CONVEYOR, PACKED_CONVEYOR, DISTRIBUTOR, JUNCTION,
 	STEEL_SMELTER, METAGLASS_FOUNDRY, PLASTEEL_MIXER, THERMITE_FORGE, EXIDIUM_CATALYST,
 	STORAGE, DISPENSER,
-	THERMAL_GENERATOR, SOLAR_ARRAY, METHANE_BURNER, THERMITE_REACTOR, CONDUCTOR, BATTERY,
+	THERMAL_GENERATOR, SOLAR_ARRAY, METHANE_BURNER, GRAPHITE_BURNER, THERMITE_REACTOR, CONDUCTOR, BATTERY,
 	AIR_VENT, WATER_VENT, METHANE_VENT,
 	PUMP, POWERED_PUMP, WELL, PIPE, PIPE_DISTRIBUTOR, PIPE_JUNCTION, TANK,
 	SHRAPNEL_TURRET, PIERCING_TURRET, ARC_TURRET, SIEGE_TURRET, LASER_TURRET,
@@ -64,7 +64,7 @@ let toolTree = {
 	transport: [Tool.CONVEYOR, Tool.HIGH_SPEED_CONVEYOR, Tool.DISTRIBUTOR, Tool.JUNCTION, Tool.PACKED_CONVEYOR],
 	factories: [Tool.STEEL_SMELTER, Tool.METAGLASS_FOUNDRY, Tool.PLASTEEL_MIXER, Tool.THERMITE_FORGE, Tool.EXIDIUM_CATALYST],
 	storage: [Tool.STORAGE, Tool.DISPENSER],
-	power: [Tool.THERMAL_GENERATOR, Tool.SOLAR_ARRAY, Tool.METHANE_BURNER, Tool.THERMITE_REACTOR, Tool.CONDUCTOR, Tool.BATTERY],
+	power: [Tool.THERMAL_GENERATOR, Tool.SOLAR_ARRAY, Tool.METHANE_BURNER, Tool.GRAPHITE_BURNER, Tool.THERMITE_REACTOR, Tool.CONDUCTOR, Tool.BATTERY],
 	vents: [Tool.AIR_VENT, Tool.WATER_VENT, Tool.METHANE_VENT],
 	liquids: [Tool.PUMP, Tool.POWERED_PUMP, Tool.WELL, Tool.PIPE, Tool.PIPE_DISTRIBUTOR, Tool.PIPE_JUNCTION, Tool.TANK],
 	turrets: [Tool.SHRAPNEL_TURRET, Tool.PIERCING_TURRET, Tool.ARC_TURRET, Tool.SIEGE_TURRET, Tool.LASER_TURRET],
@@ -180,6 +180,8 @@ export default class Placer {
 				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Solar Array'));
 			case Tool.METHANE_BURNER:
 				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Methane Burner'));
+			case Tool.GRAPHITE_BURNER:
+				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Graphite Burner'));
 			case Tool.THERMITE_REACTOR:
 				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Thermite Reactor'));
 			case Tool.CONDUCTOR:
@@ -470,6 +472,7 @@ export default class Placer {
 	private place(worldLayer: GridWorldLayer<Entity>, updateRotation: boolean) {
 		let toolEntity = Placer.cachedToolEntities[this.tool];
 		let delta = this.endPosition.subtract(this.startPosition);
+		// todo tiling size does not work evenly in all directions
 		let iterations = delta
 			.scale(toolEntity.tilingSize.invert())
 			.floor()
