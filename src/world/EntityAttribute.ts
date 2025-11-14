@@ -272,7 +272,7 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
 			[new TextLine(`Extracts ${this.outputPerTier[0]} material / area`, {})] :
-			[];
+			[]; // todo print extraction rate. similar for liquid extraction
 	}
 }
 
@@ -498,9 +498,9 @@ export class EntityInflowAttribute extends EntityAttribute {
 		if (!this.materialStorageAttribute.hasCapacity(materialCount)) return false;
 		return util.shuffle(this.inputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, RotationUtils.opposite(rotation)))
-				.map(source => world.live.getTile(source)?.tileable.getAttribute(EntityMaterialStorageAttribute))
+				.flatMap(source => world.live.getTile(source)?.tileable.getAttributes(EntityMaterialStorageAttribute) || [])
 				.some(sourceMaterialStorageAttribute => {
-					if (sourceMaterialStorageAttribute?.hasQuantity(materialCount)) {
+					if (sourceMaterialStorageAttribute.hasQuantity(materialCount)) {
 						sourceMaterialStorageAttribute.remove(materialCount);
 						this.materialStorageAttribute.add(materialCount, rotation);
 						return true;
