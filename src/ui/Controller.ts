@@ -68,6 +68,8 @@ export default class Controller {
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.PRESSED], () => {
 			if (placer.state === PlacerState.EMPTY)
 				tooltip.toggleSelect();
+			else
+				tooltip.hide();
 		}));
 	}
 }

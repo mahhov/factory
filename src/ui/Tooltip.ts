@@ -77,6 +77,10 @@ export default class Tooltip {
 			this.selection = new Selection(tile, false);
 	}
 
+	hide() {
+		this.selection = null;
+	}
+
 	dirty() {
 		this.cachedSelection = null;
 	}
