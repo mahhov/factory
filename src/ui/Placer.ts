@@ -478,12 +478,17 @@ export default class Placer {
 	private place(worldLayer: GridWorldLayer<Entity>, updateRotation: boolean) {
 		let toolEntity = Placer.cachedToolEntities[this.tool];
 		let delta = this.endPosition.subtract(this.startPosition);
-		// todo tiling size does not work evenly in all directions
 		let iterations = delta
-			.scale(toolEntity.tilingSize.invert())
-			.floor()
 			.abs()
-			.add(Vector.V1);
+			.add(Vector.V1)
+			.add(
+				delta
+					.sign()
+					.min(Vector.V0)
+					.abs()
+					.scale(toolEntity.size.subtract(Vector.V1)))
+			.scale(toolEntity.tilingSize.invert())
+			.ceil();
 		this.world.planning.clearAllEntities();
 
 		if (this.tool === Tool.CLEAR) {

@@ -43,6 +43,26 @@ export default class Vector {
 		return new Vector(Math.min(this.x, v.x), Math.min(this.y, v.y));
 	}
 
+	max(v: Vector) {
+		return new Vector(Math.max(this.x, v.x), Math.max(this.y, v.y));
+	}
+
+	floor() {
+		return new Vector(Math.floor(this.x), Math.floor(this.y));
+	}
+
+	ceil() {
+		return new Vector(Math.ceil(this.x), Math.ceil(this.y));
+	}
+
+	abs() {
+		return new Vector(Math.abs(this.x), Math.abs(this.y));
+	}
+
+	sign() {
+		return new Vector(Math.sign(this.x), Math.sign(this.y));
+	}
+
 	iterate(delta: Vector) {
 		return util.arr(delta.x).flatMap(x =>
 			util.arr(delta.y).flatMap(y =>
@@ -53,14 +73,6 @@ export default class Vector {
 		return this.magnitude2 ?
 			this.scale(new Vector(Math.sqrt(magnitude2 / this.magnitude2))) :
 			new Vector(Math.sqrt(magnitude2), 0);
-	}
-
-	floor() {
-		return new Vector(Math.floor(this.x), Math.floor(this.y));
-	}
-
-	abs() {
-		return new Vector(Math.abs(this.x), Math.abs(this.y));
 	}
 
 	add(v: Vector) {
