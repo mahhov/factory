@@ -7,15 +7,19 @@ import Vector from './util/Vector.js';
 let padding = .25;
 
 export default class Camera extends Emitter<{ change: void }> {
-	private targetLeftTop: Vector = new Vector(.4);
-	private targetWidth: number = .2;
-	private leftTop: Vector = new Vector(.4);
-	private width: number = .2;
+	private targetLeftTop: Vector;
+	private targetWidth: number;
+	private leftTop: Vector;
+	private width: number;
 	readonly container: Container = new Container();
 
-	constructor(painter: Painter) {
+	constructor(painter: Painter, leftTop: Vector, width: number) {
 		super();
 		painter.foregroundContainer.addChild(this.container);
+		this.targetLeftTop = leftTop;
+		this.targetWidth = width;
+		this.leftTop = leftTop;
+		this.width = width;
 		this.updateContainer();
 	}
 
