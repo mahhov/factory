@@ -15,12 +15,12 @@ export default class Controller {
 		this.painter = painter;
 
 		// camera
-		input.addBinding(new KeyBinding('a', [], [InputState.DOWN], () => camera.move(new Vector(-.01, 0))));
-		input.addBinding(new KeyBinding('d', [], [InputState.DOWN], () => camera.move(new Vector(.01, 0))));
-		input.addBinding(new KeyBinding('w', [], [InputState.DOWN], () => camera.move(new Vector(0, -.01))));
-		input.addBinding(new KeyBinding('s', [], [InputState.DOWN], () => camera.move(new Vector(0, .01))));
-		input.addBinding(new KeyBinding('q', [], [InputState.DOWN], () => camera.zoom(.03, this.input.mouseCanvasPosition)));
-		input.addBinding(new KeyBinding('e', [], [InputState.DOWN], () => camera.zoom(-.03, this.input.mouseCanvasPosition)));
+		input.addBinding(new KeyBinding('KeyA', [], [InputState.DOWN], () => camera.move(new Vector(-.01, 0))));
+		input.addBinding(new KeyBinding('KeyD', [], [InputState.DOWN], () => camera.move(new Vector(.01, 0))));
+		input.addBinding(new KeyBinding('KeyW', [], [InputState.DOWN], () => camera.move(new Vector(0, -.01))));
+		input.addBinding(new KeyBinding('KeyS', [], [InputState.DOWN], () => camera.move(new Vector(0, .01))));
+		input.addBinding(new KeyBinding('KeyQ', [], [InputState.DOWN], () => camera.zoom(.03, this.input.mouseCanvasPosition))); // todo make zoom scale with canvas size
+		input.addBinding(new KeyBinding('KeyE', [], [InputState.DOWN], () => camera.zoom(-.03, this.input.mouseCanvasPosition)));
 		input.addBinding(new MouseBinding(MouseButton.MIDDLE, [InputState.DOWN], () =>
 			camera.move(input.mousePosition.subtract(input.mouseLastPosition).scale(new Vector(-1 / this.painter.minCanvasSize)))));
 		input.addBinding(new MouseWheelBinding(false, () => {
@@ -37,9 +37,10 @@ export default class Controller {
 		// placer
 		util.arr(9)
 			.forEach(i => {
-				let key = String(i + 1);
+				let key = `Digit${i + 1}`;
 				input.addBinding(new KeyBinding(key, [], [InputState.PRESSED], () => placer.toggleToolIndex(i)));
 				input.addBinding(new KeyBinding(key, [KeyModifier.CONTROL], [InputState.PRESSED], () => placer.setToolGroupIndex(i)));
+				input.addBinding(new KeyBinding(key, [KeyModifier.SHIFT], [InputState.PRESSED], () => placer.setToolGroupIndex(i + 5)));
 			});
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.PRESSED], () => {
 			if (placer.state !== PlacerState.EMPTY)

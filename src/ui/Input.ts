@@ -79,13 +79,13 @@ export class KeyBinding extends Binding {
 	}
 
 	keyUp(e: KeyboardEvent) {
-		if (this.key === e.key.toLowerCase())
+		if (this.key === e.code.toLowerCase())
 			this.release();
 	}
 
 	private filter(e: KeyboardEvent) {
 		return [
-			this.key === e.key.toLowerCase(),
+			this.key === e.code.toLowerCase(),
 			this.modifiers.includes(KeyModifier.CONTROL) === e.ctrlKey,
 			this.modifiers.includes(KeyModifier.SHIFT) === e.shiftKey,
 			this.modifiers.includes(KeyModifier.ALT) === e.altKey];
