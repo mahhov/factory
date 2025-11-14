@@ -160,13 +160,13 @@ export class Extractor extends Building {
 		this.attributes.push([materialStorageAttribute]);
 		let powerStorageAttribute;
 		if (powerInput) {
-			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput * 40, EntityPowerStorageAttributePriority.CONSUME);
+			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
 			this.attributes.push([powerStorageAttribute]);
 		}
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
-			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
-			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 40) : null,
+			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput) : null,
+			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput) : null,
 			timedAttribute,
 			new EntityMaterialExtractorAttribute(materialStorageAttribute, outputPerTier),
 		].filter(v => v) as EntityAttribute[]);
@@ -248,13 +248,13 @@ export class Factory extends Building {
 		this.attributes.push([outputMaterialStorageAttribute]);
 		let powerStorageAttribute;
 		if (powerInput) {
-			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput * 40, EntityPowerStorageAttributePriority.CONSUME);
+			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
 			this.attributes.push([powerStorageAttribute]);
 		}
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
-			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
-			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 40) : null,
+			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput) : null,
+			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput) : null,
 			new EntityMaterialConsumeAttribute(inputMaterialStorageAttribute, materialInput),
 			timedAttribute,
 			new EntityMaterialProduceAttribute(outputMaterialStorageAttribute, [materialOutput]),
@@ -301,24 +301,24 @@ export class Generator extends Building {
 		}
 		let inputPowerStorageAttribute;
 		if (powerInput) {
-			inputPowerStorageAttribute = new EntityPowerStorageAttribute(powerInput * 40, EntityPowerStorageAttributePriority.CONSUME);
+			inputPowerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
 			this.attributes.push([inputPowerStorageAttribute]);
 		}
 		let liquidStorageAttribute;
 		if (liquidInput) {
-			liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidInput.resource], liquidInput.quantity * 40, util.enumValues(Rotation));
+			liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidInput.resource], liquidInput.quantity, util.enumValues(Rotation));
 			this.attributes.push([liquidStorageAttribute]);
 		}
-		let outputPowerStorageAttribute = new EntityPowerStorageAttribute(powerOutput * 40, EntityPowerStorageAttributePriority.PRODUCE);
+		let outputPowerStorageAttribute = new EntityPowerStorageAttribute(powerOutput, EntityPowerStorageAttributePriority.PRODUCE);
 		this.attributes.push([outputPowerStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
 			materialStorageAttribute ? new EntityMaterialConsumeAttribute(materialStorageAttribute, materialInput) : null,
-			inputPowerStorageAttribute ? new EntityPowerConsumeAttribute(inputPowerStorageAttribute, powerInput * 40) : null,
-			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput * 40) : null,
+			inputPowerStorageAttribute ? new EntityPowerConsumeAttribute(inputPowerStorageAttribute, powerInput) : null,
+			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput) : null,
 			liquidStorageAttribute ? new EntityLiquidConsumeAttribute(liquidStorageAttribute, liquidInput!) : null,
 			timedAttribute,
-			new EntityPowerProduceAttribute(outputPowerStorageAttribute, powerOutput * 40),
+			new EntityPowerProduceAttribute(outputPowerStorageAttribute, powerOutput),
 		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([new EntityPowerConductAttribute(0)]);
 		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
@@ -335,7 +335,7 @@ export class Conductor extends Building {
 export class Battery extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
 		super(name, description, size, buildTime, buildCost, health);
-		this.attributes.push([new EntityPowerStorageAttribute(capacity * 40, EntityPowerStorageAttributePriority.STORAGE)]);
+		this.attributes.push([new EntityPowerStorageAttribute(capacity, EntityPowerStorageAttributePriority.STORAGE)]);
 		this.attributes.push([new EntityPowerConductAttribute(0)]);
 	}
 }
@@ -345,20 +345,20 @@ export class Vent extends Building {
 		super(name, description, size, buildTime, buildCost, health);
 		let powerStorageAttribute;
 		if (powerInput) {
-			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput * 40, EntityPowerStorageAttributePriority.CONSUME);
+			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
 			this.attributes.push([powerStorageAttribute]);
 		}
 		let liquidStorageAttribute;
 		if (liquidInput) {
-			liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidInput.resource], liquidInput.quantity * 40, util.enumValues(Rotation));
+			liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidInput.resource], liquidInput.quantity, util.enumValues(Rotation));
 			this.attributes.push([liquidStorageAttribute]);
 		}
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
-			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
+			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput) : null,
 			liquidStorageAttribute ? new EntityLiquidConsumeAttribute(liquidStorageAttribute, liquidInput!) : null,
 			timedAttribute,
-			new EntityCoolantProduceAttribute(coolantOutput * 40),
+			new EntityCoolantProduceAttribute(coolantOutput),
 		].filter(v => v) as EntityAttribute[]);
 		if (powerInput)
 			this.attributes.push([new EntityPowerConductAttribute(0)]);
@@ -371,14 +371,14 @@ export class Pump extends Building {
 		super(name, description, size, buildTime, buildCost, health);
 		let powerStorageAttribute;
 		if (powerInput) {
-			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput * 40, EntityPowerStorageAttributePriority.CONSUME);
+			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
 			this.attributes.push([powerStorageAttribute]);
 		}
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), outputPerTier[0] * size.x * size.y, []);
 		this.attributes.push([liquidStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
-			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
+			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput) : null,
 			timedAttribute,
 			new EntityLiquidExtractorAttribute(liquidStorageAttribute, outputPerTier),
 		].filter(v => v) as EntityAttribute[]);
@@ -397,16 +397,16 @@ export class Well extends Building {
 		super(name, description, size, buildTime, buildCost, health);
 		let powerStorageAttribute;
 		if (powerInput) {
-			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput * 40, EntityPowerStorageAttributePriority.CONSUME);
+			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
 			this.attributes.push([powerStorageAttribute]);
 		}
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidOutput.resource], liquidOutput.quantity, []);
 		this.attributes.push([liquidStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40);
 		this.attributes.push([
-			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput * 40) : null,
+			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput) : null,
 			timedAttribute,
-			new EntityLiquidDryExtractorAttribute(liquidStorageAttribute, new ResourceUtils.Count(liquidOutput.resource, liquidOutput.quantity * 40)),
+			new EntityLiquidDryExtractorAttribute(liquidStorageAttribute, new ResourceUtils.Count(liquidOutput.resource, liquidOutput.quantity)),
 		].filter(v => v) as EntityAttribute[]);
 		this.attributes.push([
 			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
