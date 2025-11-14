@@ -57,14 +57,16 @@ export let getMaterialCounts = (count: number): ResourceUtils.Count<Material>[] 
 export class Entity implements Tileable {
 	readonly name: string;
 	readonly size: Vector;
+	readonly tilingSize: Vector;
 	readonly rotation: Rotation;
 	protected readonly attributes: EntityAttribute[][] = [];
 	readonly container = new Container();
 
-	constructor(name: string, description: string, size: Vector = Vector.V1, rotation: Rotation = Rotation.UP) {
+	constructor(name: string, description: string, size: Vector = Vector.V1, rotation: Rotation = Rotation.UP, tilingSize: Vector = size) {
 		console.assert(!!name);
 		this.name = name;
 		this.size = size;
+		this.tilingSize = tilingSize;
 		this.rotation = rotation;
 
 		this.attributes.push([new EntityNameAttribute(name)]);
@@ -128,8 +130,8 @@ export class Clear extends Entity {
 }
 
 export abstract class Building extends Entity {
-	protected constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rotation: Rotation = Rotation.UP) {
-		super(name, description, size, rotation);
+	protected constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rotation: Rotation = Rotation.UP, tilingSize: Vector = size) {
+		super(name, description, size, rotation, tilingSize);
 		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.attributes.push([new EntityHealthAttribute(health)]);
 	}
@@ -325,7 +327,7 @@ export class Generator extends Building {
 
 export class Conductor extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, range: number) {
-		super(name, description, size, buildTime, buildCost, health);
+		super(name, description, size, buildTime, buildCost, health, Rotation.UP, new Vector(range));
 		this.attributes.push([new EntityPowerConductAttribute(range)]);
 	}
 }

@@ -471,18 +471,15 @@ export default class Placer {
 		let toolEntity = Placer.cachedToolEntities[this.tool];
 		let delta = this.endPosition.subtract(this.startPosition);
 		let iterations = delta
-			.scale(toolEntity.size.invert())
+			.scale(toolEntity.tilingSize.invert())
 			.floor()
 			.abs()
 			.add(Vector.V1);
 		this.world.planning.clearAllEntities();
 
 		if (this.tool === Tool.CLEAR) {
-			let startPosition = this.startPosition.min(this.endPosition);
-			Vector.V0.iterate(iterations).forEach(iteration => {
-				let position = startPosition.add(iteration.scale(toolEntity.size));
-				worldLayer.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation));
-			});
+			this.startPosition.min(this.endPosition).iterate(iterations).forEach(position =>
+				worldLayer.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation)));
 
 		} else {
 			let vertical = Math.abs(iterations.y) > Math.abs(iterations.x);
@@ -494,7 +491,7 @@ export default class Placer {
 
 			let position = this.startPosition;
 			let n = vertical ? iterations.y : iterations.x;
-			let iterDelta = RotationUtils.positionShift(rotation).scale(toolEntity.size);
+			let iterDelta = RotationUtils.positionShift(rotation).scale(toolEntity.tilingSize);
 			for (let i = 0; i < n; i++) {
 				worldLayer.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation));
 				position = position.add(iterDelta);
