@@ -1,4 +1,3 @@
-import {Container} from 'pixi.js';
 import Painter from '../graphics/Painter.js';
 import Vector from '../util/Vector.js';
 
@@ -142,7 +141,7 @@ export class Input {
 	mousePosition = Vector.V0;
 	shiftDown = false;
 
-	constructor(mouseTarget: Container, painter: Painter) {
+	constructor(mouseTarget: HTMLCanvasElement, painter: Painter) {
 		this.painter = painter;
 
 		window.addEventListener('blur', () =>
@@ -167,9 +166,9 @@ export class Input {
 			this.mouseLastPosition = this.mousePosition;
 			this.mouseDownPosition = this.mousePosition;
 		});
-		window.addEventListener('pointerup', e =>
+		window.addEventListener('mouseup', e =>
 			Object.values(this.bindings).forEach(binding => binding.mouseUp(e.button)));
-		mouseTarget.addEventListener('pointermove', e => {
+		mouseTarget.addEventListener('mousemove', e => {
 			this.shiftDown = e.shiftKey;
 			this.mousePosition = new Vector(e.x, e.y);
 		});
@@ -181,7 +180,7 @@ export class Input {
 		});
 
 		document.addEventListener('contextmenu', e => e.preventDefault());
-		document.addEventListener('pointerdown', e => e.preventDefault());
+		document.addEventListener('mousedown', e => e.preventDefault());
 		document.addEventListener('wheel', e => e.preventDefault(), {passive: false});
 	}
 

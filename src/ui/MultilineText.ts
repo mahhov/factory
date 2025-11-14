@@ -44,7 +44,7 @@ export default class MultilineText {
 				let text = new Text();
 				text.style.fontFamily = 'Arial';
 				this.textContainer.addChild(text);
-				text.on('pointertap', () => tooltipLines[i].callback());
+				text.on('click', () => tooltipLines[i].callback());
 			},
 			(text: Text, i: number, tooltipLine: TextLine) => {
 				text.text = tooltipLine.string;

@@ -56,7 +56,7 @@ await SpriteLoader.init(app.renderer);
 let painter = new Painter(app.stage);
 painter.addListener('resize', (size: Vector) => fpsText.position = new Vector(size.x / size.y, 0));
 let camera = new Camera(painter, new Vector(.4), .2);
-let input = new Input(app.stage, painter);
+let input = new Input(app.canvas, painter);
 let world = new World(new Vector(300), painter, camera.container);
 let placer = new Placer(painter, camera, input, world);
 let tooltip = new Tooltip(painter, camera, input, world);

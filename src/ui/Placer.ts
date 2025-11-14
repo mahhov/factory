@@ -364,14 +364,14 @@ export default class Placer {
 				let spriteContainer = Placer.createToolEntity(tools[0]).container;
 				this.addToolUiButton(coordinates, this.toolGroupIconContainer, spriteContainer, this.toolGroupTextContainer, '^' + (i + 1));
 				spriteContainer.eventMode = 'static';
-				spriteContainer.onpointerdown = e => e.stopPropagation();
-				spriteContainer.onpointerup = e => e.stopPropagation();
-				spriteContainer.onpointertap = e => {
+				spriteContainer.onmousedown = e => e.stopPropagation();
+				spriteContainer.onmouseup = e => e.stopPropagation();
+				spriteContainer.onclick = e => {
 					this.setToolGroupIndex(i);
 					e.stopPropagation();
 				};
-				spriteContainer.onpointerenter = () => this.showToolGroupTooltip(i);
-				spriteContainer.onpointerleave = () => this.hideTooltip();
+				spriteContainer.onmouseenter = () => this.showToolGroupTooltip(i);
+				spriteContainer.onmouseleave = () => this.hideTooltip();
 			});
 		}
 
@@ -387,14 +387,14 @@ export default class Placer {
 				let coordinates = Placer.toolUiCoordinates(false, i);
 				this.addToolUiButton(coordinates, this.toolIconContainer, Placer.cachedToolEntities[tool].container, this.toolTextContainer, String(i + 1));
 				Placer.cachedToolEntities[tool].container.eventMode = 'static';
-				Placer.cachedToolEntities[tool].container.onpointerdown = e => e.stopPropagation();
-				Placer.cachedToolEntities[tool].container.onpointerup = e => e.stopPropagation();
-				Placer.cachedToolEntities[tool].container.onpointertap = (e) => {
+				Placer.cachedToolEntities[tool].container.onmousedown = e => e.stopPropagation();
+				Placer.cachedToolEntities[tool].container.onmouseup = e => e.stopPropagation();
+				Placer.cachedToolEntities[tool].container.onclick = (e) => {
 					this.toggleToolIndex(i);
 					e.stopPropagation();
 				};
-				Placer.cachedToolEntities[tool].container.onpointerenter = () => this.showToolTooltip(i);
-				Placer.cachedToolEntities[tool].container.onpointerleave = () => this.hideTooltip();
+				Placer.cachedToolEntities[tool].container.onmouseenter = () => this.showToolTooltip(i);
+				Placer.cachedToolEntities[tool].container.onmouseleave = () => this.hideTooltip();
 			});
 		}
 
