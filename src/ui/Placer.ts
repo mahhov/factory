@@ -320,6 +320,7 @@ export default class Placer {
 
 	setToolGroupIndex(index: number) {
 		let toolGroup = Object.keys(toolTree)[index] as ToolGroup;
+		if (toolGroup === undefined) return;
 		let tool = toolTree[toolGroup][0];
 		this.setToolGroupAndTool(toolGroup, tool);
 	}
