@@ -161,7 +161,7 @@ export class Input {
 			Object.values(this.bindings).forEach(binding => binding.keyUp(e));
 		});
 
-		mouseTarget.addEventListener('pointerdown', e => {
+		mouseTarget.addEventListener('mousedown', e => {
 			Object.values(this.bindings).forEach(binding => binding.mouseDown(e.button));
 			this.mouseLastPosition = this.mousePosition;
 			this.mouseDownPosition = this.mousePosition;
