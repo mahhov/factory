@@ -19,8 +19,8 @@ export default class Controller {
 		input.addBinding(new KeyBinding('KeyD', [], [InputState.DOWN], () => camera.move(new Vector(.01, 0))));
 		input.addBinding(new KeyBinding('KeyW', [], [InputState.DOWN], () => camera.move(new Vector(0, -.01))));
 		input.addBinding(new KeyBinding('KeyS', [], [InputState.DOWN], () => camera.move(new Vector(0, .01))));
-		input.addBinding(new KeyBinding('KeyQ', [], [InputState.DOWN], () => camera.zoom(.03, this.input.mouseCanvasPosition))); // todo make zoom scale with canvas size
-		input.addBinding(new KeyBinding('KeyE', [], [InputState.DOWN], () => camera.zoom(-.03, this.input.mouseCanvasPosition)));
+		input.addBinding(new KeyBinding('KeyQ', [], [InputState.DOWN], () => camera.zoom(.006, this.input.mouseCanvasPosition))); // todo make zoom scale with canvas size
+		input.addBinding(new KeyBinding('KeyE', [], [InputState.DOWN], () => camera.zoom(-.006, this.input.mouseCanvasPosition)));
 		input.addBinding(new MouseBinding(MouseButton.MIDDLE, [InputState.DOWN], () =>
 			camera.move(input.mousePosition.subtract(input.mouseLastPosition).scale(new Vector(-1 / this.painter.minCanvasSize)))));
 		input.addBinding(new MouseWheelBinding(false, () => {
