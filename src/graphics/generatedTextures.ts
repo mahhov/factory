@@ -303,6 +303,37 @@ export let animatedGeneratedTextures = {
 		[1, 1, 2, 2, '#D83030'], [29, 29, 2, 2, '#D83030'],
 		[29, 1, 2, 2, '#D83030'], [1, 29, 2, 2, '#D83030'], // X Corner Power Pulse 2
 	]]),
+	graphiteBurner: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#F0F0F0'], // White "paper" background
+		[0, 0, 16, 2, '#1A1C20'], [0, 14, 16, 2, '#1A1C20'], // Top/Bottom solid ink borders
+		[0, 0, 2, 16, '#1A1C20'], [14, 0, 2, 16, '#1A1C20'], // Left/Right solid ink borders
+
+		// Core burning chamber (red ink, with internal structure)
+		[4, 4, 8, 8, '#D83030'],
+		[5, 5, 6, 6, '#1A1C20'], // Inner black outline/structure
+
+		// Focused energy output (white/yellow pulse, implying efficiency)
+		[7, 2, 2, 2, '#FACA10'], // Top "exhaust" (yellow ink)
+		[7, 12, 2, 2, '#FACA10'], // Bottom "intake/exhaust"
+
+		// Small efficiency indicators/hatching
+		[3, 7, 2, 2, '#4C5056'], [11, 7, 2, 2, '#4C5056'], // Side "vents" or details
+	], [
+		[0, 0, 16, 16, '#F0F0F0'],
+		[0, 0, 16, 2, '#1A1C20'], [0, 14, 16, 2, '#1A1C20'],
+		[0, 0, 2, 16, '#1A1C20'], [14, 0, 2, 16, '#1A1C20'],
+
+		// Core burning chamber (red ink, pulsing brighter with white-hot core)
+		[3, 3, 10, 10, '#D83030'], // Slightly larger red area
+		[6, 6, 4, 4, '#F0F0F0'], // Central white-hot glow (Frame 2)
+
+		// Focused energy output (yellow pulse expands)
+		[6, 1, 4, 4, '#FACA10'], // Top "exhaust" (yellow ink)
+		[6, 11, 4, 4, '#FACA10'], // Bottom "intake/exhaust"
+
+		// Small efficiency indicators/hatching (pulse/flash)
+		[2, 7, 4, 2, '#4C5056'], [10, 7, 4, 2, '#4C5056'],
+	]]),
 	thermiteReactor: new AnimatedGeneratedTextures(32, [[
 		[0, 0, 32, 1, '#1A1C20'], [0, 31, 32, 1, '#1A1C20'], [0, 0, 1, 32, '#1A1C20'], [31, 0, 1, 32, '#1A1C20'],
 		[15, 15, 2, 2, '#FACA10'], // Yellow Center
