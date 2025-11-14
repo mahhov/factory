@@ -21,7 +21,7 @@ let resourceSettings = [
 	{resource: Material.FLUX_SAND, scale: Scale.LARGE, threshold: 0.85, offset: 100},
 	{resource: Material.SULPHUR, scale: Scale.MEDIUM, threshold: 0.88, offset: 200},
 	{resource: Material.TITANIUM, scale: Scale.SMALL, threshold: 0.8, offset: 300},
-	{resource: Material.GRAPHITE, scale: Scale.SMALL, threshold: 0.90, offset: 400},
+	{resource: Material.GRAPHITE, scale: Scale.SMALL, threshold: 0.85, offset: 400},
 
 	{resource: Liquid.WATER, scale: Scale.MEDIUM, threshold: 0.85, offset: 500, isLiquid: true},
 	{resource: Liquid.METHANE, scale: Scale.SMALL, threshold: 0.90, offset: 600, isLiquid: true},
