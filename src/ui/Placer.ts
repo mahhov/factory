@@ -46,7 +46,7 @@ enum Tool {
 	// todo copy/paste
 	EMPTY, CLEAR,
 	// todo bunker
-	IRON_WALL, STEEL_WALL,
+	STEEL_WALL, TITANIUM_WALL,
 	EXTRACTOR, REINFORCED_EXTRACTOR, QUADRATIC_EXTRACTOR, LASER_EXTRACTOR,
 	// todo bridge
 	CONVEYOR, HIGH_SPEED_CONVEYOR, PACKED_CONVEYOR, DISTRIBUTOR, JUNCTION,
@@ -59,7 +59,7 @@ enum Tool {
 }
 
 let toolTree = {
-	walls: [Tool.IRON_WALL, Tool.STEEL_WALL],
+	walls: [Tool.STEEL_WALL, Tool.TITANIUM_WALL],
 	extractors: [Tool.EXTRACTOR, Tool.REINFORCED_EXTRACTOR, Tool.QUADRATIC_EXTRACTOR, Tool.LASER_EXTRACTOR],
 	transport: [Tool.CONVEYOR, Tool.HIGH_SPEED_CONVEYOR, Tool.DISTRIBUTOR, Tool.JUNCTION, Tool.PACKED_CONVEYOR],
 	factories: [Tool.STEEL_SMELTER, Tool.METAGLASS_FOUNDRY, Tool.PLASTEEL_MIXER, Tool.THERMITE_FORGE, Tool.EXIDIUM_CATALYST],
@@ -133,10 +133,10 @@ export default class Placer {
 			case Tool.CLEAR:
 				return new Clear();
 
-			case Tool.IRON_WALL:
-				return Placer.createToolWall(findEntityMetadata('buildings', 'Iron Wall'));
 			case Tool.STEEL_WALL:
 				return Placer.createToolWall(findEntityMetadata('buildings', 'Steel Wall'));
+			case Tool.TITANIUM_WALL:
+				return Placer.createToolWall(findEntityMetadata('buildings', 'Titanium Wall'));
 
 			case Tool.EXTRACTOR:
 				return Placer.createToolExtractor(findEntityMetadata('buildings', 'Extractor'));
