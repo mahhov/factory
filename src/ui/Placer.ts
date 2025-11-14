@@ -446,8 +446,13 @@ export default class Placer {
 	}
 
 	start() {
-		this.started = true;
-		this.endPosition = this.startPosition = this.position;
+		if (this.started) {
+			this.started = false;
+			this.world.planning.clearAllEntities();
+		} else {
+			this.started = true;
+			this.endPosition = this.startPosition = this.position;
+		}
 	}
 
 	move() {
