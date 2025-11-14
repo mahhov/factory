@@ -136,5 +136,4 @@ console.info('version', (await (await fetch('./version.txt')).text()).trim());
 //    - stationary towers
 
 // todo save/load
-// todo packed conveyor
 // todo manual culling

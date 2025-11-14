@@ -15,7 +15,7 @@ export default class Controller {
 		this.painter = painter;
 
 		// camera
-		let zoomSpeed = .5 / Math.min(worldSize.x, worldSize.y);
+		let zoomSpeed = 2 / Math.min(worldSize.x, worldSize.y);
 		input.addBinding(new KeyBinding('KeyA', [], [InputState.DOWN], () => camera.move(new Vector(-.01, 0))));
 		input.addBinding(new KeyBinding('KeyD', [], [InputState.DOWN], () => camera.move(new Vector(.01, 0))));
 		input.addBinding(new KeyBinding('KeyW', [], [InputState.DOWN], () => camera.move(new Vector(0, -.01))));
@@ -26,11 +26,11 @@ export default class Controller {
 			camera.move(input.mousePosition.subtract(input.mouseLastPosition).scale(new Vector(-1 / this.painter.minCanvasSize)))));
 		input.addBinding(new MouseWheelBinding(false, () => {
 			if (placer.state === PlacerState.EMPTY)
-				camera.zoom(-.3, this.input.mouseCanvasPosition);
+				camera.zoom(-zoomSpeed * 10, this.input.mouseCanvasPosition);
 		}));
 		input.addBinding(new MouseWheelBinding(true, () => {
 			if (placer.state === PlacerState.EMPTY)
-				camera.zoom(.3, this.input.mouseCanvasPosition);
+				camera.zoom(zoomSpeed * 10, this.input.mouseCanvasPosition);
 		}));
 		// todo also dirty tooltip on placer tool changes
 		camera.addListener('change', () => tooltip.dirty());
