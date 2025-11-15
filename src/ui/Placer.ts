@@ -45,8 +45,6 @@ export enum PlacerState {
 enum Tool {
 	// todo copy/paste
 	EMPTY, CLEAR,
-	// todo bunker
-	STEEL_WALL, TITANIUM_WALL,
 	EXTRACTOR, REINFORCED_EXTRACTOR, QUADRATIC_EXTRACTOR, LASER_EXTRACTOR,
 	// todo bridge
 	CONVEYOR, HIGH_SPEED_CONVEYOR, PACKED_CONVEYOR, DISTRIBUTOR, JUNCTION,
@@ -55,11 +53,12 @@ enum Tool {
 	THERMAL_GENERATOR, SOLAR_ARRAY, METHANE_BURNER, GRAPHITE_BURNER, THERMITE_REACTOR, CONDUCTOR, BATTERY,
 	AIR_VENT, WATER_VENT, METHANE_VENT,
 	PUMP, POWERED_PUMP, WELL, PIPE, PIPE_DISTRIBUTOR, PIPE_JUNCTION, TANK,
+	// todo bunker
+	STEEL_WALL, TITANIUM_WALL,
 	SHRAPNEL_TURRET, PIERCING_TURRET, ARC_TURRET, SIEGE_TURRET, LASER_TURRET,
 }
 
 let toolTree = {
-	walls: [Tool.STEEL_WALL, Tool.TITANIUM_WALL],
 	extractors: [Tool.EXTRACTOR, Tool.REINFORCED_EXTRACTOR, Tool.QUADRATIC_EXTRACTOR, Tool.LASER_EXTRACTOR],
 	transport: [Tool.CONVEYOR, Tool.HIGH_SPEED_CONVEYOR, Tool.DISTRIBUTOR, Tool.JUNCTION, Tool.PACKED_CONVEYOR],
 	factories: [Tool.STEEL_SMELTER, Tool.METAGLASS_FOUNDRY, Tool.PLASTEEL_MIXER, Tool.THERMITE_FORGE, Tool.EXIDIUM_CATALYST],
@@ -67,6 +66,7 @@ let toolTree = {
 	power: [Tool.THERMAL_GENERATOR, Tool.SOLAR_ARRAY, Tool.METHANE_BURNER, Tool.GRAPHITE_BURNER, Tool.THERMITE_REACTOR, Tool.CONDUCTOR, Tool.BATTERY],
 	vents: [Tool.AIR_VENT, Tool.WATER_VENT, Tool.METHANE_VENT],
 	liquids: [Tool.PUMP, Tool.POWERED_PUMP, Tool.WELL, Tool.PIPE, Tool.PIPE_DISTRIBUTOR, Tool.PIPE_JUNCTION, Tool.TANK],
+	walls: [Tool.STEEL_WALL, Tool.TITANIUM_WALL],
 	turrets: [Tool.SHRAPNEL_TURRET, Tool.PIERCING_TURRET, Tool.ARC_TURRET, Tool.SIEGE_TURRET, Tool.LASER_TURRET],
 };
 type ToolGroup = keyof typeof toolTree;
@@ -118,7 +118,7 @@ export default class Placer {
 		this.multilineText = new MultilineText(painter);
 		this.multilineText.anchor = Anchor.BOTTOM_LEFT;
 
-		this.setToolGroupAndTool('walls', Tool.EMPTY);
+		this.setToolGroupAndTool(Object.keys(toolTree)[0] as ToolGroup, Tool.EMPTY);
 	}
 
 	private static get cachedToolEntities() {

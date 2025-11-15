@@ -64,26 +64,6 @@ export let animatedGeneratedTextures = {
 
 	clear: new AnimatedGeneratedTextures(8, [[[0, 0, 8, 8, '#D83030']]]),
 
-	// --- WALLS (Static - Simplified Outline) ---
-	steelWall: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 1, '#4C5056'], [0, 15, 16, 1, '#4C5056'],
-		[0, 0, 1, 16, '#4C5056'], [15, 0, 1, 16, '#4C5056'],
-		[4, 4, 8, 1, '#9AA0AA'], [4, 11, 8, 1, '#9AA0AA'],
-		[4, 4, 1, 8, '#9AA0AA'], [11, 4, 1, 8, '#9AA0AA'],
-	]]),
-	titaniumWall: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 1, '#4C5056'], [0, 15, 16, 1, '#4C5056'],
-		[0, 0, 1, 16, '#4C5056'], [15, 0, 1, 16, '#4C5056'],
-		[7, 0, 2, 16, '#D83030'], [0, 7, 16, 2, '#D83030'], // Red glowing cross
-	]]),
-	bunker: new AnimatedGeneratedTextures(32, [[
-		[0, 0, 32, 1, '#4C5056'], [0, 31, 32, 1, '#4C5056'],
-		[0, 0, 1, 32, '#4C5056'], [31, 0, 1, 32, '#4C5056'],
-		[8, 8, 16, 1, '#D83030'], [8, 23, 16, 1, '#D83030'],
-		[8, 8, 1, 16, '#D83030'], [23, 8, 1, 16, '#D83030'], // Inner red square
-		[15, 15, 2, 2, '#9AA0AA'],
-	]]),
-
 	// --- EXTRACTORS (4 Corner Focus) ---
 	extractor: new AnimatedGeneratedTextures(16, [[
 		[0, 0, 16, 1, '#4C5056'], [0, 15, 16, 1, '#4C5056'], [0, 0, 1, 16, '#4C5056'], [15, 0, 1, 16, '#4C5056'],
@@ -456,6 +436,25 @@ export let animatedGeneratedTextures = {
 		[4, 4, 8, 8, '#F0F0F0'], // Fluid surface ripple 2
 	]]),
 
+	// --- WALLS (Static - Simplified Outline) ---
+	steelWall: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 1, '#4C5056'], [0, 15, 16, 1, '#4C5056'],
+		[0, 0, 1, 16, '#4C5056'], [15, 0, 1, 16, '#4C5056'],
+		[4, 4, 8, 1, '#9AA0AA'], [4, 11, 8, 1, '#9AA0AA'],
+		[4, 4, 1, 8, '#9AA0AA'], [11, 4, 1, 8, '#9AA0AA'],
+	]]),
+	titaniumWall: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 1, '#4C5056'], [0, 15, 16, 1, '#4C5056'],
+		[0, 0, 1, 16, '#4C5056'], [15, 0, 1, 16, '#4C5056'],
+		[7, 0, 2, 16, '#D83030'], [0, 7, 16, 2, '#D83030'], // Red glowing cross
+	]]),
+	bunker: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 1, '#4C5056'], [0, 31, 32, 1, '#4C5056'],
+		[0, 0, 1, 32, '#4C5056'], [31, 0, 1, 32, '#4C5056'],
+		[8, 8, 16, 1, '#D83030'], [8, 23, 16, 1, '#D83030'],
+		[8, 8, 1, 16, '#D83030'], [23, 8, 1, 16, '#D83030'], // Inner red square
+		[15, 15, 2, 2, '#9AA0AA'],
+	]]),
 
 	// --- HOME BASE (Size 40 - Central Hub with Combined Themes) ---
 	base: new AnimatedGeneratedTextures(40, [[
