@@ -11,7 +11,6 @@ export default class Painter extends Emitter<{ resize: Vector }> {
 	constructor(container: Container) {
 		super();
 		this.foregroundContainer.eventMode = 'none';
-		this.textUiContainer.eventMode = 'none';
 		container.addChild(this.foregroundContainer);
 		container.addChild(this.uiContainer);
 		container.addChild(this.textUiContainer);

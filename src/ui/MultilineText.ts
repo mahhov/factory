@@ -44,6 +44,7 @@ export default class MultilineText {
 				let text = new Text();
 				text.style.fontFamily = 'Arial';
 				this.textContainer.addChild(text);
+				text.eventMode = 'static';
 				text.on('click', () => tooltipLines[i].callback());
 			},
 			(text: Text, i: number, tooltipLine: TextLine) => {
