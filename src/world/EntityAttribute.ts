@@ -252,7 +252,7 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let some = tile.position.iterate(tile.tileable.size).map(position => {
-			let tile = world.terrain.getTile(position);
+			let tile = world.terrain.getTileBounded(position);
 			if (!(tile?.tileable instanceof MaterialDeposit)) return false;
 			let capacity = this.materialStorageAttribute.capacity(tile.tileable.material) - this.quantities[tile.tileable.material];
 			let add = Math.min(this.outputPerTier[tile.tileable.materialTier] || 0, capacity);
@@ -288,7 +288,7 @@ export class EntityMaterialSourceAttribute extends EntityAttribute {
 		let materialCount = new ResourceUtils.Count(this.materialPickerAttribute.material, 1);
 		util.enumValues(Rotation).forEach(rotation =>
 			getAdjacentDestinations(tile.position, tile.tileable.size, rotation)
-				.map(destination => world.live.getTile(destination)?.tileable.getAttribute(EntityMaterialStorageAttribute))
+				.map(destination => world.live.getTileBounded(destination)?.tileable.getAttribute(EntityMaterialStorageAttribute))
 				.forEach(materialStorageAttribute => {
 					if (materialStorageAttribute?.acceptsRotation(rotation) && materialStorageAttribute.hasCapacity(materialCount))
 						materialStorageAttribute.add(materialCount);
@@ -442,7 +442,7 @@ export class EntityTransportAttribute extends EntityAttribute {
 	static move(fromMaterialStorageAttribute: EntityMaterialStorageAttribute, outputRotations: Rotation[], materialCounts: ResourceUtils.Count<Material>[], world: World, tile: Tile<Entity>): boolean {
 		return util.shuffle(outputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
-				.flatMap(destination => world.live.getTile(destination)?.tileable.getAttributes(EntityMaterialStorageAttribute) || [])
+				.flatMap(destination => world.live.getTileBounded(destination)?.tileable.getAttributes(EntityMaterialStorageAttribute) || [])
 				.filter(destinationMaterialStorageAttribute => destinationMaterialStorageAttribute.acceptsRotation(rotation))
 				.filter(destinationMaterialStorageAttribute =>
 					fromMaterialStorageAttribute.type === destinationMaterialStorageAttribute.type ||
@@ -498,7 +498,7 @@ export class EntityInflowAttribute extends EntityAttribute {
 		if (!this.materialStorageAttribute.hasCapacity(materialCount)) return false;
 		return util.shuffle(this.inputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, RotationUtils.opposite(rotation)))
-				.flatMap(source => world.live.getTile(source)?.tileable.getAttributes(EntityMaterialStorageAttribute) || [])
+				.flatMap(source => world.live.getTileBounded(source)?.tileable.getAttributes(EntityMaterialStorageAttribute) || [])
 				.some(sourceMaterialStorageAttribute => {
 					if (sourceMaterialStorageAttribute.hasQuantity(materialCount)) {
 						sourceMaterialStorageAttribute.remove(materialCount);
@@ -637,7 +637,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 			getLineDestinations(tile.position, tile.tileable.size, rotation, this.range).some(destination => {
 				// todo this will only allow 1 connection in each direction. won't work when size is > 1
 				// todo visual indicator of connections
-				let searchTile = world.live.getTile(destination);
+				let searchTile = world.live.getTileBounded(destination);
 				// todo some tiles should block
 				if (!searchTile)
 					return true;
@@ -735,7 +735,7 @@ export class EntityCoolantConsumeAttribute extends EntityAttribute {
 			this.consumed = 0;
 		let coolantProduceAttributes: EntityCoolantProduceAttribute[] = util.enumValues(Rotation)
 			.flatMap(rotation => getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
-			.map(position => world.live.getTile(position))
+			.map(position => world.live.getTileBounded(position))
 			.map(tile => tile?.tileable.getAttribute(EntityCoolantProduceAttribute))
 			.filter(coolantProduceAttribute => coolantProduceAttribute) as EntityCoolantProduceAttribute[];
 		for (let i = 0; i < coolantProduceAttributes.length && this.consumed < this.quantity; i++) {
@@ -767,7 +767,7 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 
 	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
 		return tile.position.iterate(tile.tileable.size).map(position => {
-			let tile = world.terrain.getTile(position);
+			let tile = world.terrain.getTileBounded(position);
 			if (!(tile?.tileable instanceof LiquidDeposit)) return false;
 			let quantity = this.outputPerTier[tile.tileable.liquidTier] || 0;
 			return this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count(tile.tileable.liquid, quantity));
@@ -894,7 +894,7 @@ export class EntityLiquidTransportAttribute extends EntityAttribute {
 	static move(fromLiquidStorageAttribute: EntityLiquidStorageAttribute, outputRotations: Rotation[], world: World, tile: Tile<Entity>): boolean {
 		return util.shuffle(outputRotations).some(rotation =>
 			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
-				.flatMap(destination => world.live.getTile(destination)?.tileable.getAttributes(EntityLiquidStorageAttribute) || [])
+				.flatMap(destination => world.live.getTileBounded(destination)?.tileable.getAttributes(EntityLiquidStorageAttribute) || [])
 				.filter(destinationLiquidStorageAttribute => destinationLiquidStorageAttribute.acceptsRotation(rotation))
 				.some(destinationLiquidStorageAttribute => {
 					let liquidCount = fromLiquidStorageAttribute.liquidCount;
@@ -1041,7 +1041,7 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 			let start = position.subtract(new Vector(range)).floor();
 			let end = position.add(new Vector(range)).floor();
 			targets = start.iterate(end.subtract(start).add(new Vector(1)))
-				.map((position): [Vector, Entity | undefined] => [position, world.live.getTile(position)?.tileable])
+				.map((position): [Vector, Entity | undefined] => [position, world.live.getTileBounded(position)?.tileable])
 				.filter(([_, entity]) => entity?.getAttribute(EntityHealthAttribute)) as [Vector, Entity][];
 		} else
 			targets = world.mobLayer.tiles

@@ -48,7 +48,7 @@ export default class Tooltip {
 			this.world.live,
 			this.world.terrain,
 		]
-			.map(worldLayer => worldLayer.getTile(worldPosition))
+			.map(worldLayer => worldLayer.getTileBounded(worldPosition))
 			.find(tile => tile?.tileable.selectable) || null;
 	}
 

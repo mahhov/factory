@@ -95,7 +95,11 @@ export class Entity implements Tileable {
 	}
 
 	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | undefined {
-		return this.attributes.flat().find(attribute => attribute.constructor === attributeClass) as T;
+		for (let attributeChain of this.attributes) {
+			let found = attributeChain.find(attribute => attribute.constructor === attributeClass) as T | undefined;
+			if (found) return found;
+		}
+		return undefined;
 	}
 
 	getAttributes<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T[] {
@@ -103,9 +107,10 @@ export class Entity implements Tileable {
 	}
 
 	tick(world: World, tile: Tile<Entity>) {
-		this.attributes
-			.filter(attributeChain => attributeChain.every(attribute => attribute.tick(world, tile)))
-			.forEach(attributeChain => attributeChain.forEach(attribute => attribute.reset()));
+		this.attributes.forEach(attributeChain => {
+			if (attributeChain.every(attribute => attribute.tick(world, tile)))
+				attributeChain.forEach(attribute => attribute.reset());
+		});
 	}
 
 	tooltip(type: TooltipType): TextLine[] {

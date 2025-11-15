@@ -27,7 +27,8 @@ export class MobLogic {
 
 	tick(world: World) {
 		this.spawn(world);
-		this.target(world);
+		// todo is slow
+		// this.target(world);
 	}
 
 	private spawn(world: World) {

@@ -68,7 +68,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 	replaceTileable(position: Vector, tileable: T) {
 		if (!this.inBounds(position, tileable.size)) return;
 
-		let replaceTiles = position.iterate(tileable.size).map(p => this.getTile(p)!);
+		let replaceTiles = position.iterate(tileable.size).map(p => this.getTile(p));
 		replaceTiles.forEach(replaceTile =>
 			replaceTile.position.iterate(replaceTile.tileable.size)
 				.forEach(emptyPosition => {
@@ -100,7 +100,11 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 		return position.boundBy(Vector.V0, this.size.subtract(size).add(Vector.V1));
 	}
 
-	getTile(position: Vector): Tile<T> | null {
+	getTile(position: Vector): Tile<T> {
+		return this.grid[position.x][position.y];
+	}
+
+	getTileBounded(position: Vector): Tile<T> | null {
 		return this.inBounds(position, Vector.V1) ?
 			this.grid[position.x][position.y] :
 			null;
@@ -220,8 +224,8 @@ export class World {
 		let i = 0;
 		while (i < this.queue.order.length) {
 			let position = this.queue.order[i];
-			let liveTile = this.live.getTile(position)!;
-			let queueTile = this.queue.getTile(position)!;
+			let liveTile = this.live.getTile(position);
+			let queueTile = this.queue.getTile(position);
 			let buildableAttribute = queueTile.tileable.getAttribute(EntityBuildableAttribute);
 			if (!buildableAttribute) {
 				console.assert(queueTile.tileable.name === 'Clear');
@@ -233,7 +237,7 @@ export class World {
 			let allowed =
 				liveTile.tileable.name === queueTile.tileable.name && liveTile.position.equals(queueTile.position) && liveTile.tileable.rotation !== queueTile.tileable.rotation ||
 				liveTile.tileable.name !== queueTile.tileable.name && liveTile.tileable.size.equals(Vector.V1) && queueTile.tileable.size.equals(Vector.V1) ||
-				position.iterate(queueTile.tileable.size).every(p => this.live.getTile(p)!.tileable.name === this.live.defaultTileable.name);
+				position.iterate(queueTile.tileable.size).every(p => this.live.getTile(p).tileable.name === this.live.defaultTileable.name);
 			if (!allowed) {
 				this.queue.removeOrdered(i);
 				continue;

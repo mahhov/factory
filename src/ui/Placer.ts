@@ -338,7 +338,7 @@ export default class Placer {
 	}
 
 	pick() {
-		let tile = this.world.queue.getTile(this.position);
+		let tile = this.world.queue.getTileBounded(this.position);
 		if (tile?.tileable instanceof Empty)
 			tile = this.world.live.getTile(this.position);
 		let tool: Tool = tile ?
@@ -491,7 +491,7 @@ export default class Placer {
 			.ceil();
 		this.world.planning.clearAllEntities();
 
-		if (this.tool === Tool.CLEAR) {
+		if (this.tool === Tool.CLEAR || this.tool === Tool.CONVEYOR) {
 			this.startPosition.min(this.endPosition).iterate(iterations).forEach(position =>
 				worldLayer.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation)));
 
