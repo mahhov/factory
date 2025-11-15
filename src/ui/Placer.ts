@@ -491,7 +491,7 @@ export default class Placer {
 			.ceil();
 		this.world.planning.clearAllEntities();
 
-		if (this.tool === Tool.CLEAR || this.tool === Tool.CONVEYOR) {
+		if (this.tool === Tool.CLEAR) {
 			this.startPosition.min(this.endPosition).iterate(iterations).forEach(position =>
 				worldLayer.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation)));
 
