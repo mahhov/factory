@@ -32,8 +32,6 @@ export default class Controller {
 			if (placer.state === PlacerState.EMPTY)
 				camera.zoom(zoomSpeed * 10, this.input.mouseCanvasPosition);
 		}));
-		// todo also dirty tooltip on placer tool changes
-		camera.addListener('change', () => tooltip.dirty());
 
 		// placer
 		util.arr(9)
@@ -76,5 +74,7 @@ export default class Controller {
 			else
 				tooltip.hide();
 		}));
+		camera.addListener('change', () => tooltip.dirty());
+		placer.addListener('toolChanged', () => tooltip.dirty());
 	}
 }

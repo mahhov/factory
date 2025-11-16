@@ -2,6 +2,7 @@ import {Container, Graphics, Text} from 'pixi.js';
 import Camera from '../Camera.js';
 import Color from '../graphics/Color.js';
 import Painter from '../graphics/Painter.js';
+import Emitter from '../util/Emitter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {
@@ -71,7 +72,7 @@ let toolTree = {
 };
 type ToolGroup = keyof typeof toolTree;
 
-export default class Placer {
+export default class Placer extends Emitter<{ toolChanged: void }> {
 	private static cachedToolEntities_: Record<Tool, Entity>;
 	private readonly painter: Painter;
 	private readonly camera: Camera;
@@ -93,6 +94,7 @@ export default class Placer {
 	private spriteHolders: SpriteHolder[] = [];
 
 	constructor(painter: Painter, camera: Camera, input: Input, world: World) {
+		super();
 		this.painter = painter;
 		this.camera = camera;
 		this.input = input;
@@ -404,6 +406,7 @@ export default class Placer {
 				this.place(this.world, true, false);
 			else
 				this.world.planning.clearAllEntities();
+			this.emit('toolChanged');
 		}
 	}
 
@@ -570,5 +573,4 @@ export default class Placer {
 //   missing removal transparent empty overlay
 //   add backgrounds to ui rects
 
-// todo clear tool is sticking around
 // todo rotations for sprite holders
