@@ -925,10 +925,10 @@ export class EntityLiquidBridgeConnectAttribute extends EntityAttribute {
 
 	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		this.connectedPosition = getLineDestinations(tile.position, tile.tileable.size, this.rotation, this.range).find(destination =>
-			world.live.getTileBounded(destination)?.tileable.getAttribute(EntityLiquidBridgeTransportAttribute)) || null;
+			world.live.getTileBounded(destination)?.tileable.getAttribute(EntityLiquidBridgeConnectAttribute)) || null;
 
 		if (this.connectedPosition) {
-			let sprite = connectionSprite(new Sprite(coloredGeneratedTextures.fullRect.texture(Color.POWER_TEXT)), this.connectedPosition.subtract(tile.position));
+			let sprite = connectionSprite(new Sprite(coloredGeneratedTextures.fullRect.texture(Color.LIQUID_TEXT)), this.connectedPosition.subtract(tile.position));
 			if (sprite) {
 				tile.tileable.addOverlaySprites('EntityLiquidBridgeTransportAttribute', [sprite]);
 				return true;

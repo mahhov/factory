@@ -408,35 +408,29 @@ export let animatedGeneratedTextures = {
 	], [
 		[3, 0, 2, 8, '#4070D0'], [3, 5, 2, 2, '#F0F0F0'], // Fluid pulse 2
 	]]),
-	pipeBridge: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, '#F0F0F0'], // White "paper" background
+	pipeBridge: new AnimatedGeneratedTextures(8, [[
+		[0, 0, 8, 8, '#1A1C20'], // Dark space background for pop effect
 
-		// Main elevated pipe segment (blue ink for fluid)
-		[6, 0, 4, 16, '#4070D0'], // Central blue pipe running vertically
+		// Main elevated pipe segment (bright blue)
+		[3, 0, 2, 8, '#4070D0'], // Central blue pipe
 
-		// Bridge structural supports (black ink outlines)
-		[4, 0, 2, 2, '#1A1C20'], [10, 0, 2, 2, '#1A1C20'], // Top supports
-		[3, 2, 1, 1, '#1A1C20'], [12, 2, 1, 1, '#1A1C20'], // Top-inner details
+		// Subtle structural elements (dark gray/silver)
+		[2, 0, 1, 1, '#9AA0AA'], [5, 0, 1, 1, '#9AA0AA'], // Top "anchors"
+		[2, 7, 1, 1, '#9AA0AA'], [5, 7, 1, 1, '#9AA0AA'], // Bottom "anchors"
 
-		[4, 14, 2, 2, '#1A1C20'], [10, 14, 2, 2, '#1A1C20'], // Bottom supports
-		[3, 13, 1, 1, '#1A1C20'], [12, 13, 1, 1, '#1A1C20'], // Bottom-inner details
-
-		// Internal fluid flow indicator (white pulse)
-		[7, 2, 2, 2, '#F0F0F0'], // Frame 1 pulse
+		// Fluid flow indicator (white pulse)
+		[3, 1, 2, 2, '#F0F0F0'], // Frame 1 pulse
 	], [
-		[0, 0, 16, 16, '#F0F0F0'],
+		[0, 0, 8, 8, '#1A1C20'],
 
-		[6, 0, 4, 16, '#4070D0'], // Central blue pipe
+		[3, 0, 2, 8, '#4070D0'], // Central blue pipe
 
-		// Bridge structural supports
-		[4, 0, 2, 2, '#1A1C20'], [10, 0, 2, 2, '#1A1C20'],
-		[3, 2, 1, 1, '#1A1C20'], [12, 2, 1, 1, '#1A1C20'],
+		// Subtle structural elements
+		[2, 0, 1, 1, '#9AA0AA'], [5, 0, 1, 1, '#9AA0AA'],
+		[2, 7, 1, 1, '#9AA0AA'], [5, 7, 1, 1, '#9AA0AA'],
 
-		[4, 14, 2, 2, '#1A1C20'], [10, 14, 2, 2, '#1A1C20'],
-		[3, 13, 1, 1, '#1A1C20'], [12, 13, 1, 1, '#1A1C20'],
-
-		// Internal fluid flow indicator (white pulse shifts down)
-		[7, 6, 2, 2, '#F0F0F0'], // Frame 2 pulse (shifted)
+		// Fluid flow indicator (white pulse shifts down)
+		[3, 5, 2, 2, '#F0F0F0'], // Frame 2 pulse (shifted)
 	]]),
 	pipeDistributor: new AnimatedGeneratedTextures(8, [[
 		[3, 3, 2, 2, '#4070D0'], [3, 0, 2, 3, '#9AA0AA'],
