@@ -16,6 +16,8 @@ import {
 	EntityExpireProjectileAttribute,
 	EntityHealthAttribute,
 	EntityInflowAttribute,
+	EntityLiquidBridgeConnectAttribute,
+	EntityLiquidBridgeTransportAttribute,
 	EntityLiquidConsumeAttribute,
 	EntityLiquidDisplayAttribute,
 	EntityLiquidDryExtractorAttribute,
@@ -439,6 +441,23 @@ export class Pipe extends Building {
 			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
 			timedAttribute,
 			new EntityLiquidTransportAttribute(liquidStorageAttribute, [rotation]),
+		]);
+		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+	}
+}
+
+export class PipeBridge extends Building {
+	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number, rotation: Rotation, range: number) {
+		super(name, description, size, buildTime, buildCost, health, rotation, new Vector(range));
+		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), capacity, RotationUtils.except(RotationUtils.opposite(rotation)));
+		this.attributes.push([liquidStorageAttribute]);
+		let liquidBridgeConnectAttribute = new EntityLiquidBridgeConnectAttribute(rotation, range);
+		this.attributes.push([liquidBridgeConnectAttribute]);
+		let timedAttribute = new EntityTimedAttribute(40);
+		this.attributes.push([
+			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
+			timedAttribute,
+			new EntityLiquidBridgeTransportAttribute(liquidStorageAttribute, liquidBridgeConnectAttribute),
 		]);
 		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
 	}

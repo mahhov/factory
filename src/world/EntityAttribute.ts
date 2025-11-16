@@ -53,6 +53,34 @@ let getLineDestinations = (origin: Vector, size: Vector, rotation: Rotation, ran
 		.flatMap(offset => adjacents.map(adjacent => adjacent.add(offset)));
 };
 
+let connectionSprite = (sprite: Sprite, delta: Vector): Sprite | null => {
+	let s = sprite.width;
+	let thickness = s / 16;
+	if (delta.x > 1) {
+		sprite.x = s;
+		sprite.y = s / 2 - thickness / 2;
+		sprite.width = s * (delta.x - 1);
+		sprite.height = thickness;
+	} else if (delta.x < -1) {
+		sprite.x = 0;
+		sprite.y = s / 2 - thickness / 2;
+		sprite.width = s * (delta.x + 1);
+		sprite.height = thickness;
+	} else if (delta.y > 1) {
+		sprite.x = s / 2 - thickness / 2;
+		sprite.y = s;
+		sprite.width = thickness;
+		sprite.height = s * (delta.y - 1);
+	} else if (delta.y < -1) {
+		sprite.x = s / 2 - thickness / 2;
+		sprite.y = 0;
+		sprite.width = thickness;
+		sprite.height = s * (delta.y + 1);
+	} else
+		return null;
+	return sprite;
+};
+
 export abstract class EntityAttribute {
 	private done: boolean = false;
 
@@ -632,7 +660,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 		let connectionDeltas: Vector[] = [];
 		this.oldConnections = this.connections;
 		this.connections = [];
-		util.enumValues(Rotation).forEach(rotation => {
+		util.enumValues(Rotation).forEach(rotation =>
 			getLineDestinations(tile.position, tile.tileable.size, rotation, this.range).some(destination => {
 				// todo this will only allow 1 connection in each direction. won't work when size is > 1
 				// todo visual indicator of connections
@@ -647,37 +675,9 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 					conductAttribute.connections.push(tile.tileable);
 					return true;
 				}
-			});
-		});
+			}));
 		let sprites = connectionDeltas
-			.map(delta => {
-				let sprite = new Sprite(coloredGeneratedTextures.fullRect.texture(Color.POWER_TEXT));
-				let s = sprite.width;
-				let thickness = s / 16;
-				if (delta.x > 1) {
-					sprite.x = s;
-					sprite.y = s / 2 - thickness / 2;
-					sprite.width = s * (delta.x - 1);
-					sprite.height = thickness;
-				} else if (delta.x < -1) {
-					sprite.x = 0;
-					sprite.y = s / 2 - thickness / 2;
-					sprite.width = s * (delta.x + 1);
-					sprite.height = thickness;
-				} else if (delta.y > 1) {
-					sprite.x = s / 2 - thickness / 2;
-					sprite.y = s;
-					sprite.width = thickness;
-					sprite.height = s * (delta.y - 1);
-				} else if (delta.y < -1) {
-					sprite.x = s / 2 - thickness / 2;
-					sprite.y = 0;
-					sprite.width = thickness;
-					sprite.height = s * (delta.y + 1);
-				} else
-					return null;
-				return sprite;
-			})
+			.map(delta => connectionSprite(new Sprite(coloredGeneratedTextures.fullRect.texture(Color.POWER_TEXT)), delta))
 			.filter(v => v) as Sprite[];
 		tile.tileable.addOverlaySprites('EntityPowerConductAttribute', sprites);
 		return true;
@@ -907,9 +907,65 @@ export class EntityLiquidTransportAttribute extends EntityAttribute {
 	}
 
 	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let liquidCount = this.liquidStorageAttribute.liquidCount;
-		if (!liquidCount.quantity) return false;
+		if (!this.liquidStorageAttribute.liquidCount.quantity) return false;
 		return EntityLiquidTransportAttribute.move(this.liquidStorageAttribute, this.outputRotations, world, tile);
+	}
+}
+
+export class EntityLiquidBridgeConnectAttribute extends EntityAttribute {
+	readonly rotation: Rotation;
+	private readonly range: number;
+	connectedPosition: Vector | null = null;
+
+	constructor(rotation: Rotation, range: number) {
+		super();
+		this.rotation = rotation;
+		this.range = range;
+	}
+
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
+		this.connectedPosition = getLineDestinations(tile.position, tile.tileable.size, this.rotation, this.range).find(destination =>
+			world.live.getTileBounded(destination)?.tileable.getAttribute(EntityLiquidBridgeTransportAttribute)) || null;
+
+		if (this.connectedPosition) {
+			let sprite = connectionSprite(new Sprite(coloredGeneratedTextures.fullRect.texture(Color.POWER_TEXT)), this.connectedPosition.subtract(tile.position));
+			if (sprite) {
+				tile.tileable.addOverlaySprites('EntityLiquidBridgeTransportAttribute', [sprite]);
+				return true;
+			}
+		}
+
+		tile.tileable.addOverlaySprites('EntityLiquidBridgeTransportAttribute', []);
+		return true;
+	}
+}
+
+export class EntityLiquidBridgeTransportAttribute extends EntityAttribute {
+	private readonly liquidStorageAttribute: EntityLiquidStorageAttribute;
+	private readonly liquidBridgeConnectAttribute: EntityLiquidBridgeConnectAttribute;
+
+	constructor(liquidStorageAttribute: EntityLiquidStorageAttribute, liquidBridgeConnectAttribute: EntityLiquidBridgeConnectAttribute) {
+		super();
+		this.liquidStorageAttribute = liquidStorageAttribute;
+		this.liquidBridgeConnectAttribute = liquidBridgeConnectAttribute;
+	}
+
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (!this.liquidStorageAttribute.liquidCount.quantity) return false;
+
+		return this.liquidBridgeConnectAttribute.connectedPosition ?
+			world.live.getTileUnchecked(this.liquidBridgeConnectAttribute.connectedPosition).tileable.getAttributes(EntityLiquidStorageAttribute)
+				.filter(liquidStorageAttribute => liquidStorageAttribute.acceptsRotation(this.liquidBridgeConnectAttribute.rotation))
+				.some(destinationLiquidStorageAttribute => {
+					let liquidCount = this.liquidStorageAttribute.liquidCount;
+					let take = destinationLiquidStorageAttribute!.tryToAdd(liquidCount);
+					if (take) {
+						this.liquidStorageAttribute.liquidCount = new ResourceUtils.Count(liquidCount.resource, liquidCount.quantity - take);
+						return true;
+					}
+					return false;
+				}) :
+			EntityLiquidTransportAttribute.move(this.liquidStorageAttribute, [this.liquidBridgeConnectAttribute.rotation], world, tile);
 	}
 }
 

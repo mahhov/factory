@@ -20,6 +20,7 @@ import {
 	Junction,
 	PackedConveyor,
 	Pipe,
+	PipeBridge,
 	PipeDistributor,
 	PipeJunction,
 	Pump,
@@ -48,12 +49,12 @@ enum Tool {
 	EMPTY, CLEAR,
 	EXTRACTOR, REINFORCED_EXTRACTOR, QUADRATIC_EXTRACTOR, LASER_EXTRACTOR,
 	// todo bridge
-	CONVEYOR, HIGH_SPEED_CONVEYOR, PACKED_CONVEYOR, DISTRIBUTOR, JUNCTION,
+	CONVEYOR, HIGH_SPEED_CONVEYOR, PACKED_CONVEYOR, DISTRIBUTOR, JUNCTION, STORAGE, DISPENSER,
 	STEEL_SMELTER, METAGLASS_FOUNDRY, PLASTEEL_MIXER, THERMITE_FORGE, EXIDIUM_CATALYST,
-	STORAGE, DISPENSER,
 	THERMAL_GENERATOR, SOLAR_ARRAY, METHANE_BURNER, GRAPHITE_BURNER, THERMITE_REACTOR, CONDUCTOR, BATTERY,
 	AIR_VENT, WATER_VENT, METHANE_VENT,
-	PUMP, POWERED_PUMP, WELL, PIPE, PIPE_DISTRIBUTOR, PIPE_JUNCTION, TANK,
+	PUMP, POWERED_PUMP, WELL,
+	PIPE, PIPE_BRIDGE, PIPE_DISTRIBUTOR, PIPE_JUNCTION, TANK,
 	// todo bunker
 	STEEL_WALL, TITANIUM_WALL,
 	SHRAPNEL_TURRET, PIERCING_TURRET, ARC_TURRET, SIEGE_TURRET, LASER_TURRET,
@@ -61,12 +62,12 @@ enum Tool {
 
 let toolTree = {
 	extractors: [Tool.EXTRACTOR, Tool.REINFORCED_EXTRACTOR, Tool.QUADRATIC_EXTRACTOR, Tool.LASER_EXTRACTOR],
-	transport: [Tool.CONVEYOR, Tool.HIGH_SPEED_CONVEYOR, Tool.DISTRIBUTOR, Tool.JUNCTION, Tool.PACKED_CONVEYOR],
+	transport: [Tool.CONVEYOR, Tool.HIGH_SPEED_CONVEYOR, Tool.DISTRIBUTOR, Tool.JUNCTION, Tool.PACKED_CONVEYOR, Tool.STORAGE, Tool.DISPENSER],
 	factories: [Tool.STEEL_SMELTER, Tool.METAGLASS_FOUNDRY, Tool.PLASTEEL_MIXER, Tool.THERMITE_FORGE, Tool.EXIDIUM_CATALYST],
-	storage: [Tool.STORAGE, Tool.DISPENSER],
 	power: [Tool.THERMAL_GENERATOR, Tool.SOLAR_ARRAY, Tool.METHANE_BURNER, Tool.GRAPHITE_BURNER, Tool.THERMITE_REACTOR, Tool.CONDUCTOR, Tool.BATTERY],
 	vents: [Tool.AIR_VENT, Tool.WATER_VENT, Tool.METHANE_VENT],
-	liquids: [Tool.PUMP, Tool.POWERED_PUMP, Tool.WELL, Tool.PIPE, Tool.PIPE_DISTRIBUTOR, Tool.PIPE_JUNCTION, Tool.TANK],
+	liquidExtractors: [Tool.PUMP, Tool.POWERED_PUMP, Tool.WELL],
+	liquidTransport: [Tool.PIPE, Tool.PIPE_BRIDGE, Tool.PIPE_DISTRIBUTOR, Tool.PIPE_JUNCTION, Tool.TANK],
 	walls: [Tool.STEEL_WALL, Tool.TITANIUM_WALL],
 	turrets: [Tool.SHRAPNEL_TURRET, Tool.PIERCING_TURRET, Tool.ARC_TURRET, Tool.SIEGE_TURRET, Tool.LASER_TURRET],
 };
@@ -160,6 +161,10 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 				return Placer.createToolJunction(findEntityMetadata('buildings', 'Junction'));
 			case Tool.PACKED_CONVEYOR:
 				return Placer.createToolPackedConveyor(findEntityMetadata('buildings', 'Packed Conveyor'), rotation);
+			case Tool.STORAGE:
+				return Placer.createToolStorage(findEntityMetadata('buildings', 'Storage'));
+			case Tool.DISPENSER:
+				return Placer.createToolDispenser(findEntityMetadata('buildings', 'Dispenser'), rotation);
 
 			case Tool.STEEL_SMELTER:
 				return Placer.createToolFactory(findEntityMetadata('buildings', 'Steel Smelter'));
@@ -171,11 +176,6 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 				return Placer.createToolFactory(findEntityMetadata('buildings', 'Thermite Forge'));
 			case Tool.EXIDIUM_CATALYST:
 				return Placer.createToolFactory(findEntityMetadata('buildings', 'Exidium Catalyst'));
-
-			case Tool.STORAGE:
-				return Placer.createToolStorage(findEntityMetadata('buildings', 'Storage'));
-			case Tool.DISPENSER:
-				return Placer.createToolDispenser(findEntityMetadata('buildings', 'Dispenser'), rotation);
 
 			case Tool.THERMAL_GENERATOR:
 				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Thermal Generator'));
@@ -205,8 +205,11 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 				return Placer.createToolPump(findEntityMetadata('buildings', 'Powered Pump'));
 			case Tool.WELL:
 				return Placer.createToolWell(findEntityMetadata('buildings', 'Well'));
+
 			case Tool.PIPE:
 				return Placer.createToolPipe(findEntityMetadata('buildings', 'Pipe'), rotation);
+			case Tool.PIPE_BRIDGE:
+				return Placer.createToolPipeBridge(findEntityMetadata('buildings', 'Pipe Bridge'), rotation);
 			case Tool.PIPE_DISTRIBUTOR:
 				return Placer.createToolPipeDistributor(findEntityMetadata('buildings', 'Pipe Distributor'));
 			case Tool.PIPE_JUNCTION:
@@ -251,16 +254,16 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 		return new PackedConveyor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
 	}
 
-	private static createToolFactory(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Factory(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.output as ResourceUtils.Count<Material>);
-	}
-
 	private static createToolStorage(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		return new Storage(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolDispenser(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
 		return new Dispenser(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
+	}
+
+	private static createToolFactory(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Factory(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.output as ResourceUtils.Count<Material>);
 	}
 
 	private static createToolGenerator(metadata: ParsedLine<typeof sectionFields.buildings>) {
@@ -289,6 +292,11 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 
 	private static createToolPipe(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
 		return new Pipe(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
+	}
+
+	private static createToolPipeBridge(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
+		// todo get 4 from metadata
+		return new PipeBridge(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation, 4);
 	}
 
 	private static createToolPipeDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {
