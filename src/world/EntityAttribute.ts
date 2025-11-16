@@ -113,7 +113,6 @@ export class EntityDescriptionAttribute extends EntityAttribute {
 
 // todo some graphical indicator for buildings queued, buildings in progress, buildings active
 // todo partial health for partially built buildings
-// todo gets stuck building when out of resources
 // todo queued salvage not displaying correctly
 // todo don't move resources into storage that's still being built. don't act upon entities that are still being built. maybe move them from the live layer to an in-progress layer
 export class EntityBuildableAttribute extends EntityAttribute {

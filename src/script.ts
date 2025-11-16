@@ -32,7 +32,7 @@ class Loop {
 		let elapsed = now - this.last;
 		if (elapsed > 1000) {
 			let fps = this.frames / elapsed * 1000;
-			this.multilineText.lines[this.index] = new TextLine(`${this.label} ${Math.floor(fps)}`, {size: 10});
+			this.multilineText.lines[this.index] = new TextLine(`${this.label} ${Math.floor(fps)}`, {size: 12});
 			this.multilineText.tick();
 			this.frames = 0;
 			this.last = now;
