@@ -100,12 +100,12 @@ export class Entity implements Tileable {
 		});
 	}
 
-	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | undefined {
+	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | null {
 		for (let attributeChain of this.attributes) {
 			let found = attributeChain.find(attribute => attribute.constructor === attributeClass) as T | undefined;
 			if (found) return found;
 		}
-		return undefined;
+		return null;
 	}
 
 	getAttributes<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T[] {

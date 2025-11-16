@@ -11,7 +11,7 @@ namespace SpriteLoader {
 
 	let path = (resource: Resource) => `./resources/${resource}/${resource}.json`;
 
-	let savedRenderer: Renderer | undefined = undefined;
+	let savedRenderer: Renderer | null = null;
 	export let init = (renderer: Renderer) => {
 		savedRenderer = renderer;
 		return Promise.all(Object.values(Resource).map(resource => Assets.load(path(resource))));
