@@ -44,15 +44,20 @@ export default class Controller {
 				input.addBinding(new KeyBinding(key, [KeyModifier.SHIFT], [InputState.PRESSED], () => placer.setToolGroupIndex(i + 5)));
 			});
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.PRESSED], () => {
-			if (placer.state !== PlacerState.EMPTY)
+			if (placer.state !== PlacerState.EMPTY && !placer.tooltipVisible)
 				placer.start();
 		}));
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.DOWN, InputState.UP], () => placer.move()));
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.RELEASED], () => placer.end()));
-		input.addBinding(new MouseBinding(MouseButton.MIDDLE, [InputState.RELEASED], () => placer.pick()));
+		input.addBinding(new MouseBinding(MouseButton.MIDDLE, [InputState.RELEASED], () => {
+			if (!placer.tooltipVisible)
+				placer.pick();
+		}));
 		input.addBinding(new MouseBinding(MouseButton.RIGHT, [InputState.PRESSED], () => {
-			placer.clearTool();
-			placer.start();
+			if (!placer.tooltipVisible) {
+				placer.clearTool();
+				placer.start();
+			}
 		}));
 		input.addBinding(new MouseBinding(MouseButton.RIGHT, [InputState.DOWN], () => placer.move()));
 		input.addBinding(new MouseBinding(MouseButton.RIGHT, [InputState.RELEASED], () => placer.end()));
@@ -61,12 +66,12 @@ export default class Controller {
 
 		// tooltip
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.UP], () => {
-			if (placer.state !== PlacerState.EMPTY)
+			if (placer.state !== PlacerState.EMPTY || placer.tooltipVisible)
 				tooltip.unselect();
 			tooltip.hover();
 		}));
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.PRESSED], () => {
-			if (placer.state === PlacerState.EMPTY)
+			if (placer.state === PlacerState.EMPTY && !placer.tooltipVisible)
 				tooltip.toggleSelect();
 			else
 				tooltip.hide();

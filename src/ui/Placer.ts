@@ -365,12 +365,7 @@ export default class Placer {
 				let spriteContainer = Placer.createToolEntity(tools[0]).container;
 				this.addToolUiButton(coordinates, this.toolGroupIconContainer, spriteContainer, this.toolGroupTextContainer, '^' + (i + 1));
 				spriteContainer.eventMode = 'static';
-				spriteContainer.onmousedown = e => e.stopPropagation();
-				spriteContainer.onmouseup = e => e.stopPropagation();
-				spriteContainer.onclick = e => {
-					this.setToolGroupIndex(i);
-					e.stopPropagation();
-				};
+				spriteContainer.onclick = () => this.setToolGroupIndex(i);
 				spriteContainer.onmouseenter = () => this.showToolGroupTooltip(i);
 				spriteContainer.onmouseleave = () => this.hideTooltip();
 			});
@@ -388,12 +383,7 @@ export default class Placer {
 				let coordinates = Placer.toolUiCoordinates(false, i);
 				this.addToolUiButton(coordinates, this.toolIconContainer, Placer.cachedToolEntities[tool].container, this.toolTextContainer, String(i + 1));
 				Placer.cachedToolEntities[tool].container.eventMode = 'static';
-				Placer.cachedToolEntities[tool].container.onmousedown = e => e.stopPropagation();
-				Placer.cachedToolEntities[tool].container.onmouseup = e => e.stopPropagation();
-				Placer.cachedToolEntities[tool].container.onclick = (e) => {
-					this.toggleToolIndex(i);
-					e.stopPropagation();
-				};
+				Placer.cachedToolEntities[tool].container.onclick = () => this.toggleToolIndex(i);
 				Placer.cachedToolEntities[tool].container.onmouseenter = () => this.showToolTooltip(i);
 				Placer.cachedToolEntities[tool].container.onmouseleave = () => this.hideTooltip();
 			});
@@ -565,6 +555,10 @@ export default class Placer {
 		this.multilineText.tick();
 		this.painter.textUiContainer.addChild(this.toolGroupTextContainer);
 		this.painter.textUiContainer.addChild(this.toolTextContainer);
+	}
+
+	get tooltipVisible(): boolean {
+		return !!this.multilineText.lines.length;
 	}
 }
 
