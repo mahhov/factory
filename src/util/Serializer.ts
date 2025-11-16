@@ -1,5 +1,3 @@
-import {AnimatedSprite, Container} from 'pixi.js';
-import MultilineText from '../ui/MultilineText.js';
 import {
 	Base,
 	Battery,
@@ -72,7 +70,7 @@ import {
 import {MobLogic} from '../world/MobLogic.js';
 import {PlayerLogic} from '../world/PlayerLogic.js';
 import {ResourceUtils} from '../world/Resource.js';
-import {FreeWorldLayer, GridWorldLayer, OrderedGridWorldLayer, Tile, World} from '../world/World.js';
+import {FreeWorldLayer, LiveGridWorldLayer, OrderedGridWorldLayer, Tile, World} from '../world/World.js';
 import Counter from './Counter.js';
 import Vector from './Vector.js';
 
@@ -88,7 +86,7 @@ let typeMap: TypeMap = {
 	MobLogic,
 	PlayerLogic,
 	Tile,
-	GridWorldLayer,
+	LiveGridWorldLayer,
 	OrderedGridWorldLayer,
 	FreeWorldLayer,
 	World,

@@ -43,7 +43,6 @@ export default class Tooltip {
 	private get inputTile(): Tile<Entity> | null {
 		let worldPosition = this.camera.canvasToWorld(this.input.mouseCanvasPosition).scale(this.world.size).floor();
 		return [
-			this.world.planning,
 			this.world.queue,
 			this.world.live,
 			this.world.terrain,

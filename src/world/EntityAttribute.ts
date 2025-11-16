@@ -66,7 +66,7 @@ export abstract class EntityAttribute {
 		this.done = false;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		return true;
 	}
 
@@ -128,7 +128,7 @@ export class EntityBuildableAttribute extends EntityAttribute {
 	}
 
 	// returns true if building. returns false if done building or insufficient material
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.doneBuilding) return false;
 
 		let lastRatio = this.counter.ratio;
@@ -167,7 +167,7 @@ export class EntityHealthAttribute extends EntityAttribute {
 		this.health = health;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.health <= 0) {
 			world.live.replaceTileable(tile.position, new Empty());
 			return false;
@@ -195,7 +195,7 @@ export class EntityTimedAttribute extends EntityAttribute {
 		this.counter = new Counter(duration);
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		return this.counter.tick();
 	}
 
@@ -220,7 +220,7 @@ export class EntityMaterialProduceAttribute extends EntityAttribute {
 		this.outputs = outputs;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.outputs.every(materialCount => this.materialStorageAttribute.hasCapacity(materialCount))) {
 			this.outputs.forEach(materialCount => this.materialStorageAttribute.add(materialCount));
 			return true;
@@ -250,7 +250,7 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 			.map(material => [material, 0])) as Record<Material, number>;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let some = tile.position.iterate(tile.tileable.size).map(position => {
 			let tile = world.terrain.getTileBounded(position);
 			if (!(tile?.tileable instanceof MaterialDeposit)) return false;
@@ -284,7 +284,7 @@ export class EntityMaterialSourceAttribute extends EntityAttribute {
 		this.materialPickerAttribute = materialPickerAttribute;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let materialCount = new ResourceUtils.Count(this.materialPickerAttribute.material, 1);
 		util.enumValues(Rotation).forEach(rotation =>
 			getAdjacentDestinations(tile.position, tile.tileable.size, rotation)
@@ -309,7 +309,7 @@ export class EntityMaterialConsumeAttribute extends EntityAttribute {
 		this.inputs = inputs;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.inputs.every(materialCount => this.materialStorageAttribute.hasQuantity(materialCount))) {
 			this.inputs.forEach(materialCount => this.materialStorageAttribute.remove(materialCount));
 			return true;
@@ -423,7 +423,7 @@ export class EntityNonEmptyMaterialStorage extends EntityAttribute {
 		this.materialStorageAttribute = materialStorageAttribute;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		return !this.materialStorageAttribute.empty;
 	}
 }
@@ -459,7 +459,7 @@ export class EntityTransportAttribute extends EntityAttribute {
 					})));
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.materialStorageAttribute.empty) return false;
 		let material = this.materialStorageAttribute.peek!;
 		return EntityTransportAttribute.move(this.materialStorageAttribute, this.outputRotations, [new ResourceUtils.Count(material, 1)], world, tile);
@@ -474,7 +474,7 @@ export class EntityOutflowAttribute extends EntityAttribute {
 		this.materialStorageAttribute = materialStorageAttribute;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.materialStorageAttribute.empty) return false;
 		return EntityTransportAttribute.move(this.materialStorageAttribute, util.enumValues(Rotation), this.materialStorageAttribute.quantityCounts.map(materialCount => new ResourceUtils.Count(materialCount.resource, 1)), world, tile);
 	}
@@ -493,7 +493,7 @@ export class EntityInflowAttribute extends EntityAttribute {
 		this.inputRotations = inputRotations;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let materialCount = new ResourceUtils.Count(this.materialPickerAttribute.material, 1);
 		if (!this.materialStorageAttribute.hasCapacity(materialCount)) return false;
 		return util.shuffle(this.inputRotations).some(rotation =>
@@ -523,7 +523,7 @@ export class EntityPowerProduceAttribute extends EntityAttribute {
 		this.quantity = quantity;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.powerStorageAttribute.capacity - this.powerStorageAttribute.quantity >= this.quantity) {
 			this.powerStorageAttribute.quantity += this.quantity;
 			return true;
@@ -549,7 +549,7 @@ export class EntityPowerConsumeAttribute extends EntityAttribute {
 		this.quantity = quantity;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.powerStorageAttribute.quantity >= this.quantity) {
 			this.powerStorageAttribute.quantity -= this.quantity;
 			return true;
@@ -603,7 +603,7 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 		return taken;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (!this.priority) return true;
 		let remainingCapacity = this.capacity - this.quantity;
 		if (remainingCapacity)
@@ -629,7 +629,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 		this.range = range;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let connectionDeltas: Vector[] = [];
 		this.oldConnections = this.connections;
 		this.connections = [];
@@ -707,7 +707,7 @@ export class EntityCoolantProduceAttribute extends EntityAttribute {
 		this.maxQuantity = quantity;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.quantity === this.maxQuantity) return false;
 		this.quantity = this.maxQuantity;
 		return true;
@@ -730,7 +730,7 @@ export class EntityCoolantConsumeAttribute extends EntityAttribute {
 		this.quantity = quantity;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.consumed === this.quantity)
 			this.consumed = 0;
 		let coolantProduceAttributes: EntityCoolantProduceAttribute[] = util.enumValues(Rotation)
@@ -765,7 +765,7 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 		this.outputPerTier = outputPerTier;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		return tile.position.iterate(tile.tileable.size).map(position => {
 			let tile = world.terrain.getTileBounded(position);
 			if (!(tile?.tileable instanceof LiquidDeposit)) return false;
@@ -791,7 +791,7 @@ export class EntityLiquidDryExtractorAttribute extends EntityAttribute {
 		this.liquidCount = liquidCount;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		return !!this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count(this.liquidCount.resource, this.liquidCount.quantity));
 	}
 
@@ -812,7 +812,7 @@ export class EntityLiquidConsumeAttribute extends EntityAttribute {
 		this.liquidCount = liquidCount;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.liquidStorageAttribute.liquidCount.resource === this.liquidCount.resource && this.liquidStorageAttribute.liquidCount.quantity >= this.liquidCount.quantity) {
 			this.liquidStorageAttribute.liquidCount = new ResourceUtils.Count(this.liquidStorageAttribute.liquidCount.resource, this.liquidStorageAttribute.liquidCount.quantity - this.liquidCount.quantity);
 			return true;
@@ -875,7 +875,7 @@ export class EntityNonEmptyLiquidStorage extends EntityAttribute {
 		this.liquidStorageAttribute = liquidStorageAttribute;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		return !!this.liquidStorageAttribute.liquidCount.quantity;
 	}
 }
@@ -907,7 +907,7 @@ export class EntityLiquidTransportAttribute extends EntityAttribute {
 				}));
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let liquidCount = this.liquidStorageAttribute.liquidCount;
 		if (!liquidCount.quantity) return false;
 		return EntityLiquidTransportAttribute.move(this.liquidStorageAttribute, this.outputRotations, world, tile);
@@ -980,7 +980,7 @@ export class EntityMobHealthAttribute extends EntityAttribute {
 		this.health = health;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.health <= 0) {
 			world.mobLayer.removeTile(tile);
 			return false;
@@ -1002,7 +1002,7 @@ export class EntityMobChaseTargetAttribute extends EntityAttribute {
 		this.distance = distance;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let delta = this.target.subtract(tile.position);
 		if (delta.magnitude2 <= this.distance ** 2) return true;
 		if (delta.magnitude2 > this.velocity ** 2)
@@ -1051,7 +1051,7 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 		return targets.sort(([p1], [p2]) => p1.subtract(position).magnitude2 - p2.subtract(position).magnitude2);
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.velocity * this.duration + this.range, !this.friendly, world);
 		if (!targets.length) return false;
 		let velocity = targets[0][0].subtract(tile.position);
@@ -1070,7 +1070,7 @@ export class EntityDirectionMovementAttribute extends EntityAttribute {
 		this.velocity = velocity;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		world.mobLayer.updateTile(tile.position.add(this.velocity), tile);
 		return true;
 	}
@@ -1093,7 +1093,7 @@ export class EntityDamageAttribute extends EntityAttribute {
 		this.friendly = friendly;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.range, !this.friendly, world);
 		targets
 			.filter((_, i) => i < this.maxTargets)
@@ -1104,7 +1104,7 @@ export class EntityDamageAttribute extends EntityAttribute {
 }
 
 export class EntityExpireProjectileAttribute extends EntityAttribute {
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		world.mobLayer.removeTile(tile);
 		return true;
 	}
@@ -1124,7 +1124,7 @@ export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 		this.rotation = rotation;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.materialStorageAttribute.empty)
 			tile.tileable.addOverlaySprites('EntityMaterialFullSpriteAttribute', []);
 		else {
@@ -1148,7 +1148,7 @@ export class EntityActiveSpriteAttribute extends EntityAttribute {
 		this.timedAttribute = timedAttribute;
 	}
 
-	protected tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		this.sprite.currentFrame = Math.floor(this.timedAttribute.counter.ratio * this.sprite.textures.length);
 		return true;
 	}

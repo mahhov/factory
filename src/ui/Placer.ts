@@ -33,7 +33,7 @@ import {EntityNameAttribute, TooltipType} from '../world/EntityAttribute.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {Liquid, Material, ResourceUtils} from '../world/Resource.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
-import {GridWorldLayer, World} from '../world/World.js';
+import {SpriteHolder, World} from '../world/World.js';
 import {Input} from './Input.js';
 import MultilineText, {Anchor} from './MultilineText.js';
 import TextLine from './TextLine.js';
@@ -90,6 +90,7 @@ export default class Placer {
 	private tool!: Tool;
 	private startPosition = Vector.V0;
 	private endPosition = Vector.V0;
+	private spriteHolders: SpriteHolder[] = [];
 
 	constructor(painter: Painter, camera: Camera, input: Input, world: World) {
 		this.painter = painter;
@@ -340,7 +341,7 @@ export default class Placer {
 	pick() {
 		let tile = this.world.queue.getTileBounded(this.position);
 		if (tile?.tileable instanceof Empty)
-			tile = this.world.live.getTile(this.position);
+			tile = this.world.live.getTileUnchecked(this.position);
 		let tool: Tool = tile ?
 			util.enumValues(Tool).find(tool =>
 				Placer.cachedToolEntities[tool].getAttribute(EntityNameAttribute)?.name ===
@@ -410,7 +411,7 @@ export default class Placer {
 			}
 			// redraw planned entities
 			if (this.state !== PlacerState.EMPTY || this.started)
-				this.place(this.world.planning, false);
+				this.place(this.world, true, false);
 			else
 				this.world.planning.clearAllEntities();
 		}
@@ -441,7 +442,7 @@ export default class Placer {
 	rotate(delta: number) {
 		if (this.state !== PlacerState.EMPTY) {
 			this.rotation = (this.rotation + delta + 4) % 4;
-			this.place(this.world.planning, false);
+			this.place(this.world, true, false);
 		}
 	}
 
@@ -464,18 +465,23 @@ export default class Placer {
 		this.endPosition = position;
 
 		if (this.state !== PlacerState.EMPTY || this.started)
-			this.place(this.world.planning, this.started);
+			this.place(this.world, true, this.started);
 	}
 
 	end() {
 		if (!this.started) return;
 		this.started = false;
-		this.place(this.world.queue, false);
+		this.place(this.world, false, false);
 		if (this.tool === Tool.CLEAR)
 			this.tool = Tool.EMPTY;
 	}
 
-	private place(worldLayer: GridWorldLayer<Entity>, updateRotation: boolean) {
+	private getSpriteHolder(index: number) {
+		this.spriteHolders[index] ||= new SpriteHolder();
+		return this.spriteHolders[index];
+	}
+
+	private place(world: World, planning: boolean, updateRotation: boolean) {
 		let toolEntity = Placer.cachedToolEntities[this.tool];
 		let delta = this.endPosition.subtract(this.startPosition);
 		let iterations = delta
@@ -491,9 +497,18 @@ export default class Placer {
 			.ceil();
 		this.world.planning.clearAllEntities();
 
-		if (this.tool === Tool.CLEAR) {
-			this.startPosition.min(this.endPosition).iterate(iterations).forEach(position =>
-				worldLayer.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation)));
+		if (this.tool === Tool.CLEAR || util.debug && this.tool === Tool.CONVEYOR) {
+			let minPosition = this.startPosition.min(this.endPosition).clamp(Vector.V0, world.size.subtract(Vector.V1));
+			let maxPosition = this.startPosition.max(this.endPosition).clamp(Vector.V0, world.size.subtract(Vector.V1));
+			let i = 0;
+			for (let x = minPosition.x; x <= maxPosition.x; x++)
+				for (let y = minPosition.y; y <= maxPosition.y; y++)
+					if (planning) {
+						let spriteHolder = this.getSpriteHolder(i++);
+						spriteHolder.setEntity(toolEntity);
+						world.planning.addTileableUnchecked(new Vector(x, y), spriteHolder);
+					} else
+						world.queue.replaceTileable(new Vector(x, y), Placer.createToolEntity(this.tool, this.rotation));
 
 		} else {
 			let vertical = Math.abs(iterations.y) > Math.abs(iterations.x);
@@ -507,7 +522,12 @@ export default class Placer {
 			let n = vertical ? iterations.y : iterations.x;
 			let iterDelta = RotationUtils.positionShift(rotation).scale(toolEntity.tilingSize);
 			for (let i = 0; i < n; i++) {
-				worldLayer.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation));
+				if (planning && world.planning.inBounds(position, toolEntity.size)) {
+					let spriteHolder = this.getSpriteHolder(i);
+					spriteHolder.setEntity(toolEntity);
+					world.planning.addTileableUnchecked(position, spriteHolder);
+				} else if (!planning)
+					world.queue.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation));
 				position = position.add(iterDelta);
 			}
 		}
@@ -521,7 +541,7 @@ export default class Placer {
 		return PlacerState.EMPTY;
 	}
 
-	showToolGroupTooltip(index: number) {
+	private showToolGroupTooltip(index: number) {
 		this.multilineText.lines = [new TextLine(util.lowerCaseToTitleCase(Object.keys(toolTree)[index] as ToolGroup), {color: Color.NAME_TEXT})];
 		let coordinates = Placer.toolUiCoordinates(true, index);
 		this.multilineText.position = new Vector(coordinates[0][0], coordinates[0][1]);
@@ -530,7 +550,7 @@ export default class Placer {
 		this.painter.textUiContainer.removeChild(this.toolTextContainer);
 	}
 
-	showToolTooltip(index: number) {
+	private showToolTooltip(index: number) {
 		let toolEntity = Placer.cachedToolEntities[toolTree[this.toolGroup][index]];
 		this.multilineText.lines = toolEntity.tooltip(TooltipType.PLACER);
 		let coordinates = Placer.toolUiCoordinates(false, index);
@@ -540,7 +560,7 @@ export default class Placer {
 		this.painter.textUiContainer.removeChild(this.toolTextContainer);
 	}
 
-	hideTooltip() {
+	private hideTooltip() {
 		this.multilineText.lines = [];
 		this.multilineText.tick();
 		this.painter.textUiContainer.addChild(this.toolGroupTextContainer);
@@ -553,3 +573,6 @@ export default class Placer {
 //   make pipes leak
 //   missing removal transparent empty overlay
 //   add backgrounds to ui rects
+
+// todo clear tool is sticking around
+// todo rotations for sprite holders

@@ -108,7 +108,9 @@ export class Entity implements Tileable {
 
 	tick(world: World, tile: Tile<Entity>) {
 		this.attributes.forEach(attributeChain => {
-			if (attributeChain.every(attribute => attribute.tick(world, tile)))
+			if (attributeChain.length === 1)
+				attributeChain[0].tickHelper(world, tile);
+			else if (attributeChain.every(attribute => attribute.tick(world, tile)))
 				attributeChain.forEach(attribute => attribute.reset());
 		});
 	}

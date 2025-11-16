@@ -1,4 +1,4 @@
-import {Container} from 'pixi.js';
+import {Container, Sprite} from 'pixi.js';
 import Painter from '../graphics/Painter.js';
 import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';
@@ -16,6 +16,35 @@ export interface Tileable {
 	readonly rotation: Rotation;
 
 	tick(world: World, tile: Tile<Tileable>): void;
+}
+
+export class SpriteHolder implements Tileable {
+	private entity!: Entity;
+	readonly container = new Container();
+
+	setEntity(entity: Entity) {
+		if (this.entity?.name === entity.name) return this;
+		this.entity = entity;
+		let sprite = entity.container.children[0] as Sprite;
+		this.container.removeChildren();
+		if (sprite)
+			this.container.addChild(new Sprite(sprite.texture));
+		return this;
+	}
+
+	get name(): string {
+		return this.entity.name;
+	}
+
+	get size(): Vector {
+		return this.entity.size;
+	}
+
+	get rotation(): Rotation {
+		return this.entity.rotation;
+	}
+
+	tick(world: World, tile: Tile<Tileable>): void {}
 }
 
 export class Tile<T extends Tileable> {
@@ -68,29 +97,55 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 	replaceTileable(position: Vector, tileable: T) {
 		if (!this.inBounds(position, tileable.size)) return;
 
-		let replaceTiles = position.iterate(tileable.size).map(p => this.getTile(p));
-		replaceTiles.forEach(replaceTile =>
-			replaceTile.position.iterate(replaceTile.tileable.size)
-				.forEach(emptyPosition => {
-					let tile = this.getTile(emptyPosition)!;
-					if (replaceTiles.includes(tile))
-						this.container.removeChild(tile.tileable.container);
-					else if (tile.tileable.name !== this.defaultTileable.name) {
-						this.container.removeChild(tile.tileable.container);
-						this.addTileable(emptyPosition, this.defaultTileable);
-					}
-				}));
+		if (tileable.name === this.defaultTileable.name) {
+			let tile = this.getTileUnchecked(position);
+			this.removeTile(tile);
+			return;
+		}
 
-		this.addTileable(position, tileable);
+		let endPosition = position.add(tileable.size);
+		for (let x = position.x; x < endPosition.x; x++) {
+			for (let y = position.y; y < endPosition.y; y++) {
+				let tile = this.getTileUnchecked(new Vector(x, y));
+				this.removeTile(tile);
+				tile.position = position;
+				tile.tileable = tileable;
+			}
+		}
+
+		this.addContainer(tileable.container, position, tileable.size);
+		this.addedTile(position);
 	}
 
-	protected addTileable(position: Vector, tileable: T) {
-		position.iterate(tileable.size)
-			.map(subPosition => this.getTile(subPosition)!)
-			.forEach(tile => {
-				tile.tileable = tileable;
+	private removeTile(tile: Tile<T>) {
+		let originalPosition = tile.position;
+		if (tile.tileable.name === this.defaultTileable.name) return;
+		this.container.removeChild(tile.tileable.container);
+		let endPosition = tile.position.add(tile.tileable.size);
+		for (let xx = tile.position.x; xx < endPosition.x; xx++) {
+			for (let yy = tile.position.y; yy < endPosition.y; yy++) {
+				let position = new Vector(xx, yy);
+				let tile = this.getTileUnchecked(position);
 				tile.position = position;
-			});
+				tile.tileable = this.defaultTileable;
+			}
+		}
+		this.removedTile(originalPosition);
+	}
+
+	protected removedTile(position: Vector) {}
+
+	protected addedTile(position: Vector) {}
+
+	addTileableUnchecked(position: Vector, tileable: T) {
+		// caller must make sure position is in bounds and empty
+		let end = position.add(tileable.size);
+		for (let x = position.x; x < end.x; x++)
+			for (let y = position.y; y < end.y; y++) {
+				let tile = this.getTileUnchecked(new Vector(x, y));
+				tile.position = position;
+				tile.tileable = tileable;
+			}
 
 		if (tileable.name !== this.defaultTileable.name)
 			this.addContainer(tileable.container, position, tileable.size);
@@ -100,7 +155,8 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 		return position.boundBy(Vector.V0, this.size.subtract(size).add(Vector.V1));
 	}
 
-	getTile(position: Vector): Tile<T> {
+	getTileUnchecked(position: Vector): Tile<T> {
+		// caller must make sure position is in bounds
 		return this.grid[position.x][position.y];
 	}
 
@@ -117,14 +173,29 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 	}
 }
 
+export class LiveGridWorldLayer<T extends Tileable> extends GridWorldLayer<T> {
+	readonly nonEmptyPositions: Set<Vector> = new Set();
+
+	protected removedTile(position: Vector) {
+		this.nonEmptyPositions.delete(position);
+	}
+
+	protected addedTile(position: Vector) {
+		this.nonEmptyPositions.add(position);
+	}
+}
+
 export class OrderedGridWorldLayer<T extends Tileable> extends GridWorldLayer<T> {
 	order: Vector[] = [];
 
-	protected addTileable(position: Vector, tileable: T) {
-		super.addTileable(position, tileable);
-		this.order = this.order.filter(p => !p.equals(position));
-		if (tileable !== this.defaultTileable)
-			this.order.push(position);
+	protected removedTile(position: Vector) {
+		let index = this.order.findIndex(orderedPosition => orderedPosition.equals(position));
+		console.assert(index >= 0);
+		this.order.splice(index, 1);
+	}
+
+	protected addedTile(position: Vector) {
+		this.order.push(position);
 	}
 
 	removeOrdered(index: number) {
@@ -138,7 +209,6 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 
 	addTileable(position: Vector, tileable: T) {
 		let tile = new Tile(position, tileable);
-		tile.position = position;
 		this.tiles.push(tile);
 		this.addContainer(tileable.container, position, tileable.size);
 	}
@@ -160,9 +230,9 @@ export class World {
 	readonly mobLogic = new MobLogic();
 	readonly playerLogic;
 	readonly terrain: GridWorldLayer<Entity>;
-	readonly live: GridWorldLayer<Entity>;
+	readonly live: LiveGridWorldLayer<Entity>;
 	readonly queue: OrderedGridWorldLayer<Entity>;
-	readonly planning: GridWorldLayer<Entity>;
+	readonly planning: GridWorldLayer<SpriteHolder>;
 	readonly mobLayer: FreeWorldLayer<Entity>;
 
 	constructor(size: Vector, painter: Painter, cameraContainer: Container) {
@@ -172,7 +242,7 @@ export class World {
 		cameraContainer.addChild(this.terrain.container);
 		generateTerrain(this.terrain);
 
-		this.live = new GridWorldLayer(new Empty(), size);
+		this.live = new LiveGridWorldLayer(new Empty(), size);
 		cameraContainer.addChild(this.live.container);
 		this.live.replaceTileable(size.scale(new Vector(.5)).floor(), this.playerLogic.base);
 
@@ -180,7 +250,7 @@ export class World {
 		cameraContainer.addChild(this.queue.container);
 		this.queue.container.alpha = .4;
 
-		this.planning = new GridWorldLayer(new Empty(), size);
+		this.planning = new GridWorldLayer(new SpriteHolder().setEntity(new Empty()), size);
 		cameraContainer.addChild(this.planning.container);
 		this.planning.container.alpha = .4;
 
@@ -213,19 +283,19 @@ export class World {
 	}
 
 	private tickLive() {
-		this.live.grid.forEach((column, x) => column.forEach((tile, y) => {
-			let position = new Vector(x, y);
+		this.live.nonEmptyPositions.forEach(position => {
+			let tile = this.live.getTileUnchecked(position);
 			if (tile.position.equals(position))
 				tile.tileable.tick(this, tile);
-		}));
+		});
 	}
 
 	private tickQueue() {
 		let i = 0;
 		while (i < this.queue.order.length) {
 			let position = this.queue.order[i];
-			let liveTile = this.live.getTile(position);
-			let queueTile = this.queue.getTile(position);
+			let liveTile = this.live.getTileUnchecked(position);
+			let queueTile = this.queue.getTileUnchecked(position);
 			let buildableAttribute = queueTile.tileable.getAttribute(EntityBuildableAttribute);
 			if (!buildableAttribute) {
 				console.assert(queueTile.tileable.name === 'Clear');
@@ -237,7 +307,7 @@ export class World {
 			let allowed =
 				liveTile.tileable.name === queueTile.tileable.name && liveTile.position.equals(queueTile.position) && liveTile.tileable.rotation !== queueTile.tileable.rotation ||
 				liveTile.tileable.name !== queueTile.tileable.name && liveTile.tileable.size.equals(Vector.V1) && queueTile.tileable.size.equals(Vector.V1) ||
-				position.iterate(queueTile.tileable.size).every(p => this.live.getTile(p).tileable.name === this.live.defaultTileable.name);
+				position.iterate(queueTile.tileable.size).every(p => this.live.getTileUnchecked(p).tileable.name === this.live.defaultTileable.name);
 			if (!allowed) {
 				this.queue.removeOrdered(i);
 				continue;
