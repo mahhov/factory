@@ -1016,7 +1016,7 @@ export class EntityMobHealthAttribute extends EntityAttribute {
 
 	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (this.health <= 0) {
-			world.mobLayer.removeTile(tile);
+			world.free.removeTile(tile);
 			return false;
 		}
 		return true;
@@ -1041,7 +1041,7 @@ export class EntityMobChaseTargetAttribute extends EntityAttribute {
 		if (delta.magnitude2 <= this.distance ** 2) return true;
 		if (delta.magnitude2 > this.velocity ** 2)
 			delta = delta.setMagnitude2(this.velocity ** 2);
-		world.mobLayer.updateTile(tile.position.add(delta), tile);
+		world.free.updateTile(tile.position.add(delta), tile);
 		return true;
 	}
 }
@@ -1078,7 +1078,7 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 				.map((position): [Vector, Entity | undefined] => [position, world.live.getTileBounded(position)?.tileable])
 				.filter(([_, entity]) => entity?.getAttribute(EntityHealthAttribute)) as [Vector, Entity][];
 		} else
-			targets = world.mobLayer.tiles
+			targets = world.free.tiles
 				.map((tile): [Vector, Entity] => [tile.position, tile.tileable])
 				.filter(([p]) => p.subtract(position).magnitude2 < range ** 2)
 				.filter(([_, entity]) => entity.getAttribute(EntityMobHealthAttribute));
@@ -1091,7 +1091,7 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 		let velocity = targets[0][0].subtract(tile.position);
 		if (velocity.magnitude2 > this.velocity ** 2)
 			velocity = velocity.setMagnitude2(this.velocity ** 2);
-		world.mobLayer.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.friendly));
+		world.free.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.friendly));
 		return true;
 	}
 }
@@ -1105,7 +1105,7 @@ export class EntityDirectionMovementAttribute extends EntityAttribute {
 	}
 
 	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		world.mobLayer.updateTile(tile.position.add(this.velocity), tile);
+		world.free.updateTile(tile.position.add(this.velocity), tile);
 		return true;
 	}
 }
@@ -1139,7 +1139,7 @@ export class EntityDamageAttribute extends EntityAttribute {
 
 export class EntityExpireProjectileAttribute extends EntityAttribute {
 	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		world.mobLayer.removeTile(tile);
+		world.free.removeTile(tile);
 		return true;
 	}
 }

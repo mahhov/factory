@@ -215,11 +215,26 @@ export class OrderedGridWorldLayer<T extends Tileable> extends GridWorldLayer<T>
 
 export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	readonly tiles: Tile<T>[] = [];
+	private readonly chunkSizeInv: Vector;
+	private readonly chunks: Tile<T>[][][];
 	readonly container = new Container();
+
+	constructor(size: Vector, chunkSize: number) {
+		super(size);
+		this.chunkSizeInv = new Vector(1 / chunkSize);
+		let chunkCounts = size.scale(this.chunkSizeInv).ceil();
+		this.chunks = util.arr(chunkCounts.x).map(() => util.arr(chunkCounts.y).map(() => []));
+	}
+
+	private chunk(position: Vector) {
+		let chunkPosition = position.scale(this.chunkSizeInv).floor();
+		return this.chunks[chunkPosition.x][chunkPosition.y];
+	}
 
 	addTileable(position: Vector, tileable: T) {
 		let tile = new Tile(position, tileable);
 		this.tiles.push(tile);
+		this.chunk(position).push(tile);
 		this.addContainer(tileable.container, position, tileable.size);
 	}
 
@@ -232,6 +247,8 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		let index = this.tiles.indexOf(tile);
 		if (index === -1) return;
 		this.tiles.splice(index, 1);
+		let chunk = this.chunk(tile.position);
+		chunk.splice(chunk.indexOf(tile), 1);
 		this.container.removeChild(tile.tileable.container);
 	}
 }
@@ -243,7 +260,7 @@ export class World {
 	readonly live: LiveGridWorldLayer<Entity>;
 	readonly queue: OrderedGridWorldLayer<Entity>;
 	readonly planning: GridWorldLayer<SpriteHolder>;
-	readonly mobLayer: FreeWorldLayer<Entity>;
+	readonly free: FreeWorldLayer<Entity>;
 
 	constructor(size: Vector, painter: Painter, cameraContainer: Container) {
 		this.playerLogic = new PlayerLogic(painter);
@@ -264,8 +281,9 @@ export class World {
 		cameraContainer.addChild(this.planning.container);
 		this.planning.container.alpha = .4;
 
-		this.mobLayer = new FreeWorldLayer<Entity>(size);
-		cameraContainer.addChild(this.mobLayer.container);
+		// todo try different chunk sizes to see which is more efficient
+		this.free = new FreeWorldLayer<Entity>(size, 50);
+		cameraContainer.addChild(this.free.container);
 	}
 
 	get width() {
@@ -339,7 +357,7 @@ export class World {
 	}
 
 	private tickMobLayer() {
-		this.mobLayer.tiles.forEach(tile => tile.tileable.tick(this, tile));
+		this.free.tiles.forEach(tile => tile.tileable.tick(this, tile));
 	}
 }
 
