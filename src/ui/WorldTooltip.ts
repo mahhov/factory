@@ -5,16 +5,16 @@ import Painter from '../graphics/Painter.js';
 import Vector from '../util/Vector.js';
 import {Entity} from '../world/Entity.js';
 import {TooltipType} from '../world/EntityAttribute.js';
-import {SpriteHolder, Tile, Tileable, World} from '../world/World.js';
+import {SpriteHolder, Tile, World} from '../world/World.js';
 import {Input} from './Input.js';
 import MultilineText from './MultilineText.js';
 import uiUtil from './uiUtil.js';
 
 class Selection {
-	readonly tile: Tile<Tileable>;
+	readonly tile: Tile<SpriteHolder | Entity>;
 	readonly selected: boolean;
 
-	constructor(tile: Tile<Tileable>, selected: boolean) {
+	constructor(tile: Tile<SpriteHolder | Entity>, selected: boolean) {
 		this.tile = tile;
 		this.selected = selected;
 	}
@@ -40,11 +40,10 @@ export default class WorldTooltip {
 		painter.addListener('resize', () => this.dirty());
 	}
 
-	private get inputTile(): Tile<SpriteHolder> | Tile<Entity> | null {
+	private get inputTile(): Tile<SpriteHolder | Entity> | null {
 		let worldPosition = this.camera.canvasToWorld(this.input.mouseCanvasPosition).scale(this.world.size).floor();
-		let planningTile = this.world.planning.getTileBounded(worldPosition);
-		if (planningTile) return planningTile;
 		return [
+			this.world.planning,
 			this.world.queue,
 			this.world.live,
 			this.world.terrain,

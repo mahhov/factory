@@ -110,6 +110,14 @@ export class Entity implements Tileable {
 		return this.attributes.flat().filter(attribute => attribute.constructor === attributeClass) as T[];
 	}
 
+	tooltip(type: TooltipType): TextLine[] {
+		return this.attributes.flat().flatMap(attribute => attribute.tooltip(type));
+	}
+
+	get selectable(): boolean {
+		return this.attributes.flat().some(attribute => attribute.selectable);
+	}
+
 	tick(world: World, tile: Tile<Entity>) {
 		this.attributes.forEach(attributeChain => {
 			if (attributeChain.length === 1)
@@ -117,14 +125,6 @@ export class Entity implements Tileable {
 			else if (attributeChain.every(attribute => attribute.tick(world, tile)))
 				attributeChain.forEach(attribute => attribute.reset());
 		});
-	}
-
-	tooltip(type: TooltipType): TextLine[] {
-		return this.attributes.flat().flatMap(attribute => attribute.tooltip(type));
-	}
-
-	get selectable(): boolean {
-		return this.attributes.flat().some(attribute => attribute.selectable);
 	}
 }
 
