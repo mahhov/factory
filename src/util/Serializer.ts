@@ -64,8 +64,8 @@ import {
 	EntityTimedAttribute,
 	EntityTransportAttribute,
 } from '../world/EntityAttribute.js';
-import {MobLogic} from '../world/MobLogic.js';
-import {PlayerLogic} from '../world/PlayerLogic.js';
+import MobLogic from '../world/MobLogic.js';
+import PlayerLogic from '../world/PlayerLogic.js';
 import {ResourceUtils} from '../world/Resource.js';
 import {FreeWorldLayer, LiveGridWorldLayer, OrderedGridWorldLayer, Tile, World} from '../world/World.js';
 import Counter from './Counter.js';

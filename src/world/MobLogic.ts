@@ -17,7 +17,7 @@ let scoreMapping: Record<string, number> = {
 	MegaFactory: 3,
 };
 
-export class MobLogic {
+export default class MobLogic {
 	private spawnCounter = new Counter(1000 * Infinity);
 	private targetingCounter = new Counter(10);
 

@@ -6,8 +6,8 @@ import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
 import {EntityBuildableAttribute, TooltipType} from './EntityAttribute.js';
-import {MobLogic} from './MobLogic.js';
-import {PlayerLogic} from './PlayerLogic.js';
+import MobLogic from './MobLogic.js';
+import PlayerLogic from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
 
 export interface Tileable {
