@@ -30,7 +30,6 @@ import {
 	EntityMaterialFullSpriteAttribute,
 	EntityMaterialPickerAttribute,
 	EntityMaterialProduceAttribute,
-	EntityMaterialSourceAttribute,
 	EntityMaterialStorageAttribute,
 	EntityMaterialStorageAttributeType,
 	EntityMobChaseTargetAttribute,
@@ -534,27 +533,6 @@ export class Turret extends Building {
 			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, true),
 		]);
 	}
-}
-
-export class Source extends Entity {
-	constructor() {
-		super('Source', '');
-		let materialPickerAttribute = new EntityMaterialPickerAttribute();
-		this.attributes.push([materialPickerAttribute]);
-		this.attributes.push([
-			new EntityTimedAttribute(40),
-			new EntityMaterialSourceAttribute(materialPickerAttribute),
-		]);
-	}
-
-}
-
-export class Void extends Entity {
-	constructor() {
-		super('Void', '');
-		this.attributes.push([new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(Infinity), util.enumValues(Rotation), false)]);
-	}
-
 }
 
 export class MaterialDeposit extends Entity {

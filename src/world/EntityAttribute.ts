@@ -303,27 +303,6 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityMaterialSourceAttribute extends EntityAttribute {
-	private readonly materialPickerAttribute: EntityMaterialPickerAttribute;
-
-	constructor(materialPickerAttribute: EntityMaterialPickerAttribute) {
-		super();
-		this.materialPickerAttribute = materialPickerAttribute;
-	}
-
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let materialCount = new ResourceUtils.Count(this.materialPickerAttribute.material, 1);
-		util.enumValues(Rotation).forEach(rotation =>
-			getAdjacentDestinations(tile.position, tile.tileable.size, rotation)
-				.map(destination => world.live.getTileBounded(destination)?.tileable.getAttribute(EntityMaterialStorageAttribute))
-				.forEach(materialStorageAttribute => {
-					if (materialStorageAttribute?.acceptsRotation(rotation) && materialStorageAttribute.hasCapacity(materialCount))
-						materialStorageAttribute.add(materialCount);
-				}));
-		return true;
-	}
-}
-
 export class EntityMaterialConsumeAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
 	private readonly inputs: ResourceUtils.Count<Material>[];
