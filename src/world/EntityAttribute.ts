@@ -270,8 +270,8 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			[new TextLine(`Extracts ${this.outputPerTier[0]} material / area`, {})] :
-			[]; // todo print extraction rate. similar for liquid extraction
+			[new TextLine(`Extracts ${this.outputPerTier.join('/')} material / area`, {})] :
+			[]; // todo print extraction rate. likewise for liquid extraction
 	}
 }
 
@@ -775,7 +775,7 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			[new TextLine(`Pumps ${this.outputPerTier[0]} liquid / area`, {color: color.LIQUID_TEXT})] :
+			[new TextLine(`Pumps ${this.outputPerTier.join('/')} liquid / area`, {color: color.LIQUID_TEXT})] :
 			[];
 	}
 }
