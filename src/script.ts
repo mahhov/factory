@@ -7,7 +7,7 @@ import {Input} from './ui/Input.js';
 import MultilineText, {Anchor} from './ui/MultilineText.js';
 import Placer from './ui/Placer.js';
 import TextLine from './ui/TextLine.js';
-import Tooltip from './ui/Tooltip.js';
+import WorldTooltip from './ui/WorldTooltip.js';
 import BackgroundMusic from './util/BackgroundMusic.js';
 import Vector from './util/Vector.js';
 import {World} from './world/World.js';
@@ -59,8 +59,8 @@ let camera = new Camera(painter, new Vector(.4), .2);
 let input = new Input(app.canvas, painter);
 let world = new World(new Vector(300), painter, camera.container);
 let placer = new Placer(painter, camera, input, world);
-let tooltip = new Tooltip(painter, camera, input, world);
-let controller = new Controller(camera, placer, tooltip, input, painter, world.size);
+let worldTooltip = new WorldTooltip(painter, camera, input, world);
+let controller = new Controller(camera, placer, worldTooltip, input, painter, world.size);
 let backgroundMusic = BackgroundMusic.load();
 let fpsText = new MultilineText(painter, new Vector(1, 0), [], Anchor.TOP_RIGHT);
 let renderLoop = new Loop(fpsText, 0, 'render fps', () => {});
@@ -70,7 +70,7 @@ let updateLoop = new Loop(fpsText, 1, 'update fps', () => {
 		world.tick();
 		camera.tick();
 		input.tick();
-		tooltip.tick();
+		worldTooltip.tick();
 	}
 });
 setInterval(() => updateLoop.run(), 10);

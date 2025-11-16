@@ -4,13 +4,13 @@ import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Input, InputState, KeyBinding, KeyModifier, MouseBinding, MouseButton, MouseWheelBinding} from './Input.js';
 import Placer, {PlacerState} from './Placer.js';
-import Tooltip from './Tooltip.js';
+import WorldTooltip from './WorldTooltip.js';
 
 export default class Controller {
 	private readonly input: Input;
 	private readonly painter: Painter;
 
-	constructor(camera: Camera, placer: Placer, tooltip: Tooltip, input: Input, painter: Painter, worldSize: Vector) {
+	constructor(camera: Camera, placer: Placer, worldTooltip: WorldTooltip, input: Input, painter: Painter, worldSize: Vector) {
 		this.input = input;
 		this.painter = painter;
 
@@ -65,16 +65,16 @@ export default class Controller {
 		// tooltip
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.UP], () => {
 			if (placer.state !== PlacerState.EMPTY || placer.tooltipVisible)
-				tooltip.unselect();
-			tooltip.hover();
+				worldTooltip.unselect();
+			worldTooltip.hover();
 		}));
 		input.addBinding(new MouseBinding(MouseButton.LEFT, [InputState.PRESSED], () => {
 			if (placer.state === PlacerState.EMPTY && !placer.tooltipVisible)
-				tooltip.toggleSelect();
+				worldTooltip.toggleSelect();
 			else
-				tooltip.hide();
+				worldTooltip.hide();
 		}));
-		camera.addListener('change', () => tooltip.dirty());
-		placer.addListener('toolChanged', () => tooltip.dirty());
+		camera.addListener('change', () => worldTooltip.dirty());
+		placer.addListener('toolChanged', () => worldTooltip.dirty());
 	}
 }

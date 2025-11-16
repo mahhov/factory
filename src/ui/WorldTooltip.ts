@@ -20,7 +20,7 @@ class Selection {
 	}
 }
 
-export default class Tooltip {
+export default class WorldTooltip {
 	private readonly painter: Painter;
 	private readonly camera: Camera;
 	private readonly input: Input;
