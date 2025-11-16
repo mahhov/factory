@@ -440,6 +440,8 @@ export default class Placer {
 		if (this.started) {
 			this.started = false;
 			this.world.planning.clearAllEntities();
+			if (this.tool === Tool.CLEAR)
+				this.tool = Tool.EMPTY;
 		} else {
 			this.started = true;
 			this.endPosition = this.startPosition = this.position;
