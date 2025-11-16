@@ -28,16 +28,18 @@ let resourceSettings = [
 ];
 
 export let generateTerrain = (terrainLayer: GridWorldLayer<Entity>) => {
-	Vector.V0.iterate(terrainLayer.size).forEach(v => {
-		for (let setting of resourceSettings) {
-			let {resource, scale, threshold, offset, isLiquid} = setting;
-			let noiceV = v.scale(new Vector(scale)).add(new Vector(offset));
-			let noiseValue = noise(noiceV.x, noiceV.y);
-			if (noiseValue > threshold) {
-				let deposit = !isLiquid ? new MaterialDeposit(resource as Material) : new LiquidDeposit(resource as Liquid);
-				terrainLayer.replaceTileable(v, deposit);
-				break;
+	for (let x = 0; x < terrainLayer.size.x; x++)
+		for (let y = 0; y < terrainLayer.size.y; y++) {
+			let position = new Vector(x, y);
+			for (let setting of resourceSettings) {
+				let {resource, scale, threshold, offset, isLiquid} = setting;
+				let noicePosition = position.scale(new Vector(scale)).add(new Vector(offset));
+				let noiseValue = noise(noicePosition.x, noicePosition.y);
+				if (noiseValue > threshold) {
+					let deposit = !isLiquid ? new MaterialDeposit(resource as Material) : new LiquidDeposit(resource as Liquid);
+					terrainLayer.replaceTileable(position, deposit);
+					break;
+				}
 			}
 		}
-	});
 };
