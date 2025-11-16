@@ -132,8 +132,8 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 		if (tile.tileable.name === this.defaultTileable.name) return;
 		this.container.removeChild(tile.tileable.container);
 		let endPosition = tile.position.add(tile.tileable.size);
-		for (let xx = tile.position.x; xx < endPosition.x; xx++) {
-			for (let yy = tile.position.y; yy < endPosition.y; yy++) {
+		for (let xx = originalPosition.x; xx < endPosition.x; xx++) {
+			for (let yy = originalPosition.y; yy < endPosition.y; yy++) {
 				let position = new Vector(xx, yy);
 				let tile = this.getTileUnchecked(position);
 				tile.position = position;
