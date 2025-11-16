@@ -326,7 +326,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 	}
 
 	private get position(): Vector {
-		return this.camera.canvasToWorld(this.input.mouseCanvasPosition).scale(this.world.size).floor();
+		return this.camera.canvasToWorld(this.input.mouseCanvasPosition).multiply(this.world.size).floor;
 	}
 
 	setToolGroupIndex(index: number) {
@@ -488,16 +488,16 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 		let toolEntity = Placer.cachedToolEntities[this.tool];
 		let delta = this.endPosition.subtract(this.startPosition);
 		let iterations = delta
-			.abs()
+			.abs
 			.add(Vector.V1)
 			.add(
 				delta
-					.sign()
+					.sign
 					.min(Vector.V0)
-					.abs()
-					.scale(toolEntity.size.subtract(Vector.V1)))
-			.scale(toolEntity.tilingSize.invert())
-			.ceil();
+					.abs
+					.multiply(toolEntity.size.subtract(Vector.V1)))
+			.multiply(toolEntity.tilingSize.invert)
+			.ceil;
 		this.world.planning.clearAllEntities();
 
 		if (this.tool === Tool.CLEAR || util.debug && this.tool === Tool.CONVEYOR) {
@@ -523,7 +523,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 
 			let position = this.startPosition;
 			let n = vertical ? iterations.y : iterations.x;
-			let iterDelta = RotationUtils.positionShift(rotation).scale(toolEntity.tilingSize);
+			let iterDelta = RotationUtils.positionShift(rotation).multiply(toolEntity.tilingSize);
 			for (let i = 0; i < n; i++) {
 				if (planning && world.planning.inBounds(position, toolEntity.size)) {
 					let spriteHolder = this.getSpriteHolder(i);

@@ -189,7 +189,7 @@ export class Input {
 	}
 
 	get mouseCanvasPosition() {
-		return this.mousePosition.scale(new Vector(1 / this.painter.minCanvasSize));
+		return this.mousePosition.scale(1 / this.painter.minCanvasSize);
 	}
 
 	tick() {

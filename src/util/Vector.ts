@@ -15,12 +15,12 @@ export default class Vector {
 		return new Vector(x, y);
 	}
 
-	// get copy() {
-	// 	return new Vector2(this.x, this.y);
-	// }
-
 	get magnitude2() {
 		return this.x ** 2 + this.y ** 2;
+	}
+
+	get magnitude() {
+		return this.magnitude2 ** .5;
 	}
 
 	equals(v: Vector) {
@@ -47,19 +47,19 @@ export default class Vector {
 		return new Vector(Math.max(this.x, v.x), Math.max(this.y, v.y));
 	}
 
-	floor() {
+	get floor() {
 		return new Vector(Math.floor(this.x), Math.floor(this.y));
 	}
 
-	ceil() {
+	get ceil() {
 		return new Vector(Math.ceil(this.x), Math.ceil(this.y));
 	}
 
-	abs() {
+	get abs() {
 		return new Vector(Math.abs(this.x), Math.abs(this.y));
 	}
 
-	sign() {
+	get sign() {
 		return new Vector(Math.sign(this.x), Math.sign(this.y));
 	}
 
@@ -69,10 +69,10 @@ export default class Vector {
 				new Vector(x, y).add(this)));
 	}
 
-	setMagnitude2(magnitude2: number) {
+	setMagnitude(magnitude: number) {
 		return this.magnitude2 ?
-			this.scale(new Vector(Math.sqrt(magnitude2 / this.magnitude2))) :
-			new Vector(Math.sqrt(magnitude2), 0);
+			this.scale(magnitude / this.magnitude) :
+			new Vector(magnitude, 0);
 	}
 
 	add(v: Vector) {
@@ -83,11 +83,15 @@ export default class Vector {
 		return new Vector(this.x - v.x, this.y - v.y);
 	}
 
-	scale(v: Vector) {
+	scale(n: number) {
+		return new Vector(this.x * n, this.y * n);
+	}
+
+	multiply(v: Vector) {
 		return new Vector(this.x * v.x, this.y * v.y);
 	}
 
-	invert() {
+	get invert() {
 		return new Vector(1 / this.x, 1 / this.y);
 	}
 

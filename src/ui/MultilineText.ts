@@ -64,7 +64,7 @@ export default class MultilineText {
 		if (this.anchor === Anchor.TOP_RIGHT || this.anchor === Anchor.BOTTOM_RIGHT)
 			position = position.subtract(new Vector(this.textContainer.width / 1000, 0));
 
-		this.textContainer.position = position.scale(new Vector(1000));
+		this.textContainer.position = position.scale(1000);
 		let size = new Vector(this.textContainer.width / 1000, this.textContainer.height / 1000);
 
 		this.textBackgroundContainer.position = position;

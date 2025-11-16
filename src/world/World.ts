@@ -84,10 +84,10 @@ abstract class WorldLayer {
 	}
 
 	protected addContainer(container: Container, position: Vector, size: Vector) {
-		let sizeInv = this.size.invert();
-		position = position.scale(sizeInv);
+		let sizeInv = this.size.invert;
+		position = position.multiply(sizeInv);
 		container.position = position;
-		size = sizeInv.scale(size);
+		size = sizeInv.multiply(size);
 		container.width = size.x;
 		container.height = size.y;
 		this.container.addChild(container);
@@ -215,19 +215,19 @@ export class OrderedGridWorldLayer<T extends Tileable> extends GridWorldLayer<T>
 
 export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	readonly tiles: Tile<T>[] = [];
-	private readonly chunkSizeInv: Vector;
+	private readonly chunkSize: number;
 	private readonly chunks: Tile<T>[][][];
 	readonly container = new Container();
 
 	constructor(size: Vector, chunkSize: number) {
 		super(size);
-		this.chunkSizeInv = new Vector(1 / chunkSize);
-		let chunkCounts = size.scale(this.chunkSizeInv).ceil();
+		this.chunkSize = chunkSize;
+		let chunkCounts = size.scale(1 / chunkSize).ceil;
 		this.chunks = util.arr(chunkCounts.x).map(() => util.arr(chunkCounts.y).map(() => []));
 	}
 
 	private chunk(position: Vector) {
-		let chunkPosition = position.scale(this.chunkSizeInv).floor();
+		let chunkPosition = position.scale(1 / this.chunkSize).floor;
 		return this.chunks[chunkPosition.x][chunkPosition.y];
 	}
 
@@ -254,7 +254,7 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 }
 
 export class World {
-	readonly mobLogic = new MobLogic();
+	readonly mobLogic;
 	readonly playerLogic;
 	readonly terrain: GridWorldLayer<Entity>;
 	readonly live: LiveGridWorldLayer<Entity>;
@@ -263,6 +263,7 @@ export class World {
 	readonly free: FreeWorldLayer<Entity>;
 
 	constructor(size: Vector, painter: Painter, cameraContainer: Container) {
+		this.mobLogic = new MobLogic(painter);
 		this.playerLogic = new PlayerLogic(painter);
 
 		this.terrain = new GridWorldLayer(new Empty(), size);
@@ -271,7 +272,7 @@ export class World {
 
 		this.live = new LiveGridWorldLayer(new Empty(), size);
 		cameraContainer.addChild(this.live.container);
-		this.live.replaceTileable(size.scale(new Vector(.5)).floor(), this.playerLogic.base);
+		this.live.replaceTileable(size.scale(.5).floor, this.playerLogic.base);
 
 		this.queue = new OrderedGridWorldLayer(new Empty(), size);
 		cameraContainer.addChild(this.queue.container);
@@ -296,10 +297,6 @@ export class World {
 
 	get size() {
 		return this.live.size;
-	}
-
-	get randPosition() {
-		return new Vector(util.randInt(0, this.width), util.randInt(0, this.height));
 	}
 
 	tick() {

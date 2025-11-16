@@ -41,7 +41,7 @@ export default class WorldTooltip {
 	}
 
 	private get inputTile(): Tile<SpriteHolder | Entity> | null {
-		let worldPosition = this.camera.canvasToWorld(this.input.mouseCanvasPosition).scale(this.world.size).floor();
+		let worldPosition = this.camera.canvasToWorld(this.input.mouseCanvasPosition).multiply(this.world.size).floor;
 		return [
 			this.world.planning,
 			this.world.queue,
@@ -93,8 +93,8 @@ export default class WorldTooltip {
 			return;
 		}
 
-		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.scale(this.world.size.invert()));
-		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.add(this.selection.tile.tileable.size).scale(this.world.size.invert()));
+		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.multiply(this.world.size.invert));
+		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.add(this.selection.tile.tileable.size).multiply(this.world.size.invert));
 		let bottomRightShift = bottomRight.add(new Vector(3 / 1000));
 		let size = bottomRight.subtract(topLeft);
 

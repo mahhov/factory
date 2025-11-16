@@ -49,7 +49,7 @@ let getLineDestinations = (origin: Vector, size: Vector, rotation: Rotation, ran
 	let adjacents = getAdjacentDestinations(origin, size, rotation);
 	let shift = RotationUtils.positionShift(rotation);
 	return util.arr(range)
-		.map(offsetMagnitude => shift.scale(new Vector(offsetMagnitude)))
+		.map(offsetMagnitude => shift.scale(offsetMagnitude))
 		.flatMap(offset => adjacents.map(adjacent => adjacent.add(offset)));
 };
 
@@ -1040,7 +1040,7 @@ export class EntityMobChaseTargetAttribute extends EntityAttribute {
 		let delta = this.target.subtract(tile.position);
 		if (delta.magnitude2 <= this.distance ** 2) return true;
 		if (delta.magnitude2 > this.velocity ** 2)
-			delta = delta.setMagnitude2(this.velocity ** 2);
+			delta = delta.setMagnitude(this.velocity);
 		world.free.updateTile(tile.position.add(delta), tile);
 		return true;
 	}
@@ -1072,9 +1072,9 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 	static findTargetsWithinRange(position: Vector, range: number, targetFriendly: boolean, world: World): [Vector, Entity][] {
 		let targets: [Vector, Entity][];
 		if (targetFriendly) {
-			let start = position.subtract(new Vector(range)).floor();
-			let end = position.add(new Vector(range)).floor();
-			targets = start.iterate(end.subtract(start).add(new Vector(1)))
+			let start = position.subtract(new Vector(range)).floor;
+			let end = position.add(new Vector(range)).floor;
+			targets = start.iterate(end.subtract(start).add(Vector.V1))
 				.map((position): [Vector, Entity | undefined] => [position, world.live.getTileBounded(position)?.tileable])
 				.filter(([_, entity]) => entity?.getAttribute(EntityHealthAttribute)) as [Vector, Entity][];
 		} else
@@ -1090,7 +1090,7 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 		if (!targets.length) return false;
 		let velocity = targets[0][0].subtract(tile.position);
 		if (velocity.magnitude2 > this.velocity ** 2)
-			velocity = velocity.setMagnitude2(this.velocity ** 2);
+			velocity = velocity.setMagnitude(this.velocity);
 		world.free.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.friendly));
 		return true;
 	}
@@ -1165,7 +1165,7 @@ export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 			let color = ResourceUtils.materialColor(this.materialStorageAttribute.peek!);
 			let sprite = new Sprite(coloredGeneratedTextures.materialIndicator.texture(color));
 			let shiftRatio = this.timedAttribute.counter.ratio || 1;
-			sprite.position = RotationUtils.positionShift(this.rotation).scale(new Vector((shiftRatio - .5) * sprite.width));
+			sprite.position = RotationUtils.positionShift(this.rotation).scale((shiftRatio - .5) * sprite.width);
 			tile.tileable.addOverlaySprites('EntityMaterialFullSpriteAttribute', [sprite]);
 		}
 		return true;

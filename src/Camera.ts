@@ -29,14 +29,14 @@ export default class Camera extends Emitter<{ change: void }> {
 	}
 
 	move(delta: Vector) {
-		this.targetLeftTop = this.targetLeftTop.add(delta.scale(new Vector(this.targetWidth)));
+		this.targetLeftTop = this.targetLeftTop.add(delta.scale(this.targetWidth));
 		this.clamp();
 	}
 
 	zoom(delta: number, centerCanvas: Vector) {
 		let centerWorld = this.canvasToWorld(centerCanvas);
 		this.targetWidth = util.clamp(this.targetWidth + delta, .1, 1 + padding * 2);
-		this.targetLeftTop = centerWorld.subtract(centerCanvas.scale(new Vector(this.targetWidth)));
+		this.targetLeftTop = centerWorld.subtract(centerCanvas.scale(this.targetWidth));
 		this.clamp();
 	}
 
@@ -47,12 +47,12 @@ export default class Camera extends Emitter<{ change: void }> {
 	worldToCanvas(world: Vector) {
 		return world
 			.subtract(this.leftTop)
-			.scale(new Vector(1 / this.width));
+			.scale(1 / this.width);
 	}
 
 	canvasToWorld(canvas: Vector) {
 		return canvas
-			.scale(new Vector(this.width))
+			.scale(this.width)
 			.add(this.leftTop);
 	}
 
@@ -72,8 +72,8 @@ export default class Camera extends Emitter<{ change: void }> {
 			this.leftTop = this.targetLeftTop;
 		else
 			this.leftTop = this.leftTop
-				.scale(new Vector(lazy))
-				.add(this.targetLeftTop.scale(new Vector(1 - lazy)));
+				.scale(lazy)
+				.add(this.targetLeftTop.scale(1 - lazy));
 
 		this.updateContainer();
 		this.emit('change');

@@ -33,7 +33,7 @@ export let generateTerrain = (terrainLayer: GridWorldLayer<Entity>) => {
 			let position = new Vector(x, y);
 			for (let setting of resourceSettings) {
 				let {resource, scale, threshold, offset, isLiquid} = setting;
-				let noicePosition = position.scale(new Vector(scale)).add(new Vector(offset));
+				let noicePosition = position.scale(scale).add(new Vector(offset));
 				let noiseValue = noise(noicePosition.x, noicePosition.y);
 				if (noiseValue > threshold) {
 					let deposit = !isLiquid ? new MaterialDeposit(resource as Material) : new LiquidDeposit(resource as Liquid);
