@@ -500,7 +500,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 				for (let y = minPosition.y; y <= maxPosition.y; y++)
 					if (planning) {
 						let spriteHolder = this.getSpriteHolder(i++);
-						spriteHolder.setEntity(toolEntity);
+						spriteHolder.setEntity(toolEntity, this.rotation);
 						world.planning.addTileableUnchecked(new Vector(x, y), spriteHolder);
 					} else
 						world.queue.replaceTileable(new Vector(x, y), Placer.createToolEntity(this.tool, this.rotation));
@@ -519,7 +519,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			for (let i = 0; i < n; i++) {
 				if (planning && world.planning.inBounds(position, toolEntity.size)) {
 					let spriteHolder = this.getSpriteHolder(i);
-					spriteHolder.setEntity(toolEntity);
+					spriteHolder.setEntity(toolEntity, this.rotation);
 					world.planning.addTileableUnchecked(position, spriteHolder);
 				} else if (!planning)
 					world.queue.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation));
@@ -572,5 +572,3 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 //   make pipes leak
 //   missing removal transparent empty overlay
 //   add backgrounds to ui rects
-
-// todo rotations for sprite holders

@@ -77,12 +77,16 @@ export class Entity implements Tileable {
 			this.setSprite(new AnimatedSprite(animatedGeneratedTextures[spriteName as keyof typeof animatedGeneratedTextures]));
 	}
 
-	setSprite(sprite: Sprite) {
-		console.assert(!this.container.children.length);
+	static rotateSprite(sprite: Sprite, rotation: Rotation) {
 		let halfSize = new Vector(sprite.width, sprite.height).scale(new Vector(.5));
 		sprite.pivot = halfSize;
 		sprite.position = halfSize;
-		sprite.angle = this.rotation * 90;
+		sprite.angle = rotation * 90;
+	}
+
+	setSprite(sprite: Sprite) {
+		console.assert(!this.container.children.length);
+		Entity.rotateSprite(sprite, this.rotation);
 		this.container.addChild(sprite);
 	}
 

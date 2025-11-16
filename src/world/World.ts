@@ -23,15 +23,25 @@ export interface Tileable {
 
 export class SpriteHolder implements Tileable {
 	private entity!: Entity;
+	rotation!: Rotation;
+	private sprite: Sprite | null = null;
 	readonly container = new Container();
 
-	setEntity(entity: Entity) {
-		if (this.entity?.name === entity.name) return this;
-		this.entity = entity;
-		let sprite = entity.container.children[0] as Sprite;
-		this.container.removeChildren();
-		if (sprite)
-			this.container.addChild(new Sprite(sprite.texture));
+	setEntity(entity: Entity, rotation: Rotation) {
+		if (this.entity?.name !== entity.name) {
+			this.entity = entity;
+			this.rotation = rotation;
+			this.sprite = this.entity.container.children[0] ? new Sprite((this.entity.container.children[0] as Sprite).texture) : null;
+			if (this.sprite)
+				Entity.rotateSprite(this.sprite, rotation);
+			this.container.removeChildren();
+			if (this.sprite)
+				this.container.addChild(this.sprite);
+		} else if (this.rotation !== rotation) {
+			this.rotation = rotation;
+			if (this.sprite)
+				Entity.rotateSprite(this.sprite, rotation);
+		}
 		return this;
 	}
 
@@ -41,10 +51,6 @@ export class SpriteHolder implements Tileable {
 
 	get size(): Vector {
 		return this.entity.size;
-	}
-
-	get rotation(): Rotation {
-		return this.entity.rotation;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -258,7 +264,7 @@ export class World {
 		cameraContainer.addChild(this.queue.container);
 		this.queue.container.alpha = .4;
 
-		this.planning = new GridWorldLayer(new SpriteHolder().setEntity(new Empty()), size);
+		this.planning = new GridWorldLayer(new SpriteHolder().setEntity(new Empty(), Rotation.UP), size);
 		cameraContainer.addChild(this.planning.container);
 		this.planning.container.alpha = .4;
 
