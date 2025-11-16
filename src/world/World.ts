@@ -1,10 +1,11 @@
 import {Container, Sprite} from 'pixi.js';
 import Painter from '../graphics/Painter.js';
+import TextLine from '../ui/TextLine.js';
 import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Clear, Empty, Entity} from './Entity.js';
-import {EntityBuildableAttribute} from './EntityAttribute.js';
+import {EntityBuildableAttribute, TooltipType} from './EntityAttribute.js';
 import {MobLogic} from './MobLogic.js';
 import {PlayerLogic} from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
@@ -14,6 +15,8 @@ export interface Tileable {
 	readonly container: Container;
 	readonly size: Vector;
 	readonly rotation: Rotation;
+
+	tooltip(type: TooltipType): TextLine[];
 
 	tick(world: World, tile: Tile<Tileable>): void;
 }
@@ -44,7 +47,12 @@ export class SpriteHolder implements Tileable {
 		return this.entity.rotation;
 	}
 
+	tooltip(type: TooltipType): TextLine[] {
+		return this.entity.tooltip(type);
+	}
+
 	tick(world: World, tile: Tile<Tileable>): void {}
+
 }
 
 export class Tile<T extends Tileable> {
