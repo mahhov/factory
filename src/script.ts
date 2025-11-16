@@ -137,3 +137,9 @@ console.info('version', (await (await fetch('./version.txt')).text()).trim());
 
 // todo save/load
 // todo manual culling
+
+// todo increase building cost
+// todo bridge
+// todo extractor tooltip
+// todo fog
+// todo hostiles
