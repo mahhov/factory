@@ -75,6 +75,8 @@ namespace util {
 		return `${filledStr}${partialChar}${emptyStr}`;
 	};
 
+	export let sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 	export let debug = new URLSearchParams(window.location.search).has('debug');
 }
 
