@@ -1046,6 +1046,16 @@ export class EntityMobChaseTargetAttribute extends EntityAttribute {
 	}
 }
 
+export class EntityMobHerdPositionAttribute extends EntityAttribute {
+	position: Vector = Vector.V0;
+
+	tickHelper(world: World, tile: Tile<Entity>): boolean {
+		if (!this.position.equals(tile.position))
+			world.free.updateTile(this.position, tile);
+		return true;
+	}
+}
+
 export class EntitySpawnProjectileAttribute extends EntityAttribute {
 	private readonly velocity: number;
 	private readonly duration: number;

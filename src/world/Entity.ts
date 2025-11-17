@@ -32,8 +32,8 @@ import {
 	EntityMaterialProduceAttribute,
 	EntityMaterialStorageAttribute,
 	EntityMaterialStorageAttributeType,
-	EntityMobChaseTargetAttribute,
 	EntityMobHealthAttribute,
+	EntityMobHerdPositionAttribute,
 	EntityNameAttribute,
 	EntityNonEmptyLiquidStorage,
 	EntityNonEmptyMaterialStorage,
@@ -588,7 +588,7 @@ export class LiquidDeposit extends Entity {
 export class Mob extends Entity {
 	constructor() {
 		super('Low Tier Mob', '');
-		this.attributes.push([new EntityMobChaseTargetAttribute(.1, 6)]);
+		this.attributes.push([new EntityMobHerdPositionAttribute()]);
 		this.attributes.push([
 			new EntityTimedAttribute(40),
 			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, false),
