@@ -5,6 +5,13 @@ export default class Vector {
 	static readonly V1 = new Vector(1);
 	readonly x: number;
 	readonly y: number;
+	private magnitude2_?: number;
+	private magnitude_?: number;
+	private floor_?: Vector;
+	private ceil_?: Vector;
+	private abs_?: Vector;
+	private sign_?: Vector;
+	private invert_?: Vector;
 
 	constructor(x: number, y: number = x) {
 		this.x = x;
@@ -16,11 +23,31 @@ export default class Vector {
 	}
 
 	get magnitude2() {
-		return this.x ** 2 + this.y ** 2;
+		return this.magnitude2_ ??= this.x ** 2 + this.y ** 2;
 	}
 
 	get magnitude() {
-		return this.magnitude2 ** .5;
+		return this.magnitude_ ??= this.magnitude2 ** .5;
+	}
+
+	get floor() {
+		return this.floor_ ??= new Vector(Math.floor(this.x), Math.floor(this.y));
+	}
+
+	get ceil() {
+		return this.ceil_ ??= new Vector(Math.ceil(this.x), Math.ceil(this.y));
+	}
+
+	get abs() {
+		return this.abs_ ??= new Vector(Math.abs(this.x), Math.abs(this.y));
+	}
+
+	get sign() {
+		return this.sign_ ??= new Vector(Math.sign(this.x), Math.sign(this.y));
+	}
+
+	get invert() {
+		return this.invert_ ??= new Vector(1 / this.x, 1 / this.y);
 	}
 
 	equals(v: Vector) {
@@ -45,22 +72,6 @@ export default class Vector {
 
 	max(v: Vector) {
 		return new Vector(Math.max(this.x, v.x), Math.max(this.y, v.y));
-	}
-
-	get floor() {
-		return new Vector(Math.floor(this.x), Math.floor(this.y));
-	}
-
-	get ceil() {
-		return new Vector(Math.ceil(this.x), Math.ceil(this.y));
-	}
-
-	get abs() {
-		return new Vector(Math.abs(this.x), Math.abs(this.y));
-	}
-
-	get sign() {
-		return new Vector(Math.sign(this.x), Math.sign(this.y));
 	}
 
 	iterate(delta: Vector) {
@@ -89,10 +100,6 @@ export default class Vector {
 
 	multiply(v: Vector) {
 		return new Vector(this.x * v.x, this.y * v.y);
-	}
-
-	get invert() {
-		return new Vector(1 / this.x, 1 / this.y);
 	}
 
 	clamp(min: Vector, max: Vector) {
