@@ -211,7 +211,7 @@ export class OrderedGridWorldLayer<T extends Tileable> extends GridWorldLayer<T>
 export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	readonly tiles: Tile<T>[] = [];
 	private readonly chunkSize: number;
-	private readonly chunks: Tile<T>[][][];
+	readonly chunks: Tile<T>[][][];
 	readonly container = new Container();
 
 	constructor(size: Vector, chunkSize: number) {
@@ -221,7 +221,7 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		this.chunks = util.arr(chunkCounts.x).map(() => util.arr(chunkCounts.y).map(() => []));
 	}
 
-	private chunkPosition(position: Vector): Vector {
+	chunkPosition(position: Vector): Vector {
 		return position.scale(1 / this.chunkSize).floor;
 	}
 
@@ -255,16 +255,6 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		let chunk = this.chunk(tile.position);
 		chunk.splice(chunk.indexOf(tile), 1);
 		this.container.removeChild(tile.tileable.container);
-	}
-
-	neighborChunks(position: Vector): Tile<T>[][] {
-		let chunkPosition = this.chunkPosition(position);
-		let neighborChunks = [];
-		for (let x = chunkPosition.x - 1; x <= chunkPosition.x + 1; x++)
-			for (let y = chunkPosition.y - 1; y <= chunkPosition.y + 1; y++)
-				if (x >= 0 && x < this.chunks.length && y >= 0 && y < this.chunks[0].length)
-					neighborChunks.push(this.chunks[x][y]);
-		return neighborChunks;
 	}
 }
 

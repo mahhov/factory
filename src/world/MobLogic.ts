@@ -35,15 +35,19 @@ export default class MobLogic {
 }
 
 let herdConfig = {
-	NEARBY_RADIUS_2: 100,
+	NEARBY_RADIUS: 10,
+	NEARBY_RADIUS: 10,
+	NEARBY_RADIUS_2: 10 ** 2,
 	COHESION_MAX_NEIGHBOR_COUNT: 5,
 	COHESION_WEIGHT: .008,
 	ALIGNMENT_WEIGHT: 1,
-	SEPARATION_RADIUS_2: 10,
+	SEPARATION_RADIUS_2: 3 ** 2,
 	SEPARATION_WEIGHT: .01,
 	FRICTION: .99,
 	MIN_SPEED: .09,
+	MIN_SPEED_2: .09 ** 2,
 	MAX_SPEED: .11,
+	MAX_SPEED_2: .11 ** 2,
 };
 
 class HerdManager {
@@ -68,9 +72,9 @@ class HerdManager {
 					.add(cohesion[0].scale(herdConfig.COHESION_WEIGHT))
 					.add(cohesion[1].scale(herdConfig.ALIGNMENT_WEIGHT))
 					.add(separation.scale(herdConfig.SEPARATION_WEIGHT));
-				if (velocity.magnitude && velocity.magnitude < herdConfig.MIN_SPEED)
+				if (velocity.magnitude && velocity.magnitude2 < herdConfig.MIN_SPEED_2)
 					velocity = velocity.setMagnitude(herdConfig.MIN_SPEED);
-				if (velocity.magnitude > herdConfig.MAX_SPEED)
+				if (velocity.magnitude2 > herdConfig.MAX_SPEED_2)
 					velocity = velocity.setMagnitude(herdConfig.MAX_SPEED);
 				position = position.add(velocity);
 				return this.bound(position, velocity);
@@ -79,11 +83,13 @@ class HerdManager {
 	}
 
 	private getNearbyDeltas(self: Vector): [Vector, Vector][] {
-		// todo use freeLayer chunks for performance
-		return this.positionVelocities
-			.map(([position, velocity]) => [position.subtract(self), velocity] as [Vector, Vector])
-			.filter(([delta]) => delta.magnitude2 < herdConfig.NEARBY_RADIUS_2)
-			.sort(([a], [b]) => a.magnitude2 - b.magnitude2); // todo check if sorting and slicing is a net performance loss or gain
+		let output: [Vector, Vector][] = [];
+		for (let [position, velocity] of this.positionVelocities) {
+			let delta = position.subtract(self);
+			if (delta.magnitude2 < herdConfig.NEARBY_RADIUS_2)
+				output.push([delta, velocity]);
+		}
+		return output;
 	}
 
 	private calculateSeparation(deltas: [Vector, Vector][]): Vector {
