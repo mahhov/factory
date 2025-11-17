@@ -75,19 +75,10 @@ abstract class WorldLayer {
 		this.size = size;
 	}
 
-	get width() {
-		return this.size.x;
-	}
-
-	get height() {
-		return this.size.y;
-	}
-
 	protected addContainer(container: Container, position: Vector, size: Vector) {
-		let sizeInv = this.size.invert;
-		position = position.multiply(sizeInv);
+		position = position.multiply(this.size.invert);
 		container.position = position;
-		size = sizeInv.multiply(size);
+		size = this.size.invert.multiply(size);
 		container.width = size.x;
 		container.height = size.y;
 		this.container.addChild(container);
@@ -226,8 +217,12 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		this.chunks = util.arr(chunkCounts.x).map(() => util.arr(chunkCounts.y).map(() => []));
 	}
 
+	private chunkPosition(position: Vector): Vector {
+		return position.scale(1 / this.chunkSize).floor;
+	}
+
 	private chunk(position: Vector) {
-		let chunkPosition = position.scale(1 / this.chunkSize).floor;
+		let chunkPosition = this.chunkPosition(position);
 		return this.chunks[chunkPosition.x][chunkPosition.y];
 	}
 
@@ -239,6 +234,12 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	}
 
 	updateTile(position: Vector, tile: Tile<T>) {
+		let oldChunk = this.chunk(tile.position);
+		let newChunk = this.chunk(position);
+		if (oldChunk !== newChunk) {
+			oldChunk.splice(oldChunk.indexOf(tile), 1);
+			newChunk.push(tile);
+		}
 		tile.position = position;
 		this.addContainer(tile.tileable.container, position, tile.tileable.size);
 	}
@@ -251,19 +252,30 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		chunk.splice(chunk.indexOf(tile), 1);
 		this.container.removeChild(tile.tileable.container);
 	}
+
+	neighborChunks(position: Vector): Tile<T>[][] {
+		let chunkPosition = this.chunkPosition(position);
+		let neighborChunks = [];
+		for (let x = chunkPosition.x - 1; x <= chunkPosition.x + 1; x++)
+			for (let y = chunkPosition.y - 1; y <= chunkPosition.y + 1; y++)
+				if (x >= 0 && x < this.chunks.length && y >= 0 && y < this.chunks[0].length)
+					neighborChunks.push(this.chunks[x][y]);
+		return neighborChunks;
+	}
 }
 
 export class World {
-	readonly mobLogic;
+	readonly size: Vector;
 	readonly playerLogic;
 	readonly terrain: GridWorldLayer<Entity>;
 	readonly live: LiveGridWorldLayer<Entity>;
 	readonly queue: OrderedGridWorldLayer<Entity>;
 	readonly planning: GridWorldLayer<SpriteHolder>;
 	readonly free: FreeWorldLayer<Entity>;
+	readonly mobLogic;
 
 	constructor(size: Vector, painter: Painter, cameraContainer: Container) {
-		this.mobLogic = new MobLogic(painter);
+		this.size = size;
 		this.playerLogic = new PlayerLogic(painter);
 
 		this.terrain = new GridWorldLayer(new Empty(), size);
@@ -285,18 +297,16 @@ export class World {
 		// todo try different chunk sizes to see which is more efficient
 		this.free = new FreeWorldLayer<Entity>(size, 50);
 		cameraContainer.addChild(this.free.container);
+
+		this.mobLogic = new MobLogic(painter, this);
 	}
 
 	get width() {
-		return this.live.width;
+		return this.size.x;
 	}
 
 	get height() {
-		return this.live.height;
-	}
-
-	get size() {
-		return this.live.size;
+		return this.size.y;
 	}
 
 	tick() {
