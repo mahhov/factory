@@ -11,7 +11,7 @@ export default class MobLogic {
 
 	constructor(painter: Painter, world: World) {
 		this.herdManager = new HerdManager(world.size);
-		util.arr(400).forEach(() => {
+		util.arr(1000).forEach(() => {
 			let position = new Vector(util.randInt(0, world.width), util.randInt(0, world.height));
 			let mob = new Mob();
 			this.mobs.push(mob);

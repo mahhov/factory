@@ -76,12 +76,16 @@ abstract class WorldLayer {
 	}
 
 	protected addContainer(container: Container, position: Vector, size: Vector) {
+		this.updateContainer(container, position, size);
+		this.container.addChild(container);
+	}
+
+	protected updateContainer(container: Container, position: Vector, size: Vector) {
 		position = position.multiply(this.size.invert);
 		container.position = position;
 		size = this.size.invert.multiply(size);
 		container.width = size.x;
 		container.height = size.y;
-		this.container.addChild(container);
 	}
 }
 
@@ -241,7 +245,7 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 			newChunk.push(tile);
 		}
 		tile.position = position;
-		this.addContainer(tile.tileable.container, position, tile.tileable.size);
+		this.updateContainer(tile.tileable.container, position, tile.tileable.size);
 	}
 
 	removeTile(tile: Tile<T>) {

@@ -589,10 +589,10 @@ export class Mob extends Entity {
 	constructor() {
 		super('Low Tier Mob', '');
 		this.attributes.push([new EntityMobHerdPositionAttribute()]);
-		this.attributes.push([
-			new EntityTimedAttribute(40),
-			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, false),
-		]);
+		// this.attributes.push([
+		// new EntityTimedAttribute(40),
+		// new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, false),
+		// ]);
 		this.attributes.push([new EntityMobHealthAttribute(10)]);
 	}
 }
