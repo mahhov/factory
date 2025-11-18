@@ -125,5 +125,3 @@ class HerdManager {
 		] : [position, velocity];
 	}
 }
-
-// todo tune chunk size
