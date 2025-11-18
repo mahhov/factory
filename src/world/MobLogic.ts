@@ -40,12 +40,13 @@ let herdConfig = {
 	MIN_SPEED_2: .09 ** 2,
 	MAX_SPEED: .11,
 	MAX_SPEED_2: .11 ** 2,
-	VELOCITY_UPDATE_FREQUENCY: .1,
+	MAX_VELOCITY_UPDATES: 1000,
 };
 
 class HerdManager {
 	private readonly size1: Vector;
 	private readonly herdOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>;
+	private lastHerdSize = 0;
 
 	constructor(size: Vector, herdOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>) {
 		this.size1 = size.subtract(Vector.V1);
@@ -53,13 +54,16 @@ class HerdManager {
 	}
 
 	tick() {
+		let velocityUpdateFrequency = herdConfig.MAX_VELOCITY_UPDATES / this.lastHerdSize;
+		this.lastHerdSize = 0;
 		this.herdOverlay.chunks.forEach(chunkColumn => {
 			chunkColumn.forEach(chunk => {
 				chunk.forEach(mobHerdPositionAttribute => {
+					this.lastHerdSize++;
 					let position = mobHerdPositionAttribute.position;
 					let velocity = mobHerdPositionAttribute.velocity;
 
-					if (Math.random() < herdConfig.VELOCITY_UPDATE_FREQUENCY) {
+					if (Math.random() < velocityUpdateFrequency) {
 						let deltas = this.getNeighborDeltas(position);
 						let cohesion = this.calculateCohesion(deltas);
 						let separation = this.calculateSeparation(deltas);
