@@ -593,9 +593,9 @@ export class LiquidDeposit extends Entity {
 }
 
 export class Mob extends Entity {
-	constructor() {
+	constructor(position: Vector) {
 		super('Low Tier Mob', '');
-		this.addAttributes([new EntityMobHerdPositionAttribute()]);
+		this.addAttributes([new EntityMobHerdPositionAttribute(position)]);
 		this.addAttributes([
 			new EntityTimedAttribute(40),
 			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, false),

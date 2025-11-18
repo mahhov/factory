@@ -7,17 +7,14 @@ import {FreeWorldLayerChunkOverlay, World} from './World.js';
 
 export default class MobLogic {
 	private herdManager;
-	private mobs: Mob[] = [];
 
 	constructor(painter: Painter, world: World) {
 		let herdOverlay = world.free.addChunkOverlay(6, entity => entity.getAttribute(EntityMobHerdPositionAttribute));
 		this.herdManager = new HerdManager(world.size, herdOverlay);
 		util.arr(8000).forEach(() => {
 			let position = new Vector(util.rand(world.width - 1), util.rand(world.height - 1));
-			let mob = new Mob();
-			this.mobs.push(mob);
+			let mob = new Mob(position);
 			world.free.addTileable(position, mob);
-			this.herdManager.add(position, mob.getAttribute(EntityMobHerdPositionAttribute)!);
 		});
 	}
 
@@ -49,46 +46,45 @@ let herdConfig = {
 class HerdManager {
 	private readonly size1: Vector;
 	private readonly herdOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>;
-	mobHerdPositionAttributes: EntityMobHerdPositionAttribute[] = [];
 
 	constructor(size: Vector, herdOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>) {
 		this.size1 = size.subtract(Vector.V1);
 		this.herdOverlay = herdOverlay;
 	}
 
-	add(position: Vector, mobHerdPositionAttribute: EntityMobHerdPositionAttribute) {
-		mobHerdPositionAttribute.position = position;
-		this.mobHerdPositionAttributes.push(mobHerdPositionAttribute);
-	}
-
 	update() {
-		this.mobHerdPositionAttributes.forEach(mobHerdPositionAttribute => {
-			let position = mobHerdPositionAttribute.position;
-			let velocity = mobHerdPositionAttribute.velocity;
+		this.herdOverlay.chunks.forEach(chunkColumn => {
+			chunkColumn.forEach(chunk => {
+				chunk.forEach(mobHerdPositionAttribute => {
+					let position = mobHerdPositionAttribute.position;
+					let velocity = mobHerdPositionAttribute.velocity;
 
-			if (Math.random() < herdConfig.UPDATE_RATE) {
-				let nearbyDeltas = this.getNearbyDeltas(position);
-				let cohesion = this.calculateCohesion(nearbyDeltas);
-				let separation = this.calculateSeparation(nearbyDeltas);
-				velocity = velocity
-					.add(cohesion[0].scale(herdConfig.COHESION_WEIGHT))
-					.add(cohesion[1].scale(herdConfig.ALIGNMENT_WEIGHT))
-					.add(separation.scale(herdConfig.SEPARATION_WEIGHT))
-					.add(new Vector(util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2, util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2));
-				if (velocity.magnitude && velocity.magnitude2 < herdConfig.MIN_SPEED_2)
-					velocity = velocity.setMagnitude(herdConfig.MIN_SPEED);
-				if (velocity.magnitude2 > herdConfig.MAX_SPEED_2)
-					velocity = velocity.setMagnitude(herdConfig.MAX_SPEED);
-			}
+					if (Math.random() < herdConfig.UPDATE_RATE) {
+						let nearbyDeltas = this.getNearbyDeltas(position);
+						let cohesion = this.calculateCohesion(nearbyDeltas);
+						let separation = this.calculateSeparation(nearbyDeltas);
+						velocity = velocity
+							.add(cohesion[0].scale(herdConfig.COHESION_WEIGHT))
+							.add(cohesion[1].scale(herdConfig.ALIGNMENT_WEIGHT))
+							.add(separation.scale(herdConfig.SEPARATION_WEIGHT))
+							.add(new Vector(util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2, util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2));
+						if (velocity.magnitude && velocity.magnitude2 < herdConfig.MIN_SPEED_2)
+							velocity = velocity.setMagnitude(herdConfig.MIN_SPEED);
+						if (velocity.magnitude2 > herdConfig.MAX_SPEED_2)
+							velocity = velocity.setMagnitude(herdConfig.MAX_SPEED);
+					}
 
-			position = position.add(velocity);
-			[position, velocity] = this.bound(position, velocity);
-			mobHerdPositionAttribute.position = position;
-			mobHerdPositionAttribute.velocity = velocity;
+					position = position.add(velocity);
+					[position, velocity] = this.bound(position, velocity);
+					mobHerdPositionAttribute.position = position;
+					mobHerdPositionAttribute.velocity = velocity;
+				});
+			});
 		});
 	}
 
 	private getNearbyDeltas(self: Vector): [Vector, Vector][] {
+		// return up to COHESION_MAX_NEIGHBOR_COUNT random neighbors within NEARBY_RADIUS
 		let output: [Vector, Vector][] = [];
 		let nearby = new Vector(herdConfig.NEARBY_RADIUS);
 		let searchStart = self.subtract(nearby).clamp(Vector.V0, this.size1);
@@ -113,6 +109,7 @@ class HerdManager {
 	}
 
 	private calculateSeparation(deltas: [Vector, Vector][]): Vector {
+		// return unnormalized sum of separation vectors, each inversely proportion to distance from neighbor
 		return deltas.reduce((separation, [delta]) =>
 				delta.magnitude2 ?
 					separation.subtract(delta.scale(1 / delta.magnitude2)) :
@@ -121,6 +118,7 @@ class HerdManager {
 	}
 
 	private calculateCohesion(deltas: [Vector, Vector][]): [Vector, Vector] {
+		// return unnormalized vector to center of neighbors, and unnormalized & unaveraged sum of neighbor velocities
 		if (!deltas.length) return [Vector.V0, Vector.V0];
 		deltas = deltas.slice(0, herdConfig.COHESION_MAX_NEIGHBOR_COUNT);
 		let sumDeltas = deltas.reduce(([sumDelta, sumVelocity], [delta, velocity]) => [sumDelta.add(delta), sumVelocity.add(velocity)], [Vector.V0, Vector.V0]);
