@@ -11,7 +11,7 @@ export default class MobLogic {
 
 	constructor(painter: Painter, world: World) {
 		this.herdManager = new HerdManager(world.size);
-		util.arr(4000).forEach(() => {
+		util.arr(6000).forEach(() => {
 			let position = new Vector(util.randInt(0, world.width), util.randInt(0, world.height));
 			let mob = new Mob();
 			this.mobs.push(mob);
@@ -31,14 +31,14 @@ export default class MobLogic {
 }
 
 let herdConfig = {
-	NEARBY_RADIUS: 10,
-	NEARBY_RADIUS_2: 10 ** 2,
-	COHESION_MAX_NEIGHBOR_COUNT: 5,
+	NEARBY_RADIUS: 3,
+	NEARBY_RADIUS_2: 3 ** 2,
+	COHESION_MAX_NEIGHBOR_COUNT: 3,
 	COHESION_WEIGHT: .008,
-	ALIGNMENT_WEIGHT: 1,
+	ALIGNMENT_WEIGHT: .1,
 	SEPARATION_RADIUS_2: 3 ** 2,
-	SEPARATION_WEIGHT: .01,
-	FRICTION: .99,
+	SEPARATION_WEIGHT: .015,
+	FRICTION: 1,
 	MIN_SPEED: .09,
 	MIN_SPEED_2: .09 ** 2,
 	MAX_SPEED: .11,
@@ -95,7 +95,7 @@ class HerdManager {
 					if (delta.magnitude2 < herdConfig.NEARBY_RADIUS_2) {
 						let attribute = tile.tileable.attributes[1][0] as EntityMobHerdPositionAttribute;
 						output.push([delta, attribute.velocity]);
-						if (output.length === 10)
+						if (output.length === herdConfig.COHESION_MAX_NEIGHBOR_COUNT)
 							return output;
 					}
 				}
@@ -104,7 +104,7 @@ class HerdManager {
 
 	private calculateSeparation(deltas: [Vector, Vector][]): Vector {
 		return deltas.reduce((separation, [delta]) =>
-				delta.magnitude2 && delta.magnitude2 < herdConfig.SEPARATION_RADIUS_2 ?
+				delta.magnitude2 ?
 					separation.subtract(delta.scale(1 / delta.magnitude2)) :
 					separation,
 			Vector.V0);
