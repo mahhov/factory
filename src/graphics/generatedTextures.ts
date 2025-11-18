@@ -102,6 +102,7 @@ export let animatedGeneratedTextures = {
 		[10, 10, 12, 1, '#FACA10'], [10, 21, 12, 1, '#FACA10'],
 		[10, 10, 1, 12, '#FACA10'], [21, 10, 1, 12, '#FACA10'],
 	]]),
+
 	laserExtractor: new AnimatedGeneratedTextures(32, [[
 		[0, 0, 32, 1, '#1A1C20'], [0, 31, 32, 1, '#1A1C20'], [0, 0, 1, 32, '#1A1C20'], [31, 0, 1, 32, '#1A1C20'],
 		[15, 15, 2, 2, '#FACA10'], // Center Core
@@ -612,14 +613,35 @@ export let animatedGeneratedTextures = {
 		[4, 4, 2, 2, '#30D850'], [10, 10, 2, 2, '#30D850'],
 	]]),
 
-	// --- MOBS (Movement/Blink) ---
+	// --- ENEMIES (Neo Space Pop - Small Hostile Box) ---
 	lowTierMob: new AnimatedGeneratedTextures(8, [[
-		[2, 2, 4, 4, '#D83030'], [1, 3, 1, 1, '#FACA10'],
-		[6, 3, 1, 1, '#FACA10'], [3, 6, 2, 1, '#1A1C20'],
-		[3, 6, 2, 1, '#F0F0F0'], // Feet/base 1
+		// Main "alive" core (Red, small, pulsating) - Frame 1
+		// It's just a 4x4 red block, but centered to look small within 8x8
+		[2, 2, 4, 4, '#D83030'],
+		// Small inner light/pulse
+		[3, 3, 2, 2, '#F0F0F0'],
 	], [
-		[2, 2, 4, 4, '#D83030'], [1, 3, 1, 1, '#FACA10'],
-		[6, 3, 1, 1, '#FACA10'], [3, 6, 2, 1, '#1A1C20'],
-		[3, 7, 2, 1, '#F0F0F0'], // Feet/base 2
+		// Main "alive" core (Red, larger pulse) - Frame 2
+		// Expands slightly, implying a living, hostile organism
+		[1, 1, 6, 6, '#D83030'],
+		// Brighter, larger inner light/pulse
+		[2, 2, 4, 4, '#F0F0F0'],
+	]]),
+	swarmLeader: new AnimatedGeneratedTextures(8, [[
+		[0, 0, 8, 8, '#1A1C20'], // Dark space background
+		// Main body: Still red, but with a more central shape or 'head'
+		[1, 1, 6, 6, '#D83030'],
+		// Central "eye" or command core (Yellow glow) - Frame 1
+		[3, 3, 2, 2, '#FACA10'],
+		// Small "antennae" or command spikes (lighter gray/white)
+		[0, 3, 1, 2, '#F0F0F0'], [7, 3, 1, 2, '#F0F0F0'],
+	], [
+		[0, 0, 8, 8, '#1A1C20'],
+		// Main body (pulsing slightly)
+		[0, 0, 8, 8, '#D83030'], // Expands to fill, more imposing
+		// Central "eye" or command core (Yellow, pulsing brighter/larger) - Frame 2
+		[2, 2, 4, 4, '#FACA10'],
+		// Small "antennae" or command spikes (pulsing brighter/shifting)
+		[0, 2, 1, 4, '#F0F0F0'], [7, 2, 1, 4, '#F0F0F0'],
 	]]),
 };

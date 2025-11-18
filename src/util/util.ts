@@ -1,7 +1,6 @@
 namespace util {
 	export let arr = (n: number) => [...Array(n)].map((_, i) => i);
-	export let shuffle = <T>(array: T[]): T[] => {
-		array = [...array];
+	export let shuffleInPlace = <T>(array: T[]): T[] => {
 		for (let i = 0; i < array.length; i++) {
 			let r = randInt(i, array.length);
 			[array[i], array[r]] = [array[r], array[i]];
@@ -21,7 +20,7 @@ namespace util {
 		return array[minIndex];
 	};
 	export let unique = <T>(value: T, index: number, array: T[]): boolean => array.indexOf(value) === index;
-	
+
 	export let clamp = (v: number, min: number, max: number) =>
 		Math.min(Math.max(v, min), max);
 

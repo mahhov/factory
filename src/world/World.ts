@@ -208,17 +208,16 @@ export class OrderedGridWorldLayer<T extends Tileable> extends GridWorldLayer<T>
 	}
 }
 
-export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
-	readonly tiles: Tile<T>[] = [];
+export class FreeWorldLayerChunkOverlay<T extends Tileable, S> {
 	private readonly chunkSize: number;
-	readonly chunks: Tile<T>[][][];
-	readonly container = new Container();
+	readonly chunks: S[][][];
+	private readonly mapper: (t: T) => S | null;
 
-	constructor(size: Vector, chunkSize: number) {
-		super(size);
+	constructor(size: Vector, chunkSize: number, mapper: (t: T) => S | null) {
 		this.chunkSize = chunkSize;
 		let chunkCounts = size.scale(1 / chunkSize).ceil;
 		this.chunks = util.arr(chunkCounts.x).map(() => util.arr(chunkCounts.y).map(() => []));
+		this.mapper = mapper;
 	}
 
 	chunkPosition(position: Vector): Vector {
@@ -230,20 +229,45 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		return this.chunks[chunkPosition.x][chunkPosition.y];
 	}
 
+	add(tile: Tile<T>) {
+		let value = this.mapper(tile.tileable);
+		if (!value) return;
+		this.chunk(tile.position).push(value);
+	}
+
+	update(newPosition: Vector, tile: Tile<T>) {
+		let value = this.mapper(tile.tileable);
+		if (!value) return;
+		let oldChunk = this.chunk(tile.position);
+		let newChunk = this.chunk(newPosition);
+		if (oldChunk !== newChunk) {
+			oldChunk.splice(oldChunk.indexOf(value), 1);
+			newChunk.push(value);
+		}
+	}
+
+	remove(tile: Tile<T>) {
+		let value = this.mapper(tile.tileable);
+		if (!value) return;
+		let chunk = this.chunk(tile.position);
+		chunk.splice(chunk.indexOf(value), 1);
+	}
+}
+
+export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
+	readonly tiles: Tile<T>[] = [];
+	readonly container = new Container();
+	private readonly chunkOverlays: FreeWorldLayerChunkOverlay<T, any>[] = [];
+
 	addTileable(position: Vector, tileable: T) {
 		let tile = new Tile(position, tileable);
 		this.tiles.push(tile);
-		this.chunk(position).push(tile);
+		this.chunkOverlays.forEach(chunkOverlay => chunkOverlay.add(tile));
 		this.addContainer(tileable.container, position, tileable.size);
 	}
 
 	updateTile(position: Vector, tile: Tile<T>) {
-		let oldChunk = this.chunk(tile.position);
-		let newChunk = this.chunk(position);
-		if (oldChunk !== newChunk) {
-			oldChunk.splice(oldChunk.indexOf(tile), 1);
-			newChunk.push(tile);
-		}
+		this.chunkOverlays.forEach(chunkOverlay => chunkOverlay.update(position, tile));
 		tile.position = position;
 		this.updateContainer(tile.tileable.container, position, tile.tileable.size);
 	}
@@ -252,9 +276,14 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		let index = this.tiles.indexOf(tile);
 		if (index === -1) return;
 		this.tiles.splice(index, 1);
-		let chunk = this.chunk(tile.position);
-		chunk.splice(chunk.indexOf(tile), 1);
+		this.chunkOverlays.forEach(chunkOverlay => chunkOverlay.remove(tile));
 		this.container.removeChild(tile.tileable.container);
+	}
+
+	addChunkOverlay<S>(chunkSize: number, mapper: (t: T) => S | null) {
+		let chunkOverlay = new FreeWorldLayerChunkOverlay(this.size, chunkSize, mapper);
+		this.chunkOverlays.push(chunkOverlay);
+		return chunkOverlay;
 	}
 }
 
@@ -288,7 +317,7 @@ export class World {
 		cameraContainer.addChild(this.planning.container);
 		this.planning.container.alpha = .4;
 
-		this.free = new FreeWorldLayer<Entity>(size, 6);
+		this.free = new FreeWorldLayer<Entity>(size);
 		cameraContainer.addChild(this.free.container);
 
 		this.mobLogic = new MobLogic(painter, this);

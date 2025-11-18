@@ -3,16 +3,17 @@ import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Entity, Mob} from './Entity.js';
 import {EntityMobHerdPositionAttribute} from './EntityAttribute.js';
-import {FreeWorldLayer, World} from './World.js';
+import {FreeWorldLayerChunkOverlay, World} from './World.js';
 
 export default class MobLogic {
 	private herdManager;
 	private mobs: Mob[] = [];
 
 	constructor(painter: Painter, world: World) {
-		this.herdManager = new HerdManager(world.size);
-		util.arr(6000).forEach(() => {
-			let position = new Vector(util.randInt(0, world.width), util.randInt(0, world.height));
+		let herdOverlay = world.free.addChunkOverlay(6, entity => entity.getAttribute(EntityMobHerdPositionAttribute));
+		this.herdManager = new HerdManager(world.size, herdOverlay);
+		util.arr(8000).forEach(() => {
+			let position = new Vector(util.rand(world.width - 1), util.rand(world.height - 1));
 			let mob = new Mob();
 			this.mobs.push(mob);
 			world.free.addTileable(position, mob);
@@ -21,12 +22,12 @@ export default class MobLogic {
 	}
 
 	tick(world: World) {
-		this.target(world.free);
+		this.target();
 	}
 
 
-	private target(freeLayer: FreeWorldLayer<Entity>) {
-		this.herdManager.update(freeLayer);
+	private target() {
+		this.herdManager.update();
 	}
 }
 
@@ -42,14 +43,17 @@ let herdConfig = {
 	MIN_SPEED_2: .09 ** 2,
 	MAX_SPEED: .11,
 	MAX_SPEED_2: .11 ** 2,
+	UPDATE_RATE: .1,
 };
 
 class HerdManager {
-	private readonly size: Vector;
+	private readonly size1: Vector;
+	private readonly herdOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>;
 	mobHerdPositionAttributes: EntityMobHerdPositionAttribute[] = [];
 
-	constructor(size: Vector) {
-		this.size = size;
+	constructor(size: Vector, herdOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>) {
+		this.size1 = size.subtract(Vector.V1);
+		this.herdOverlay = herdOverlay;
 	}
 
 	add(position: Vector, mobHerdPositionAttribute: EntityMobHerdPositionAttribute) {
@@ -57,22 +61,26 @@ class HerdManager {
 		this.mobHerdPositionAttributes.push(mobHerdPositionAttribute);
 	}
 
-	update(freeLayer: FreeWorldLayer<Entity>) {
+	update() {
 		this.mobHerdPositionAttributes.forEach(mobHerdPositionAttribute => {
 			let position = mobHerdPositionAttribute.position;
 			let velocity = mobHerdPositionAttribute.velocity;
-			let nearbyDeltas = this.getNearbyDeltas(position, freeLayer);
-			let cohesion = this.calculateCohesion(nearbyDeltas);
-			let separation = this.calculateSeparation(nearbyDeltas);
-			velocity = velocity
-				.add(cohesion[0].scale(herdConfig.COHESION_WEIGHT))
-				.add(cohesion[1].scale(herdConfig.ALIGNMENT_WEIGHT))
-				.add(separation.scale(herdConfig.SEPARATION_WEIGHT))
-				.add(new Vector(util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2, util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2));
-			if (velocity.magnitude && velocity.magnitude2 < herdConfig.MIN_SPEED_2)
-				velocity = velocity.setMagnitude(herdConfig.MIN_SPEED);
-			if (velocity.magnitude2 > herdConfig.MAX_SPEED_2)
-				velocity = velocity.setMagnitude(herdConfig.MAX_SPEED);
+
+			if (Math.random() < herdConfig.UPDATE_RATE) {
+				let nearbyDeltas = this.getNearbyDeltas(position);
+				let cohesion = this.calculateCohesion(nearbyDeltas);
+				let separation = this.calculateSeparation(nearbyDeltas);
+				velocity = velocity
+					.add(cohesion[0].scale(herdConfig.COHESION_WEIGHT))
+					.add(cohesion[1].scale(herdConfig.ALIGNMENT_WEIGHT))
+					.add(separation.scale(herdConfig.SEPARATION_WEIGHT))
+					.add(new Vector(util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2, util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2));
+				if (velocity.magnitude && velocity.magnitude2 < herdConfig.MIN_SPEED_2)
+					velocity = velocity.setMagnitude(herdConfig.MIN_SPEED);
+				if (velocity.magnitude2 > herdConfig.MAX_SPEED_2)
+					velocity = velocity.setMagnitude(herdConfig.MAX_SPEED);
+			}
+
 			position = position.add(velocity);
 			[position, velocity] = this.bound(position, velocity);
 			mobHerdPositionAttribute.position = position;
@@ -80,24 +88,27 @@ class HerdManager {
 		});
 	}
 
-	private getNearbyDeltas(self: Vector, freeLayer: FreeWorldLayer<Entity>): [Vector, Vector][] {
+	private getNearbyDeltas(self: Vector): [Vector, Vector][] {
 		let output: [Vector, Vector][] = [];
 		let nearby = new Vector(herdConfig.NEARBY_RADIUS);
-		let searchStart = self.subtract(nearby).clamp(Vector.V0, this.size.subtract(Vector.V1));
-		let searchEnd = self.add(nearby).clamp(Vector.V0, this.size.subtract(Vector.V1));
-		let chunkStart = freeLayer.chunkPosition(searchStart);
-		let chunkEnd = freeLayer.chunkPosition(searchEnd);
+		let searchStart = self.subtract(nearby).clamp(Vector.V0, this.size1);
+		let searchEnd = self.add(nearby).clamp(Vector.V0, this.size1);
+		let chunkStart = this.herdOverlay.chunkPosition(searchStart);
+		let chunkEnd = this.herdOverlay.chunkPosition(searchEnd);
+		let chunks = [];
 		for (let chunkX = chunkStart.x; chunkX <= chunkEnd.x; chunkX++)
 			for (let chunkY = chunkStart.y; chunkY <= chunkEnd.y; chunkY++)
-				for (let tile of freeLayer.chunks[chunkX][chunkY]) {
-					let delta = tile.position.subtract(self);
-					if (delta.magnitude2 < herdConfig.NEARBY_RADIUS_2) {
-						let mobHerdPositionAttribute = tile.tileable.getAttribute(EntityMobHerdPositionAttribute)!;
-						output.push([delta, mobHerdPositionAttribute.velocity]);
-						if (output.length === herdConfig.COHESION_MAX_NEIGHBOR_COUNT)
-							return output;
-					}
+				chunks.push(this.herdOverlay.chunks[chunkX][chunkY]);
+		util.shuffleInPlace(chunks);
+		for (let chunk of chunks)
+			for (let mobHerdPositionAttribute of chunk) {
+				let delta = mobHerdPositionAttribute.position.subtract(self);
+				if (delta.magnitude2 < herdConfig.NEARBY_RADIUS_2) {
+					output.push([delta, mobHerdPositionAttribute.velocity]);
+					if (output.length === herdConfig.COHESION_MAX_NEIGHBOR_COUNT)
+						return output;
 				}
+			}
 		return output;
 	}
 
@@ -110,6 +121,7 @@ class HerdManager {
 	}
 
 	private calculateCohesion(deltas: [Vector, Vector][]): [Vector, Vector] {
+		if (!deltas.length) return [Vector.V0, Vector.V0];
 		deltas = deltas.slice(0, herdConfig.COHESION_MAX_NEIGHBOR_COUNT);
 		let sumDeltas = deltas.reduce(([sumDelta, sumVelocity], [delta, velocity]) => [sumDelta.add(delta), sumVelocity.add(velocity)], [Vector.V0, Vector.V0]);
 		sumDeltas[0] = sumDeltas[0].scale(1 / deltas.length);
@@ -117,11 +129,11 @@ class HerdManager {
 	}
 
 	private bound(position: Vector, velocity: Vector): [Vector, Vector] {
-		let flipX = position.x < 0 || position.x >= this.size.x;
-		let flipY = position.y < 0 || position.y >= this.size.y;
+		let flipX = position.x < 0 || position.x >= this.size1.x;
+		let flipY = position.y < 0 || position.y >= this.size1.y;
 		return flipX || flipY ? [
-			position.clamp(Vector.V0, this.size.subtract(Vector.V1)),
-			velocity.multiply(new Vector(flipX ? -5 : 1, flipY ? -5 : 1)),
+			position.clamp(Vector.V0, this.size1),
+			velocity.multiply(new Vector(flipX ? -1 : 1, flipY ? -1 : 1)),
 		] : [position, velocity];
 	}
 }

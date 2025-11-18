@@ -6,7 +6,7 @@ import TextLine from '../ui/TextLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Empty, Entity, LiquidDeposit, MaterialDeposit, Projectile} from './Entity.js';
+import {Empty, Entity, LiquidDeposit, MaterialDeposit} from './Entity.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, World} from './World.js';
@@ -446,8 +446,8 @@ export class EntityTransportAttribute extends EntityAttribute {
 	}
 
 	static move(fromMaterialStorageAttribute: EntityMaterialStorageAttribute, outputRotations: Rotation[], materialCounts: ResourceUtils.Count<Material>[], world: World, tile: Tile<Entity>): boolean {
-		return util.shuffle(outputRotations).some(rotation =>
-			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
+		return util.shuffleInPlace(outputRotations).some(rotation =>
+			util.shuffleInPlace(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
 				.flatMap(destination => world.live.getTileBounded(destination)?.tileable.getAttributes(EntityMaterialStorageAttribute) || [])
 				.filter(destinationMaterialStorageAttribute => destinationMaterialStorageAttribute.acceptsRotation(rotation))
 				.filter(destinationMaterialStorageAttribute =>
@@ -455,7 +455,7 @@ export class EntityTransportAttribute extends EntityAttribute {
 					fromMaterialStorageAttribute.type === EntityMaterialStorageAttributeType.ANY ||
 					destinationMaterialStorageAttribute.type === EntityMaterialStorageAttributeType.ANY)
 				.some(destinationMaterialStorageAttribute =>
-					util.shuffle(materialCounts).some(materialCount => {
+					util.shuffleInPlace(materialCounts).some(materialCount => {
 						if (destinationMaterialStorageAttribute!.hasCapacity(materialCount)) {
 							fromMaterialStorageAttribute.remove(materialCount);
 							destinationMaterialStorageAttribute!.add(materialCount, rotation);
@@ -502,8 +502,8 @@ export class EntityInflowAttribute extends EntityAttribute {
 	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		let materialCount = new ResourceUtils.Count(this.materialPickerAttribute.material, 1);
 		if (!this.materialStorageAttribute.hasCapacity(materialCount)) return false;
-		return util.shuffle(this.inputRotations).some(rotation =>
-			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, RotationUtils.opposite(rotation)))
+		return util.shuffleInPlace(this.inputRotations).some(rotation =>
+			util.shuffleInPlace(getAdjacentDestinations(tile.position, tile.tileable.size, RotationUtils.opposite(rotation)))
 				.flatMap(source => world.live.getTileBounded(source)?.tileable.getAttributes(EntityMaterialStorageAttribute) || [])
 				.some(sourceMaterialStorageAttribute => {
 					if (sourceMaterialStorageAttribute.hasQuantity(materialCount)) {
@@ -870,8 +870,8 @@ export class EntityLiquidTransportAttribute extends EntityAttribute {
 	}
 
 	static move(fromLiquidStorageAttribute: EntityLiquidStorageAttribute, outputRotations: Rotation[], world: World, tile: Tile<Entity>): boolean {
-		return util.shuffle(outputRotations).some(rotation =>
-			util.shuffle(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
+		return util.shuffleInPlace(outputRotations).some(rotation =>
+			util.shuffleInPlace(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
 				.flatMap(destination => world.live.getTileBounded(destination)?.tileable.getAttributes(EntityLiquidStorageAttribute) || [])
 				.filter(destinationLiquidStorageAttribute => destinationLiquidStorageAttribute.acceptsRotation(rotation))
 				.some(destinationLiquidStorageAttribute => {
@@ -1097,12 +1097,12 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 	}
 
 	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.velocity * this.duration + this.range, !this.friendly, world);
-		if (!targets.length) return false;
-		let velocity = targets[0][0].subtract(tile.position);
-		if (velocity.magnitude2 > this.velocity ** 2)
-			velocity = velocity.setMagnitude(this.velocity);
-		world.free.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.friendly));
+		// let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.velocity * this.duration + this.range, !this.friendly, world);
+		// if (!targets.length) return false;
+		// let velocity = targets[0][0].subtract(tile.position);
+		// if (velocity.magnitude2 > this.velocity ** 2)
+		// 	velocity = velocity.setMagnitude(this.velocity);
+		// world.free.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.friendly));
 		return true;
 	}
 }

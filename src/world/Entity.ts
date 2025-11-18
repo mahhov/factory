@@ -596,12 +596,15 @@ export class Mob extends Entity {
 	constructor() {
 		super('Low Tier Mob', '');
 		this.addAttributes([new EntityMobHerdPositionAttribute()]);
-		// this.addAttributes([
-		// new EntityTimedAttribute(40),
-		// new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, false),
-		// ]);
+		this.addAttributes([
+			new EntityTimedAttribute(40),
+			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, false),
+		]);
 		this.addAttributes([new EntityMobHealthAttribute(10)]);
 	}
+
+	// todo attack nearby structures
+	// todo stop herding when encounter structure
 }
 
 export class Projectile extends Entity {
