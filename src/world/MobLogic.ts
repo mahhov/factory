@@ -36,9 +36,8 @@ let herdConfig = {
 	COHESION_MAX_NEIGHBOR_COUNT: 3,
 	COHESION_WEIGHT: .008,
 	ALIGNMENT_WEIGHT: .1,
-	SEPARATION_RADIUS_2: 3 ** 2,
 	SEPARATION_WEIGHT: .015,
-	FRICTION: 1,
+	RAND_WEIGHT: .04,
 	MIN_SPEED: .09,
 	MIN_SPEED_2: .09 ** 2,
 	MAX_SPEED: .11,
@@ -66,10 +65,10 @@ class HerdManager {
 			let cohesion = this.calculateCohesion(nearbyDeltas);
 			let separation = this.calculateSeparation(nearbyDeltas);
 			velocity = velocity
-				.scale(herdConfig.FRICTION)
 				.add(cohesion[0].scale(herdConfig.COHESION_WEIGHT))
 				.add(cohesion[1].scale(herdConfig.ALIGNMENT_WEIGHT))
-				.add(separation.scale(herdConfig.SEPARATION_WEIGHT));
+				.add(separation.scale(herdConfig.SEPARATION_WEIGHT))
+				.add(new Vector(util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2, util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2));
 			if (velocity.magnitude && velocity.magnitude2 < herdConfig.MIN_SPEED_2)
 				velocity = velocity.setMagnitude(herdConfig.MIN_SPEED);
 			if (velocity.magnitude2 > herdConfig.MAX_SPEED_2)
@@ -127,9 +126,5 @@ class HerdManager {
 	}
 }
 
-// todo add some randomness if still
-// todo figure out why fast initially
-// todo figure out performance
 // todo try a cache map of entity attributes
-// todo seems to be a bias at startup for all mobs to move towards V0
 // todo tune chunk size
