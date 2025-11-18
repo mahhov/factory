@@ -24,14 +24,14 @@ export default class MobLogic {
 
 
 	private target() {
-		this.herdManager.update();
+		this.herdManager.tick();
 	}
 }
 
 let herdConfig = {
-	NEARBY_RADIUS: 3,
-	NEARBY_RADIUS_2: 3 ** 2,
-	COHESION_MAX_NEIGHBOR_COUNT: 3,
+	NEIGHBOR_RADIUS: 3,
+	NEIGHBOR_RADIUS_2: 3 ** 2,
+	MAX_NEIGHBOR_COUNT: 3,
 	COHESION_WEIGHT: .008,
 	ALIGNMENT_WEIGHT: .1,
 	SEPARATION_WEIGHT: .015,
@@ -40,7 +40,7 @@ let herdConfig = {
 	MIN_SPEED_2: .09 ** 2,
 	MAX_SPEED: .11,
 	MAX_SPEED_2: .11 ** 2,
-	UPDATE_RATE: .1,
+	VELOCITY_UPDATE_FREQUENCY: .1,
 };
 
 class HerdManager {
@@ -52,17 +52,17 @@ class HerdManager {
 		this.herdOverlay = herdOverlay;
 	}
 
-	update() {
+	tick() {
 		this.herdOverlay.chunks.forEach(chunkColumn => {
 			chunkColumn.forEach(chunk => {
 				chunk.forEach(mobHerdPositionAttribute => {
 					let position = mobHerdPositionAttribute.position;
 					let velocity = mobHerdPositionAttribute.velocity;
 
-					if (Math.random() < herdConfig.UPDATE_RATE) {
-						let nearbyDeltas = this.getNearbyDeltas(position);
-						let cohesion = this.calculateCohesion(nearbyDeltas);
-						let separation = this.calculateSeparation(nearbyDeltas);
+					if (Math.random() < herdConfig.VELOCITY_UPDATE_FREQUENCY) {
+						let deltas = this.getNeighborDeltas(position);
+						let cohesion = this.calculateCohesion(deltas);
+						let separation = this.calculateSeparation(deltas);
 						velocity = velocity
 							.add(cohesion[0].scale(herdConfig.COHESION_WEIGHT))
 							.add(cohesion[1].scale(herdConfig.ALIGNMENT_WEIGHT))
@@ -83,12 +83,12 @@ class HerdManager {
 		});
 	}
 
-	private getNearbyDeltas(self: Vector): [Vector, Vector][] {
-		// return up to COHESION_MAX_NEIGHBOR_COUNT random neighbors within NEARBY_RADIUS
+	private getNeighborDeltas(self: Vector): [Vector, Vector][] {
+		// return up to MAX_NEIGHBOR_COUNT random neighbors within NEIGHBOR_RADIUS
 		let output: [Vector, Vector][] = [];
-		let nearby = new Vector(herdConfig.NEARBY_RADIUS);
-		let searchStart = self.subtract(nearby).clamp(Vector.V0, this.size1);
-		let searchEnd = self.add(nearby).clamp(Vector.V0, this.size1);
+		let searchRadius = new Vector(herdConfig.NEIGHBOR_RADIUS);
+		let searchStart = self.subtract(searchRadius).clamp(Vector.V0, this.size1);
+		let searchEnd = self.add(searchRadius).clamp(Vector.V0, this.size1);
 		let chunkStart = this.herdOverlay.chunkPosition(searchStart);
 		let chunkEnd = this.herdOverlay.chunkPosition(searchEnd);
 		let chunks = [];
@@ -99,9 +99,9 @@ class HerdManager {
 		for (let chunk of chunks)
 			for (let mobHerdPositionAttribute of chunk) {
 				let delta = mobHerdPositionAttribute.position.subtract(self);
-				if (delta.magnitude2 < herdConfig.NEARBY_RADIUS_2) {
+				if (delta.magnitude2 < herdConfig.NEIGHBOR_RADIUS_2) {
 					output.push([delta, mobHerdPositionAttribute.velocity]);
-					if (output.length === herdConfig.COHESION_MAX_NEIGHBOR_COUNT)
+					if (output.length === herdConfig.MAX_NEIGHBOR_COUNT)
 						return output;
 				}
 			}
@@ -120,7 +120,6 @@ class HerdManager {
 	private calculateCohesion(deltas: [Vector, Vector][]): [Vector, Vector] {
 		// return unnormalized vector to center of neighbors, and unnormalized & unaveraged sum of neighbor velocities
 		if (!deltas.length) return [Vector.V0, Vector.V0];
-		deltas = deltas.slice(0, herdConfig.COHESION_MAX_NEIGHBOR_COUNT);
 		let sumDeltas = deltas.reduce(([sumDelta, sumVelocity], [delta, velocity]) => [sumDelta.add(delta), sumVelocity.add(velocity)], [Vector.V0, Vector.V0]);
 		sumDeltas[0] = sumDeltas[0].scale(1 / deltas.length);
 		return sumDeltas;
