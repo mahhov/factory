@@ -92,8 +92,8 @@ class HerdManager {
 				for (let tile of freeLayer.chunks[chunkX][chunkY]) {
 					let delta = tile.position.subtract(self);
 					if (delta.magnitude2 < herdConfig.NEARBY_RADIUS_2) {
-						let attribute = tile.tileable.attributes[1][0] as EntityMobHerdPositionAttribute;
-						output.push([delta, attribute.velocity]);
+						let mobHerdPositionAttribute = tile.tileable.getAttribute(EntityMobHerdPositionAttribute)!;
+						output.push([delta, mobHerdPositionAttribute.velocity]);
 						if (output.length === herdConfig.COHESION_MAX_NEIGHBOR_COUNT)
 							return output;
 					}
@@ -126,5 +126,4 @@ class HerdManager {
 	}
 }
 
-// todo try a cache map of entity attributes
 // todo tune chunk size

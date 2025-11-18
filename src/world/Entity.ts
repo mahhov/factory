@@ -60,7 +60,8 @@ export class Entity implements Tileable {
 	readonly size: Vector;
 	readonly tilingSize: Vector;
 	readonly rotation: Rotation;
-	protected readonly attributes: EntityAttribute[][] = [];
+	private readonly attributes: EntityAttribute[][] = [];
+	private readonly attributesMap: Map<string, EntityAttribute[]> = new Map();
 	readonly container = new Container();
 
 	constructor(name: string, description: string, size: Vector = Vector.V1, rotation: Rotation = Rotation.UP, tilingSize: Vector = size) {
@@ -70,9 +71,9 @@ export class Entity implements Tileable {
 		this.tilingSize = tilingSize;
 		this.rotation = rotation;
 
-		this.attributes.push([new EntityNameAttribute(name)]);
+		this.addAttributes([new EntityNameAttribute(name)]);
 		if (description)
-			this.attributes.push([new EntityDescriptionAttribute(description)]);
+			this.addAttributes([new EntityDescriptionAttribute(description)]);
 		let spriteName = util.titleCaseToCamelCase(name);
 		if (spriteName in animatedGeneratedTextures)
 			this.setSprite(new AnimatedSprite(animatedGeneratedTextures[spriteName as keyof typeof animatedGeneratedTextures]));
@@ -83,6 +84,24 @@ export class Entity implements Tileable {
 		sprite.pivot = halfSize;
 		sprite.position = halfSize;
 		sprite.angle = rotation * 90;
+	}
+
+	addAttributes(attributes: EntityAttribute[]) {
+		this.attributes.push(attributes);
+		attributes.forEach(attribute => {
+			let key = attribute.constructor.name;
+			if (!this.attributesMap.get(key))
+				this.attributesMap.set(key, []);
+			this.attributesMap.get(key)!.push(attribute);
+		});
+	}
+
+	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | null {
+		return this.attributesMap.get(attributeClass.name)?.[0] as T || null;
+	}
+
+	getAttributes<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T[] {
+		return this.attributesMap.get(attributeClass.name) as T[] || [];
 	}
 
 	setSprite(sprite: Sprite) {
@@ -97,18 +116,6 @@ export class Entity implements Tileable {
 			sprite.label = label;
 			this.container.addChild(sprite);
 		});
-	}
-
-	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | null {
-		for (let attributeChain of this.attributes) {
-			let found = attributeChain.find(attribute => attribute.constructor === attributeClass) as T | undefined;
-			if (found) return found;
-		}
-		return null;
-	}
-
-	getAttributes<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T[] {
-		return this.attributes.flat().filter(attribute => attribute.constructor === attributeClass) as T[];
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -144,8 +151,8 @@ export class Clear extends Entity {
 export abstract class Building extends Entity {
 	protected constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rotation: Rotation = Rotation.UP, tilingSize: Vector = size) {
 		super(name, description, size, rotation, tilingSize);
-		this.attributes.push([new EntityBuildableAttribute(buildTime, buildCost)]);
-		this.attributes.push([new EntityHealthAttribute(health)]);
+		this.addAttributes([new EntityBuildableAttribute(buildTime, buildCost)]);
+		this.addAttributes([new EntityHealthAttribute(health)]);
 	}
 
 	tick(world: World, tile: Tile<Entity>) {
@@ -169,23 +176,23 @@ export class Extractor extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, powerInput: number, heatOutput: number, outputPerTier: number[]) {
 		super(name, description, size, buildTime, buildCost, health);
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(10), [], true);
-		this.attributes.push([materialStorageAttribute]);
+		this.addAttributes([materialStorageAttribute]);
 		let powerStorageAttribute;
 		if (powerInput) {
 			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
-			this.attributes.push([powerStorageAttribute]);
+			this.addAttributes([powerStorageAttribute]);
 		}
 		let timedAttribute = new EntityTimedAttribute(40);
-		this.attributes.push([
+		this.addAttributes([
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput) : null,
 			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput) : null,
 			timedAttribute,
 			new EntityMaterialExtractorAttribute(materialStorageAttribute, outputPerTier),
 		].filter(v => v) as EntityAttribute[]);
-		this.attributes.push([new EntityOutflowAttribute(materialStorageAttribute)]);
+		this.addAttributes([new EntityOutflowAttribute(materialStorageAttribute)]);
 		if (powerInput)
-			this.attributes.push([new EntityPowerConductAttribute(0)]);
-		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+			this.addAttributes([new EntityPowerConductAttribute(0)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -193,15 +200,15 @@ export class Conveyor extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number, rotation: Rotation) {
 		super(name, description, size, buildTime, buildCost, health, rotation);
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, 1, getMaterialCounts(Infinity), RotationUtils.except(RotationUtils.opposite(rotation)), true);
-		this.attributes.push([materialStorageAttribute]);
+		this.addAttributes([materialStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40 / rate);
-		this.attributes.push([
+		this.addAttributes([
 			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
 			timedAttribute,
 			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
 		]);
-		this.attributes.push([new EntityMaterialFullSpriteAttribute(materialStorageAttribute, timedAttribute, rotation)]);
-		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityMaterialFullSpriteAttribute(materialStorageAttribute, timedAttribute, rotation)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -210,8 +217,8 @@ export class Distributor extends Building {
 		super(name, description, size, buildTime, buildCost, health);
 		util.enumValues(Rotation).forEach(rotation => {
 			let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, 1, getMaterialCounts(Infinity), [rotation], true);
-			this.attributes.push([materialStorageAttribute]);
-			this.attributes.push([
+			this.addAttributes([materialStorageAttribute]);
+			this.addAttributes([
 				new EntityNonEmptyMaterialStorage(materialStorageAttribute),
 				new EntityTimedAttribute(40 / rate),
 				new EntityTransportAttribute(materialStorageAttribute, RotationUtils.except(RotationUtils.opposite(rotation))),
@@ -225,8 +232,8 @@ export class Junction extends Building {
 		super(name, description, size, buildTime, buildCost, health);
 		util.enumValues(Rotation).forEach(rotation => {
 			let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, 1, getMaterialCounts(Infinity), [rotation], true);
-			this.attributes.push([materialStorageAttribute]);
-			this.attributes.push([
+			this.addAttributes([materialStorageAttribute]);
+			this.addAttributes([
 				new EntityNonEmptyMaterialStorage(materialStorageAttribute),
 				new EntityTimedAttribute(40 / rate),
 				new EntityTransportAttribute(materialStorageAttribute, [rotation]),
@@ -239,15 +246,15 @@ export class PackedConveyor extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number, rotation: Rotation) {
 		super(name, description, size, buildTime, buildCost, health, rotation);
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.PACKED, 1, getMaterialCounts(Infinity), RotationUtils.except(RotationUtils.opposite(rotation)), true);
-		this.attributes.push([materialStorageAttribute]);
+		this.addAttributes([materialStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40 / rate);
-		this.attributes.push([
+		this.addAttributes([
 			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
 			timedAttribute,
 			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
 		]);
-		this.attributes.push([new EntityMaterialFullSpriteAttribute(materialStorageAttribute, timedAttribute, rotation)]);
-		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityMaterialFullSpriteAttribute(materialStorageAttribute, timedAttribute, rotation)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -255,33 +262,33 @@ export class Factory extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, materialInput: ResourceUtils.Count<Material>[], powerInput: number, heatOutput: number, materialOutput: ResourceUtils.Count<Material>) {
 		super(name, description, size, buildTime, buildCost, health);
 		let inputMaterialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, materialInput.map(materialCount => new ResourceUtils.Count(materialCount.resource, 10)), util.enumValues(Rotation), false);
-		this.attributes.push([inputMaterialStorageAttribute]);
+		this.addAttributes([inputMaterialStorageAttribute]);
 		let outputMaterialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(materialOutput.resource, 10)], [], true);
-		this.attributes.push([outputMaterialStorageAttribute]);
+		this.addAttributes([outputMaterialStorageAttribute]);
 		let powerStorageAttribute;
 		if (powerInput) {
 			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
-			this.attributes.push([powerStorageAttribute]);
+			this.addAttributes([powerStorageAttribute]);
 		}
 		let timedAttribute = new EntityTimedAttribute(40);
-		this.attributes.push([
+		this.addAttributes([
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput) : null,
 			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput) : null,
 			new EntityMaterialConsumeAttribute(inputMaterialStorageAttribute, materialInput),
 			timedAttribute,
 			new EntityMaterialProduceAttribute(outputMaterialStorageAttribute, [materialOutput]),
 		].filter(v => v) as EntityAttribute[]);
-		this.attributes.push([new EntityOutflowAttribute(outputMaterialStorageAttribute)]);
+		this.addAttributes([new EntityOutflowAttribute(outputMaterialStorageAttribute)]);
 		if (powerInput)
-			this.attributes.push([new EntityPowerConductAttribute(0)]);
-		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+			this.addAttributes([new EntityPowerConductAttribute(0)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
 export class Storage extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
 		super(name, description, size, buildTime, buildCost, health);
-		this.attributes.push([new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(capacity), util.enumValues(Rotation), true)]);
+		this.addAttributes([new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(capacity), util.enumValues(Rotation), true)]);
 	}
 }
 
@@ -289,17 +296,17 @@ export class Dispenser extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number, rotation: Rotation) {
 		super(name, description, size, buildTime, buildCost, health, rotation);
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.ANY, 1, getMaterialCounts(Infinity), [], true);
-		this.attributes.push([materialStorageAttribute]);
+		this.addAttributes([materialStorageAttribute]);
 		let materialPickerAttribute = new EntityMaterialPickerAttribute();
-		this.attributes.push([materialPickerAttribute]);
-		this.attributes.push([new EntityInflowAttribute(materialPickerAttribute, materialStorageAttribute, [rotation])]);
+		this.addAttributes([materialPickerAttribute]);
+		this.addAttributes([new EntityInflowAttribute(materialPickerAttribute, materialStorageAttribute, [rotation])]);
 		let timedAttribute = new EntityTimedAttribute(40 / rate);
-		this.attributes.push([
+		this.addAttributes([
 			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
 			timedAttribute,
 			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
 		]);
-		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -309,22 +316,22 @@ export class Generator extends Building {
 		let materialStorageAttribute;
 		if (materialInput.length) {
 			materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, materialInput.map(materialCount => new ResourceUtils.Count(materialCount.resource, 10)), util.enumValues(Rotation), false);
-			this.attributes.push([materialStorageAttribute]);
+			this.addAttributes([materialStorageAttribute]);
 		}
 		let inputPowerStorageAttribute;
 		if (powerInput) {
 			inputPowerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
-			this.attributes.push([inputPowerStorageAttribute]);
+			this.addAttributes([inputPowerStorageAttribute]);
 		}
 		let liquidStorageAttribute;
 		if (liquidInput) {
 			liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidInput.resource], liquidInput.quantity, util.enumValues(Rotation));
-			this.attributes.push([liquidStorageAttribute]);
+			this.addAttributes([liquidStorageAttribute]);
 		}
 		let outputPowerStorageAttribute = new EntityPowerStorageAttribute(powerOutput, EntityPowerStorageAttributePriority.PRODUCE);
-		this.attributes.push([outputPowerStorageAttribute]);
+		this.addAttributes([outputPowerStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40);
-		this.attributes.push([
+		this.addAttributes([
 			materialStorageAttribute ? new EntityMaterialConsumeAttribute(materialStorageAttribute, materialInput) : null,
 			inputPowerStorageAttribute ? new EntityPowerConsumeAttribute(inputPowerStorageAttribute, powerInput) : null,
 			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput) : null,
@@ -332,23 +339,23 @@ export class Generator extends Building {
 			timedAttribute,
 			new EntityPowerProduceAttribute(outputPowerStorageAttribute, powerOutput),
 		].filter(v => v) as EntityAttribute[]);
-		this.attributes.push([new EntityPowerConductAttribute(0)]);
-		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityPowerConductAttribute(0)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
 export class Conductor extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, range: number) {
 		super(name, description, size, buildTime, buildCost, health, Rotation.UP, new Vector(range));
-		this.attributes.push([new EntityPowerConductAttribute(range)]);
+		this.addAttributes([new EntityPowerConductAttribute(range)]);
 	}
 }
 
 export class Battery extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
 		super(name, description, size, buildTime, buildCost, health);
-		this.attributes.push([new EntityPowerStorageAttribute(capacity, EntityPowerStorageAttributePriority.STORAGE)]);
-		this.attributes.push([new EntityPowerConductAttribute(0)]);
+		this.addAttributes([new EntityPowerStorageAttribute(capacity, EntityPowerStorageAttributePriority.STORAGE)]);
+		this.addAttributes([new EntityPowerConductAttribute(0)]);
 	}
 }
 
@@ -358,23 +365,23 @@ export class Vent extends Building {
 		let powerStorageAttribute;
 		if (powerInput) {
 			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
-			this.attributes.push([powerStorageAttribute]);
+			this.addAttributes([powerStorageAttribute]);
 		}
 		let liquidStorageAttribute;
 		if (liquidInput) {
 			liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidInput.resource], liquidInput.quantity, util.enumValues(Rotation));
-			this.attributes.push([liquidStorageAttribute]);
+			this.addAttributes([liquidStorageAttribute]);
 		}
 		let timedAttribute = new EntityTimedAttribute(40);
-		this.attributes.push([
+		this.addAttributes([
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput) : null,
 			liquidStorageAttribute ? new EntityLiquidConsumeAttribute(liquidStorageAttribute, liquidInput!) : null,
 			timedAttribute,
 			new EntityCoolantProduceAttribute(coolantOutput),
 		].filter(v => v) as EntityAttribute[]);
 		if (powerInput)
-			this.attributes.push([new EntityPowerConductAttribute(0)]);
-		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+			this.addAttributes([new EntityPowerConductAttribute(0)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -384,23 +391,23 @@ export class Pump extends Building {
 		let powerStorageAttribute;
 		if (powerInput) {
 			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
-			this.attributes.push([powerStorageAttribute]);
+			this.addAttributes([powerStorageAttribute]);
 		}
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), outputPerTier[0] * size.x * size.y, []);
-		this.attributes.push([liquidStorageAttribute]);
+		this.addAttributes([liquidStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40);
-		this.attributes.push([
+		this.addAttributes([
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput) : null,
 			timedAttribute,
 			new EntityLiquidExtractorAttribute(liquidStorageAttribute, outputPerTier),
 		].filter(v => v) as EntityAttribute[]);
-		this.attributes.push([
+		this.addAttributes([
 			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
 			new EntityLiquidTransportAttribute(liquidStorageAttribute, util.enumValues(Rotation)),
 		]);
 		if (powerInput)
-			this.attributes.push([new EntityPowerConductAttribute(0)]);
-		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+			this.addAttributes([new EntityPowerConductAttribute(0)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -410,23 +417,23 @@ export class Well extends Building {
 		let powerStorageAttribute;
 		if (powerInput) {
 			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
-			this.attributes.push([powerStorageAttribute]);
+			this.addAttributes([powerStorageAttribute]);
 		}
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidOutput.resource], liquidOutput.quantity, []);
-		this.attributes.push([liquidStorageAttribute]);
+		this.addAttributes([liquidStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40);
-		this.attributes.push([
+		this.addAttributes([
 			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput) : null,
 			timedAttribute,
 			new EntityLiquidDryExtractorAttribute(liquidStorageAttribute, new ResourceUtils.Count(liquidOutput.resource, liquidOutput.quantity)),
 		].filter(v => v) as EntityAttribute[]);
-		this.attributes.push([
+		this.addAttributes([
 			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
 			new EntityLiquidTransportAttribute(liquidStorageAttribute, util.enumValues(Rotation)),
 		]);
 		if (powerInput)
-			this.attributes.push([new EntityPowerConductAttribute(0)]);
-		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+			this.addAttributes([new EntityPowerConductAttribute(0)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -434,14 +441,14 @@ export class Pipe extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number, rotation: Rotation) {
 		super(name, description, size, buildTime, buildCost, health, rotation);
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), capacity, RotationUtils.except(RotationUtils.opposite(rotation)));
-		this.attributes.push([liquidStorageAttribute]);
+		this.addAttributes([liquidStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40);
-		this.attributes.push([
+		this.addAttributes([
 			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
 			timedAttribute,
 			new EntityLiquidTransportAttribute(liquidStorageAttribute, [rotation]),
 		]);
-		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -449,16 +456,16 @@ export class PipeBridge extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number, rotation: Rotation, range: number) {
 		super(name, description, size, buildTime, buildCost, health, rotation, new Vector(range));
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), capacity, RotationUtils.except(RotationUtils.opposite(rotation)));
-		this.attributes.push([liquidStorageAttribute]);
+		this.addAttributes([liquidStorageAttribute]);
 		let liquidBridgeConnectAttribute = new EntityLiquidBridgeConnectAttribute(rotation, range);
-		this.attributes.push([liquidBridgeConnectAttribute]);
+		this.addAttributes([liquidBridgeConnectAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40);
-		this.attributes.push([
+		this.addAttributes([
 			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
 			timedAttribute,
 			new EntityLiquidBridgeTransportAttribute(liquidStorageAttribute, liquidBridgeConnectAttribute),
 		]);
-		this.attributes.push([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -467,8 +474,8 @@ export class PipeDistributor extends Building {
 		super(name, description, size, buildTime, buildCost, health);
 		util.enumValues(Rotation).forEach(rotation => {
 			let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), capacity, [rotation]);
-			this.attributes.push([liquidStorageAttribute]);
-			this.attributes.push([
+			this.addAttributes([liquidStorageAttribute]);
+			this.addAttributes([
 				new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
 				new EntityTimedAttribute(40),
 				new EntityLiquidTransportAttribute(liquidStorageAttribute, RotationUtils.except(RotationUtils.opposite(rotation))),
@@ -482,8 +489,8 @@ export class PipeJunction extends Building {
 		super(name, description, size, buildTime, buildCost, health);
 		util.enumValues(Rotation).forEach(rotation => {
 			let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), capacity, [rotation]);
-			this.attributes.push([liquidStorageAttribute]);
-			this.attributes.push([
+			this.addAttributes([liquidStorageAttribute]);
+			this.addAttributes([
 				new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
 				new EntityTimedAttribute(40),
 				new EntityLiquidTransportAttribute(liquidStorageAttribute, [rotation]),
@@ -496,8 +503,8 @@ export class Tank extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
 		super(name, description, size, buildTime, buildCost, health);
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), capacity, util.enumValues(Rotation));
-		this.attributes.push([liquidStorageAttribute]);
-		this.attributes.push([
+		this.addAttributes([liquidStorageAttribute]);
+		this.addAttributes([
 			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
 			new EntityTimedAttribute(40),
 			new EntityLiquidTransportAttribute(liquidStorageAttribute, util.enumValues(Rotation)),
@@ -508,8 +515,8 @@ export class Tank extends Building {
 export class Base extends Entity {
 	constructor() {
 		super('Base', '', new Vector(5));
-		this.attributes.push([new EntityHealthAttribute(4000)]);
-		this.attributes.push([new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(util.debug ? 500000 : 500), util.enumValues(Rotation), true)]);
+		this.addAttributes([new EntityHealthAttribute(4000)]);
+		this.addAttributes([new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(util.debug ? 500000 : 500), util.enumValues(Rotation), true)]);
 	}
 }
 
@@ -526,8 +533,8 @@ export class Turret extends Building {
 		//   projectileSpeed
 
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(Material.IRON, 10)], util.enumValues(Rotation), false);
-		this.attributes.push([materialStorageAttribute]);
-		this.attributes.push([
+		this.addAttributes([materialStorageAttribute]);
+		this.addAttributes([
 			new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
 			new EntityTimedAttribute(40),
 			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, true),
@@ -542,7 +549,7 @@ export class MaterialDeposit extends Entity {
 		super('Material Deposit', '');
 		this.setSprite(SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [ResourceUtils.materialColor(material)]));
 		this.material = material;
-		this.attributes.push([new EntityMaterialDisplayAttribute(material)]);
+		this.addAttributes([new EntityMaterialDisplayAttribute(material)]);
 	}
 
 	get materialTier(): number {
@@ -572,7 +579,7 @@ export class LiquidDeposit extends Entity {
 		super('Liquid Deposit', '');
 		this.setSprite(new AnimatedSprite(liquid === Liquid.WATER ? animatedGeneratedTextures.waterDeposit : animatedGeneratedTextures.methaneDeposit));
 		this.liquid = liquid;
-		this.attributes.push([new EntityLiquidDisplayAttribute(liquid)]);
+		this.addAttributes([new EntityLiquidDisplayAttribute(liquid)]);
 	}
 
 	get liquidTier(): number {
@@ -588,24 +595,24 @@ export class LiquidDeposit extends Entity {
 export class Mob extends Entity {
 	constructor() {
 		super('Low Tier Mob', '');
-		this.attributes.push([new EntityMobHerdPositionAttribute()]);
-		// this.attributes.push([
+		this.addAttributes([new EntityMobHerdPositionAttribute()]);
+		// this.addAttributes([
 		// new EntityTimedAttribute(40),
 		// new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, false),
 		// ]);
-		this.attributes.push([new EntityMobHealthAttribute(10)]);
+		this.addAttributes([new EntityMobHealthAttribute(10)]);
 	}
 }
 
 export class Projectile extends Entity {
 	constructor(velocity: Vector, duration: number, range: number, maxTargets: number, damage: number, friendly: boolean) {
 		super('Projectile', '');
-		this.attributes.push([new EntityDirectionMovementAttribute(velocity)]);
-		this.attributes.push([
+		this.addAttributes([new EntityDirectionMovementAttribute(velocity)]);
+		this.addAttributes([
 			new EntityDamageAttribute(range, maxTargets, damage, friendly),
 			new EntityExpireProjectileAttribute(),
 		]);
-		this.attributes.push([
+		this.addAttributes([
 			new EntityTimedAttribute(duration),
 			new EntityExpireProjectileAttribute(),
 		]);
