@@ -1,9 +1,9 @@
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Mob} from './Entity.js';
+import {Entity, Mob} from './Entity.js';
 import {EntityMobHerdPositionAttribute} from './EntityAttribute.js';
-import {World} from './World.js';
+import {FreeWorldLayer, World} from './World.js';
 
 export default class MobLogic {
 	private herdManager;
@@ -11,31 +11,26 @@ export default class MobLogic {
 
 	constructor(painter: Painter, world: World) {
 		this.herdManager = new HerdManager(world.size);
-		util.arr(1000).forEach(() => {
+		util.arr(4000).forEach(() => {
 			let position = new Vector(util.randInt(0, world.width), util.randInt(0, world.height));
 			let mob = new Mob();
 			this.mobs.push(mob);
 			world.free.addTileable(position, mob);
-			this.herdManager.addPosition(position);
+			this.herdManager.add(position, mob.getAttribute(EntityMobHerdPositionAttribute)!);
 		});
 	}
 
 	tick(world: World) {
-		this.target(world);
+		this.target(world.free);
 	}
 
 
-	private target(world: World) {
-		this.herdManager.update();
-		this.mobs.forEach((mob, i) => {
-			let mobChaseTargetAttribute = mob.getAttribute(EntityMobHerdPositionAttribute)!;
-			mobChaseTargetAttribute.position = this.herdManager.positionVelocities[i][0];
-		});
+	private target(freeLayer: FreeWorldLayer<Entity>) {
+		this.herdManager.update(freeLayer);
 	}
 }
 
 let herdConfig = {
-	NEARBY_RADIUS: 10,
 	NEARBY_RADIUS: 10,
 	NEARBY_RADIUS_2: 10 ** 2,
 	COHESION_MAX_NEIGHBOR_COUNT: 5,
@@ -52,43 +47,58 @@ let herdConfig = {
 
 class HerdManager {
 	private readonly size: Vector;
-	positionVelocities: [Vector, Vector][] = [];
+	mobHerdPositionAttributes: EntityMobHerdPositionAttribute[] = [];
 
 	constructor(size: Vector) {
 		this.size = size;
 	}
 
-	addPosition(position: Vector) {
-		this.positionVelocities.push([position, Vector.V0]);
+	add(position: Vector, mobHerdPositionAttribute: EntityMobHerdPositionAttribute) {
+		mobHerdPositionAttribute.position = position;
+		this.mobHerdPositionAttributes.push(mobHerdPositionAttribute);
 	}
 
-	update() {
-		this.positionVelocities = this.positionVelocities.map(([position, velocity]) => {
-				let nearbyDeltas = this.getNearbyDeltas(position);
-				let cohesion = this.calculateCohesion(nearbyDeltas);
-				let separation = this.calculateSeparation(nearbyDeltas);
-				velocity = velocity
-					.scale(herdConfig.FRICTION)
-					.add(cohesion[0].scale(herdConfig.COHESION_WEIGHT))
-					.add(cohesion[1].scale(herdConfig.ALIGNMENT_WEIGHT))
-					.add(separation.scale(herdConfig.SEPARATION_WEIGHT));
-				if (velocity.magnitude && velocity.magnitude2 < herdConfig.MIN_SPEED_2)
-					velocity = velocity.setMagnitude(herdConfig.MIN_SPEED);
-				if (velocity.magnitude2 > herdConfig.MAX_SPEED_2)
-					velocity = velocity.setMagnitude(herdConfig.MAX_SPEED);
-				position = position.add(velocity);
-				return this.bound(position, velocity);
-			},
-		);
+	update(freeLayer: FreeWorldLayer<Entity>) {
+		this.mobHerdPositionAttributes.forEach(mobHerdPositionAttribute => {
+			let position = mobHerdPositionAttribute.position;
+			let velocity = mobHerdPositionAttribute.velocity;
+			let nearbyDeltas = this.getNearbyDeltas(position, freeLayer);
+			let cohesion = this.calculateCohesion(nearbyDeltas);
+			let separation = this.calculateSeparation(nearbyDeltas);
+			velocity = velocity
+				.scale(herdConfig.FRICTION)
+				.add(cohesion[0].scale(herdConfig.COHESION_WEIGHT))
+				.add(cohesion[1].scale(herdConfig.ALIGNMENT_WEIGHT))
+				.add(separation.scale(herdConfig.SEPARATION_WEIGHT));
+			if (velocity.magnitude && velocity.magnitude2 < herdConfig.MIN_SPEED_2)
+				velocity = velocity.setMagnitude(herdConfig.MIN_SPEED);
+			if (velocity.magnitude2 > herdConfig.MAX_SPEED_2)
+				velocity = velocity.setMagnitude(herdConfig.MAX_SPEED);
+			position = position.add(velocity);
+			[position, velocity] = this.bound(position, velocity);
+			mobHerdPositionAttribute.position = position;
+			mobHerdPositionAttribute.velocity = velocity;
+		});
 	}
 
-	private getNearbyDeltas(self: Vector): [Vector, Vector][] {
+	private getNearbyDeltas(self: Vector, freeLayer: FreeWorldLayer<Entity>): [Vector, Vector][] {
 		let output: [Vector, Vector][] = [];
-		for (let [position, velocity] of this.positionVelocities) {
-			let delta = position.subtract(self);
-			if (delta.magnitude2 < herdConfig.NEARBY_RADIUS_2)
-				output.push([delta, velocity]);
-		}
+		let nearby = new Vector(herdConfig.NEARBY_RADIUS);
+		let searchStart = self.subtract(nearby).clamp(Vector.V0, this.size.subtract(Vector.V1));
+		let searchEnd = self.add(nearby).clamp(Vector.V0, this.size.subtract(Vector.V1));
+		let chunkStart = freeLayer.chunkPosition(searchStart);
+		let chunkEnd = freeLayer.chunkPosition(searchEnd);
+		for (let chunkX = chunkStart.x; chunkX <= chunkEnd.x; chunkX++)
+			for (let chunkY = chunkStart.y; chunkY <= chunkEnd.y; chunkY++)
+				for (let tile of freeLayer.chunks[chunkX][chunkY]) {
+					let delta = tile.position.subtract(self);
+					if (delta.magnitude2 < herdConfig.NEARBY_RADIUS_2) {
+						let attribute = tile.tileable.attributes[1][0] as EntityMobHerdPositionAttribute;
+						output.push([delta, attribute.velocity]);
+						if (output.length === 10)
+							return output;
+					}
+				}
 		return output;
 	}
 
@@ -120,3 +130,6 @@ class HerdManager {
 // todo add some randomness if still
 // todo figure out why fast initially
 // todo figure out performance
+// todo try a cache map of entity attributes
+// todo seems to be a bias at startup for all mobs to move towards V0
+// todo tune chunk size

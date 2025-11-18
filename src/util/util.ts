@@ -20,8 +20,8 @@ namespace util {
 		});
 		return array[minIndex];
 	};
-	export let unique = <T extends any>(value: T, index: number, array: T[]): boolean => array.indexOf(value) === index;
-
+	export let unique = <T>(value: T, index: number, array: T[]): boolean => array.indexOf(value) === index;
+	
 	export let clamp = (v: number, min: number, max: number) =>
 		Math.min(Math.max(v, min), max);
 

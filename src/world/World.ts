@@ -289,7 +289,7 @@ export class World {
 		this.planning.container.alpha = .4;
 
 		// todo try different chunk sizes to see which is more efficient
-		this.free = new FreeWorldLayer<Entity>(size, 50);
+		this.free = new FreeWorldLayer<Entity>(size, 20);
 		cameraContainer.addChild(this.free.container);
 
 		this.mobLogic = new MobLogic(painter, this);

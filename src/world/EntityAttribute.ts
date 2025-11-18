@@ -1048,6 +1048,7 @@ export class EntityMobChaseTargetAttribute extends EntityAttribute {
 
 export class EntityMobHerdPositionAttribute extends EntityAttribute {
 	position: Vector = Vector.V0;
+	velocity: Vector = Vector.V0;
 
 	tickHelper(world: World, tile: Tile<Entity>): boolean {
 		if (!this.position.equals(tile.position))
