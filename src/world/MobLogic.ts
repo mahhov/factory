@@ -1,4 +1,5 @@
 import Painter from '../graphics/Painter.js';
+import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Entity, Mob} from './Entity.js';
@@ -11,7 +12,7 @@ export default class MobLogic {
 	constructor(painter: Painter, world: World) {
 		let herdOverlay = world.free.addChunkOverlay(6, entity => entity.getAttribute(EntityMobHerdPositionAttribute));
 		this.herdManager = new HerdManager(world.size, herdOverlay);
-		util.arr(8000).forEach(() => {
+		util.arr(800).forEach(() => {
 			let position = new Vector(util.rand(world.width - 1), util.rand(world.height - 1));
 			let mob = new Mob(position);
 			world.free.addTileable(position, mob);
@@ -32,20 +33,31 @@ let herdConfig = {
 	NEIGHBOR_RADIUS: 3,
 	NEIGHBOR_RADIUS_2: 3 ** 2,
 	MAX_NEIGHBOR_COUNT: 3,
+
 	COHESION_WEIGHT: .008,
-	ALIGNMENT_WEIGHT: .1,
+	ALIGNMENT_WEIGHT: .15,
 	SEPARATION_WEIGHT: .015,
 	RAND_WEIGHT: .04,
-	MIN_SPEED: .09,
+
+	CLUMP_DURATION: 600,
+	SCATTER_WEIGHT: -.1,
+	SCATTER_DURATION: 8,
+
+	MIN_SPEED: .091,
 	MIN_SPEED_2: .09 ** 2,
 	MAX_SPEED: .11,
 	MAX_SPEED_2: .11 ** 2,
+
 	MAX_VELOCITY_UPDATES: 1000,
 };
+console.assert(!(herdConfig.CLUMP_DURATION % 2));
+console.assert(!(herdConfig.SCATTER_DURATION % 2));
 
 class HerdManager {
 	private readonly size1: Vector;
 	private readonly herdOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>;
+	private clumping = true;
+	private clumpCounter = new Counter(1);
 	private lastHerdSize = 0;
 
 	constructor(size: Vector, herdOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>) {
@@ -54,6 +66,13 @@ class HerdManager {
 	}
 
 	tick() {
+		if (this.clumpCounter.tick()) {
+			this.clumping = !this.clumping;
+			let duration = this.clumping ? herdConfig.CLUMP_DURATION : herdConfig.SCATTER_DURATION;
+			this.clumpCounter = new Counter(util.randInt(duration / 2, duration * 1.5));
+		}
+		let scatterWeight = !this.clumping ? herdConfig.SCATTER_WEIGHT : 1;
+
 		let velocityUpdateFrequency = herdConfig.MAX_VELOCITY_UPDATES / this.lastHerdSize;
 		this.lastHerdSize = 0;
 		this.herdOverlay.chunks.forEach(chunkColumn => {
@@ -68,8 +87,8 @@ class HerdManager {
 						let cohesion = this.calculateCohesion(deltas);
 						let separation = this.calculateSeparation(deltas);
 						velocity = velocity
-							.add(cohesion[0].scale(herdConfig.COHESION_WEIGHT))
-							.add(cohesion[1].scale(herdConfig.ALIGNMENT_WEIGHT))
+							.add(cohesion[0].scale(herdConfig.COHESION_WEIGHT * scatterWeight))
+							.add(cohesion[1].scale(herdConfig.ALIGNMENT_WEIGHT * scatterWeight))
 							.add(separation.scale(herdConfig.SEPARATION_WEIGHT))
 							.add(new Vector(util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2, util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2));
 						if (velocity.magnitude && velocity.magnitude2 < herdConfig.MIN_SPEED_2)
