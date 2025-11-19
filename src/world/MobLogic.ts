@@ -4,7 +4,7 @@ import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Entity, Mob} from './Entity.js';
 import {EntityMobHerdPositionAttribute} from './EntityAttribute.js';
-import {FreeWorldLayerChunkOverlay, World} from './World.js';
+import {FreeWorldLayer, FreeWorldLayerChunkOverlay, World} from './World.js';
 
 export default class MobLogic {
 	private herdManager;
@@ -12,17 +12,18 @@ export default class MobLogic {
 	constructor(painter: Painter, world: World) {
 		let herdOverlay = world.free.addChunkOverlay(6, entity => entity.getAttribute(EntityMobHerdPositionAttribute));
 		this.herdManager = new HerdManager(world.size, herdOverlay);
-		util.arr(800).forEach(() => {
-			let position = new Vector(util.rand(world.width - 1), util.rand(world.height - 1));
-			let mob = new Mob(position);
-			world.free.addTileable(position, mob);
-		});
+		util.arr(8000).forEach(() => this.spawnMobAtRandomPosition(world.free));
+	}
+
+	spawnMobAtRandomPosition(free: FreeWorldLayer<Mob>) {
+		let position = new Vector(util.rand(free.size.x - 1), util.rand(free.size.y - 1));
+		let mob = new Mob(position);
+		free.addTileable(position, mob);
 	}
 
 	tick(world: World) {
 		this.target();
 	}
-
 
 	private target() {
 		this.herdManager.tick();
@@ -75,8 +76,8 @@ class HerdManager {
 
 		let velocityUpdateFrequency = herdConfig.MAX_VELOCITY_UPDATES / this.lastHerdSize;
 		this.lastHerdSize = 0;
-		this.herdOverlay.chunks.forEach(chunkColumn => {
-			chunkColumn.forEach(chunk => {
+		this.herdOverlay.chunks.forEach(chunkColumn =>
+			chunkColumn.forEach(chunk =>
 				chunk.forEach(mobHerdPositionAttribute => {
 					this.lastHerdSize++;
 					let position = mobHerdPositionAttribute.position;
@@ -101,9 +102,7 @@ class HerdManager {
 					[position, velocity] = this.bound(position, velocity);
 					mobHerdPositionAttribute.position = position;
 					mobHerdPositionAttribute.velocity = velocity;
-				});
-			});
-		});
+				})));
 	}
 
 	private getNeighborDeltas(self: Vector): [Vector, Vector][] {
