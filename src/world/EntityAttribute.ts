@@ -1085,20 +1085,31 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 		this.friendly = friendly;
 	}
 
-	static findTargetsWithinRange(position: Vector, range: number, targetFriendly: boolean, world: World): [Vector, Entity][] {
-		let targets: [Vector, Entity][];
+	static findTargetsWithinRange(position: Vector, range: number, limit: number, targetFriendly: boolean, world: World): [Vector, Entity][] {
+		let targets: [Vector, Entity][] = [];
 		if (targetFriendly) {
-			let start = position.subtract(new Vector(range)).floor;
-			let end = position.add(new Vector(range)).floor;
-			targets = start.iterate(end.subtract(start).add(Vector.V1))
-				.map((position): [Vector, Entity | undefined] => [position, world.live.getTileBounded(position)?.tileable])
-				.filter(([_, entity]) => entity?.getAttribute(EntityHealthAttribute)) as [Vector, Entity][];
-		} else
-			targets = world.free.tiles
-				.map((tile): [Vector, Entity] => [tile.position, tile.tileable])
-				.filter(([p]) => p.subtract(position).magnitude2 < range ** 2)
-				.filter(([_, entity]) => entity.getAttribute(EntityMobHealthAttribute));
-		return targets.sort(([p1], [p2]) => p1.subtract(position).magnitude2 - p2.subtract(position).magnitude2);
+			let start = position.subtract(new Vector(range)).floor.max(Vector.V0);
+			let end = position.add(new Vector(range)).floor.min(world.size);
+			// todo randomize iteration order or iterate center to outside
+			// todo add chunks to live layer for faster searching
+			for (let x = start.x; x < end.x; x++)
+				for (let y = start.y; y < end.y; y++) {
+					let position = new Vector(x, y);
+					let tile = world.live.getTileUnchecked(position);
+					if (!tile.tileable.getAttribute(EntityHealthAttribute)) continue;
+					targets.push([position, tile.tileable]);
+					if (targets.length === limit)
+						return targets;
+				}
+			return targets;
+		} else {
+			return [];
+			// targets = world.free.tiles
+			// 	.map((tile): [Vector, Entity] => [tile.position, tile.tileable])
+			// 	.filter(([p]) => p.subtract(position).magnitude2 < range ** 2)
+			// 	.filter(([_, entity]) => entity.getAttribute(EntityMobHealthAttribute));
+			// return targets.sort(([p1], [p2]) => p1.subtract(position).magnitude2 - p2.subtract(position).magnitude2);
+		}
 	}
 
 	tickHelper(world: World, tile: Tile<Entity>): boolean {
@@ -1144,7 +1155,7 @@ export class EntityDamageAttribute extends EntityAttribute {
 	}
 
 	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.range, !this.friendly, world);
+		let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.range, 5, !this.friendly, world);
 		targets
 			.filter((_, i) => i < this.maxTargets)
 			.map(target => this.friendly ? target[1].getAttribute(EntityMobHealthAttribute) : target[1].getAttribute(EntityHealthAttribute))
