@@ -373,11 +373,11 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			Object.values(toolTree).forEach((tools, i) => {
 				let coordinates = Placer.toolUiCoordinates(true, i);
 				let spriteContainer = Placer.createToolEntity(tools[0]).container;
-				this.addToolUiButton(coordinates, this.toolGroupIconContainer, spriteContainer, this.toolGroupTextContainer, '^' + (i + 1));
-				spriteContainer.eventMode = 'static';
-				spriteContainer.onclick = () => this.setToolGroupIndex(i);
-				spriteContainer.onmouseenter = () => this.showToolGroupTooltip(i);
-				spriteContainer.onmouseleave = () => this.hideTooltip();
+				this.addToolUiButton(coordinates, this.toolGroupIconContainer, spriteContainer!, this.toolGroupTextContainer, '^' + (i + 1));
+				spriteContainer!.eventMode = 'static';
+				spriteContainer!.onclick = () => this.setToolGroupIndex(i);
+				spriteContainer!.onmouseenter = () => this.showToolGroupTooltip(i);
+				spriteContainer!.onmouseleave = () => this.hideTooltip();
 			});
 		}
 
@@ -391,11 +391,11 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			this.toolTextContainer.removeChildren();
 			toolTree[toolGroup].forEach((tool, i) => {
 				let coordinates = Placer.toolUiCoordinates(false, i);
-				this.addToolUiButton(coordinates, this.toolIconContainer, Placer.cachedToolEntities[tool].container, this.toolTextContainer, String(i + 1));
-				Placer.cachedToolEntities[tool].container.eventMode = 'static';
-				Placer.cachedToolEntities[tool].container.onclick = () => this.toggleToolIndex(i);
-				Placer.cachedToolEntities[tool].container.onmouseenter = () => this.showToolTooltip(i);
-				Placer.cachedToolEntities[tool].container.onmouseleave = () => this.hideTooltip();
+				this.addToolUiButton(coordinates, this.toolIconContainer, Placer.cachedToolEntities[tool].container!, this.toolTextContainer, String(i + 1));
+				Placer.cachedToolEntities[tool].container!.eventMode = 'static';
+				Placer.cachedToolEntities[tool].container!.onclick = () => this.toggleToolIndex(i);
+				Placer.cachedToolEntities[tool].container!.onmouseenter = () => this.showToolTooltip(i);
+				Placer.cachedToolEntities[tool].container!.onmouseleave = () => this.hideTooltip();
 			});
 		}
 

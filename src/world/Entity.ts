@@ -1,5 +1,6 @@
-import {AnimatedSprite, Container, Sprite} from 'pixi.js';
-import {animatedGeneratedTextures} from '../graphics/generatedTextures.js';
+import {AnimatedSprite, Container, Particle, Sprite} from 'pixi.js';
+import Color from '../graphics/Color.js';
+import {animatedGeneratedTextures, coloredGeneratedTextures} from '../graphics/generatedTextures.js';
 import SpriteLoader from '../graphics/SpriteLoader.js';
 import TextLine from '../ui/TextLine.js';
 import util from '../util/util.js';
@@ -62,7 +63,8 @@ export class Entity implements Tileable {
 	readonly rotation: Rotation;
 	private readonly attributes: EntityAttribute[][] = [];
 	private readonly attributesMap: Map<string, EntityAttribute[]> = new Map();
-	readonly container = new Container();
+	container: Container | null = null;
+	particle: Particle | null = null;
 
 	constructor(name: string, description: string, size: Vector = Vector.V1, rotation: Rotation = Rotation.UP, tilingSize: Vector = size) {
 		console.assert(!!name);
@@ -105,16 +107,24 @@ export class Entity implements Tileable {
 	}
 
 	setSprite(sprite: Sprite) {
-		console.assert(!this.container.children.length);
+		console.assert(!this.container);
+		this.container = new Container();
 		Entity.rotateSprite(sprite, this.rotation);
 		this.container.addChild(sprite);
 	}
 
+	setParticle(particle: Particle, size: Vector = this.size) {
+		console.assert(!this.particle);
+		this.particle = particle;
+		this.particle.scaleX = size.x / particle.texture.width;
+		this.particle.scaleY = size.y / particle.texture.height;
+	}
+
 	addOverlaySprites(label: string, sprites: Sprite[]) {
-		this.container.getChildrenByLabel(label).forEach(child => child.removeFromParent());
+		this.container!.getChildrenByLabel(label).forEach(child => child.removeFromParent());
 		sprites.forEach(sprite => {
 			sprite.label = label;
-			this.container.addChild(sprite);
+			this.container!.addChild(sprite);
 		});
 	}
 
@@ -210,7 +220,7 @@ export class Extractor extends Building {
 		this.addAttributes([new EntityOutflowAttribute(materialStorageAttribute)]);
 		if (powerInput)
 			this.addAttributes([new EntityPowerConductAttribute(0)]);
-		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -226,7 +236,7 @@ export class Conveyor extends Building {
 			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
 		]);
 		this.addAttributes([new EntityMaterialFullSpriteAttribute(materialStorageAttribute, timedAttribute, rotation)]);
-		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -272,7 +282,7 @@ export class PackedConveyor extends Building {
 			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
 		]);
 		this.addAttributes([new EntityMaterialFullSpriteAttribute(materialStorageAttribute, timedAttribute, rotation)]);
-		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -299,7 +309,7 @@ export class Factory extends Building {
 		this.addAttributes([new EntityOutflowAttribute(outputMaterialStorageAttribute)]);
 		if (powerInput)
 			this.addAttributes([new EntityPowerConductAttribute(0)]);
-		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -324,7 +334,7 @@ export class Dispenser extends Building {
 			timedAttribute,
 			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
 		]);
-		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -358,7 +368,7 @@ export class Generator extends Building {
 			new EntityPowerProduceAttribute(outputPowerStorageAttribute, powerOutput),
 		].filter(v => v) as EntityAttribute[]);
 		this.addAttributes([new EntityPowerConductAttribute(0)]);
-		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -399,7 +409,7 @@ export class Vent extends Building {
 		].filter(v => v) as EntityAttribute[]);
 		if (powerInput)
 			this.addAttributes([new EntityPowerConductAttribute(0)]);
-		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -425,7 +435,7 @@ export class Pump extends Building {
 		]);
 		if (powerInput)
 			this.addAttributes([new EntityPowerConductAttribute(0)]);
-		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -451,7 +461,7 @@ export class Well extends Building {
 		]);
 		if (powerInput)
 			this.addAttributes([new EntityPowerConductAttribute(0)]);
-		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -466,7 +476,7 @@ export class Pipe extends Building {
 			timedAttribute,
 			new EntityLiquidTransportAttribute(liquidStorageAttribute, [rotation]),
 		]);
-		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -483,7 +493,7 @@ export class PipeBridge extends Building {
 			timedAttribute,
 			new EntityLiquidBridgeTransportAttribute(liquidStorageAttribute, liquidBridgeConnectAttribute),
 		]);
-		this.addAttributes([new EntityActiveSpriteAttribute(this.container.children[0] as AnimatedSprite, timedAttribute)]);
+		this.addAttributes([new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
@@ -612,7 +622,8 @@ export class LiquidDeposit extends Entity {
 
 export class Mob extends Entity {
 	constructor(position: Vector) {
-		super('Low Tier Mob', '');
+		super('Low Tier Mob No Sprite', '');
+		this.setParticle(new Particle(animatedGeneratedTextures.lowTierMob.textures[0]));
 		this.addAttributes([new EntityMobHerdPositionAttribute(position)]);
 		this.addAttributes([
 			new EntityTimedAttribute(40),
@@ -627,7 +638,8 @@ export class Mob extends Entity {
 
 export class Projectile extends Entity {
 	constructor(velocity: Vector, duration: number, range: number, maxTargets: number, damage: number, friendly: boolean) {
-		super('Projectile', '');
+		super('Projectile', '', new Vector(.2));
+		this.setParticle(new Particle(coloredGeneratedTextures.fullRect.texture(Color.PROJECTILE_RED)));
 		this.addAttributes([new EntityDirectionMovementAttribute(velocity)]);
 		this.addAttributes([
 			new EntityDamageAttribute(range, maxTargets, damage, friendly),

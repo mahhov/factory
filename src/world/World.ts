@@ -1,4 +1,4 @@
-import {Container, Sprite} from 'pixi.js';
+import {Container, Particle, ParticleContainer, Sprite} from 'pixi.js';
 import Painter from '../graphics/Painter.js';
 import TextLine from '../ui/TextLine.js';
 import {generateTerrain} from '../util/Noise.js';
@@ -13,7 +13,8 @@ import {Rotation} from './Rotation.js';
 export interface Tileable {
 	readonly name: string;
 	readonly size: Vector;
-	readonly container: Container;
+	readonly container: Container | null;
+	readonly particle: Particle | null;
 }
 
 export class SpriteHolder implements Tileable {
@@ -21,12 +22,13 @@ export class SpriteHolder implements Tileable {
 	rotation!: Rotation;
 	private sprite: Sprite | null = null;
 	readonly container = new Container();
+	readonly particle = null;
 
 	setEntity(entity: Entity, rotation: Rotation) {
 		if (this.entity?.name !== entity.name) {
 			this.entity = entity;
 			this.rotation = rotation;
-			this.sprite = this.entity.container.children[0] ? new Sprite((this.entity.container.children[0] as Sprite).texture) : null;
+			this.sprite = this.entity.container?.children[0] ? new Sprite((this.entity.container.children[0] as Sprite).texture) : null;
 			if (this.sprite)
 				Entity.rotateSprite(this.sprite, rotation);
 			this.container.removeChildren();
@@ -75,17 +77,25 @@ abstract class WorldLayer {
 		this.size = size;
 	}
 
-	protected addContainer(container: Container, position: Vector, size: Vector) {
-		this.updateContainer(container, position, size);
-		this.container.addChild(container);
+	protected addGraphics(tileable: Tileable, position: Vector, size: Vector) {
+		if (tileable.container) {
+			this.updateGraphics(tileable, position, size);
+			this.container.addChild(tileable.container);
+		}
 	}
 
-	protected updateContainer(container: Container, position: Vector, size: Vector) {
-		position = position.multiply(this.size.invert);
-		container.position = position;
-		size = this.size.invert.multiply(size);
-		container.width = size.x;
-		container.height = size.y;
+	protected updateGraphics(tileable: Tileable, position: Vector, size: Vector) {
+		if (tileable.container) {
+			tileable.container.position = position.multiply(this.size.invert);
+			size = this.size.invert.multiply(size);
+			tileable.container.width = size.x;
+			tileable.container.height = size.y;
+		}
+	}
+
+	protected removeGraphics(tileable: Tileable) {
+		if (tileable.container)
+			this.container.removeChild(tileable.container);
 	}
 }
 
@@ -118,14 +128,14 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 			}
 		}
 
-		this.addContainer(tileable.container, position, tileable.size);
+		this.addGraphics(tileable, position, tileable.size);
 		this.addedTile(position);
 	}
 
 	private removeTile(tile: Tile<T>) {
 		let originalPosition = tile.position;
 		if (tile.tileable.name === this.defaultTileable.name) return;
-		this.container.removeChild(tile.tileable.container);
+		this.removeGraphics(tile.tileable);
 		let endPosition = tile.position.add(tile.tileable.size);
 		for (let xx = originalPosition.x; xx < endPosition.x; xx++) {
 			for (let yy = originalPosition.y; yy < endPosition.y; yy++) {
@@ -153,7 +163,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 			}
 
 		if (tileable.name !== this.defaultTileable.name)
-			this.addContainer(tileable.container, position, tileable.size);
+			this.addGraphics(tileable, position, tileable.size);
 	}
 
 	inBounds(position: Vector, size: Vector) {
@@ -257,19 +267,44 @@ export class FreeWorldLayerChunkOverlay<T extends Tileable, S> {
 export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	readonly tiles: Tile<T>[] = [];
 	readonly container = new Container();
+	readonly particleContainer = new ParticleContainer();
 	private readonly chunkOverlays: FreeWorldLayerChunkOverlay<T, any>[] = [];
+
+	protected addGraphics(tileable: Tileable, position: Vector, size: Vector) {
+		super.addGraphics(tileable, position, size);
+		if (tileable.particle) {
+			tileable.particle.scaleX *= this.size.invert.x;
+			tileable.particle.scaleY *= this.size.invert.y;
+			this.particleContainer.addParticle(tileable.particle);
+		}
+	}
+
+	protected updateGraphics(tileable: Tileable, position: Vector, size: Vector) {
+		super.updateGraphics(tileable, position, size);
+		if (tileable.particle) {
+			position = position.multiply(this.size.invert);
+			tileable.particle.x = position.x;
+			tileable.particle.y = position.y;
+		}
+	}
+
+	protected removeGraphics(tileable: Tileable) {
+		super.removeGraphics(tileable);
+		if (tileable.particle)
+			this.particleContainer.removeParticle(tileable.particle);
+	}
 
 	addTileable(position: Vector, tileable: T) {
 		let tile = new Tile(position, tileable);
 		this.tiles.push(tile);
 		this.chunkOverlays.forEach(chunkOverlay => chunkOverlay.add(tile));
-		this.addContainer(tileable.container, position, tileable.size);
+		this.addGraphics(tileable, position, tileable.size);
 	}
 
 	updateTile(position: Vector, tile: Tile<T>) {
 		this.chunkOverlays.forEach(chunkOverlay => chunkOverlay.update(position, tile));
 		tile.position = position;
-		this.updateContainer(tile.tileable.container, position, tile.tileable.size);
+		this.updateGraphics(tile.tileable, position, tile.tileable.size);
 	}
 
 	removeTile(tile: Tile<T>) {
@@ -277,7 +312,7 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		if (index === -1) return;
 		this.tiles.splice(index, 1);
 		this.chunkOverlays.forEach(chunkOverlay => chunkOverlay.remove(tile));
-		this.container.removeChild(tile.tileable.container);
+		this.removeGraphics(tile.tileable);
 	}
 
 	addChunkOverlay<S>(chunkSize: number, mapper: (t: T) => S | null) {
@@ -319,6 +354,7 @@ export class World {
 
 		this.free = new FreeWorldLayer<Entity>(size);
 		cameraContainer.addChild(this.free.container);
+		cameraContainer.addChild(this.free.particleContainer);
 
 		this.mobLogic = new MobLogic(painter, this);
 	}
