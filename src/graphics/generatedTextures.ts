@@ -46,8 +46,8 @@ export let coloredGeneratedTextures = {
 	materialIndicator: new ColoredGeneratedTexture(8, color => [
 		[2, 2, 4, 4, color], // Small Yellow Square
 	]),
-	fullRect: new ColoredGeneratedTexture(8, color => [
-		[0, 0, 8, 8, color], // Small Yellow Square
+	fullRect: new ColoredGeneratedTexture(1, color => [
+		[0, 0, 1, 1, color], // Small Yellow Square
 	]),
 };
 
