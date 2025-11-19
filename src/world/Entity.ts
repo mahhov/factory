@@ -140,6 +140,24 @@ export class Empty extends Entity {
 	constructor() {
 		super('Empty', '');
 	}
+
+	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | null {
+		return null;
+	}
+
+	getAttributes<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T[] {
+		return [];
+	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return [];
+	}
+
+	get selectable(): boolean {
+		return false;
+	}
+
+	tick(world: World, tile: Tile<Entity>) {}
 }
 
 export class Clear extends Entity {
