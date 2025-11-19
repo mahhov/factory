@@ -267,7 +267,7 @@ export class FreeWorldLayerChunkOverlay<T extends Tileable, S> {
 export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	readonly tiles: Tile<T>[] = [];
 	readonly container = new Container();
-	readonly particleContainer = new ParticleContainer();
+	readonly particleContainer: Record<string, ParticleContainer> = {};
 	private readonly chunkOverlays: FreeWorldLayerChunkOverlay<T, any>[] = [];
 
 	protected addGraphics(tileable: Tileable, position: Vector, size: Vector) {
@@ -275,7 +275,12 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		if (tileable.particle) {
 			tileable.particle.scaleX *= this.size.invert.x;
 			tileable.particle.scaleY *= this.size.invert.y;
-			this.particleContainer.addParticle(tileable.particle);
+			let key = tileable.particle.texture.uid;
+			if (!this.particleContainer[key]) {
+				this.particleContainer[key] = new ParticleContainer();
+				this.container.addChild(this.particleContainer[key]);
+			}
+			this.particleContainer[key].addParticle(tileable.particle);
 		}
 	}
 
@@ -291,7 +296,7 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	protected removeGraphics(tileable: Tileable) {
 		super.removeGraphics(tileable);
 		if (tileable.particle)
-			this.particleContainer.removeParticle(tileable.particle);
+			this.particleContainer[tileable.particle.texture.uid].removeParticle(tileable.particle);
 	}
 
 	addTileable(position: Vector, tileable: T) {
@@ -354,7 +359,6 @@ export class World {
 
 		this.free = new FreeWorldLayer<Entity>(size);
 		cameraContainer.addChild(this.free.container);
-		cameraContainer.addChild(this.free.particleContainer);
 
 		this.mobLogic = new MobLogic(painter, this);
 	}

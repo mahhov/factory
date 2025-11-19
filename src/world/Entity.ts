@@ -62,6 +62,7 @@ export class Entity implements Tileable {
 	readonly tilingSize: Vector;
 	readonly rotation: Rotation;
 	private readonly attributes: EntityAttribute[][] = [];
+	// todo try using object literal to see if it's more efficient
 	private readonly attributesMap: Map<string, EntityAttribute[]> = new Map();
 	container: Container | null = null;
 	particle: Particle | null = null;
