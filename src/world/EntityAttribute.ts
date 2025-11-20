@@ -1159,7 +1159,7 @@ export class EntityDamageAttribute extends EntityAttribute {
 		targets
 			.filter((_, i) => i < this.maxTargets)
 			.map(target => this.friendly ? target[1].getAttribute(EntityMobHealthAttribute) : target[1].getAttribute(EntityHealthAttribute))
-			.forEach(healthAttribute => healthAttribute!.health -= this.damage);
+			.forEach(healthAttribute => healthAttribute!.health = Math.max(healthAttribute!.health - this.damage, 0));
 		return targets.length > 0;
 	}
 }
