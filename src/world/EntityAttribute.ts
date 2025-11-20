@@ -6,7 +6,7 @@ import TextLine from '../ui/TextLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Empty, Entity, LiquidDeposit, MaterialDeposit} from './Entity.js';
+import {Empty, Entity, LiquidDeposit, MaterialDeposit, Projectile} from './Entity.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, World} from './World.js';
@@ -1113,12 +1113,12 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 	}
 
 	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		// let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.velocity * this.duration + this.range, !this.friendly, world);
-		// if (!targets.length) return false;
-		// let velocity = targets[0][0].subtract(tile.position);
-		// if (velocity.magnitude2 > this.velocity ** 2)
-		// 	velocity = velocity.setMagnitude(this.velocity);
-		// world.free.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.friendly));
+		let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.velocity * this.duration + this.range, 1, !this.friendly, world);
+		if (!targets.length) return true;
+		let velocity = targets[0][0].subtract(tile.position);
+		if (velocity.magnitude2 > this.velocity ** 2)
+			velocity = velocity.setMagnitude(this.velocity);
+		world.free.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.friendly));
 		return true;
 	}
 }
