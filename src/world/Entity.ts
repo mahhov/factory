@@ -62,8 +62,7 @@ export class Entity implements Tileable {
 	readonly tilingSize: Vector;
 	readonly rotation: Rotation;
 	private readonly attributes: EntityAttribute[][] = [];
-	// todo try using object literal to see if it's more efficient
-	private readonly attributesMap: Map<string, EntityAttribute[]> = new Map();
+	private readonly attributesMap: Record<string, EntityAttribute[]> = {};
 	container: Container | null = null;
 	particle: Particle | null = null;
 
@@ -93,18 +92,17 @@ export class Entity implements Tileable {
 		this.attributes.push(attributes);
 		attributes.forEach(attribute => {
 			let key = attribute.constructor.name;
-			if (!this.attributesMap.get(key))
-				this.attributesMap.set(key, []);
-			this.attributesMap.get(key)!.push(attribute);
+			this.attributesMap[key] ||= [];
+			this.attributesMap[key].push(attribute);
 		});
 	}
 
 	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | null {
-		return this.attributesMap.get(attributeClass.name)?.[0] as T || null;
+		return this.attributesMap[attributeClass.name]?.[0] as T || null;
 	}
 
 	getAttributes<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T[] {
-		return this.attributesMap.get(attributeClass.name) as T[] || [];
+		return this.attributesMap[attributeClass.name] as T[] || [];
 	}
 
 	setSprite(sprite: Sprite) {
