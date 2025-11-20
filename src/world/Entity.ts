@@ -232,9 +232,10 @@ export class Extractor extends Building {
 }
 
 export class Conveyor extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number, rotation: Rotation) {
+	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number, packed: boolean, rotation: Rotation) {
 		super(name, description, size, buildTime, buildCost, health, rotation);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, 1, getMaterialCounts(Infinity), RotationUtils.except(RotationUtils.opposite(rotation)), true);
+		let type = packed ? EntityMaterialStorageAttributeType.PACKED : EntityMaterialStorageAttributeType.NORMAL;
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(type, 1, getMaterialCounts(Infinity), RotationUtils.except(RotationUtils.opposite(rotation)), true);
 		this.addAttributes([materialStorageAttribute]);
 		let timedAttribute = new EntityTimedAttribute(40 / rate);
 		this.addAttributes([
@@ -274,22 +275,6 @@ export class Junction extends Building {
 				new EntityTransportAttribute(materialStorageAttribute, [rotation]),
 			]);
 		});
-	}
-}
-
-export class PackedConveyor extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number, rotation: Rotation) {
-		super(name, description, size, buildTime, buildCost, health, rotation);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.PACKED, 1, getMaterialCounts(Infinity), RotationUtils.except(RotationUtils.opposite(rotation)), true);
-		this.addAttributes([materialStorageAttribute]);
-		let timedAttribute = new EntityTimedAttribute(40 / rate);
-		this.addAttributes([
-			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
-			timedAttribute,
-			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
-		]);
-		this.addAttributes([new EntityMaterialFullSpriteAttribute(materialStorageAttribute, timedAttribute, rotation)]);
-		this.addAttributes([new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute)]);
 	}
 }
 
