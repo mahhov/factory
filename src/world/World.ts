@@ -78,10 +78,9 @@ abstract class WorldLayer {
 	}
 
 	protected addGraphics(tileable: Tileable, position: Vector, size: Vector) {
-		if (tileable.container) {
-			this.updateGraphics(tileable, position, size);
+		this.updateGraphics(tileable, position, size);
+		if (tileable.container)
 			this.container.addChild(tileable.container);
-		}
 	}
 
 	protected updateGraphics(tileable: Tileable, position: Vector, size: Vector) {

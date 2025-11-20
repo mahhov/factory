@@ -80,6 +80,7 @@ class HerdManager {
 			chunkColumn.forEach(chunk =>
 				chunk.forEach(mobHerdPositionAttribute => {
 					this.lastHerdSize++;
+					if (!mobHerdPositionAttribute.active) return;
 					let position = mobHerdPositionAttribute.position;
 					let velocity = mobHerdPositionAttribute.velocity;
 

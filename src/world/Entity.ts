@@ -623,8 +623,6 @@ export class Mob extends Entity {
 		]);
 		this.addAttributes([new EntityMobHealthAttribute(10)]);
 	}
-
-	// todo attack nearby structures
 	// todo stop herding when encounter structure
 }
 

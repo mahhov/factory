@@ -1027,6 +1027,7 @@ export class EntityMobHealthAttribute extends EntityAttribute {
 export class EntityMobHerdPositionAttribute extends EntityAttribute {
 	position: Vector;
 	velocity: Vector = Vector.V0;
+	active = true;
 
 	constructor(position: Vector) {
 		super();
@@ -1034,7 +1035,7 @@ export class EntityMobHerdPositionAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		if (!this.position.equals(tile.position))
+		if (!this.position.equals(tile.position) && this.active)
 			world.free.updateTile(this.position, tile);
 		this.tickResult = TickResult.DONE;
 	}
