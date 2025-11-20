@@ -1,6 +1,6 @@
 export default class Counter {
 	readonly n: number;
-	i = 0; // [0, n). tick() returns true if i == n - 1
+	i = 0; // [0, n). tick() returns true if i === n - 1
 
 	constructor(n: number) {
 		console.assert(n > 0);

@@ -99,6 +99,8 @@ export abstract class EntityAttribute {
 	get selectable(): boolean {
 		return false;
 	}
+
+	get childAttributes(): EntityAttribute[] {return [];}
 }
 
 // Helper attributes
@@ -224,6 +226,47 @@ export class EntityTimedAttribute extends EntityAttribute {
 		return type === TooltipType.PLACER ?
 			[] :
 			[new TextLine(`Progress ${util.textPercent(this.counter.ratio)}`)];
+	}
+}
+
+abstract class EntityParentAttribute extends EntityAttribute {
+	private readonly attributes: EntityAttribute[];
+
+	constructor(attributes: EntityAttribute[]) {
+		super();
+		console.assert(attributes.length > 1);
+		this.attributes = attributes;
+	}
+
+	tooltip(type: TooltipType): TextLine[] {
+		return this.attributes.flatMap(attribute => attribute.tooltip(type));
+	}
+
+	get selectable(): boolean {
+		return this.attributes.some(attribute => attribute.selectable);
+	}
+
+	get childAttributes(): EntityAttribute[] {
+		return this.attributes;
+	}
+}
+
+export class EntityChainAttribute extends EntityParentAttribute {
+	tick(world: World, tile: Tile<Entity>): void {
+		for (let attribute of this.childAttributes) {
+			if (attribute.tickResult === TickResult.NOT_DONE) {
+				attribute.tick(world, tile);
+				if (attribute.tickResult === TickResult.NOT_DONE) return;
+				if (attribute.tickResult === TickResult.END_TICK) {
+					attribute.tickResult = TickResult.NOT_DONE;
+					this.tickResult = TickResult.END_TICK;
+					return;
+				}
+			}
+		}
+		for (let attribute of this.childAttributes)
+			attribute.tickResult = TickResult.NOT_DONE;
+		this.tickResult = TickResult.DONE;
 	}
 }
 
