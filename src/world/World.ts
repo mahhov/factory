@@ -414,8 +414,8 @@ export class World {
 				this.queue.removeOrdered(i);
 				continue;
 			}
-			buildableAttribute.reset();
-			if (buildableAttribute.tick(this, queueTile))
+			buildableAttribute.tick(this, queueTile);
+			if (buildableAttribute.doneBuilding)
 				break;
 			i++;
 		}

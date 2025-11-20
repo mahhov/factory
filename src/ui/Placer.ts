@@ -18,7 +18,6 @@ import {
 	Factory,
 	Generator,
 	Junction,
-	PackedConveyor,
 	Pipe,
 	PipeBridge,
 	PipeDistributor,
@@ -239,7 +238,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 	}
 
 	private static createToolConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Conveyor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
+		return new Conveyor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, false, rotation);
 	}
 
 	private static createToolDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {
@@ -251,7 +250,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 	}
 
 	private static createToolPackedConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new PackedConveyor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
+		return new Conveyor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, true, rotation);
 	}
 
 	private static createToolStorage(metadata: ParsedLine<typeof sectionFields.buildings>) {

@@ -15,6 +15,12 @@ export enum TooltipType {
 	PLACER, WORLD
 }
 
+export enum TickResult {
+	NOT_DONE,
+	DONE,
+	END_TICK,
+}
+
 let materialCountsString = (materialCounts: ResourceUtils.Count<Material>[]) =>
 	materialCounts.map(materialCount => `${materialCount.quantity} ${ResourceUtils.materialString(materialCount.resource)}`).join(', ');
 
@@ -82,21 +88,9 @@ let connectionSprite = (sprite: Sprite, delta: Vector): Sprite | null => {
 };
 
 export abstract class EntityAttribute {
-	private done: boolean = false;
+	tickResult: TickResult = TickResult.NOT_DONE;
 
-	tick(world: World, tile: Tile<Entity>): boolean {
-		if (!this.done && this.tickHelper(world, tile))
-			this.done = true;
-		return this.done;
-	}
-
-	reset() {
-		this.done = false;
-	}
-
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		return true;
-	}
+	tick(world: World, tile: Tile<Entity>): void {}
 
 	tooltip(type: TooltipType): TextLine[] {
 		return [];
@@ -155,8 +149,9 @@ export class EntityBuildableAttribute extends EntityAttribute {
 	}
 
 	// returns true if building. returns false if done building or insufficient material
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.doneBuilding) return false;
+	tick(world: World, tile: Tile<Entity>): void {
+		if (this.doneBuilding) return;
+		this.tickResult = TickResult.END_TICK;
 
 		let lastRatio = this.counter.ratio;
 		let ratio = (this.counter.i + 1) / this.counter.n;
@@ -164,12 +159,11 @@ export class EntityBuildableAttribute extends EntityAttribute {
 			cost.resource, Math.ceil(cost.quantity * ratio) - Math.ceil(cost.quantity * lastRatio)));
 
 		if (!costs.every(cost => world.playerLogic.materials.hasQuantity(cost)))
-			return false;
+			return;
 
 		costs.forEach(cost => world.playerLogic.materials.remove(cost));
 		if (this.counter.tick())
 			this.doneBuilding = true;
-		return true;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -194,12 +188,11 @@ export class EntityHealthAttribute extends EntityAttribute {
 		this.health = health;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.health <= 0) {
+	tick(world: World, tile: Tile<Entity>): void {
+		if (!this.health) {
 			world.live.replaceTileable(tile.position, new Empty());
-			return false;
+			this.tickResult = TickResult.END_TICK;
 		}
-		return true;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -222,8 +215,9 @@ export class EntityTimedAttribute extends EntityAttribute {
 		this.counter = new Counter(duration);
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		return this.counter.tick();
+	tick(world: World, tile: Tile<Entity>): void {
+		if (this.counter.tick())
+			this.tickResult = TickResult.DONE;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -247,12 +241,11 @@ export class EntityMaterialProduceAttribute extends EntityAttribute {
 		this.outputs = outputs;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		if (this.outputs.every(materialCount => this.materialStorageAttribute.hasCapacity(materialCount))) {
 			this.outputs.forEach(materialCount => this.materialStorageAttribute.add(materialCount));
-			return true;
+			this.tickResult = TickResult.DONE;
 		}
-		return false;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -277,23 +270,23 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 			.map(material => [material, 0])) as Record<Material, number>;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		let some = tile.position.iterate(tile.tileable.size).map(position => {
 			let tile = world.terrain.getTileBounded(position);
-			if (!(tile?.tileable instanceof MaterialDeposit)) return false;
+			if (!(tile?.tileable instanceof MaterialDeposit)) return;
 			let capacity = this.materialStorageAttribute.capacity(tile.tileable.material) - this.quantities[tile.tileable.material];
 			let add = Math.min(this.outputPerTier[tile.tileable.materialTier] || 0, capacity);
 			this.quantities[tile.tileable.material] += add;
 			return add;
 		}).some(v => v);
-		if (!some) return false;
+		if (!some) return;
 		util.enumValues(Material).forEach(material => {
 			let n = Math.floor(this.quantities[material]);
 			if (!n) return;
 			this.quantities[material] -= n;
 			this.materialStorageAttribute.add(new ResourceUtils.Count(material, n));
 		});
-		return true;
+		this.tickResult = TickResult.DONE;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -315,12 +308,11 @@ export class EntityMaterialConsumeAttribute extends EntityAttribute {
 		this.inputs = inputs;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		if (this.inputs.every(materialCount => this.materialStorageAttribute.hasQuantity(materialCount))) {
 			this.inputs.forEach(materialCount => this.materialStorageAttribute.remove(materialCount));
-			return true;
+			this.tickResult = TickResult.DONE;
 		}
-		return false;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -429,8 +421,9 @@ export class EntityNonEmptyMaterialStorage extends EntityAttribute {
 		this.materialStorageAttribute = materialStorageAttribute;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		return !this.materialStorageAttribute.empty;
+	tick(world: World, tile: Tile<Entity>): void {
+		if (!this.materialStorageAttribute.empty)
+			this.tickResult = TickResult.DONE;
 	}
 }
 
@@ -465,10 +458,11 @@ export class EntityTransportAttribute extends EntityAttribute {
 					})));
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.materialStorageAttribute.empty) return false;
+	tick(world: World, tile: Tile<Entity>): void {
+		if (this.materialStorageAttribute.empty) return;
 		let material = this.materialStorageAttribute.peek!;
-		return EntityTransportAttribute.move(this.materialStorageAttribute, this.outputRotations, [new ResourceUtils.Count(material, 1)], world, tile);
+		if (EntityTransportAttribute.move(this.materialStorageAttribute, this.outputRotations, [new ResourceUtils.Count(material, 1)], world, tile))
+			this.tickResult = TickResult.DONE;
 	}
 }
 
@@ -480,9 +474,10 @@ export class EntityOutflowAttribute extends EntityAttribute {
 		this.materialStorageAttribute = materialStorageAttribute;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.materialStorageAttribute.empty) return false;
-		return EntityTransportAttribute.move(this.materialStorageAttribute, util.enumValues(Rotation), this.materialStorageAttribute.quantityCounts.map(materialCount => new ResourceUtils.Count(materialCount.resource, 1)), world, tile);
+	tick(world: World, tile: Tile<Entity>): void {
+		if (this.materialStorageAttribute.empty) return;
+		if (EntityTransportAttribute.move(this.materialStorageAttribute, util.enumValues(Rotation), this.materialStorageAttribute.quantityCounts.map(materialCount => new ResourceUtils.Count(materialCount.resource, 1)), world, tile))
+			this.tickResult = TickResult.DONE;
 	}
 }
 
@@ -499,10 +494,10 @@ export class EntityInflowAttribute extends EntityAttribute {
 		this.inputRotations = inputRotations;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		let materialCount = new ResourceUtils.Count(this.materialPickerAttribute.material, 1);
-		if (!this.materialStorageAttribute.hasCapacity(materialCount)) return false;
-		return util.shuffleInPlace(this.inputRotations).some(rotation =>
+		if (!this.materialStorageAttribute.hasCapacity(materialCount)) return;
+		let some = util.shuffleInPlace(this.inputRotations).some(rotation =>
 			util.shuffleInPlace(getAdjacentDestinations(tile.position, tile.tileable.size, RotationUtils.opposite(rotation)))
 				.flatMap(source => world.live.getTileBounded(source)?.tileable.getAttributes(EntityMaterialStorageAttribute) || [])
 				.some(sourceMaterialStorageAttribute => {
@@ -513,6 +508,8 @@ export class EntityInflowAttribute extends EntityAttribute {
 					}
 					return false;
 				}));
+		if (some)
+			this.tickResult = TickResult.DONE;
 	}
 }
 
@@ -529,12 +526,11 @@ export class EntityPowerProduceAttribute extends EntityAttribute {
 		this.quantity = quantity;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		if (this.powerStorageAttribute.capacity - this.powerStorageAttribute.quantity >= this.quantity) {
 			this.powerStorageAttribute.quantity += this.quantity;
-			return true;
+			this.tickResult = TickResult.DONE;
 		}
-		return false;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -555,12 +551,11 @@ export class EntityPowerConsumeAttribute extends EntityAttribute {
 		this.quantity = quantity;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		if (this.powerStorageAttribute.quantity >= this.quantity) {
 			this.powerStorageAttribute.quantity -= this.quantity;
-			return true;
+			this.tickResult = TickResult.DONE;
 		}
-		return false;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -609,12 +604,12 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 		return taken;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (!this.priority) return true;
+	tick(world: World, tile: Tile<Entity>): void {
+		this.tickResult = TickResult.DONE;
+		if (!this.priority) return;
 		let remainingCapacity = this.capacity - this.quantity;
 		if (remainingCapacity)
 			this.quantity += EntityPowerStorageAttribute.takePower(tile.tileable, remainingCapacity, this.priority);
-		return true;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -635,7 +630,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 		this.range = range;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		let connectionDeltas: Vector[] = [];
 		this.oldConnections = this.connections;
 		this.connections = [];
@@ -659,7 +654,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 			.map(delta => connectionSprite(new Sprite(coloredGeneratedTextures.fullRect.texture(Color.POWER_TEXT)), delta))
 			.filter(v => v) as Sprite[];
 		tile.tileable.addOverlaySprites('EntityPowerConductAttribute', sprites);
-		return true;
+		this.tickResult = TickResult.DONE;
 	}
 
 	get allConnections() {
@@ -685,10 +680,10 @@ export class EntityCoolantProduceAttribute extends EntityAttribute {
 		this.maxQuantity = quantity;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.quantity === this.maxQuantity) return false;
+	tick(world: World, tile: Tile<Entity>): void {
+		if (this.quantity === this.maxQuantity) return;
 		this.quantity = this.maxQuantity;
-		return true;
+		this.tickResult = TickResult.DONE;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -708,7 +703,7 @@ export class EntityCoolantConsumeAttribute extends EntityAttribute {
 		this.quantity = quantity;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		if (this.consumed === this.quantity)
 			this.consumed = 0;
 		let coolantProduceAttributes: EntityCoolantProduceAttribute[] = util.enumValues(Rotation)
@@ -721,7 +716,8 @@ export class EntityCoolantConsumeAttribute extends EntityAttribute {
 			this.consumed += take;
 			coolantProduceAttributes[i].quantity -= take;
 		}
-		return this.consumed === this.quantity;
+		if (this.consumed === this.quantity)
+			this.tickResult = TickResult.DONE;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -743,13 +739,15 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 		this.outputPerTier = outputPerTier;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		return tile.position.iterate(tile.tileable.size).map(position => {
+	tick(world: World, tile: Tile<Entity>): void {
+		let some = tile.position.iterate(tile.tileable.size).map(position => {
 			let tile = world.terrain.getTileBounded(position);
 			if (!(tile?.tileable instanceof LiquidDeposit)) return false;
 			let quantity = this.outputPerTier[tile.tileable.liquidTier] || 0;
 			return this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count(tile.tileable.liquid, quantity));
 		}).some(v => v);
+		if (some)
+			this.tickResult = TickResult.DONE;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -769,8 +767,9 @@ export class EntityLiquidDryExtractorAttribute extends EntityAttribute {
 		this.liquidCount = liquidCount;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		return !!this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count(this.liquidCount.resource, this.liquidCount.quantity));
+	tick(world: World, tile: Tile<Entity>): void {
+		if (this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count(this.liquidCount.resource, this.liquidCount.quantity)))
+			this.tickResult = TickResult.DONE;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -790,12 +789,11 @@ export class EntityLiquidConsumeAttribute extends EntityAttribute {
 		this.liquidCount = liquidCount;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		if (this.liquidStorageAttribute.liquidCount.resource === this.liquidCount.resource && this.liquidStorageAttribute.liquidCount.quantity >= this.liquidCount.quantity) {
 			this.liquidStorageAttribute.liquidCount = new ResourceUtils.Count(this.liquidStorageAttribute.liquidCount.resource, this.liquidStorageAttribute.liquidCount.quantity - this.liquidCount.quantity);
-			return true;
+			this.tickResult = TickResult.DONE;
 		}
-		return false;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -853,8 +851,9 @@ export class EntityNonEmptyLiquidStorage extends EntityAttribute {
 		this.liquidStorageAttribute = liquidStorageAttribute;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		return !!this.liquidStorageAttribute.liquidCount.quantity;
+	tick(world: World, tile: Tile<Entity>): void {
+		if (this.liquidStorageAttribute.liquidCount.quantity)
+			this.tickResult = TickResult.DONE;
 	}
 }
 
@@ -885,9 +884,10 @@ export class EntityLiquidTransportAttribute extends EntityAttribute {
 				}));
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (!this.liquidStorageAttribute.liquidCount.quantity) return false;
-		return EntityLiquidTransportAttribute.move(this.liquidStorageAttribute, this.outputRotations, world, tile);
+	tick(world: World, tile: Tile<Entity>): void {
+		if (!this.liquidStorageAttribute.liquidCount.quantity) return;
+		if (EntityLiquidTransportAttribute.move(this.liquidStorageAttribute, this.outputRotations, world, tile))
+			this.tickResult = TickResult.DONE;
 	}
 }
 
@@ -902,7 +902,9 @@ export class EntityLiquidBridgeConnectAttribute extends EntityAttribute {
 		this.range = range;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
+		this.tickResult = TickResult.DONE;
+
 		this.connectedPosition = getLineDestinations(tile.position, tile.tileable.size, this.rotation, this.range).find(destination =>
 			world.live.getTileBounded(destination)?.tileable.getAttribute(EntityLiquidBridgeConnectAttribute)) || null;
 
@@ -910,12 +912,10 @@ export class EntityLiquidBridgeConnectAttribute extends EntityAttribute {
 			let sprite = connectionSprite(new Sprite(coloredGeneratedTextures.fullRect.texture(Color.LIQUID_TEXT)), this.connectedPosition.subtract(tile.position));
 			if (sprite) {
 				tile.tileable.addOverlaySprites('EntityLiquidBridgeTransportAttribute', [sprite]);
-				return true;
+				return;
 			}
 		}
-
 		tile.tileable.addOverlaySprites('EntityLiquidBridgeTransportAttribute', []);
-		return true;
 	}
 }
 
@@ -929,10 +929,10 @@ export class EntityLiquidBridgeTransportAttribute extends EntityAttribute {
 		this.liquidBridgeConnectAttribute = liquidBridgeConnectAttribute;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (!this.liquidStorageAttribute.liquidCount.quantity) return false;
+	tick(world: World, tile: Tile<Entity>): void {
+		if (!this.liquidStorageAttribute.liquidCount.quantity) return;
 
-		return this.liquidBridgeConnectAttribute.connectedPosition ?
+		let transported = this.liquidBridgeConnectAttribute.connectedPosition ?
 			world.live.getTileUnchecked(this.liquidBridgeConnectAttribute.connectedPosition).tileable.getAttributes(EntityLiquidStorageAttribute)
 				.filter(liquidStorageAttribute => liquidStorageAttribute.acceptsRotation(this.liquidBridgeConnectAttribute.rotation))
 				.some(destinationLiquidStorageAttribute => {
@@ -945,6 +945,8 @@ export class EntityLiquidBridgeTransportAttribute extends EntityAttribute {
 					return false;
 				}) :
 			EntityLiquidTransportAttribute.move(this.liquidStorageAttribute, [this.liquidBridgeConnectAttribute.rotation], world, tile);
+		if (transported)
+			this.tickResult = TickResult.DONE;
 	}
 }
 
@@ -1014,35 +1016,11 @@ export class EntityMobHealthAttribute extends EntityAttribute {
 		this.health = health;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		if (this.health <= 0) {
+	tick(world: World, tile: Tile<Entity>): void {
+		if (this.health <= 0)
 			world.free.removeTile(tile);
-			return false;
-		}
-		return true;
-	}
-}
-
-export class EntityMobChaseTargetAttribute extends EntityAttribute {
-	private readonly velocity: number;
-	private readonly distance: number;
-	target: Vector = Vector.V0;
-
-	constructor(velocity: number, distance: number) {
-		super();
-		console.assert(velocity > 0);
-		console.assert(distance > 0);
-		this.velocity = velocity;
-		this.distance = distance;
-	}
-
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
-		let delta = this.target.subtract(tile.position);
-		if (delta.magnitude2 <= this.distance ** 2) return true;
-		if (delta.magnitude2 > this.velocity ** 2)
-			delta = delta.setMagnitude(this.velocity);
-		world.free.updateTile(tile.position.add(delta), tile);
-		return true;
+		else
+			this.tickResult = TickResult.DONE;
 	}
 }
 
@@ -1055,10 +1033,10 @@ export class EntityMobHerdPositionAttribute extends EntityAttribute {
 		this.position = position;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		if (!this.position.equals(tile.position))
 			world.free.updateTile(this.position, tile);
-		return true;
+		this.tickResult = TickResult.DONE;
 	}
 }
 
@@ -1112,14 +1090,14 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 		}
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
+		this.tickResult = TickResult.DONE;
 		let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.velocity * this.duration + this.range, 1, !this.friendly, world);
-		if (!targets.length) return true;
+		if (!targets.length) return;
 		let velocity = targets[0][0].subtract(tile.position);
 		if (velocity.magnitude2 > this.velocity ** 2)
 			velocity = velocity.setMagnitude(this.velocity);
 		world.free.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.friendly));
-		return true;
 	}
 }
 
@@ -1131,9 +1109,9 @@ export class EntityDirectionMovementAttribute extends EntityAttribute {
 		this.velocity = velocity;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		world.free.updateTile(tile.position.add(this.velocity), tile);
-		return true;
+		this.tickResult = TickResult.DONE;
 	}
 }
 
@@ -1154,20 +1132,21 @@ export class EntityDamageAttribute extends EntityAttribute {
 		this.friendly = friendly;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.range, 5, !this.friendly, world);
 		targets
 			.filter((_, i) => i < this.maxTargets)
 			.map(target => this.friendly ? target[1].getAttribute(EntityMobHealthAttribute) : target[1].getAttribute(EntityHealthAttribute))
 			.forEach(healthAttribute => healthAttribute!.health = Math.max(healthAttribute!.health - this.damage, 0));
-		return targets.length > 0;
+		if (targets.length)
+			this.tickResult = TickResult.DONE;
 	}
 }
 
 export class EntityExpireProjectileAttribute extends EntityAttribute {
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		world.free.removeTile(tile);
-		return true;
+		this.tickResult = TickResult.END_TICK;
 	}
 }
 
@@ -1185,7 +1164,7 @@ export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 		this.rotation = rotation;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		if (this.materialStorageAttribute.empty)
 			tile.tileable.addOverlaySprites('EntityMaterialFullSpriteAttribute', []);
 		else {
@@ -1195,7 +1174,7 @@ export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 			sprite.position = RotationUtils.positionShift(this.rotation).scale((shiftRatio - .5) * sprite.width);
 			tile.tileable.addOverlaySprites('EntityMaterialFullSpriteAttribute', [sprite]);
 		}
-		return true;
+		this.tickResult = TickResult.DONE;
 	}
 }
 
@@ -1209,8 +1188,8 @@ export class EntityActiveSpriteAttribute extends EntityAttribute {
 		this.timedAttribute = timedAttribute;
 	}
 
-	tickHelper(world: World, tile: Tile<Entity>): boolean {
+	tick(world: World, tile: Tile<Entity>): void {
 		this.sprite.currentFrame = Math.floor(this.timedAttribute.counter.ratio * this.sprite.textures.length);
-		return true;
+		this.tickResult = TickResult.DONE;
 	}
 }

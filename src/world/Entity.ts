@@ -47,6 +47,7 @@ import {
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
 	EntityTransportAttribute,
+	TickResult,
 	TooltipType,
 } from './EntityAttribute.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
@@ -136,12 +137,28 @@ export class Entity implements Tileable {
 	}
 
 	tick(world: World, tile: Tile<Entity>) {
-		for (let attributeChain of this.attributes) {
+		chains: for (let attributeChain of this.attributes) {
 			if (tile.tileable !== this) return;
-			if (attributeChain.length === 1)
-				attributeChain[0].tickHelper(world, tile);
-			else if (attributeChain.every(attribute => attribute.tick(world, tile)))
-				attributeChain.forEach(attribute => attribute.reset());
+			if (attributeChain.length === 1) {
+				attributeChain[0].tick(world, tile);
+				if (attributeChain[0].tickResult == TickResult.END_TICK) {
+					attributeChain[0].tickResult = TickResult.NOT_DONE;
+					return;
+				}
+			} else {
+				for (let attribute of attributeChain) {
+					if (attribute.tickResult === TickResult.NOT_DONE) {
+						attribute.tick(world, tile);
+						if (attribute.tickResult === TickResult.NOT_DONE) continue chains;
+						if (attribute.tickResult === TickResult.END_TICK) {
+							attribute.tickResult = TickResult.NOT_DONE;
+							return;
+						}
+					}
+				}
+				for (let attribute of attributeChain)
+					attribute.tickResult = TickResult.NOT_DONE;
+			}
 		}
 	}
 }
@@ -181,16 +198,6 @@ export abstract class Building extends Entity {
 		super(name, description, size, rotation, tilingSize);
 		this.addAttributes([new EntityBuildableAttribute(buildTime, buildCost)]);
 		this.addAttributes([new EntityHealthAttribute(health)]);
-	}
-
-	tick(world: World, tile: Tile<Entity>) {
-		let buildableAttribute = this.getAttribute(EntityBuildableAttribute)!;
-		if (buildableAttribute.doneBuilding)
-			super.tick(world, tile);
-		else {
-			buildableAttribute.reset();
-			buildableAttribute.tick(world, tile);
-		}
 	}
 }
 
