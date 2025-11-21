@@ -274,12 +274,12 @@ enum EntityIfElseAttributeState {PREDICATE, THEN, ELSE}
 
 export class EntityIfElseAttribute extends EntityParentAttribute {
 	private readonly predicateAttribute: EntityAttribute;
-	private readonly thenAttribute: EntityAttribute;
-	private readonly elseAttribute: EntityAttribute;
+	private readonly thenAttribute: EntityAttribute | null;
+	private readonly elseAttribute: EntityAttribute | null;
 	private state: EntityIfElseAttributeState = EntityIfElseAttributeState.PREDICATE;
 
-	constructor(predicateAttribute: EntityAttribute, thenAttribute: EntityAttribute, elseAttribute: EntityAttribute) {
-		super([predicateAttribute, thenAttribute, elseAttribute]);
+	constructor(predicateAttribute: EntityAttribute, thenAttribute: EntityAttribute | null, elseAttribute: EntityAttribute | null) {
+		super([predicateAttribute, thenAttribute, elseAttribute].filter(v => v) as EntityAttribute[]);
 		this.predicateAttribute = predicateAttribute;
 		this.thenAttribute = thenAttribute;
 		this.elseAttribute = elseAttribute;
@@ -304,6 +304,12 @@ export class EntityIfElseAttribute extends EntityParentAttribute {
 		}
 
 		let attribute = this.state === EntityIfElseAttributeState.THEN ? this.thenAttribute : this.elseAttribute;
+		if (!attribute) {
+			this.tickResult = TickResult.DONE;
+			this.state = EntityIfElseAttributeState.PREDICATE;
+			return;
+		}
+
 		attribute.tick(world, tile);
 		this.tickResult = attribute.tickResult;
 		if (this.tickResult !== TickResult.NOT_DONE) {
