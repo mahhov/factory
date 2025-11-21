@@ -1,4 +1,6 @@
 import Painter from '../graphics/Painter.js';
+import MultilineText, {Anchor} from '../ui/MultilineText.js';
+import TextLine from '../ui/TextLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
@@ -8,11 +10,13 @@ import {FreeWorldLayer, FreeWorldLayerChunkOverlay, World} from './World.js';
 
 export default class MobLogic {
 	private herdManager;
+	private spawner = new Spawner();
+	private readonly multilineText: MultilineText;
 
 	constructor(painter: Painter, world: World) {
 		let herdOverlay = world.free.addChunkOverlay(6, entity => entity.getAttribute(EntityMobHerdPositionAttribute));
 		this.herdManager = new HerdManager(world.size, herdOverlay);
-		util.arr(8000).forEach(() => this.spawnMobAtRandomPosition(world.free));
+		this.multilineText = new MultilineText(painter, new Vector(.5, .005), [], Anchor.TOP_CENTER);
 	}
 
 	spawnMobAtRandomPosition(free: FreeWorldLayer<Mob>) {
@@ -22,11 +26,69 @@ export default class MobLogic {
 	}
 
 	tick(world: World) {
-		this.target();
+		this.spawner.tick(world.free);
+		this.multilineText.lines = this.spawner.textLines();
+		this.multilineText.tick();
+		this.herdManager.tick();
+	}
+}
+
+class SpawnerStage {
+	readonly sleep: number;
+	readonly clusterCount: number;
+	readonly mobsPerCluster: number;
+	readonly clusterRadius: number;
+
+	constructor(sleep: number, clusterCount: number, mobsPerCluster: number, clusterRadius: number) {
+		this.sleep = sleep;
+		this.clusterCount = clusterCount;
+		this.mobsPerCluster = mobsPerCluster;
+		this.clusterRadius = clusterRadius;
+	}
+}
+
+class Spawner {
+	private counter = new Counter(1);
+	private stageIndex = -1;
+	private readonly stages = [
+		new SpawnerStage(8000, 0, 0, 0),
+		new SpawnerStage(4000, 3, 5, 5),
+		new SpawnerStage(4000, 3, 5, 5),
+		new SpawnerStage(4000, 6, 10, 10),
+		new SpawnerStage(3000, 9, 15, 15),
+		new SpawnerStage(3000, 12, 20, 20),
+		new SpawnerStage(2000, 15, 25, 25),
+		new SpawnerStage(2000, 18, 30, 30),
+	];
+
+	static spawn(free: FreeWorldLayer<any>, stage: SpawnerStage) {
+		let min = new Vector(stage.clusterRadius);
+		let delta = free.size.subtract(Vector.V1).subtract(min.scale(2));
+		for (let i = 0; i < stage.clusterCount; i++) {
+			let spawnCenter = min.add(Vector.rand.multiply(delta));
+			for (let j = 0; j < stage.mobsPerCluster; j++) {
+				let offset = Vector.rand.scale(stage.clusterRadius * 2).subtract(min);
+				let position = spawnCenter.add(offset);
+				let mob = new Mob(position);
+				free.addTileable(position, mob);
+			}
+		}
 	}
 
-	private target() {
-		this.herdManager.tick();
+	textLines(): TextLine[] {
+		return [
+			new TextLine(`Stage ${this.stageIndex}`),
+			new TextLine(`Enemies in: ${Math.floor(this.counter.i / 100)} / ${Math.floor(this.counter.n / 100)}`),
+		];
+	}
+
+	tick(free: FreeWorldLayer<any>) {
+		if (this.counter.tick()) {
+			this.stageIndex++;
+			let stage = this.stages[Math.min(this.stageIndex, this.stages.length - 1)];
+			Spawner.spawn(free, stage);
+			this.counter.resize(stage.sleep);
+		}
 	}
 }
 

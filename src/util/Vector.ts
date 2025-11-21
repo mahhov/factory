@@ -22,6 +22,10 @@ export default class Vector {
 		return new Vector(x, y);
 	}
 
+	static get rand() {
+		return new Vector(util.rand(1), util.rand(1));
+	}
+
 	get magnitude2() {
 		return this.magnitude2_ ??= this.x ** 2 + this.y ** 2;
 	}

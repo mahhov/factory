@@ -1,5 +1,5 @@
 export default class Counter {
-	readonly n: number;
+	n: number;
 	i = 0; // [0, n). tick() returns true if i === n - 1
 
 	constructor(n: number) {
@@ -34,5 +34,10 @@ export default class Counter {
 	tick(): boolean {
 		this.i = (this.i + 1) % this.n;
 		return !this.i;
+	}
+
+	resize(n: number) {
+		this.n = n;
+		this.reset(false);
 	}
 }
