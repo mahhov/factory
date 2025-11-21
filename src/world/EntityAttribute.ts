@@ -270,6 +270,49 @@ export class EntityChainAttribute extends EntityParentAttribute {
 	}
 }
 
+enum EntityIfElseAttributeState {PREDICATE, THEN, ELSE}
+
+export class EntityIfElseAttribute extends EntityParentAttribute {
+	private readonly predicateAttribute: EntityAttribute;
+	private readonly thenAttribute: EntityAttribute;
+	private readonly elseAttribute: EntityAttribute;
+	private state: EntityIfElseAttributeState = EntityIfElseAttributeState.PREDICATE;
+
+	constructor(predicateAttribute: EntityAttribute, thenAttribute: EntityAttribute, elseAttribute: EntityAttribute) {
+		super([predicateAttribute, thenAttribute, elseAttribute]);
+		this.predicateAttribute = predicateAttribute;
+		this.thenAttribute = thenAttribute;
+		this.elseAttribute = elseAttribute;
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		if (this.state === EntityIfElseAttributeState.PREDICATE) {
+			this.predicateAttribute.tick(world, tile);
+			switch (this.predicateAttribute.tickResult) {
+				case TickResult.NOT_DONE:
+					this.state = EntityIfElseAttributeState.ELSE;
+					break;
+				case TickResult.DONE:
+					this.state = EntityIfElseAttributeState.THEN;
+					this.predicateAttribute.tickResult = TickResult.NOT_DONE;
+					break;
+				case TickResult.END_TICK:
+					this.tickResult = TickResult.END_TICK;
+					this.predicateAttribute.tickResult = TickResult.NOT_DONE;
+					return;
+			}
+		}
+
+		let attribute = this.state === EntityIfElseAttributeState.THEN ? this.thenAttribute : this.elseAttribute;
+		attribute.tick(world, tile);
+		this.tickResult = attribute.tickResult;
+		if (this.tickResult !== TickResult.NOT_DONE) {
+			this.state = EntityIfElseAttributeState.PREDICATE;
+			attribute.tickResult = TickResult.NOT_DONE;
+		}
+	}
+}
+
 // Material attributes (produce, consume, store, transport)
 
 export class EntityMaterialProduceAttribute extends EntityAttribute {
@@ -1084,7 +1127,62 @@ export class EntityMobHerdPositionAttribute extends EntityAttribute {
 	}
 }
 
+export class EntityMobHerdPositionActivateAttribute extends EntityAttribute {
+	private readonly mobHerdPositionAttribute: EntityMobHerdPositionAttribute;
+	private readonly active: boolean;
+
+	constructor(mobHerdPositionAttribute: EntityMobHerdPositionAttribute, active: boolean) {
+		super();
+		this.mobHerdPositionAttribute = mobHerdPositionAttribute;
+		this.active = active;
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		this.mobHerdPositionAttribute.active = this.active;
+		this.tickResult = TickResult.DONE;
+	}
+}
+
+export class EntityFindFriendlyTargetAttribute extends EntityAttribute {
+	private readonly range: number;
+	private readonly numTargets: number;
+	targets: [Vector, Entity][] = [];
+
+	constructor(range: number, numTargets: number) {
+		super();
+		console.assert(range > 0);
+		console.assert(numTargets > 0);
+		this.range = range;
+		this.numTargets = numTargets;
+	}
+
+	static findTargetsWithinRange(position: Vector, range: number, limit: number, world: World): [Vector, Entity][] {
+		let targets: [Vector, Entity][] = [];
+		let start = position.subtract(new Vector(range)).floor.max(Vector.V0);
+		let end = position.add(new Vector(range)).floor.min(world.size);
+		// todo randomize iteration order or iterate center to outside
+		// todo add chunks to live layer for faster searching
+		for (let x = start.x; x < end.x; x++)
+			for (let y = start.y; y < end.y; y++) {
+				let position = new Vector(x, y);
+				let tile = world.live.getTileUnchecked(position);
+				if (!tile.tileable.getAttribute(EntityHealthAttribute)) continue;
+				targets.push([position, tile.tileable]);
+				if (targets.length === limit)
+					return targets;
+			}
+		return targets;
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		this.targets = EntityFindFriendlyTargetAttribute.findTargetsWithinRange(tile.position, this.range, this.numTargets, world);
+		if (this.targets.length)
+			this.tickResult = TickResult.DONE;
+	}
+}
+
 export class EntitySpawnProjectileAttribute extends EntityAttribute {
+	private readonly findFriendlyTargetAttribute: EntityFindFriendlyTargetAttribute;
 	private readonly velocity: number;
 	private readonly duration: number;
 	private readonly range: number;
@@ -1092,13 +1190,14 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 	private readonly damage: number;
 	private readonly friendly: boolean;
 
-	constructor(velocity: number, duration: number, range: number, maxTargets: number, damage: number, friendly: boolean) {
+	constructor(findFriendlyTargetAttribute: EntityFindFriendlyTargetAttribute, velocity: number, duration: number, range: number, maxTargets: number, damage: number, friendly: boolean) {
 		super();
 		console.assert(velocity > 0);
 		console.assert(duration > 0);
 		console.assert(range > 0);
 		console.assert(maxTargets > 0);
 		console.assert(damage > 0);
+		this.findFriendlyTargetAttribute = findFriendlyTargetAttribute;
 		this.velocity = velocity;
 		this.duration = duration;
 		this.range = range;
@@ -1107,36 +1206,9 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 		this.friendly = friendly;
 	}
 
-	static findTargetsWithinRange(position: Vector, range: number, limit: number, targetFriendly: boolean, world: World): [Vector, Entity][] {
-		let targets: [Vector, Entity][] = [];
-		if (targetFriendly) {
-			let start = position.subtract(new Vector(range)).floor.max(Vector.V0);
-			let end = position.add(new Vector(range)).floor.min(world.size);
-			// todo randomize iteration order or iterate center to outside
-			// todo add chunks to live layer for faster searching
-			for (let x = start.x; x < end.x; x++)
-				for (let y = start.y; y < end.y; y++) {
-					let position = new Vector(x, y);
-					let tile = world.live.getTileUnchecked(position);
-					if (!tile.tileable.getAttribute(EntityHealthAttribute)) continue;
-					targets.push([position, tile.tileable]);
-					if (targets.length === limit)
-						return targets;
-				}
-			return targets;
-		} else {
-			return [];
-			// targets = world.free.tiles
-			// 	.map((tile): [Vector, Entity] => [tile.position, tile.tileable])
-			// 	.filter(([p]) => p.subtract(position).magnitude2 < range ** 2)
-			// 	.filter(([_, entity]) => entity.getAttribute(EntityMobHealthAttribute));
-			// return targets.sort(([p1], [p2]) => p1.subtract(position).magnitude2 - p2.subtract(position).magnitude2);
-		}
-	}
-
 	tick(world: World, tile: Tile<Entity>): void {
 		this.tickResult = TickResult.DONE;
-		let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.velocity * this.duration + this.range, 1, !this.friendly, world);
+		let targets = this.findFriendlyTargetAttribute.targets;
 		if (!targets.length) return;
 		let velocity = targets[0][0].subtract(tile.position);
 		if (velocity.magnitude2 > this.velocity ** 2)
@@ -1177,7 +1249,7 @@ export class EntityDamageAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		let targets = EntitySpawnProjectileAttribute.findTargetsWithinRange(tile.position, this.range, 5, !this.friendly, world);
+		let targets = EntityFindFriendlyTargetAttribute.findTargetsWithinRange(tile.position, this.range, 5, world);
 		targets
 			.filter((_, i) => i < this.maxTargets)
 			.map(target => this.friendly ? target[1].getAttribute(EntityMobHealthAttribute) : target[1].getAttribute(EntityHealthAttribute))

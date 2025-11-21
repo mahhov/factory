@@ -16,7 +16,9 @@ import {
 	EntityDescriptionAttribute,
 	EntityDirectionMovementAttribute,
 	EntityExpireProjectileAttribute,
+	EntityFindFriendlyTargetAttribute,
 	EntityHealthAttribute,
+	EntityIfElseAttribute,
 	EntityInflowAttribute,
 	EntityLiquidBridgeConnectAttribute,
 	EntityLiquidBridgeTransportAttribute,
@@ -35,6 +37,7 @@ import {
 	EntityMaterialStorageAttribute,
 	EntityMaterialStorageAttributeType,
 	EntityMobHealthAttribute,
+	EntityMobHerdPositionActivateAttribute,
 	EntityMobHerdPositionAttribute,
 	EntityNameAttribute,
 	EntityNonEmptyLiquidStorage,
@@ -545,7 +548,7 @@ export class Turret extends Building {
 		this.addAttribute(new EntityChainAttribute([
 			new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
 			new EntityTimedAttribute(40),
-			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, true),
+			// new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, true),
 		]));
 	}
 }
@@ -604,20 +607,20 @@ export class Mob extends Entity {
 	constructor(position: Vector) {
 		super('Low Tier Mob No Sprite', '');
 		this.setParticle(new Particle(animatedGeneratedTextures.lowTierMob.textures[0]));
-		this.addAttribute(new EntityMobHerdPositionAttribute(position));
+		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(position);
+		this.addAttribute(mobHerdPositionAttribute);
+		let findFriendlyTargetAttribute = new EntityFindFriendlyTargetAttribute(11, 1);
 		this.addAttribute(new EntityChainAttribute([
 			new EntityTimedAttribute(40),
-			new EntitySpawnProjectileAttribute(.1, 100, 1, 1, 2, false),
+			new EntityIfElseAttribute(findFriendlyTargetAttribute,
+				new EntityChainAttribute([
+					new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, false),
+					new EntityTimedAttribute(160),
+					new EntitySpawnProjectileAttribute(findFriendlyTargetAttribute, .1, 100, 1, 1, 2, false),
+				]),
+				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, true)),
 		]));
 		this.addAttribute(new EntityMobHealthAttribute(10));
-		// todo stop herding when encounter structure
-		// time 40
-		// if (target)
-		//   herd off
-		//   time 160
-		//   fire @ target
-		// else
-		// 	herd on
 	}
 }
 
