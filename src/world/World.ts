@@ -5,7 +5,7 @@ import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
-import {EntityBuildableAttribute, TooltipType} from './EntityAttribute.js';
+import {EntityBuildableAttribute, EntityMobHerdPositionAttribute, TooltipType} from './EntityAttribute.js';
 import MobLogic from './MobLogic.js';
 import PlayerLogic from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
@@ -218,11 +218,13 @@ export class OrderedGridWorldLayer<T extends Tileable> extends GridWorldLayer<T>
 }
 
 export class FreeWorldLayerChunkOverlay<T extends Tileable, S> {
+	private readonly size: Vector;
 	private readonly chunkSize: number;
-	readonly chunks: S[][][];
+	readonly chunks: [Tile<T>, S][][][];
 	private readonly mapper: (t: T) => S | null;
 
 	constructor(size: Vector, chunkSize: number, mapper: (t: T) => S | null) {
+		this.size = size;
 		this.chunkSize = chunkSize;
 		let chunkCounts = size.scale(1 / chunkSize).ceil;
 		this.chunks = util.arr(chunkCounts.x).map(() => util.arr(chunkCounts.y).map(() => []));
@@ -233,6 +235,17 @@ export class FreeWorldLayerChunkOverlay<T extends Tileable, S> {
 		return position.scale(1 / this.chunkSize).floor;
 	}
 
+	chunkRange(start: Vector, end: Vector): [Tile<T>, S][][] {
+		// start & end are inclusive
+		let chunkStart = this.chunkPosition(start.max(Vector.V0));
+		let chunkEnd = this.chunkPosition(end.min(this.size.subtract(Vector.V1)));
+		let chunks = [];
+		for (let chunkX = chunkStart.x; chunkX <= chunkEnd.x; chunkX++)
+			for (let chunkY = chunkStart.y; chunkY <= chunkEnd.y; chunkY++)
+				chunks.push(this.chunks[chunkX][chunkY]);
+		return chunks;
+	}
+
 	private chunk(position: Vector) {
 		let chunkPosition = this.chunkPosition(position);
 		return this.chunks[chunkPosition.x][chunkPosition.y];
@@ -241,25 +254,31 @@ export class FreeWorldLayerChunkOverlay<T extends Tileable, S> {
 	add(tile: Tile<T>) {
 		let value = this.mapper(tile.tileable);
 		if (!value) return;
-		this.chunk(tile.position).push(value);
+		this.chunk(tile.position).push([tile, value]);
 	}
 
 	update(newPosition: Vector, tile: Tile<T>) {
-		let value = this.mapper(tile.tileable);
-		if (!value) return;
 		let oldChunk = this.chunk(tile.position);
 		let newChunk = this.chunk(newPosition);
-		if (oldChunk !== newChunk) {
-			oldChunk.splice(oldChunk.indexOf(value), 1);
-			newChunk.push(value);
-		}
+		if (oldChunk === newChunk) return;
+
+		let value = this.mapper(tile.tileable);
+		if (!value) return;
+
+		let oldIndex = oldChunk.findIndex(([t]) => t === tile);
+		console.assert(oldIndex !== -1);
+		let entry = oldChunk.splice(oldIndex, 1);
+		newChunk.push(entry[0]);
 	}
 
 	remove(tile: Tile<T>) {
 		let value = this.mapper(tile.tileable);
 		if (!value) return;
-		let chunk = this.chunk(tile.position);
-		chunk.splice(chunk.indexOf(value), 1);
+
+		let oldChunk = this.chunk(tile.position);
+		let oldIndex = oldChunk.findIndex(([t]) => t === tile);
+		console.assert(oldIndex !== -1);
+		oldChunk.splice(oldIndex, 1);
 	}
 }
 
@@ -334,6 +353,7 @@ export class World {
 	readonly queue: OrderedGridWorldLayer<Entity>;
 	readonly planning: GridWorldLayer<SpriteHolder>;
 	readonly free: FreeWorldLayer<Entity>;
+	readonly freeMobHerdPositionAttributeOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>;
 	readonly mobLogic;
 
 	constructor(size: Vector, painter: Painter, cameraContainer: Container) {
@@ -358,6 +378,7 @@ export class World {
 
 		this.free = new FreeWorldLayer<Entity>(size);
 		cameraContainer.addChild(this.free.container);
+		this.freeMobHerdPositionAttributeOverlay = this.free.addChunkOverlay(6, entity => entity.getAttribute(EntityMobHerdPositionAttribute));
 
 		this.mobLogic = new MobLogic(painter, this);
 	}

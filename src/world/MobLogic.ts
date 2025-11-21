@@ -14,8 +14,7 @@ export default class MobLogic {
 	private readonly multilineText: MultilineText;
 
 	constructor(painter: Painter, world: World) {
-		let herdOverlay = world.free.addChunkOverlay(6, entity => entity.getAttribute(EntityMobHerdPositionAttribute));
-		this.herdManager = new HerdManager(world.size, herdOverlay);
+		this.herdManager = new HerdManager(world.size);
 		this.multilineText = new MultilineText(painter, new Vector(.5, .005), [], Anchor.TOP_CENTER);
 	}
 
@@ -23,7 +22,7 @@ export default class MobLogic {
 		this.spawner.tick(world.free);
 		this.multilineText.lines = this.spawner.textLines();
 		this.multilineText.tick();
-		this.herdManager.tick();
+		this.herdManager.tick(world.freeMobHerdPositionAttributeOverlay);
 	}
 }
 
@@ -112,17 +111,15 @@ console.assert(!(herdConfig.SCATTER_DURATION % 2));
 
 class HerdManager {
 	private readonly size1: Vector;
-	private readonly herdOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>;
 	private clumping = true;
 	private clumpCounter = new Counter(1);
 	private lastHerdSize = 0;
 
-	constructor(size: Vector, herdOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>) {
+	constructor(size: Vector) {
 		this.size1 = size.subtract(Vector.V1);
-		this.herdOverlay = herdOverlay;
 	}
 
-	tick() {
+	tick(freeMobHerdOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>) {
 		if (this.clumpCounter.tick()) {
 			this.clumping = !this.clumping;
 			let duration = this.clumping ? herdConfig.CLUMP_DURATION : herdConfig.SCATTER_DURATION;
@@ -132,16 +129,16 @@ class HerdManager {
 
 		let velocityUpdateFrequency = herdConfig.MAX_VELOCITY_UPDATES / this.lastHerdSize;
 		this.lastHerdSize = 0;
-		this.herdOverlay.chunks.forEach(chunkColumn =>
+		freeMobHerdOverlay.chunks.forEach(chunkColumn =>
 			chunkColumn.forEach(chunk =>
-				chunk.forEach(mobHerdPositionAttribute => {
+				chunk.forEach(([_, mobHerdPositionAttribute]) => {
 					this.lastHerdSize++;
 					if (!mobHerdPositionAttribute.active) return;
 					let position = mobHerdPositionAttribute.position;
 					let velocity = mobHerdPositionAttribute.velocity;
 
 					if (Math.random() < velocityUpdateFrequency) {
-						let deltas = this.getNeighborDeltas(position);
+						let deltas = this.getNeighborDeltas(freeMobHerdOverlay, position);
 						let cohesion = this.calculateCohesion(deltas);
 						let separation = this.calculateSeparation(deltas);
 						velocity = velocity
@@ -162,21 +159,14 @@ class HerdManager {
 				})));
 	}
 
-	private getNeighborDeltas(self: Vector): [Vector, Vector][] {
+	private getNeighborDeltas(freeMobHerdOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>, self: Vector): [Vector, Vector][] {
 		// return up to MAX_NEIGHBOR_COUNT random neighbors within NEIGHBOR_RADIUS
 		let output: [Vector, Vector][] = [];
 		let searchRadius = new Vector(herdConfig.NEIGHBOR_RADIUS);
-		let searchStart = self.subtract(searchRadius).clamp(Vector.V0, this.size1);
-		let searchEnd = self.add(searchRadius).clamp(Vector.V0, this.size1);
-		let chunkStart = this.herdOverlay.chunkPosition(searchStart);
-		let chunkEnd = this.herdOverlay.chunkPosition(searchEnd);
-		let chunks = [];
-		for (let chunkX = chunkStart.x; chunkX <= chunkEnd.x; chunkX++)
-			for (let chunkY = chunkStart.y; chunkY <= chunkEnd.y; chunkY++)
-				chunks.push(this.herdOverlay.chunks[chunkX][chunkY]);
+		let chunks = freeMobHerdOverlay.chunkRange(self.subtract(searchRadius), self.add(searchRadius));
 		util.shuffleInPlace(chunks);
 		for (let chunk of chunks)
-			for (let mobHerdPositionAttribute of chunk) {
+			for (let [_, mobHerdPositionAttribute] of chunk) {
 				let delta = mobHerdPositionAttribute.position.subtract(self);
 				if (delta.magnitude2 < herdConfig.NEIGHBOR_RADIUS_2) {
 					output.push([delta, mobHerdPositionAttribute.velocity]);

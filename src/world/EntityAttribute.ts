@@ -1097,6 +1097,7 @@ export class EntityLiquidDisplayAttribute extends EntityAttribute {
 
 // Mob and combat attributes
 
+// todo merge with EntityHealthAttribute
 export class EntityMobHealthAttribute extends EntityAttribute {
 	private readonly maxHealth: number;
 	health: number;
