@@ -551,16 +551,18 @@ export class Turret extends Building {
 		//   chaining laser
 		//   aoe around projectile
 		//   aoe around self
+		// todo area damage not working
+		// todo area visual
 
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(Material.IRON, 10)], util.enumValues(Rotation), false);
 		this.addAttribute(materialStorageAttribute);
-		let findTargetAttribute = new EntityFindTargetAttribute(11, 1, false);
+		let findTargetAttribute = new EntityFindTargetAttribute(21, 1, false);
 		this.addAttribute(new EntityIfElseAttribute(
 			findTargetAttribute,
 			new EntityChainAttribute([
 				new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
-				new EntityTimedAttribute(200),
-				new EntitySpawnProjectileAttribute(findTargetAttribute, .1, 100, 1, 1, 2, true),
+				new EntitySpawnProjectileAttribute(findTargetAttribute, .1, 200, 1, 1, 10, true),
+				new EntityTimedAttribute(40),
 			]),
 			new EntityTimedAttribute(40)));
 	}
@@ -627,8 +629,8 @@ export class Mob extends Entity {
 			findTargetAttribute,
 			new EntityChainAttribute([
 				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, false),
-				new EntityTimedAttribute(200),
 				new EntitySpawnProjectileAttribute(findTargetAttribute, .1, 100, 1, 1, 2, false),
+				new EntityTimedAttribute(200),
 			]),
 			new EntityChainAttribute([
 				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, true),

@@ -1166,14 +1166,16 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 	}
 
 	static findTargetsWithinRange(position: Vector, range: number, limit: number, targetFriendly: boolean, world: World): [Vector, Entity][] {
+		let targets: [Vector, Entity][] = [];
+		let rangeV = new Vector(range);
+
 		if (targetFriendly) {
-			let targets: [Vector, Entity][] = [];
-			let start = position.subtract(new Vector(range)).floor.max(Vector.V0);
-			let end = position.add(new Vector(range)).floor.min(world.size);
+			let start = position.subtract(rangeV).floor.max(Vector.V0);
+			let end = position.add(rangeV).floor.min(world.size.subtract(Vector.V1));
 			// todo randomize iteration order or iterate center to outside
 			// todo add chunks to live layer for faster searching
-			for (let x = start.x; x < end.x; x++)
-				for (let y = start.y; y < end.y; y++) {
+			for (let x = start.x; x <= end.x; x++)
+				for (let y = start.y; y <= end.y; y++) {
 					let position = new Vector(x, y);
 					let tile = world.live.getTileUnchecked(position);
 					if (!tile.tileable.getAttribute(EntityHealthAttribute)) continue;
@@ -1182,10 +1184,21 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 						return targets;
 				}
 			return targets;
-		}
 
-		// todo allow searching hostile targets
-		return [];
+		} else {
+			let chunks = world.freeMobHerdPositionAttributeOverlay.chunkRange(position.subtract(rangeV), position.add(rangeV));
+			for (let chunk of chunks)
+				for (let [tile, mobHerdPositionAttribute] of chunk) {
+					let delta = mobHerdPositionAttribute.position.subtract(position);
+					if (delta.abs.atMost(rangeV)) {
+						if (!tile.tileable.getAttribute(EntityMobHealthAttribute)) continue;
+						targets.push([tile.position, tile.tileable]);
+						if (targets.length === limit)
+							return targets;
+					}
+				}
+			return targets;
+		}
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
@@ -1196,7 +1209,7 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 }
 
 export class EntitySpawnProjectileAttribute extends EntityAttribute {
-	private readonly findFriendlyTargetAttribute: EntityFindTargetAttribute;
+	private readonly findTargetAttribute: EntityFindTargetAttribute;
 	private readonly velocity: number;
 	private readonly duration: number;
 	private readonly range: number;
@@ -1204,14 +1217,14 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 	private readonly damage: number;
 	private readonly sourceFriendly: boolean;
 
-	constructor(findFriendlyTargetAttribute: EntityFindTargetAttribute, velocity: number, duration: number, range: number, maxTargets: number, damage: number, sourceFriendly: boolean) {
+	constructor(findTargetAttribute: EntityFindTargetAttribute, velocity: number, duration: number, range: number, maxTargets: number, damage: number, sourceFriendly: boolean) {
 		super();
 		console.assert(velocity > 0);
 		console.assert(duration > 0);
 		console.assert(range > 0);
 		console.assert(maxTargets > 0);
 		console.assert(damage > 0);
-		this.findFriendlyTargetAttribute = findFriendlyTargetAttribute;
+		this.findTargetAttribute = findTargetAttribute;
 		this.velocity = velocity;
 		this.duration = duration;
 		this.range = range;
@@ -1222,7 +1235,7 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 
 	tick(world: World, tile: Tile<Entity>): void {
 		this.tickResult = TickResult.DONE;
-		let targets = this.findFriendlyTargetAttribute.targets;
+		let targets = this.findTargetAttribute.targets;
 		if (!targets.length) return;
 		let velocity = targets[0][0].subtract(tile.position);
 		if (velocity.magnitude2 > this.velocity ** 2)
