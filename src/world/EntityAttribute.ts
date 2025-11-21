@@ -475,7 +475,7 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 		return this.quantities[materialCount.resource] >= materialCount.quantity;
 	}
 
-	add(materialCount: ResourceUtils.Count<Material>, rotation: Rotation = Rotation.UP) {
+	add(materialCount: ResourceUtils.Count<Material>) {
 		this.quantities[materialCount.resource] += materialCount.quantity;
 		util.arr(materialCount.quantity).forEach(() => this.ordered.push(materialCount.resource));
 	}
@@ -543,7 +543,7 @@ export class EntityTransportAttribute extends EntityAttribute {
 					util.shuffleInPlace(materialCounts).some(materialCount => {
 						if (destinationMaterialStorageAttribute!.hasCapacity(materialCount)) {
 							fromMaterialStorageAttribute.remove(materialCount);
-							destinationMaterialStorageAttribute!.add(materialCount, rotation);
+							destinationMaterialStorageAttribute!.add(materialCount);
 							return true;
 						}
 						return false;
@@ -595,7 +595,7 @@ export class EntityInflowAttribute extends EntityAttribute {
 				.some(sourceMaterialStorageAttribute => {
 					if (sourceMaterialStorageAttribute.hasQuantity(materialCount)) {
 						sourceMaterialStorageAttribute.remove(materialCount);
-						this.materialStorageAttribute.add(materialCount, rotation);
+						this.materialStorageAttribute.add(materialCount);
 						return true;
 					}
 					return false;

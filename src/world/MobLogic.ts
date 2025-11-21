@@ -19,12 +19,6 @@ export default class MobLogic {
 		this.multilineText = new MultilineText(painter, new Vector(.5, .005), [], Anchor.TOP_CENTER);
 	}
 
-	spawnMobAtRandomPosition(free: FreeWorldLayer<Mob>) {
-		let position = new Vector(util.rand(free.size.x - 1), util.rand(free.size.y - 1));
-		let mob = new Mob(position);
-		free.addTileable(position, mob);
-	}
-
 	tick(world: World) {
 		this.spawner.tick(world.free);
 		this.multilineText.lines = this.spawner.textLines();
