@@ -7,8 +7,13 @@ import TextLine from './TextLine.js';
 
 export enum Anchor {
 	TOP_LEFT,
+	TOP_CENTER,
 	TOP_RIGHT,
+	MIDDLE_LEFT,
+	MIDDLE_CENTER,
+	MIDDLE_RIGHT,
 	BOTTOM_LEFT,
+	BOTTOM_CENTER,
 	BOTTOM_RIGHT,
 }
 
@@ -59,10 +64,18 @@ export default class MultilineText {
 			() => this.textContainer.removeChild(this.textContainer.children.at(-1)!));
 
 		let position = this.position;
-		if (this.anchor === Anchor.BOTTOM_LEFT || this.anchor === Anchor.BOTTOM_RIGHT)
-			position = position.subtract(new Vector(0, this.textContainer.height / 1000));
-		if (this.anchor === Anchor.TOP_RIGHT || this.anchor === Anchor.BOTTOM_RIGHT)
+		// center
+		if (this.anchor === Anchor.TOP_CENTER || this.anchor === Anchor.MIDDLE_CENTER || this.anchor === Anchor.BOTTOM_CENTER)
+			position = position.subtract(new Vector(this.textContainer.width / 1000 / 2, 0));
+		// right
+		if (this.anchor === Anchor.TOP_RIGHT || this.anchor === Anchor.MIDDLE_RIGHT || this.anchor === Anchor.BOTTOM_RIGHT)
 			position = position.subtract(new Vector(this.textContainer.width / 1000, 0));
+		// middle
+		if (this.anchor === Anchor.MIDDLE_LEFT || this.anchor === Anchor.MIDDLE_CENTER || this.anchor === Anchor.MIDDLE_RIGHT)
+			position = position.subtract(new Vector(0, this.textContainer.height / 1000 / 2));
+		// bottom
+		if (this.anchor === Anchor.BOTTOM_LEFT || this.anchor === Anchor.BOTTOM_CENTER || this.anchor === Anchor.BOTTOM_RIGHT)
+			position = position.subtract(new Vector(0, this.textContainer.height / 1000));
 
 		this.textContainer.position = position.scale(1000);
 		let size = new Vector(this.textContainer.width / 1000, this.textContainer.height / 1000);
