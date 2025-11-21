@@ -16,7 +16,7 @@ import {
 	EntityDescriptionAttribute,
 	EntityDirectionMovementAttribute,
 	EntityExpireProjectileAttribute,
-	EntityFindFriendlyTargetAttribute,
+	EntityFindTargetAttribute,
 	EntityHealthAttribute,
 	EntityIfElseAttribute,
 	EntityInflowAttribute,
@@ -541,7 +541,16 @@ export class Turret extends Building {
 		//   materialInput
 		//   accuracy
 		//   range
+		//   damage range
 		//   projectileSpeed
+		// todo attack styles
+		//   single projectile
+		//   3 projectiles
+		//   piercing laser
+		//   sweeping laser
+		//   chaining laser
+		//   aoe around projectile
+		//   aoe around self
 
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(Material.IRON, 10)], util.enumValues(Rotation), false);
 		this.addAttribute(materialStorageAttribute);
@@ -609,28 +618,29 @@ export class Mob extends Entity {
 		this.setParticle(new Particle(animatedGeneratedTextures.lowTierMob.textures[0]));
 		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(position);
 		this.addAttribute(mobHerdPositionAttribute);
-		let findFriendlyTargetAttribute = new EntityFindFriendlyTargetAttribute(11, 1);
-		this.addAttribute(new EntityChainAttribute([
-			new EntityTimedAttribute(40),
-			new EntityIfElseAttribute(findFriendlyTargetAttribute,
-				new EntityChainAttribute([
-					new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, false),
-					new EntityTimedAttribute(160),
-					new EntitySpawnProjectileAttribute(findFriendlyTargetAttribute, .1, 100, 1, 1, 2, false),
-				]),
-				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, true)),
-		]));
+		let findTargetAttribute = new EntityFindTargetAttribute(11, 1, true);
+		this.addAttribute(new EntityIfElseAttribute(
+			findTargetAttribute,
+			new EntityChainAttribute([
+				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, false),
+				new EntityTimedAttribute(200),
+				new EntitySpawnProjectileAttribute(findTargetAttribute, .1, 100, 1, 1, 2, false),
+			]),
+			new EntityChainAttribute([
+				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, true),
+				new EntityTimedAttribute(40),
+			])));
 		this.addAttribute(new EntityMobHealthAttribute(10));
 	}
 }
 
 export class Projectile extends Entity {
-	constructor(velocity: Vector, duration: number, range: number, maxTargets: number, damage: number, friendly: boolean) {
+	constructor(velocity: Vector, duration: number, range: number, maxTargets: number, damage: number, sourceFriendly: boolean) {
 		super('Projectile', '', new Vector(.2));
 		this.setParticle(new Particle(coloredGeneratedTextures.fullRect.texture(Color.PROJECTILE_RED)));
 		this.addAttribute(new EntityDirectionMovementAttribute(velocity));
 		this.addAttribute(new EntityChainAttribute([
-			new EntityDamageAttribute(range, maxTargets, damage, friendly),
+			new EntityDamageAttribute(range, maxTargets, damage, sourceFriendly),
 			new EntityExpireProjectileAttribute(),
 		]));
 		this.addAttribute(new EntityChainAttribute([

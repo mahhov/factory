@@ -1143,54 +1143,61 @@ export class EntityMobHerdPositionActivateAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityFindFriendlyTargetAttribute extends EntityAttribute {
+export class EntityFindTargetAttribute extends EntityAttribute {
 	private readonly range: number;
 	private readonly numTargets: number;
+	private readonly targetFriendly: boolean;
 	targets: [Vector, Entity][] = [];
 
-	constructor(range: number, numTargets: number) {
+	constructor(range: number, numTargets: number, targetFriendly: boolean) {
 		super();
 		console.assert(range > 0);
 		console.assert(numTargets > 0);
 		this.range = range;
 		this.numTargets = numTargets;
+		this.targetFriendly = targetFriendly;
 	}
 
-	static findTargetsWithinRange(position: Vector, range: number, limit: number, world: World): [Vector, Entity][] {
-		let targets: [Vector, Entity][] = [];
-		let start = position.subtract(new Vector(range)).floor.max(Vector.V0);
-		let end = position.add(new Vector(range)).floor.min(world.size);
-		// todo randomize iteration order or iterate center to outside
-		// todo add chunks to live layer for faster searching
-		for (let x = start.x; x < end.x; x++)
-			for (let y = start.y; y < end.y; y++) {
-				let position = new Vector(x, y);
-				let tile = world.live.getTileUnchecked(position);
-				if (!tile.tileable.getAttribute(EntityHealthAttribute)) continue;
-				targets.push([position, tile.tileable]);
-				if (targets.length === limit)
-					return targets;
-			}
-		return targets;
+	static findTargetsWithinRange(position: Vector, range: number, limit: number, targetFriendly: boolean, world: World): [Vector, Entity][] {
+		if (targetFriendly) {
+			let targets: [Vector, Entity][] = [];
+			let start = position.subtract(new Vector(range)).floor.max(Vector.V0);
+			let end = position.add(new Vector(range)).floor.min(world.size);
+			// todo randomize iteration order or iterate center to outside
+			// todo add chunks to live layer for faster searching
+			for (let x = start.x; x < end.x; x++)
+				for (let y = start.y; y < end.y; y++) {
+					let position = new Vector(x, y);
+					let tile = world.live.getTileUnchecked(position);
+					if (!tile.tileable.getAttribute(EntityHealthAttribute)) continue;
+					targets.push([position, tile.tileable]);
+					if (targets.length === limit)
+						return targets;
+				}
+			return targets;
+		}
+
+		// todo allow searching hostile targets
+		return [];
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		this.targets = EntityFindFriendlyTargetAttribute.findTargetsWithinRange(tile.position, this.range, this.numTargets, world);
+		this.targets = EntityFindTargetAttribute.findTargetsWithinRange(tile.position, this.range, this.numTargets, this.targetFriendly, world);
 		if (this.targets.length)
 			this.tickResult = TickResult.DONE;
 	}
 }
 
 export class EntitySpawnProjectileAttribute extends EntityAttribute {
-	private readonly findFriendlyTargetAttribute: EntityFindFriendlyTargetAttribute;
+	private readonly findFriendlyTargetAttribute: EntityFindTargetAttribute;
 	private readonly velocity: number;
 	private readonly duration: number;
 	private readonly range: number;
 	private readonly maxTargets: number;
 	private readonly damage: number;
-	private readonly friendly: boolean;
+	private readonly sourceFriendly: boolean;
 
-	constructor(findFriendlyTargetAttribute: EntityFindFriendlyTargetAttribute, velocity: number, duration: number, range: number, maxTargets: number, damage: number, friendly: boolean) {
+	constructor(findFriendlyTargetAttribute: EntityFindTargetAttribute, velocity: number, duration: number, range: number, maxTargets: number, damage: number, sourceFriendly: boolean) {
 		super();
 		console.assert(velocity > 0);
 		console.assert(duration > 0);
@@ -1203,7 +1210,7 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 		this.range = range;
 		this.maxTargets = maxTargets;
 		this.damage = damage;
-		this.friendly = friendly;
+		this.sourceFriendly = sourceFriendly;
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
@@ -1213,7 +1220,7 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 		let velocity = targets[0][0].subtract(tile.position);
 		if (velocity.magnitude2 > this.velocity ** 2)
 			velocity = velocity.setMagnitude(this.velocity);
-		world.free.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.friendly));
+		world.free.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.sourceFriendly));
 	}
 }
 
@@ -1235,9 +1242,9 @@ export class EntityDamageAttribute extends EntityAttribute {
 	private readonly range: number;
 	private readonly maxTargets: number;
 	private readonly damage: number;
-	private readonly friendly: boolean;
+	private readonly sourceFriendly: boolean;
 
-	constructor(range: number, maxTargets: number, damage: number, friendly: boolean) {
+	constructor(range: number, maxTargets: number, damage: number, sourceFriendly: boolean) {
 		super();
 		console.assert(range > 0);
 		console.assert(maxTargets > 0);
@@ -1245,14 +1252,13 @@ export class EntityDamageAttribute extends EntityAttribute {
 		this.range = range;
 		this.maxTargets = maxTargets;
 		this.damage = damage;
-		this.friendly = friendly;
+		this.sourceFriendly = sourceFriendly;
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		let targets = EntityFindFriendlyTargetAttribute.findTargetsWithinRange(tile.position, this.range, 5, world);
+		let targets = EntityFindTargetAttribute.findTargetsWithinRange(tile.position, this.range, this.maxTargets, !this.sourceFriendly, world);
 		targets
-			.filter((_, i) => i < this.maxTargets)
-			.map(target => this.friendly ? target[1].getAttribute(EntityMobHealthAttribute) : target[1].getAttribute(EntityHealthAttribute))
+			.map(target => this.sourceFriendly ? target[1].getAttribute(EntityMobHealthAttribute) : target[1].getAttribute(EntityHealthAttribute))
 			.forEach(healthAttribute => healthAttribute!.health = Math.max(healthAttribute!.health - this.damage, 0));
 		if (targets.length)
 			this.tickResult = TickResult.DONE;
