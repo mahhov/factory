@@ -18,6 +18,10 @@ export default class MobLogic {
 		this.multilineText = new MultilineText(painter, new Vector(.5, .005), [], Anchor.TOP_CENTER);
 	}
 
+	sendWave() {
+		this.spawner.sendWave();
+	}
+
 	tick(world: World) {
 		this.spawner.tick(world.free);
 		this.multilineText.lines = this.spawner.textLines();
@@ -73,6 +77,10 @@ class Spawner {
 			new TextLine(`Stage ${this.stageIndex}`),
 			new TextLine(`Enemies in: ${Math.floor(this.counter.i / 100)} / ${Math.floor(this.counter.n / 100)}`),
 		];
+	}
+
+	sendWave() {
+		this.counter.reset(true);
 	}
 
 	tick(free: FreeWorldLayer<any>) {

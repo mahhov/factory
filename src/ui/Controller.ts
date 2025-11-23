@@ -80,5 +80,6 @@ export default class Controller {
 
 		// other
 		input.addBinding(new KeyBinding('Space', [], [InputState.PRESSED], () => world.pause()));
+		input.addBinding(new KeyBinding('Space', [KeyModifier.CONTROL], [InputState.PRESSED], () => world.mobLogic.sendWave()));
 	}
 }
