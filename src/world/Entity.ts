@@ -579,6 +579,7 @@ export class Turret extends Building {
 		//     enemies that charge and ram between buildings
 		//     leaves snake like path of aoe damage as it flies overhead
 		//     spawns other monsters
+		//     giant with 4 lasers
 		//   enemy behavior
 		//     herd
 		//     pool creepers

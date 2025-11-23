@@ -5,7 +5,7 @@ import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
-import {EntityBuildableAttribute, EntityMobHerdPositionAttribute, TooltipType} from './EntityAttribute.js';
+import {EntityBuildableAttribute, EntityMobHerdPositionAttribute, TickResult, TooltipType} from './EntityAttribute.js';
 import MobLogic from './MobLogic.js';
 import PlayerLogic from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
@@ -435,14 +435,15 @@ export class World {
 				this.queue.removeOrdered(i);
 				continue;
 			}
+			buildableAttribute.tick(this, queueTile);
 			if (buildableAttribute.doneBuilding) {
 				this.live.replaceTileable(position, queueTile.tileable);
 				this.queue.removeOrdered(i);
-				continue;
 			}
-			buildableAttribute.tick(this, queueTile);
-			if (buildableAttribute.doneBuilding)
+			if (buildableAttribute.tickResult === TickResult.END_TICK) {
+				buildableAttribute.tickResult = TickResult.NOT_DONE;
 				break;
+			}
 			i++;
 		}
 		// todo slower building if further from player base

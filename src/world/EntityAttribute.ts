@@ -149,10 +149,8 @@ export class EntityBuildableAttribute extends EntityAttribute {
 		this.materialCost = materialCost;
 	}
 
-	// returns true if building. returns false if done building or insufficient material
 	tick(world: World, tile: Tile<Entity>): void {
 		if (this.doneBuilding) return;
-		this.tickResult = TickResult.END_TICK;
 
 		let lastRatio = this.counter.ratio;
 		let ratio = (this.counter.i + 1) / this.counter.n;
@@ -165,6 +163,8 @@ export class EntityBuildableAttribute extends EntityAttribute {
 		costs.forEach(cost => world.playerLogic.materials.remove(cost));
 		if (this.counter.tick())
 			this.doneBuilding = true;
+		// Unbuilt entities are ticked only from tickQueue. Need to end tickQueue after 1 building progresses
+		this.tickResult = TickResult.END_TICK;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
