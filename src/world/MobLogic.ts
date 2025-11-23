@@ -44,14 +44,14 @@ class Spawner {
 	private counter = new Counter(1);
 	private stageIndex = -1;
 	private readonly stages = [
-		new SpawnerStage(8000, 0, 0, 0),
-		new SpawnerStage(4000, 3, 5, 5),
-		new SpawnerStage(4000, 3, 5, 5),
-		new SpawnerStage(4000, 6, 10, 10),
-		new SpawnerStage(3000, 9, 15, 15),
-		new SpawnerStage(3000, 12, 20, 20),
-		new SpawnerStage(2000, 15, 25, 25),
-		new SpawnerStage(2000, 18, 30, 30),
+		new SpawnerStage(300 * 100, 0, 0, 0),
+		new SpawnerStage(60 * 100, 3, 5, 5),
+		new SpawnerStage(60 * 100, 3, 5, 5),
+		new SpawnerStage(60 * 100, 6, 10, 10),
+		new SpawnerStage(50 * 100, 9, 15, 15),
+		new SpawnerStage(50 * 100, 12, 20, 20),
+		new SpawnerStage(40 * 100, 15, 25, 25),
+		new SpawnerStage(40 * 100, 18, 30, 30),
 	];
 
 	static spawn(free: FreeWorldLayer<any>, stage: SpawnerStage) {
