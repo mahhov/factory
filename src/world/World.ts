@@ -355,6 +355,7 @@ export class World {
 	readonly free: FreeWorldLayer<Entity>;
 	readonly freeMobHerdPositionAttributeOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>;
 	readonly mobLogic;
+	private paused = false;
 
 	constructor(size: Vector, painter: Painter, cameraContainer: Container) {
 		this.size = size;
@@ -391,7 +392,12 @@ export class World {
 		return this.size.y;
 	}
 
+	pause() {
+		this.paused = !this.paused;
+	}
+
 	tick() {
+		if (this.paused) return;
 		this.mobLogic.tick(this);
 		this.playerLogic.tick();
 		this.tickLive();

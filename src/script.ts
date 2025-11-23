@@ -60,7 +60,7 @@ let input = new Input(app.canvas, painter);
 let world = new World(new Vector(300), painter, camera.container);
 let placer = new Placer(painter, camera, input, world);
 let worldTooltip = new WorldTooltip(painter, camera, input, world);
-let controller = new Controller(camera, placer, worldTooltip, input, painter, world.size);
+let controller = new Controller(camera, placer, world, worldTooltip, input, painter);
 let backgroundMusic = BackgroundMusic.load();
 let fpsText = new MultilineText(painter, new Vector(1, 0), [], Anchor.TOP_RIGHT);
 let renderLoop = new Loop(fpsText, 0, 'render fps', () => {});
