@@ -7,7 +7,6 @@ import {EntityMaterialStorageAttribute, TooltipType} from './EntityAttribute.js'
 import {Material, ResourceUtils} from './Resource.js';
 
 export default class PlayerLogic {
-	// todo make base non-salvageable
 	readonly base: Base = new Base();
 	private readonly multilineText: MultilineText;
 

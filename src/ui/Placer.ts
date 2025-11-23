@@ -574,8 +574,4 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 	}
 }
 
-// todo:
-//   only add if world empty or replaceable
-//   make pipes leak
-//   missing removal transparent empty overlay
-//   add backgrounds to ui rects
+// todo: make pipes leak

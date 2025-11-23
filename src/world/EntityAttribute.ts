@@ -137,7 +137,6 @@ export class EntityDescriptionAttribute extends EntityAttribute {
 
 // todo some graphical indicator for buildings queued, buildings in progress, buildings active
 // todo partial health for partially built buildings
-// todo queued salvage not displaying correctly
 // todo don't move resources into storage that's still being built. don't act upon entities that are still being built. maybe move them from the live layer to an in-progress layer
 export class EntityBuildableAttribute extends EntityAttribute {
 	private readonly counter: Counter;
@@ -729,7 +728,6 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 		util.enumValues(Rotation).forEach(rotation =>
 			getLineDestinations(tile.position, tile.tileable.size, rotation, this.range).some(destination => {
 				// todo this will only allow 1 connection in each direction. won't work when size is > 1
-				// todo visual indicator of connections
 				let searchTile = world.live.getTileBounded(destination);
 				// todo some tiles should block
 				if (!searchTile)

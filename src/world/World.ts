@@ -447,7 +447,6 @@ export class World {
 		}
 		// todo slower building if further from player base
 		// todo cancel in-progress building if queued for removal
-		// todo allow replacing queued buildings
 		// todo recycle materials on destruction
 	}
 

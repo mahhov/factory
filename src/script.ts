@@ -97,19 +97,11 @@ console.info('version', (await (await fetch('./version.txt')).text()).trim());
 
 // todo
 //   buildings:
-//    - extractor
-//    - transport
-//    - factory
-//    - towers
-//    - wall
-//    - power
-//    - radar, purifier, storage, unloader
+//    - radar, purifier
 //    - modular weapons
 //   resources:
-//    - deposit
 //    - wall mining
-//    - liquid pools
-//    - air
+//    - air/purifier/pollution
 //   dynamic:
 //    - resources deplete
 //    - new resources emerge
@@ -127,16 +119,7 @@ console.info('version', (await (await fetch('./version.txt')).text()).trim());
 //    - sunlight
 //    - flood
 //    - asteroid
-//   enemies:
-//    - self-destruct bugs
-//    - small ships
-//    - big ships that fire artillery and spawn smaller ships
-//    - piercing lasers
-//    - aoe attacks
-//    - stationary towers
 
 // todo save/load
 // todo manual culling
-
 // todo fog
-// todo hostiles
