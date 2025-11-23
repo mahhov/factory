@@ -1,3 +1,5 @@
+import Vector from './Vector.js';
+
 namespace util {
 	export let arr = (n: number) => [...Array(n)].map((_, i) => i);
 	export let shuffleInPlace = <T>(array: T[]): T[] => {
@@ -20,6 +22,72 @@ namespace util {
 		return array[minIndex];
 	};
 	export let unique = <T>(value: T, index: number, array: T[]): boolean => array.indexOf(value) === index;
+
+	export let centerIterator = (min: Vector, max: Vector, start: Vector, handler: (x: number, y: number) => boolean) => {
+		if (handler(start.x, start.y)) return;
+		let left = start.x;
+		let right = start.x;
+		let up = start.y;
+		let down = start.y;
+		while (left > min.x || right < max.x || up > min.y || down < max.y) {
+			if (left > min.x) {
+				left--;
+				if (handler(left, start.y)) return;
+				let upY = start.y - 1;
+				let downY = start.y + 1;
+				while (upY >= up && downY <= down) {
+					if (handler(left, upY--)) return;
+					if (handler(left, downY++)) return;
+				}
+				while (upY >= up)
+					if (handler(left, upY--)) return;
+				while (downY <= down)
+					if (handler(left, downY++)) return;
+			}
+			if (right < max.x) {
+				right++;
+				if (handler(right, start.y)) return;
+				let upY = start.y - 1;
+				let downY = start.y + 1;
+				while (upY >= up && downY <= down) {
+					if (handler(right, upY--)) return;
+					if (handler(right, downY++)) return;
+				}
+				while (upY >= up)
+					if (handler(right, upY--)) return;
+				while (downY <= down)
+					if (handler(right, downY++)) return;
+			}
+			if (up > min.y) {
+				up--;
+				if (handler(start.x, up)) return;
+				let leftX = start.x - 1;
+				let rightX = start.x + 1;
+				while (leftX >= left && rightX <= right) {
+					if (handler(leftX--, up)) return;
+					if (handler(rightX++, up)) return;
+				}
+				while (leftX >= left)
+					if (handler(leftX--, up)) return;
+				while (rightX <= right)
+					if (handler(rightX++, up)) return;
+			}
+			if (down < max.y) {
+				down++;
+				if (handler(start.x, down)) return;
+				let leftX = start.x - 1;
+				let rightX = start.x + 1;
+				while (leftX >= left && rightX <= right) {
+					if (handler(leftX--, down)) return;
+					if (handler(rightX++, down)) return;
+				}
+				while (leftX >= left)
+					if (handler(leftX--, down)) return;
+				while (rightX <= right)
+					if (handler(rightX++, down)) return;
+			}
+		}
+	};
 
 	export let clamp = (v: number, min: number, max: number) =>
 		Math.min(Math.max(v, min), max);

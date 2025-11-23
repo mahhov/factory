@@ -1170,19 +1170,16 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 		let rangeV = new Vector(range);
 
 		if (targetFriendly) {
-			let start = position.subtract(rangeV).floor.max(Vector.V0);
-			let end = position.add(rangeV).floor.min(world.size.subtract(Vector.V1));
-			// todo randomize iteration order or iterate center to outside
+			let min = position.subtract(rangeV).floor.max(Vector.V0);
+			let max = position.add(rangeV).floor.min(world.size.subtract(Vector.V1));
 			// todo add chunks to live layer for faster searching
-			for (let x = start.x; x <= end.x; x++)
-				for (let y = start.y; y <= end.y; y++) {
-					let position = new Vector(x, y);
-					let tile = world.live.getTileUnchecked(position);
-					if (!tile.tileable.getAttribute(EntityHealthAttribute)) continue;
-					targets.push([position, tile.tileable]);
-					if (targets.length === limit)
-						return targets;
-				}
+			util.centerIterator(min, max, position.floor, (x, y) => {
+				let position = new Vector(x, y);
+				let tile = world.live.getTileUnchecked(position);
+				if (!tile.tileable.getAttribute(EntityHealthAttribute)) return false;
+				targets.push([position, tile.tileable]);
+				return targets.length === limit;
+			});
 			return targets;
 
 		} else {
