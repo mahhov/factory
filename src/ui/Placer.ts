@@ -5,36 +5,11 @@ import Painter from '../graphics/Painter.js';
 import Emitter from '../util/Emitter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {
-	Battery,
-	Clear,
-	Conductor,
-	Conveyor,
-	Dispenser,
-	Distributor,
-	Empty,
-	Entity,
-	Extractor,
-	Factory,
-	Generator,
-	Junction,
-	Pipe,
-	PipeBridge,
-	PipeDistributor,
-	PipeJunction,
-	Pump,
-	Storage,
-	Tank,
-	Turret,
-	Vent,
-	Wall,
-	Well,
-} from '../world/Entity.js';
+import {Empty} from '../world/Entity.js';
 import {EntityNameAttribute, TooltipType} from '../world/EntityAttribute.js';
-import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
-import {Liquid, Material, ResourceUtils} from '../world/Resource.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
 import {SpriteHolder, World} from '../world/World.js';
+import EntityCreator from './EntityCreator.js';
 import {Input} from './Input.js';
 import MultilineText, {Anchor} from './MultilineText.js';
 import TextLine from './TextLine.js';
@@ -43,7 +18,7 @@ export enum PlacerState {
 	EMPTY, ENTITY_SELECTED, STARTED
 }
 
-enum Tool {
+export enum Tool {
 	// todo copy/paste
 	EMPTY, CLEAR,
 	EXTRACTOR, REINFORCED_EXTRACTOR, QUADRATIC_EXTRACTOR, LASER_EXTRACTOR,
@@ -73,7 +48,6 @@ let toolTree = {
 type ToolGroup = keyof typeof toolTree;
 
 export default class Placer extends Emitter<{ toolChanged: void }> {
-	private static cachedToolEntities_: Record<Tool, Entity>;
 	private readonly painter: Painter;
 	private readonly camera: Camera;
 	private readonly input: Input;
@@ -124,196 +98,6 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 		this.setToolGroupAndTool(Object.keys(toolTree)[0] as ToolGroup, Tool.EMPTY);
 	}
 
-	private static get cachedToolEntities() {
-		Placer.cachedToolEntities_ ||= Object.fromEntries(util.enumValues(Tool).map(tool => [tool, Placer.createToolEntity(tool)])) as Record<Tool, Entity>;
-		return Placer.cachedToolEntities_;
-	}
-
-	private static createToolEntity(tool: Tool, rotation: Rotation = Rotation.UP): Entity {
-		switch (tool) {
-			case Tool.EMPTY:
-				return new Empty();
-			case Tool.CLEAR:
-				return new Clear();
-
-			case Tool.STEEL_WALL:
-				return Placer.createToolWall(findEntityMetadata('buildings', 'Steel Wall'));
-			case Tool.TITANIUM_WALL:
-				return Placer.createToolWall(findEntityMetadata('buildings', 'Titanium Wall'));
-
-			case Tool.EXTRACTOR:
-				return Placer.createToolExtractor(findEntityMetadata('buildings', 'Extractor'));
-			case Tool.REINFORCED_EXTRACTOR:
-				return Placer.createToolExtractor(findEntityMetadata('buildings', 'Reinforced Extractor'));
-			case Tool.QUADRATIC_EXTRACTOR:
-				return Placer.createToolExtractor(findEntityMetadata('buildings', 'Quadratic Extractor'));
-			case Tool.LASER_EXTRACTOR:
-				return Placer.createToolExtractor(findEntityMetadata('buildings', 'Laser Extractor'));
-
-			case Tool.CONVEYOR:
-				return Placer.createToolConveyor(findEntityMetadata('buildings', 'Conveyor'), rotation);
-			case Tool.HIGH_SPEED_CONVEYOR:
-				return Placer.createToolConveyor(findEntityMetadata('buildings', 'High Speed Conveyor'), rotation);
-			case Tool.DISTRIBUTOR:
-				return Placer.createToolDistributor(findEntityMetadata('buildings', 'Distributor'));
-			case Tool.JUNCTION:
-				return Placer.createToolJunction(findEntityMetadata('buildings', 'Junction'));
-			case Tool.PACKED_CONVEYOR:
-				return Placer.createToolPackedConveyor(findEntityMetadata('buildings', 'Packed Conveyor'), rotation);
-			case Tool.STORAGE:
-				return Placer.createToolStorage(findEntityMetadata('buildings', 'Storage'));
-			case Tool.DISPENSER:
-				return Placer.createToolDispenser(findEntityMetadata('buildings', 'Dispenser'), rotation);
-
-			case Tool.STEEL_SMELTER:
-				return Placer.createToolFactory(findEntityMetadata('buildings', 'Steel Smelter'));
-			case Tool.METAGLASS_FOUNDRY:
-				return Placer.createToolFactory(findEntityMetadata('buildings', 'Metaglass Foundry'));
-			case Tool.PLASTEEL_MIXER:
-				return Placer.createToolFactory(findEntityMetadata('buildings', 'Plasteel Mixer'));
-			case Tool.THERMITE_FORGE:
-				return Placer.createToolFactory(findEntityMetadata('buildings', 'Thermite Forge'));
-			case Tool.EXIDIUM_CATALYST:
-				return Placer.createToolFactory(findEntityMetadata('buildings', 'Exidium Catalyst'));
-
-			case Tool.THERMAL_GENERATOR:
-				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Thermal Generator'));
-			case Tool.SOLAR_ARRAY:
-				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Solar Array'));
-			case Tool.METHANE_BURNER:
-				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Methane Burner'));
-			case Tool.GRAPHITE_BURNER:
-				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Graphite Burner'));
-			case Tool.THERMITE_REACTOR:
-				return Placer.createToolGenerator(findEntityMetadata('buildings', 'Thermite Reactor'));
-			case Tool.CONDUCTOR:
-				return Placer.createToolConductor(findEntityMetadata('buildings', 'Conductor'));
-			case Tool.BATTERY:
-				return Placer.createToolBattery(findEntityMetadata('buildings', 'Battery'));
-
-			case Tool.AIR_VENT:
-				return Placer.createToolVent(findEntityMetadata('buildings', 'Air Vent'));
-			case Tool.WATER_VENT:
-				return Placer.createToolVent(findEntityMetadata('buildings', 'Water Vent'));
-			case Tool.METHANE_VENT:
-				return Placer.createToolVent(findEntityMetadata('buildings', 'Methane Vent'));
-
-			case Tool.PUMP:
-				return Placer.createToolPump(findEntityMetadata('buildings', 'Pump'));
-			case Tool.POWERED_PUMP:
-				return Placer.createToolPump(findEntityMetadata('buildings', 'Powered Pump'));
-			case Tool.WELL:
-				return Placer.createToolWell(findEntityMetadata('buildings', 'Well'));
-
-			case Tool.PIPE:
-				return Placer.createToolPipe(findEntityMetadata('buildings', 'Pipe'), rotation);
-			case Tool.PIPE_BRIDGE:
-				return Placer.createToolPipeBridge(findEntityMetadata('buildings', 'Pipe Bridge'), rotation);
-			case Tool.PIPE_DISTRIBUTOR:
-				return Placer.createToolPipeDistributor(findEntityMetadata('buildings', 'Pipe Distributor'));
-			case Tool.PIPE_JUNCTION:
-				return Placer.createToolPipeJunction(findEntityMetadata('buildings', 'Pipe Junction'));
-			case Tool.TANK:
-				return Placer.createToolTank(findEntityMetadata('buildings', 'Tank'));
-
-			case Tool.SHRAPNEL_TURRET:
-				return Placer.createToolTurret(findEntityMetadata('turrets', 'Shrapnel Turret'));
-			case Tool.PIERCING_TURRET:
-				return Placer.createToolTurret(findEntityMetadata('turrets', 'Piercing Turret'));
-			case Tool.ARC_TURRET:
-				return Placer.createToolTurret(findEntityMetadata('turrets', 'Arc Turret'));
-			case Tool.SIEGE_TURRET:
-				return Placer.createToolTurret(findEntityMetadata('turrets', 'Siege Turret'));
-			case Tool.LASER_TURRET:
-				return Placer.createToolTurret(findEntityMetadata('turrets', 'Laser Turret'));
-		}
-	}
-
-	private static createToolWall(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Wall(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health);
-	}
-
-	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Extractor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.heatOutput, metadata.output as number[]);
-	}
-
-	private static createToolConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Conveyor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, false, rotation);
-	}
-
-	private static createToolDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Distributor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
-	}
-
-	private static createToolJunction(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Junction(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
-	}
-
-	private static createToolPackedConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Conveyor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, true, rotation);
-	}
-
-	private static createToolStorage(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Storage(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
-	}
-
-	private static createToolDispenser(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Dispenser(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
-	}
-
-	private static createToolFactory(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Factory(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.output as ResourceUtils.Count<Material>);
-	}
-
-	private static createToolGenerator(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Generator(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.liquidInput[0], metadata.output as number);
-	}
-
-	private static createToolConductor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Conductor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
-	}
-
-	private static createToolBattery(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Battery(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
-	}
-
-	private static createToolVent(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Vent(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.liquidInput[0], metadata.powerInput, metadata.output as number);
-	}
-
-	private static createToolPump(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Pump(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.output as number[]);
-	}
-
-	private static createToolWell(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Well(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, new ResourceUtils.Count(Liquid.WATER, metadata.output as number));
-	}
-
-	private static createToolPipe(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Pipe(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
-	}
-
-	private static createToolPipeBridge(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		// todo get 4 from metadata
-		return new PipeBridge(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation, 4);
-	}
-
-	private static createToolPipeDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new PipeDistributor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
-	}
-
-	private static createToolPipeJunction(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new PipeJunction(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
-	}
-
-	private static createToolTank(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Tank(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
-	}
-
-	private static createToolTurret(metadata: ParsedLine<typeof sectionFields.turrets>) {
-		return new Turret(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.attackRate, metadata.damage, metadata.materialInput, metadata.accuracy, metadata.range, metadata.projectileSpeed);
-	}
-
 	private static toolUiCoordinates(group: boolean, index: number): [number, number][] {
 		let toolGroupSize = .02, toolSize = .035, margin = .005;
 		let size = group ? toolGroupSize : toolSize;
@@ -353,7 +137,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			tile = this.world.live.getTileUnchecked(this.position);
 		let tool: Tool = tile ?
 			util.enumValues(Tool).find(tool =>
-				Placer.cachedToolEntities[tool].getAttribute(EntityNameAttribute)?.name ===
+				EntityCreator.cachedToolEntities[tool].getAttribute(EntityNameAttribute)?.name ===
 				tile.tileable.getAttribute(EntityNameAttribute)?.name) || Tool.EMPTY
 			: Tool.EMPTY;
 
@@ -371,7 +155,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			// redraw top row
 			Object.values(toolTree).forEach((tools, i) => {
 				let coordinates = Placer.toolUiCoordinates(true, i);
-				let spriteContainer = Placer.createToolEntity(tools[0]).container;
+				let spriteContainer = EntityCreator.createToolEntity(tools[0]).container;
 				this.addToolUiButton(coordinates, this.toolGroupIconContainer, spriteContainer!, this.toolGroupTextContainer, '^' + (i + 1));
 				spriteContainer!.eventMode = 'static';
 				spriteContainer!.onclick = () => this.setToolGroupIndex(i);
@@ -390,11 +174,11 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			this.toolTextContainer.removeChildren();
 			toolTree[toolGroup].forEach((tool, i) => {
 				let coordinates = Placer.toolUiCoordinates(false, i);
-				this.addToolUiButton(coordinates, this.toolIconContainer, Placer.cachedToolEntities[tool].container!, this.toolTextContainer, String(i + 1));
-				Placer.cachedToolEntities[tool].container!.eventMode = 'static';
-				Placer.cachedToolEntities[tool].container!.onclick = () => this.toggleToolIndex(i);
-				Placer.cachedToolEntities[tool].container!.onmouseenter = () => this.showToolTooltip(i);
-				Placer.cachedToolEntities[tool].container!.onmouseleave = () => this.hideTooltip();
+				this.addToolUiButton(coordinates, this.toolIconContainer, EntityCreator.cachedToolEntities[tool].container!, this.toolTextContainer, String(i + 1));
+				EntityCreator.cachedToolEntities[tool].container!.eventMode = 'static';
+				EntityCreator.cachedToolEntities[tool].container!.onclick = () => this.toggleToolIndex(i);
+				EntityCreator.cachedToolEntities[tool].container!.onmouseenter = () => this.showToolTooltip(i);
+				EntityCreator.cachedToolEntities[tool].container!.onmouseleave = () => this.hideTooltip();
 			});
 		}
 
@@ -482,7 +266,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 	}
 
 	private place(world: World, planning: boolean, updateRotation: boolean) {
-		let toolEntity = Placer.cachedToolEntities[this.tool];
+		let toolEntity = EntityCreator.cachedToolEntities[this.tool];
 		let delta = this.endPosition.subtract(this.startPosition);
 		let iterations = delta
 			.abs
@@ -508,7 +292,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 						spriteHolder.setEntity(toolEntity, this.rotation);
 						world.planning.addTileableUnchecked(new Vector(x, y), spriteHolder);
 					} else
-						world.queue.replaceTileable(new Vector(x, y), Placer.createToolEntity(this.tool, this.rotation));
+						world.queue.replaceTileable(new Vector(x, y), EntityCreator.createToolEntity(this.tool, this.rotation));
 
 		} else {
 			let vertical = Math.abs(iterations.y) > Math.abs(iterations.x);
@@ -527,7 +311,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 					spriteHolder.setEntity(toolEntity, this.rotation);
 					world.planning.addTileableUnchecked(position, spriteHolder);
 				} else if (!planning)
-					world.queue.replaceTileable(position, Placer.createToolEntity(this.tool, this.rotation));
+					world.queue.replaceTileable(position, EntityCreator.createToolEntity(this.tool, this.rotation));
 				position = position.add(iterDelta);
 			}
 		}
@@ -551,7 +335,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 	}
 
 	private showToolTooltip(index: number) {
-		let toolEntity = Placer.cachedToolEntities[toolTree[this.toolGroup][index]];
+		let toolEntity = EntityCreator.cachedToolEntities[toolTree[this.toolGroup][index]];
 		this.multilineText.lines = toolEntity.tooltip(TooltipType.PLACER);
 		let coordinates = Placer.toolUiCoordinates(false, index);
 		this.multilineText.position = new Vector(coordinates[0][0], coordinates[0][1]);
