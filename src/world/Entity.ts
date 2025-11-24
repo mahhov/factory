@@ -597,7 +597,7 @@ export class Turret extends Building {
 			findTargetAttribute,
 			new EntityChainAttribute([
 				new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
-				new EntitySpawnProjectileAttribute(findTargetAttribute, 99, .4, 50, 1, 10, true),
+				new EntitySpawnProjectileAttribute(findTargetAttribute, 99, .4, 50, 1, 10, 10 / 180 * Math.PI, true),
 				new EntityTimedAttribute(40 / 4),
 			]),
 			new EntityTimedAttribute(40)));
@@ -665,7 +665,7 @@ export class Mob extends Entity {
 			findTargetAttribute,
 			new EntityChainAttribute([
 				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, false),
-				new EntitySpawnProjectileAttribute(findTargetAttribute, 1, .1, 100, 1, 2, false),
+				new EntitySpawnProjectileAttribute(findTargetAttribute, 1, .1, 100, 1, 2, 0, false),
 				new EntityTimedAttribute(200),
 			]),
 			new EntityChainAttribute([

@@ -113,4 +113,11 @@ export default class Vector {
 	clamp(min: Vector, max: Vector) {
 		return new Vector(util.clamp(this.x, min.x, max.x), util.clamp(this.y, min.y, max.y));
 	}
+
+	rotateCounter(theta: number) {
+		// todo lookup table for cos & sin
+		let x = this.x * Math.cos(theta) - this.y * Math.sin(theta);
+		let y = this.x * Math.sin(theta) + this.y * Math.cos(theta);
+		return new Vector(x, y);
+	}
 }

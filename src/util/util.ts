@@ -104,6 +104,14 @@ namespace util {
 		return pick[0];
 	};
 
+	// export let cos = (theta: number) => {
+	// 	theta = theta % (Math.PI * 2);
+	// 	if (theta < 0) theta += Math.PI * 2;
+	// 	let index = theta / Math.PI  * 2 * cosTable.length;
+	// 	if (index > cosTable.length ) ;
+	// 	return cosTable[index];
+	// };
+
 	export let enumKeys = <T extends {}>(enumm: T): (keyof T)[] =>
 		Object.values(enumm).filter(value => typeof value !== 'number') as (keyof T)[];
 	export let enumValues = <T extends {}>(enumm: T): T[keyof T][] =>
