@@ -402,7 +402,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			this.tool = tool;
 			// redraw bottom selection
 			let index = toolTree[this.toolGroup].indexOf(tool);
-			if (tool === Tool.EMPTY)
+			if (tool === Tool.EMPTY || tool === Tool.CLEAR)
 				this.toolIconContainer.removeChild(this.toolSelectionRect);
 			else {
 				[this.toolSelectionRect.x, this.toolSelectionRect.y] = Placer.toolUiCoordinates(false, index)[0];
@@ -440,10 +440,8 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 	}
 
 	rotate(delta: number) {
-		if (this.state !== PlacerState.EMPTY) {
-			this.rotation = (this.rotation + delta + 4) % 4;
-			this.place(this.world, true, false);
-		}
+		this.rotation = (this.rotation + delta + 4) % 4;
+		this.place(this.world, true, false);
 	}
 
 	start() {
