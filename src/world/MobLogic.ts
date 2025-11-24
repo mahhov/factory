@@ -61,6 +61,7 @@ class Spawner {
 	static spawn(free: FreeWorldLayer<any>, stage: SpawnerStage) {
 		let min = new Vector(stage.clusterRadius);
 		let delta = free.size.subtract(Vector.V1).subtract(min.scale(2));
+		console.assert(delta.atLeast(Vector.V1));
 		for (let i = 0; i < stage.clusterCount; i++) {
 			let spawnCenter = min.add(Vector.rand.multiply(delta));
 			for (let j = 0; j < stage.mobsPerCluster; j++) {
