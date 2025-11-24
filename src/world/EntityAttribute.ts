@@ -1147,20 +1147,19 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 // Mob attributes
 
 export class EntityMobHerdPositionAttribute extends EntityAttribute {
-	position: Vector;
+	newPosition: Vector = Vector.V0;
 	velocity: Vector = Vector.V0;
 	readonly speed: number;
 	active = true;
 
-	constructor(position: Vector, speed: number) {
+	constructor(speed: number) {
 		super();
-		this.position = position;
 		this.speed = speed;
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		if (!this.position.equals(tile.position) && this.active)
-			world.free.updateTile(this.position, tile);
+		if (!this.newPosition.equals(tile.position) && this.active)
+			world.free.updateTile(this.newPosition, tile);
 		this.tickResult = TickResult.DONE;
 	}
 }
@@ -1220,7 +1219,7 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 			let chunks = world.freeMobHerdPositionAttributeOverlay.chunkRange(position.subtract(rangeV), position.add(rangeV));
 			for (let chunk of chunks)
 				for (let [tile, mobHerdPositionAttribute] of chunk) {
-					let delta = mobHerdPositionAttribute.position.subtract(position);
+					let delta = tile.position.subtract(position);
 					if (delta.magnitude2 >= range2) continue;
 					let healthAttribute = tile.tileable.getAttribute(EntityHealthAttribute);
 					if (!healthAttribute || healthAttribute.sourceFriendly) continue;

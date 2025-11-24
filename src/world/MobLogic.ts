@@ -66,9 +66,7 @@ class Spawner {
 			let spawnCenter = min.add(Vector.rand.multiply(delta));
 			for (let j = 0; j < stage.mobsPerCluster; j++) {
 				let offset = Vector.rand.scale(stage.clusterRadius * 2).subtract(min);
-				let position = spawnCenter.add(offset);
-				let mob = new Mob(position);
-				free.addTileable(position, mob);
+				free.addTileable(spawnCenter.add(offset), new Mob());
 			}
 		}
 	}
@@ -140,10 +138,10 @@ class HerdManager {
 		this.lastHerdSize = 0;
 		freeMobHerdOverlay.chunks.forEach(chunkColumn =>
 			chunkColumn.forEach(chunk =>
-				chunk.forEach(([_, mobHerdPositionAttribute]) => {
+				chunk.forEach(([tile, mobHerdPositionAttribute]) => {
 					this.lastHerdSize++;
 					if (!mobHerdPositionAttribute.active) return;
-					let position = mobHerdPositionAttribute.position;
+					let position = tile.position;
 					let velocity = mobHerdPositionAttribute.velocity;
 
 					if (Math.random() < velocityUpdateFrequency) {
@@ -161,9 +159,9 @@ class HerdManager {
 							velocity = velocity.setMagnitude(herdConfig.MAX_SPEED);
 					}
 
-					position = position.add(velocity.scale(mobHerdPositionAttribute.speed));
+					position = position.add(velocity.scale(mobHerdPositionAttribute.speed * 10));
 					[position, velocity] = this.bound(position, velocity);
-					mobHerdPositionAttribute.position = position;
+					mobHerdPositionAttribute.newPosition = position;
 					mobHerdPositionAttribute.velocity = velocity;
 				})));
 	}
@@ -175,8 +173,8 @@ class HerdManager {
 		let chunks = freeMobHerdOverlay.chunkRange(self.subtract(searchRadius), self.add(searchRadius));
 		util.shuffleInPlace(chunks);
 		for (let chunk of chunks)
-			for (let [_, mobHerdPositionAttribute] of chunk) {
-				let delta = mobHerdPositionAttribute.position.subtract(self);
+			for (let [tile, mobHerdPositionAttribute] of chunk) {
+				let delta = tile.position.subtract(self);
 				if (delta.magnitude2 < herdConfig.NEIGHBOR_RADIUS_2) {
 					output.push([delta, mobHerdPositionAttribute.velocity]);
 					if (output.length === herdConfig.MAX_NEIGHBOR_COUNT)

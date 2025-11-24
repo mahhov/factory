@@ -625,10 +625,10 @@ export class LiquidDeposit extends Entity {
 }
 
 export class Mob extends Entity {
-	constructor(position: Vector) {
+	constructor() {
 		super('Low Tier Mob No Sprite', '', new Vector(.5));
 		this.setParticle(new Particle(animatedGeneratedTextures.lowTierMob.textures[0]));
-		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(position, 1);
+		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(.1);
 		this.addAttribute(mobHerdPositionAttribute);
 		let findTargetAttribute = new EntityFindTargetAttribute(10, 1, true);
 		this.addAttribute(new EntityIfElseAttribute(
