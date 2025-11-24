@@ -23,7 +23,7 @@ export default class Vector {
 	}
 
 	static get rand() {
-		return new Vector(util.rand(1), util.rand(1));
+		return new Vector(util.rand(0, 1), util.rand(0, 1));
 	}
 
 	get magnitude2() {

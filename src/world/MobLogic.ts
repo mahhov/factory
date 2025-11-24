@@ -153,7 +153,7 @@ class HerdManager {
 							.add(cohesion[0].scale(herdConfig.COHESION_WEIGHT * scatterWeight))
 							.add(cohesion[1].scale(herdConfig.ALIGNMENT_WEIGHT * scatterWeight))
 							.add(separation.scale(herdConfig.SEPARATION_WEIGHT))
-							.add(new Vector(util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2, util.rand(herdConfig.RAND_WEIGHT) - herdConfig.RAND_WEIGHT / 2));
+							.add(new Vector(util.randWidth(herdConfig.RAND_WEIGHT), util.randWidth(herdConfig.RAND_WEIGHT)));
 						if (velocity.magnitude && velocity.magnitude2 < herdConfig.MIN_SPEED_2)
 							velocity = velocity.setMagnitude(herdConfig.MIN_SPEED);
 						if (velocity.magnitude2 > herdConfig.MAX_SPEED_2)

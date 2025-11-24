@@ -92,11 +92,12 @@ namespace util {
 	export let clamp = (v: number, min: number, max: number) =>
 		Math.min(Math.max(v, min), max);
 
-	export let rand = (n: number) => Math.random() * n;
-	export let randInt = (minInclusive: number, maxExclusive: number) => Math.floor(rand(maxExclusive - minInclusive)) + minInclusive;
+	export let rand = (min: number, max: number) => Math.random() * (max - min) + min;
+	export let randWidth = (width: number) => rand(-width / 2, width / 2);
+	export let randInt = (minInclusive: number, maxExclusive: number) => Math.floor(rand(minInclusive, maxExclusive));
 	export let randPick = <T>(valueWeightPairs: [T, number][]) => {
 		let sum = valueWeightPairs.reduce((sum: number, pair: [T, number]) => sum + pair[1], 0);
-		let r = rand(sum);
+		let r = rand(0, sum);
 		let pick = valueWeightPairs.find(pair => {
 			r -= pair[1];
 			return r < 0;

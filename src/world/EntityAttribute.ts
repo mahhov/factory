@@ -1136,7 +1136,7 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 			let position = tile.position.add(tile.tileable.size.scale(.5));
 			let velocity = targets[i % targets.length][0]
 				.subtract(position)
-				.rotateCounter(util.rand(this.spreadDegrees) - this.spreadDegrees / 2);
+				.rotateCounter(util.randWidth(this.spreadDegrees));
 			if (velocity.magnitude2 > this.velocity ** 2)
 				velocity = velocity.setMagnitude(this.velocity);
 			world.free.addTileable(position, new Projectile(velocity, this.duration, this.collisionSize, this.damage, this.sourceFriendly));
