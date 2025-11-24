@@ -104,13 +104,23 @@ namespace util {
 		return pick[0];
 	};
 
-	// export let cos = (theta: number) => {
-	// 	theta = theta % (Math.PI * 2);
-	// 	if (theta < 0) theta += Math.PI * 2;
-	// 	let index = theta / Math.PI  * 2 * cosTable.length;
-	// 	if (index > cosTable.length ) ;
-	// 	return cosTable[index];
-	// };
+	let cos90LookupTable = arr(100000).map((_, i, a) => Math.cos(i / a.length * 90 * Math.PI / 180));
+	let cos90Lookup = (degrees: number) => {
+		return cos90LookupTable[Math.round(degrees / 90 * (cos90LookupTable.length - 1))];
+	};
+	export let cos = (degrees: number) => {
+		degrees = degrees % (360);
+		if (degrees < 0) degrees += 360;
+		if (degrees > 180) degrees = 360 - degrees;
+		return degrees <= 90 ?
+			cos90Lookup(degrees) :
+			-cos90Lookup(180 - degrees);
+	};
+	export let sin = (degrees: number) => cos(90 - degrees);
+	for (let i = -1000; i < 1000; i++) {
+		console.assert(Math.abs(cos(i) - Math.cos(i * Math.PI / 180)) < .0001);
+		console.assert(Math.abs(sin(i) - Math.sin(i * Math.PI / 180)) < .0001);
+	}
 
 	export let enumKeys = <T extends {}>(enumm: T): (keyof T)[] =>
 		Object.values(enumm).filter(value => typeof value !== 'number') as (keyof T)[];

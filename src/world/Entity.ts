@@ -597,7 +597,7 @@ export class Turret extends Building {
 			findTargetAttribute,
 			new EntityChainAttribute([
 				new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
-				new EntitySpawnProjectileAttribute(findTargetAttribute, 99, .4, 50, 1, 10, 10 / 180 * Math.PI, true),
+				new EntitySpawnProjectileAttribute(findTargetAttribute, 99, .4, 50, 1, 10, 10, true),
 				new EntityTimedAttribute(40 / 4),
 			]),
 			new EntityTimedAttribute(40)));

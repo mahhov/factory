@@ -1108,10 +1108,10 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 	private readonly duration: number;
 	private readonly collisionSize: number;
 	private readonly damage: number;
-	private readonly spreadAngle: number;
+	private readonly spreadDegrees: number;
 	private readonly sourceFriendly: boolean;
 
-	constructor(findTargetAttribute: EntityFindTargetAttribute, count: number, velocity: number, duration: number, collisionSize: number, damage: number, spreadAngle: number, sourceFriendly: boolean) {
+	constructor(findTargetAttribute: EntityFindTargetAttribute, count: number, velocity: number, duration: number, collisionSize: number, damage: number, spreadDegrees: number, sourceFriendly: boolean) {
 		super();
 		console.assert(count > 0);
 		console.assert(velocity > 0);
@@ -1124,7 +1124,7 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 		this.duration = duration;
 		this.collisionSize = collisionSize;
 		this.damage = damage;
-		this.spreadAngle = spreadAngle;
+		this.spreadDegrees = spreadDegrees;
 		this.sourceFriendly = sourceFriendly;
 	}
 
@@ -1136,7 +1136,7 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 			let position = tile.position.add(tile.tileable.size.scale(.5));
 			let velocity = targets[i % targets.length][0]
 				.subtract(position)
-				.rotateCounter(util.rand(this.spreadAngle) - this.spreadAngle / 2);
+				.rotateCounter(util.rand(this.spreadDegrees) - this.spreadDegrees / 2);
 			if (velocity.magnitude2 > this.velocity ** 2)
 				velocity = velocity.setMagnitude(this.velocity);
 			world.free.addTileable(position, new Projectile(velocity, this.duration, this.collisionSize, this.damage, this.sourceFriendly));
