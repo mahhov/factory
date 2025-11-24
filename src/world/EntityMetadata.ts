@@ -95,6 +95,24 @@ export let sectionFields = {
 		projectileSpeed: (data: StringRecord) => parseNumber(data['projectile speed']),
 		description: (data: StringRecord) => data.description,
 	},
+	mobs: {
+		name: (data: StringRecord) => util.lowerCaseToTitleCase(data.name),
+		size: (data: StringRecord) => parseNumber(data.size),
+		health: (data: StringRecord) => parseNumber(data.health),
+		movementSpeed: (data: StringRecord) => parseNumber(data['movement speed']),
+		attackType: (data: StringRecord) => data['attack type'],
+		attackTarget: (data: StringRecord) => data['attack target'],
+		attackAffect: (data: StringRecord) => data['attack affect'],
+		collisionWidth: (data: StringRecord) => parseNumber(data['collision, width']),
+		area: (data: StringRecord) => parseNumber(data.area),
+		count: (data: StringRecord) => parseNumber(data.count),
+		projectileSpeed: (data: StringRecord) => parseNumber(data['projectile speed']),
+		range: (data: StringRecord) => parseNumber(data.range),
+		damage: (data: StringRecord) => parseNumber(data.damage),
+		attackLatency: (data: StringRecord) => parseNumber(data['attack latency']),
+		damageDuration: (data: StringRecord) => parseNumber(data['damage duration']),
+		description: (data: StringRecord) => data.description,
+	},
 };
 
 let mdString = await (await fetch('./resources/metadata.md')).text();

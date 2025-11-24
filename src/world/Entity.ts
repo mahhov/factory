@@ -550,36 +550,6 @@ export class Turret extends Building {
 		//     collision:   damage
 		//     aoe:         damage, duration, aoe size, pulse frequency
 		//     chain:       projectiles or lasers can chain to other targets on hitting first target. chain count, chain distance, chain count (e.g. 1 laser chains to 3 nearby targets), and relevant projectile/laser properties (accuracy, projectile size, projectile speed, thickness)
-		//   turrets
-		//     turrets that connect and create lasting laser attack between them
-		//     pulses of shotgun projectiles
-		//     fast small-exploding projectile
-		//     salvo of slow homing & exploding projectiles
-		//     pulsing aoe explosion around self
-		//     chaining paralyzing laser
-		//     long distance piercing sweeping laser
-		//     fast firing sapping laser to 10 nearby close range
-		//     long distance artillery projectile that clusters out to multiple large aoe's
-		//     shoots down enemy projectiles
-		//     heals nearby
-		//   enemies
-		//     weak but fast swarming. short range. fast firing projectiles
-		//     slow but tanky assault. slow firing lasers
-		//     kiting, long distance. slow fire rate, high damage projectiles
-		//     artillery. very long distance. slow moving. on contact or shot down, explode aoe damage
-		//     piercing long distance lasers that last for a duration but don't move
-		//     fire projectiles in 4 directions in spinning direction
-		//     combinations. e.g. melee aoe while alternating between lazers and spinning projectiles
-		//     enemies that fly overhead and drop bombs
-		//     enemies that charge and ram between buildings
-		//     leaves snake like path of aoe damage as it flies overhead
-		//     spawns other monsters
-		//     giant with 4 lasers
-		//   enemy behavior
-		//     herd
-		//     pool creepers
-		//     stationary towers
-		//     nests
 
 		// todo entity attributes
 		//   attacks:
