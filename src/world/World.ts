@@ -285,7 +285,7 @@ export class FreeWorldLayerChunkOverlay<T extends Tileable, S> {
 export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	readonly tiles: Tile<T>[] = [];
 	readonly container = new Container();
-	readonly particleContainer: Record<string, ParticleContainer> = {};
+	readonly particleContainers: Record<string, ParticleContainer> = {};
 	private readonly chunkOverlays: FreeWorldLayerChunkOverlay<T, any>[] = [];
 
 	protected addGraphics(tileable: Tileable, position: Vector, size: Vector) {
@@ -294,11 +294,11 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 			tileable.particle.scaleX *= this.size.invert.x;
 			tileable.particle.scaleY *= this.size.invert.y;
 			let key = tileable.particle.texture.uid;
-			if (!this.particleContainer[key]) {
-				this.particleContainer[key] = new ParticleContainer();
-				this.container.addChild(this.particleContainer[key]);
+			if (!this.particleContainers[key]) {
+				this.particleContainers[key] = new ParticleContainer();
+				this.container.addChild(this.particleContainers[key]);
 			}
-			this.particleContainer[key].addParticle(tileable.particle);
+			this.particleContainers[key].addParticle(tileable.particle);
 		}
 	}
 
@@ -314,7 +314,7 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	protected removeGraphics(tileable: Tileable) {
 		super.removeGraphics(tileable);
 		if (tileable.particle)
-			this.particleContainer[tileable.particle.texture.uid].removeParticle(tileable.particle);
+			this.particleContainers[tileable.particle.texture.uid].removeParticle(tileable.particle);
 	}
 
 	addTileable(position: Vector, tileable: T) {
