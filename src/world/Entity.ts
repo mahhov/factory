@@ -12,7 +12,7 @@ import {
 	EntityChainAttribute,
 	EntityCoolantConsumeAttribute,
 	EntityCoolantProduceAttribute,
-  	EntityDamageTargetAttribute,
+	EntityDamageTargetAttribute,
 	EntityDescriptionAttribute,
 	EntityDirectionMovementAttribute,
 	EntityExpireProjectileAttribute,
@@ -119,11 +119,11 @@ export class Entity implements Tileable {
 		this.container.addChild(sprite);
 	}
 
-	setParticle(particle: Particle, size: Vector = this.size) {
+	setParticle(particle: Particle) {
 		console.assert(!this.particle);
 		this.particle = particle;
-		this.particle.scaleX = size.x / particle.texture.width;
-		this.particle.scaleY = size.y / particle.texture.height;
+		this.particle.scaleX = this.size.x / particle.texture.width;
+		this.particle.scaleY = this.size.y / particle.texture.height;
 	}
 
 	addOverlaySprites(label: string, sprites: Sprite[]) {
@@ -592,13 +592,13 @@ export class Turret extends Building {
 
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(Material.IRON, 10)], util.enumValues(Rotation), false);
 		this.addAttribute(materialStorageAttribute);
-		let findTargetAttribute = new EntityFindTargetAttribute(21, 1, false);
+		let findTargetAttribute = new EntityFindTargetAttribute(20, 99, false);
 		this.addAttribute(new EntityIfElseAttribute(
 			findTargetAttribute,
 			new EntityChainAttribute([
 				new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
-				new EntitySpawnProjectileAttribute(findTargetAttribute, .1, 200, 1, 10, true),
-				new EntityTimedAttribute(40),
+				new EntitySpawnProjectileAttribute(findTargetAttribute, 99, .4, 50, 1, 10, true),
+				new EntityTimedAttribute(40 / 4),
 			]),
 			new EntityTimedAttribute(40)));
 	}
@@ -660,12 +660,12 @@ export class Mob extends Entity {
 		this.setParticle(new Particle(animatedGeneratedTextures.lowTierMob.textures[0]));
 		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(position);
 		this.addAttribute(mobHerdPositionAttribute);
-		let findTargetAttribute = new EntityFindTargetAttribute(11, 1, true);
+		let findTargetAttribute = new EntityFindTargetAttribute(10, 1, true);
 		this.addAttribute(new EntityIfElseAttribute(
 			findTargetAttribute,
 			new EntityChainAttribute([
 				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, false),
-				new EntitySpawnProjectileAttribute(findTargetAttribute, .1, 100, 1, 2, false),
+				new EntitySpawnProjectileAttribute(findTargetAttribute, 1, .1, 100, 1, 2, false),
 				new EntityTimedAttribute(200),
 			]),
 			new EntityChainAttribute([
