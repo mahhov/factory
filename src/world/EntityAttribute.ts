@@ -181,19 +181,25 @@ export class EntityBuildableAttribute extends EntityAttribute {
 export class EntityHealthAttribute extends EntityAttribute {
 	private readonly maxHealth: number;
 	health: number;
+	readonly sourceFriendly: boolean;
 
-	constructor(health: number) {
+	constructor(health: number, sourceFriendly: boolean) {
 		super();
 		console.assert(health > 0);
 		this.maxHealth = health;
 		this.health = health;
+		this.sourceFriendly = sourceFriendly;
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
 		if (!this.health) {
-			world.live.replaceTileable(tile.position, new Empty());
+			if (this.sourceFriendly)
+				world.live.replaceTileable(tile.position, new Empty());
+			else
+				world.free.removeTile(tile);
 			this.tickResult = TickResult.END_TICK;
-		}
+		} else
+			this.tickResult = TickResult.DONE;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -1100,22 +1106,19 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 	private readonly velocity: number;
 	private readonly duration: number;
 	private readonly range: number;
-	private readonly maxTargets: number;
 	private readonly damage: number;
 	private readonly sourceFriendly: boolean;
 
-	constructor(findTargetAttribute: EntityFindTargetAttribute, velocity: number, duration: number, range: number, maxTargets: number, damage: number, sourceFriendly: boolean) {
+	constructor(findTargetAttribute: EntityFindTargetAttribute, velocity: number, duration: number, range: number, damage: number, sourceFriendly: boolean) {
 		super();
 		console.assert(velocity > 0);
 		console.assert(duration > 0);
 		console.assert(range > 0);
-		console.assert(maxTargets > 0);
 		console.assert(damage > 0);
 		this.findTargetAttribute = findTargetAttribute;
 		this.velocity = velocity;
 		this.duration = duration;
 		this.range = range;
-		this.maxTargets = maxTargets;
 		this.damage = damage;
 		this.sourceFriendly = sourceFriendly;
 	}
@@ -1127,31 +1130,11 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 		let velocity = targets[0][0].subtract(tile.position);
 		if (velocity.magnitude2 > this.velocity ** 2)
 			velocity = velocity.setMagnitude(this.velocity);
-		world.free.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.sourceFriendly));
+		world.free.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.damage, this.sourceFriendly));
 	}
 }
 
 // Mob attributes
-
-// todo merge with EntityHealthAttribute
-export class EntityMobHealthAttribute extends EntityAttribute {
-	private readonly maxHealth: number;
-	health: number;
-
-	constructor(health: number) {
-		super();
-		console.assert(health > 0);
-		this.maxHealth = health;
-		this.health = health;
-	}
-
-	tick(world: World, tile: Tile<Entity>): void {
-		if (this.health <= 0)
-			world.free.removeTile(tile);
-		else
-			this.tickResult = TickResult.DONE;
-	}
-}
 
 export class EntityMobHerdPositionAttribute extends EntityAttribute {
 	position: Vector;
@@ -1212,7 +1195,8 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 			util.centerIterator(min, max, position.floor, (x, y) => {
 				let position = new Vector(x, y);
 				let tile = world.live.getTileUnchecked(position);
-				if (!tile.tileable.getAttribute(EntityHealthAttribute)) return false;
+				let healthAttribute = tile.tileable.getAttribute(EntityHealthAttribute);
+				if (!healthAttribute || !healthAttribute.sourceFriendly) return false;
 				targets.push([position, tile.tileable]);
 				return targets.length === limit;
 			});
@@ -1224,7 +1208,8 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 				for (let [tile, mobHerdPositionAttribute] of chunk) {
 					let delta = mobHerdPositionAttribute.position.subtract(position);
 					if (delta.abs.atMost(rangeV)) {
-						if (!tile.tileable.getAttribute(EntityMobHealthAttribute)) continue;
+						let healthAttribute = tile.tileable.getAttribute(EntityHealthAttribute);
+						if (!healthAttribute || healthAttribute.sourceFriendly) continue;
 						targets.push([tile.position, tile.tileable]);
 						if (targets.length === limit)
 							return targets;
@@ -1255,30 +1240,24 @@ export class EntityDirectionMovementAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityDamageAttribute extends EntityAttribute {
-	private readonly range: number;
-	private readonly maxTargets: number;
+export class EntityDamageTargetAttribute extends EntityAttribute {
+	private readonly findTargetAttribute: EntityFindTargetAttribute;
 	private readonly damage: number;
-	private readonly sourceFriendly: boolean;
 
-	constructor(range: number, maxTargets: number, damage: number, sourceFriendly: boolean) {
+	constructor(findTargetAttribute: EntityFindTargetAttribute, damage: number) {
 		super();
-		console.assert(range > 0);
-		console.assert(maxTargets > 0);
 		console.assert(damage > 0);
-		this.range = range;
-		this.maxTargets = maxTargets;
+		this.findTargetAttribute = findTargetAttribute;
 		this.damage = damage;
-		this.sourceFriendly = sourceFriendly;
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		let targets = EntityFindTargetAttribute.findTargetsWithinRange(tile.position, this.range, this.maxTargets, !this.sourceFriendly, world);
-		targets
-			.map(target => this.sourceFriendly ? target[1].getAttribute(EntityMobHealthAttribute) : target[1].getAttribute(EntityHealthAttribute))
-			.forEach(healthAttribute => healthAttribute!.health = Math.max(healthAttribute!.health - this.damage, 0));
-		if (targets.length)
-			this.tickResult = TickResult.DONE;
+		let targets = this.findTargetAttribute.targets;
+		targets.forEach(target => {
+			let healthAttribute = target[1].getAttribute(EntityHealthAttribute)!;
+			healthAttribute.health = Math.max(healthAttribute!.health - this.damage, 0);
+		});
+		this.tickResult = TickResult.DONE;
 	}
 }
 

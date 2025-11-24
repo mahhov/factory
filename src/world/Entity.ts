@@ -12,7 +12,7 @@ import {
 	EntityChainAttribute,
 	EntityCoolantConsumeAttribute,
 	EntityCoolantProduceAttribute,
-	EntityDamageAttribute,
+  	EntityDamageTargetAttribute,
 	EntityDescriptionAttribute,
 	EntityDirectionMovementAttribute,
 	EntityExpireProjectileAttribute,
@@ -36,7 +36,6 @@ import {
 	EntityMaterialProduceAttribute,
 	EntityMaterialStorageAttribute,
 	EntityMaterialStorageAttributeType,
-	EntityMobHealthAttribute,
 	EntityMobHerdPositionActivateAttribute,
 	EntityMobHerdPositionAttribute,
 	EntityNameAttribute,
@@ -188,7 +187,7 @@ export abstract class Building extends Entity {
 	protected constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rotation: Rotation = Rotation.UP, tilingSize: Vector = size) {
 		super(name, description, size, rotation, tilingSize);
 		this.addAttribute(new EntityBuildableAttribute(buildTime, buildCost));
-		this.addAttribute(new EntityHealthAttribute(health));
+		this.addAttribute(new EntityHealthAttribute(health, true));
 	}
 }
 
@@ -526,7 +525,7 @@ export class Tank extends Building {
 export class Base extends Entity {
 	constructor() {
 		super('Base', '', new Vector(5));
-		this.addAttribute(new EntityHealthAttribute(4000));
+		this.addAttribute(new EntityHealthAttribute(4000, true));
 		this.addAttribute(new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(util.debug ? 500000 : 500), util.enumValues(Rotation), true));
 	}
 }
@@ -598,7 +597,7 @@ export class Turret extends Building {
 			findTargetAttribute,
 			new EntityChainAttribute([
 				new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
-				new EntitySpawnProjectileAttribute(findTargetAttribute, .1, 200, 1, 1, 10, true),
+				new EntitySpawnProjectileAttribute(findTargetAttribute, .1, 200, 1, 10, true),
 				new EntityTimedAttribute(40),
 			]),
 			new EntityTimedAttribute(40)));
@@ -666,24 +665,27 @@ export class Mob extends Entity {
 			findTargetAttribute,
 			new EntityChainAttribute([
 				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, false),
-				new EntitySpawnProjectileAttribute(findTargetAttribute, .1, 100, 1, 1, 2, false),
+				new EntitySpawnProjectileAttribute(findTargetAttribute, .1, 100, 1, 2, false),
 				new EntityTimedAttribute(200),
 			]),
 			new EntityChainAttribute([
 				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, true),
 				new EntityTimedAttribute(40),
 			])));
-		this.addAttribute(new EntityMobHealthAttribute(10));
+		this.addAttribute(new EntityHealthAttribute(10, false));
 	}
 }
 
 export class Projectile extends Entity {
-	constructor(velocity: Vector, duration: number, range: number, maxTargets: number, damage: number, sourceFriendly: boolean) {
+	constructor(velocity: Vector, duration: number, collisionSize: number, damage: number, sourceFriendly: boolean) {
 		super('Projectile', '', new Vector(.2));
-		this.setParticle(new Particle(coloredGeneratedTextures.fullRect.texture(Color.PROJECTILE_RED)));
+		this.setParticle(new Particle(coloredGeneratedTextures.fullRect.texture(sourceFriendly ? Color.PROJECTILE_BLUE : Color.PROJECTILE_RED)));
+		// todo homing projectile
 		this.addAttribute(new EntityDirectionMovementAttribute(velocity));
+		let findTargetAttribute = new EntityFindTargetAttribute(collisionSize, 1, !sourceFriendly);
 		this.addAttribute(new EntityChainAttribute([
-			new EntityDamageAttribute(range, maxTargets, damage, sourceFriendly),
+			findTargetAttribute,
+			new EntityDamageTargetAttribute(findTargetAttribute, damage),
 			new EntityExpireProjectileAttribute(),
 		]));
 		this.addAttribute(new EntityChainAttribute([
