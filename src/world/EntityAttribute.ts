@@ -1093,7 +1093,45 @@ export class EntityLiquidDisplayAttribute extends EntityAttribute {
 	}
 }
 
-// Mob and combat attributes
+// Attack attributes
+
+export class EntitySpawnProjectileAttribute extends EntityAttribute {
+	private readonly findTargetAttribute: EntityFindTargetAttribute;
+	private readonly velocity: number;
+	private readonly duration: number;
+	private readonly range: number;
+	private readonly maxTargets: number;
+	private readonly damage: number;
+	private readonly sourceFriendly: boolean;
+
+	constructor(findTargetAttribute: EntityFindTargetAttribute, velocity: number, duration: number, range: number, maxTargets: number, damage: number, sourceFriendly: boolean) {
+		super();
+		console.assert(velocity > 0);
+		console.assert(duration > 0);
+		console.assert(range > 0);
+		console.assert(maxTargets > 0);
+		console.assert(damage > 0);
+		this.findTargetAttribute = findTargetAttribute;
+		this.velocity = velocity;
+		this.duration = duration;
+		this.range = range;
+		this.maxTargets = maxTargets;
+		this.damage = damage;
+		this.sourceFriendly = sourceFriendly;
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		this.tickResult = TickResult.DONE;
+		let targets = this.findTargetAttribute.targets;
+		if (!targets.length) return;
+		let velocity = targets[0][0].subtract(tile.position);
+		if (velocity.magnitude2 > this.velocity ** 2)
+			velocity = velocity.setMagnitude(this.velocity);
+		world.free.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.sourceFriendly));
+	}
+}
+
+// Mob attributes
 
 // todo merge with EntityHealthAttribute
 export class EntityMobHealthAttribute extends EntityAttribute {
@@ -1200,42 +1238,6 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 		this.targets = EntityFindTargetAttribute.findTargetsWithinRange(tile.position, this.range, this.numTargets, this.targetFriendly, world);
 		if (this.targets.length)
 			this.tickResult = TickResult.DONE;
-	}
-}
-
-export class EntitySpawnProjectileAttribute extends EntityAttribute {
-	private readonly findTargetAttribute: EntityFindTargetAttribute;
-	private readonly velocity: number;
-	private readonly duration: number;
-	private readonly range: number;
-	private readonly maxTargets: number;
-	private readonly damage: number;
-	private readonly sourceFriendly: boolean;
-
-	constructor(findTargetAttribute: EntityFindTargetAttribute, velocity: number, duration: number, range: number, maxTargets: number, damage: number, sourceFriendly: boolean) {
-		super();
-		console.assert(velocity > 0);
-		console.assert(duration > 0);
-		console.assert(range > 0);
-		console.assert(maxTargets > 0);
-		console.assert(damage > 0);
-		this.findTargetAttribute = findTargetAttribute;
-		this.velocity = velocity;
-		this.duration = duration;
-		this.range = range;
-		this.maxTargets = maxTargets;
-		this.damage = damage;
-		this.sourceFriendly = sourceFriendly;
-	}
-
-	tick(world: World, tile: Tile<Entity>): void {
-		this.tickResult = TickResult.DONE;
-		let targets = this.findTargetAttribute.targets;
-		if (!targets.length) return;
-		let velocity = targets[0][0].subtract(tile.position);
-		if (velocity.magnitude2 > this.velocity ** 2)
-			velocity = velocity.setMagnitude(this.velocity);
-		world.free.addTileable(tile.position, new Projectile(velocity, this.duration, this.range, this.maxTargets, this.damage, this.sourceFriendly));
 	}
 }
 

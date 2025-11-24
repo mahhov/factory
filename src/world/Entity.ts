@@ -547,10 +547,6 @@ export class Turret extends Building {
 		// todo area visual
 
 		// todo
-		//   attack styles
-		//     projectiles: projectile count, attack rate, accuracy, projectile count spread, projectile travel distance, projectile size, projectile speed, homing speed
-		//     laser:       essentially a projectile with instant trave time. attack rate, accuracy, max distance, thickness, does it pierce,
-		//     self:        no projectile or laser, does collision, explosion, chain, pulse, etc damage style around self. frequency
 		//   on hit affects
 		//     collision:   damage
 		//     aoe:         damage, duration, aoe size, pulse frequency
@@ -585,6 +581,15 @@ export class Turret extends Building {
 		//     pool creepers
 		//     stationary towers
 		//     nests
+
+		// todo entity attributes
+		//   attacks:
+		//     projectiles: projectile count, attack rate, accuracy, projectile count spread, projectile travel distance, projectile size, projectile speed, homing speed
+		//     laser:       essentially a projectile with instant travel time. attack rate, accuracy, max distance, thickness, does it pierce,
+		//     self:        no projectile or laser, does collision, explosion, chain, pulse, etc damage style around self. frequency
+		//   aim: nearby enemy, set angles, random angles
+		//   effect: damage, stun, spawn chain attack, spawn cluster attack
+		//   target: hit target, area
 
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(Material.IRON, 10)], util.enumValues(Rotation), false);
 		this.addAttribute(materialStorageAttribute);
