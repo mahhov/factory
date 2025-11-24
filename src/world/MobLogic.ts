@@ -108,7 +108,7 @@ let herdConfig = {
 	SCATTER_DURATION: 8,
 
 	MIN_SPEED: .091,
-	MIN_SPEED_2: .09 ** 2,
+	MIN_SPEED_2: .091 ** 2,
 	MAX_SPEED: .11,
 	MAX_SPEED_2: .11 ** 2,
 
@@ -160,7 +160,7 @@ class HerdManager {
 							velocity = velocity.setMagnitude(herdConfig.MAX_SPEED);
 					}
 
-					position = position.add(velocity);
+					position = position.add(velocity.scale(mobHerdPositionAttribute.speed));
 					[position, velocity] = this.bound(position, velocity);
 					mobHerdPositionAttribute.position = position;
 					mobHerdPositionAttribute.velocity = velocity;

@@ -628,7 +628,7 @@ export class Mob extends Entity {
 	constructor(position: Vector) {
 		super('Low Tier Mob No Sprite', '', new Vector(.5));
 		this.setParticle(new Particle(animatedGeneratedTextures.lowTierMob.textures[0]));
-		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(position);
+		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(position, 1);
 		this.addAttribute(mobHerdPositionAttribute);
 		let findTargetAttribute = new EntityFindTargetAttribute(10, 1, true);
 		this.addAttribute(new EntityIfElseAttribute(

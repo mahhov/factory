@@ -1149,11 +1149,13 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 export class EntityMobHerdPositionAttribute extends EntityAttribute {
 	position: Vector;
 	velocity: Vector = Vector.V0;
+	readonly speed: number;
 	active = true;
 
-	constructor(position: Vector) {
+	constructor(position: Vector, speed: number) {
 		super();
 		this.position = position;
+		this.speed = speed;
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
