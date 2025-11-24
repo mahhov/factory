@@ -1180,6 +1180,33 @@ export class EntityMobHerdPositionActivateAttribute extends EntityAttribute {
 	}
 }
 
+export class EntityMobMoveTowardsPositionAttribute extends EntityAttribute {
+	private readonly findTargetAttribute: EntityFindTargetAttribute;
+	private readonly distance2: number;
+	private readonly speed: number;
+	private readonly speed2: number;
+
+	constructor(findTargetAttribute: EntityFindTargetAttribute, distance: number, speed: number) {
+		super();
+		this.findTargetAttribute = findTargetAttribute;
+		this.distance2 = distance ** 2;
+		this.speed = speed;
+		this.speed2 = speed ** 2;
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		console.assert(this.findTargetAttribute.targets.length > 0);
+		let delta = this.findTargetAttribute.targets[0][0].subtract(tile.position);
+		if (delta.magnitude2 <= this.distance2) {
+			this.tickResult = TickResult.DONE;
+			return;
+		}
+		if (delta.magnitude2 > this.speed2)
+			delta = delta.setMagnitude(this.speed);
+		world.free.updateTile(tile.position.add(delta), tile);
+	}
+}
+
 export class EntityFindTargetAttribute extends EntityAttribute {
 	private readonly range: number;
 	private readonly numTargets: number;

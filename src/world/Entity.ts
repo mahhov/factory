@@ -38,6 +38,7 @@ import {
 	EntityMaterialStorageAttributeType,
 	EntityMobHerdPositionActivateAttribute,
 	EntityMobHerdPositionAttribute,
+	EntityMobMoveTowardsPositionAttribute,
 	EntityNameAttribute,
 	EntityNonEmptyLiquidStorage,
 	EntityNonEmptyMaterialStorage,
@@ -630,18 +631,16 @@ export class Mob extends Entity {
 		this.setParticle(new Particle(animatedGeneratedTextures.lowTierMob.textures[0]));
 		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(.1);
 		this.addAttribute(mobHerdPositionAttribute);
-		let findTargetAttribute = new EntityFindTargetAttribute(10, 1, true);
+		let findTargetAttribute = new EntityFindTargetAttribute(20, 1, true);
 		this.addAttribute(new EntityIfElseAttribute(
 			findTargetAttribute,
 			new EntityChainAttribute([
 				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, false),
+				new EntityMobMoveTowardsPositionAttribute(findTargetAttribute, 10, .1),
 				new EntitySpawnProjectileAttribute(findTargetAttribute, 1, .1, 100, 1, 2, 0, false),
-				new EntityTimedAttribute(200),
-			]),
-			new EntityChainAttribute([
-				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, true),
 				new EntityTimedAttribute(40),
-			])));
+			]),
+			new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, true)));
 		this.addAttribute(new EntityHealthAttribute(10, false));
 	}
 }
