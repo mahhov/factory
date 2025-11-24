@@ -617,9 +617,9 @@ export let animatedGeneratedTextures = {
 	lowTierMob: new AnimatedGeneratedTextures(8, [[
 		// Main "alive" core (Red, small, pulsating) - Frame 1
 		// It's just a 4x4 red block, but centered to look small within 8x8
-		[2, 2, 4, 4, '#D83030'],
+		[0, 0, 8, 8, '#D83030'],
 		// Small inner light/pulse
-		[3, 3, 2, 2, '#F0F0F0'],
+		[2, 2, 4, 4, '#F0F0F0'],
 	], [
 		// Main "alive" core (Red, larger pulse) - Frame 2
 		// Expands slightly, implying a living, hostile organism
