@@ -204,10 +204,10 @@ class HerdManager {
 	}
 
 	private bound(position: Vector, velocity: Vector): [Vector, Vector] {
-		let flipX = position.x < 0 || position.x >= this.size1.x;
-		let flipY = position.y < 0 || position.y >= this.size1.y;
+		let flipX = position.x < 1 || position.x >= this.size1.x;
+		let flipY = position.y < 1 || position.y >= this.size1.y;
 		return flipX || flipY ? [
-			position.clamp(Vector.V0, this.size1),
+			position.clamp(Vector.V1, this.size1),
 			velocity.multiply(new Vector(flipX ? -1 : 1, flipY ? -1 : 1)),
 		] : [position, velocity];
 	}

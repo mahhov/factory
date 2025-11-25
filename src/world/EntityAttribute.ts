@@ -1210,15 +1210,17 @@ export class EntityMobMoveTowardsPositionAttribute extends EntityAttribute {
 export class EntityFindTargetAttribute extends EntityAttribute {
 	private readonly range: number;
 	private readonly numTargets: number;
+	private readonly sourceFriendly: boolean;
 	private readonly targetFriendly: boolean;
 	targets: [Vector, Entity][] = [];
 
-	constructor(range: number, numTargets: number, targetFriendly: boolean) {
+	constructor(range: number, numTargets: number, sourceFriendly: boolean, targetFriendly: boolean) {
 		super();
 		console.assert(range > 0);
 		console.assert(numTargets > 0);
 		this.range = range;
 		this.numTargets = numTargets;
+		this.sourceFriendly = sourceFriendly;
 		this.targetFriendly = targetFriendly;
 	}
 
@@ -1233,11 +1235,12 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 			// todo add chunks to live layer for faster searching
 			util.centerIterator(min, max, position.floor, (x, y) => {
 				let targetPosition = new Vector(x, y);
-				if (position.subtract(targetPosition).magnitude2 >= range2) return false;
+				let targetCenterPosition = targetPosition.add(new Vector(.5));
+				if (position.subtract(targetCenterPosition).magnitude2 >= range2) return false;
 				let tile = world.live.getTileUnchecked(targetPosition);
 				let healthAttribute = tile.tileable.getAttribute(EntityHealthAttribute);
 				if (!healthAttribute || !healthAttribute.sourceFriendly) return false;
-				targets.push([targetPosition, tile.tileable]);
+				targets.push([targetCenterPosition, tile.tileable]);
 				return targets.length === limit;
 			});
 			return targets;
@@ -1259,7 +1262,8 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		this.targets = EntityFindTargetAttribute.findTargetsWithinRange(tile.position.add(tile.tileable.size.scale(.5)), this.range, this.numTargets, this.targetFriendly, world);
+		let position = this.sourceFriendly ? tile.position.add(tile.tileable.size.scale(.5)) : tile.position;
+		this.targets = EntityFindTargetAttribute.findTargetsWithinRange(position, this.range, this.numTargets, this.targetFriendly, world);
 		if (this.targets.length)
 			this.tickResult = TickResult.DONE;
 	}
@@ -1275,7 +1279,7 @@ export class EntityDirectionMovementAttribute extends EntityAttribute {
 
 	tick(world: World, tile: Tile<Entity>): void {
 		let position = tile.position.add(this.velocity);
-		if (!world.live.inBounds(position, Vector.V0)) {
+		if (!world.free.inBounds(position, tile.tileable.size)) {
 			world.free.removeTile(tile);
 			this.tickResult = TickResult.END_TICK;
 		}

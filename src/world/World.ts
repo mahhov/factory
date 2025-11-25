@@ -306,7 +306,7 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	protected updateGraphics(tileable: Tileable, position: Vector, size: Vector) {
 		super.updateGraphics(tileable, position, size);
 		if (tileable.particle) {
-			position = position.multiply(this.size.invert);
+			position = position.subtract(size.scale(.5)).multiply(this.size.invert);
 			tileable.particle.x = position.x;
 			tileable.particle.y = position.y;
 		}
@@ -337,6 +337,11 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		this.tiles.splice(index, 1);
 		this.chunkOverlays.forEach(chunkOverlay => chunkOverlay.remove(tile));
 		this.removeGraphics(tile.tileable);
+	}
+
+	inBounds(position: Vector, size: Vector) {
+		let halfSize = size.scale(.5);
+		return position.boundBy(halfSize, this.size.subtract(halfSize));
 	}
 
 	addChunkOverlay<S>(chunkSize: number, mapper: (t: T) => S | null) {

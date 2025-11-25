@@ -563,7 +563,7 @@ export class Turret extends Building {
 
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(Material.IRON, 10)], util.enumValues(Rotation), false);
 		this.addAttribute(materialStorageAttribute);
-		let findTargetAttribute = new EntityFindTargetAttribute(16, 3, false);
+		let findTargetAttribute = new EntityFindTargetAttribute(16, 3, true, false);
 		this.addAttribute(new EntityIfElseAttribute(
 			findTargetAttribute,
 			new EntityChainAttribute([
@@ -631,7 +631,7 @@ export class ProjectileMob extends Entity {
 		this.setParticle(new Particle(animatedGeneratedTextures.lowTierMob.textures[0]));
 		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(movementSpeed);
 		this.addAttribute(mobHerdPositionAttribute);
-		let findTargetAttribute = new EntityFindTargetAttribute(visualRange, 1, true);
+		let findTargetAttribute = new EntityFindTargetAttribute(visualRange, 1, false, true);
 		this.addAttribute(new EntityIfElseAttribute(
 			findTargetAttribute,
 			new EntityChainAttribute([
@@ -654,7 +654,7 @@ export class Projectile extends Entity {
 		this.setParticle(new Particle(coloredGeneratedTextures.fullRect.texture(sourceFriendly ? Color.PROJECTILE_BLUE : Color.PROJECTILE_RED)));
 		// todo homing projectile
 		this.addAttribute(new EntityDirectionMovementAttribute(velocity));
-		let findTargetAttribute = new EntityFindTargetAttribute(collisionSize * 2, 1, !sourceFriendly);
+		let findTargetAttribute = new EntityFindTargetAttribute(collisionSize, 1, sourceFriendly, !sourceFriendly);
 		this.addAttribute(new EntityChainAttribute([
 			findTargetAttribute,
 			new EntityDamageTargetAttribute(findTargetAttribute, damage),
