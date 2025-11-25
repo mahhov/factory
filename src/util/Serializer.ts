@@ -13,7 +13,7 @@ import {
 	Junction,
 	LiquidDeposit,
 	MaterialDeposit,
-	Mob,
+	ProjectileMob,
 	Pipe,
 	PipeDistributor,
 	PipeJunction,
@@ -110,7 +110,7 @@ let typeMap: TypeMap = {
 	Turret,
 	MaterialDeposit,
 	LiquidDeposit,
-	Mob,
+	Mob: ProjectileMob,
 	Projectile,
 
 	EntityNameAttribute,

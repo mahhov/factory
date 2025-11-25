@@ -1,10 +1,11 @@
 import Painter from '../graphics/Painter.js';
+import EntityCreator, {MobType} from '../ui/EntityCreator.js';
 import MultilineText, {Anchor} from '../ui/MultilineText.js';
 import TextLine from '../ui/TextLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Entity, Mob} from './Entity.js';
+import {Entity} from './Entity.js';
 import {EntityMobHerdPositionAttribute} from './EntityAttribute.js';
 import {FreeWorldLayer, FreeWorldLayerChunkOverlay, World} from './World.js';
 
@@ -48,6 +49,7 @@ class Spawner {
 	private counter = new Counter(1);
 	private stageIndex = -1;
 	private readonly stages = [
+		// new SpawnerStage(300 * 100, 1, 400, 0),
 		new SpawnerStage(300 * 100, 0, 0, 0),
 		new SpawnerStage(60 * 100, 3, 5, 5),
 		new SpawnerStage(60 * 100, 3, 5, 5),
@@ -66,7 +68,7 @@ class Spawner {
 			let spawnCenter = min.add(Vector.rand.multiply(delta));
 			for (let j = 0; j < stage.mobsPerCluster; j++) {
 				let offset = Vector.rand.scale(stage.clusterRadius * 2).subtract(min);
-				free.addTileable(spawnCenter.add(offset), new Mob());
+				free.addTileable(spawnCenter.add(offset), EntityCreator.createMobEntity(MobType.SWARM_DRONE));
 			}
 		}
 	}

@@ -1,5 +1,6 @@
 import {Container, Particle, ParticleContainer, Sprite} from 'pixi.js';
 import Painter from '../graphics/Painter.js';
+import EntityCreator, {Tool} from '../ui/EntityCreator.js';
 import TextLine from '../ui/TextLine.js';
 import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';

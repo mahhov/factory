@@ -9,29 +9,13 @@ import {Empty} from '../world/Entity.js';
 import {EntityNameAttribute, TooltipType} from '../world/EntityAttribute.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
 import {SpriteHolder, World} from '../world/World.js';
-import EntityCreator from './EntityCreator.js';
+import EntityCreator, {Tool} from './EntityCreator.js';
 import {Input} from './Input.js';
 import MultilineText, {Anchor} from './MultilineText.js';
 import TextLine from './TextLine.js';
 
 export enum PlacerState {
 	EMPTY, ENTITY_SELECTED, STARTED
-}
-
-export enum Tool {
-	// todo copy/paste
-	EMPTY, CLEAR,
-	EXTRACTOR, REINFORCED_EXTRACTOR, QUADRATIC_EXTRACTOR, LASER_EXTRACTOR,
-	// todo bridge
-	CONVEYOR, HIGH_SPEED_CONVEYOR, PACKED_CONVEYOR, DISTRIBUTOR, JUNCTION, STORAGE, DISPENSER,
-	STEEL_SMELTER, METAGLASS_FOUNDRY, PLASTEEL_MIXER, THERMITE_FORGE, EXIDIUM_CATALYST,
-	THERMAL_GENERATOR, SOLAR_ARRAY, METHANE_BURNER, GRAPHITE_BURNER, THERMITE_REACTOR, CONDUCTOR, BATTERY,
-	AIR_VENT, WATER_VENT, METHANE_VENT,
-	PUMP, POWERED_PUMP, WELL,
-	PIPE, PIPE_BRIDGE, PIPE_DISTRIBUTOR, PIPE_JUNCTION, TANK,
-	// todo bunker
-	STEEL_WALL, TITANIUM_WALL,
-	SHRAPNEL_TURRET, PIERCING_TURRET, ARC_TURRET, SIEGE_TURRET, LASER_TURRET,
 }
 
 let toolTree = {

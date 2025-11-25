@@ -17,6 +17,7 @@ import {
 	PipeBridge,
 	PipeDistributor,
 	PipeJunction,
+	ProjectileMob,
 	Pump,
 	Storage,
 	Tank,
@@ -28,7 +29,26 @@ import {
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {Liquid, Material, ResourceUtils} from '../world/Resource.js';
 import {Rotation} from '../world/Rotation.js';
-import {Tool} from './Placer.js';
+
+export enum Tool {
+	// todo copy/paste
+	EMPTY, CLEAR,
+	EXTRACTOR, REINFORCED_EXTRACTOR, QUADRATIC_EXTRACTOR, LASER_EXTRACTOR,
+	// todo bridge
+	CONVEYOR, HIGH_SPEED_CONVEYOR, PACKED_CONVEYOR, DISTRIBUTOR, JUNCTION, STORAGE, DISPENSER,
+	STEEL_SMELTER, METAGLASS_FOUNDRY, PLASTEEL_MIXER, THERMITE_FORGE, EXIDIUM_CATALYST,
+	THERMAL_GENERATOR, SOLAR_ARRAY, METHANE_BURNER, GRAPHITE_BURNER, THERMITE_REACTOR, CONDUCTOR, BATTERY,
+	AIR_VENT, WATER_VENT, METHANE_VENT,
+	PUMP, POWERED_PUMP, WELL,
+	PIPE, PIPE_BRIDGE, PIPE_DISTRIBUTOR, PIPE_JUNCTION, TANK,
+	// todo bunker
+	STEEL_WALL, TITANIUM_WALL,
+	SHRAPNEL_TURRET, PIERCING_TURRET, ARC_TURRET, SIEGE_TURRET, LASER_TURRET,
+}
+
+export enum MobType {
+	SWARM_DRONE
+}
 
 export default class EntityCreator {
 	private static cachedToolEntities_: Record<Tool, Entity>;
@@ -221,5 +241,53 @@ export default class EntityCreator {
 
 	private static createToolTurret(metadata: ParsedLine<typeof sectionFields.turrets>) {
 		return new Turret(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.attackRate, metadata.damage, metadata.materialInput, metadata.accuracy, metadata.range, metadata.projectileSpeed);
+	}
+
+	static createMobEntity(mobType: MobType): Entity {
+		switch (mobType) {
+			case MobType.SWARM_DRONE:
+				return EntityCreator.createProjectileMob(findEntityMetadata('mobs', 'Swarm Drone'));
+		}
+	}
+
+	// private static createMobAttackTarget(metadata: ParsedLine<typeof sectionFields.mobs>) {
+	// 	switch (metadata.attackTarget) {
+	// 		case 'single':
+	// 			return new EntityTargetDamageAttribute();
+	// 		case 'area':
+	// 			return new EntityAreaDamageAttribute();
+	// 		default:
+	// 			console.assert(false);
+	// 	}
+	// }
+	//
+	// private static createMobAttackAffect(metadata: ParsedLine<typeof sectionFields.mobs>) {
+	// 	switch (metadata.attackAffect) {
+	// 		case 'damage':
+	// 			return new EntityTargetDamageAttribute();
+	// 		case 'stun':
+	// 			return new EntityAreaDamageAttribute();
+	// 		case 'spawn':
+	// 		default:
+	// 			console.assert(false);
+	// 	}
+	// }
+	//
+	// private static createMobAttackType(metadata: ParsedLine<typeof sectionFields.mobs>) {
+	// 	switch (metadata.attackType) {
+	// 		case 'projectile':
+	// 			return new ProjectileMob(metadata.size, metadata.health, metadata.movementSpeed, metadata.collisionWidth, metadata.area, metadata.count, metadata.projectileSpeed, metadata.range, metadata.damage, metadata.attackLatency, metadata.damage, metadata.damageDuration);
+	// 		case 'laser':
+	// 			return new LaserMob(metadata.size, metadata.health, metadata.movementSpeed, metadata.collisionWidth, metadata.count, metadata.range, metadata.damage, metadata.attackLatency, metadata.damage, metadata.damageDuration);
+	// 		case 'self':
+	// 			console.assert(false);
+	// 		default:
+	// 			console.assert(false);
+	// 	}
+	// }
+
+	private static createProjectileMob(metadata: ParsedLine<typeof sectionFields.mobs>) {
+		// todo use metadata damage duration
+		return new ProjectileMob(metadata.size, metadata.health, metadata.movementSpeed, 20, metadata.range, metadata.count, metadata.projectileSpeed, metadata.collisionWidth, metadata.damage, metadata.attackLatency, 0);
 	}
 }
