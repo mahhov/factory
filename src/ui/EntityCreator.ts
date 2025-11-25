@@ -47,7 +47,15 @@ export enum Tool {
 }
 
 export enum MobType {
-	SWARM_DRONE
+	SWARM_DRONE,
+	ASSAULT_TANK,
+	ARTILLERY_TRUCK,
+	ZENITH,
+	SCRAMBLER_BOT,
+	HIVE,
+	BEHEMOTH,
+	BOMBER,
+	HARVESTER,
 }
 
 export default class EntityCreator {
@@ -247,6 +255,22 @@ export default class EntityCreator {
 		switch (mobType) {
 			case MobType.SWARM_DRONE:
 				return EntityCreator.createProjectileMob(findEntityMetadata('mobs', 'Swarm Drone'));
+			case MobType.ASSAULT_TANK:
+				return EntityCreator.createProjectileMob(findEntityMetadata('mobs', 'Assault Tank')); // todo
+			case MobType.ARTILLERY_TRUCK:
+				return EntityCreator.createProjectileMob(findEntityMetadata('mobs', 'Artillery Truck'));
+			case MobType.ZENITH:
+				return EntityCreator.createProjectileMob(findEntityMetadata('mobs', 'Zenith')); // todo
+			case MobType.SCRAMBLER_BOT:
+				return EntityCreator.createProjectileMob(findEntityMetadata('mobs', 'Scrambler Bot')); // todo
+			case MobType.HIVE:
+				return EntityCreator.createProjectileMob(findEntityMetadata('mobs', 'Hive')); // todo
+			case MobType.BEHEMOTH:
+				return EntityCreator.createProjectileMob(findEntityMetadata('mobs', 'Behemoth')); // todo
+			case MobType.BOMBER:
+				return EntityCreator.createProjectileMob(findEntityMetadata('mobs', 'Bomber')); // todo
+			case MobType.HARVESTER:
+				return EntityCreator.createProjectileMob(findEntityMetadata('mobs', 'Harvester')); // todo
 		}
 	}
 

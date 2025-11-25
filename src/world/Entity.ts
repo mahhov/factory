@@ -563,12 +563,12 @@ export class Turret extends Building {
 
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(Material.IRON, 10)], util.enumValues(Rotation), false);
 		this.addAttribute(materialStorageAttribute);
-		let findTargetAttribute = new EntityFindTargetAttribute(20, 3, false);
+		let findTargetAttribute = new EntityFindTargetAttribute(16, 3, false);
 		this.addAttribute(new EntityIfElseAttribute(
 			findTargetAttribute,
 			new EntityChainAttribute([
 				new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
-				new EntitySpawnProjectileAttribute(findTargetAttribute, 3, .4, 50, .2, 10, 10, true),
+				new EntitySpawnProjectileAttribute(findTargetAttribute, 3, .4, 40, .2, 10, 10, true),
 				new EntityTimedAttribute(40 / 4),
 			]),
 			new EntityTimedAttribute(40)));
