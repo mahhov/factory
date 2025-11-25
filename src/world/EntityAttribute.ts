@@ -1274,7 +1274,12 @@ export class EntityDirectionMovementAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		world.free.updateTile(tile.position.add(this.velocity), tile);
+		let position = tile.position.add(this.velocity);
+		if (!world.live.inBounds(position, Vector.V0)) {
+			world.free.removeTile(tile);
+			this.tickResult = TickResult.END_TICK;
+		}
+		world.free.updateTile(position, tile);
 		this.tickResult = TickResult.DONE;
 	}
 }
