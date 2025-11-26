@@ -22,8 +22,8 @@ export default class Vector {
 		return new Vector(x, y);
 	}
 
-	static get rand() {
-		return new Vector(util.rand(0, 1), util.rand(0, 1));
+	static rand(min: number, max: number) {
+		return new Vector(util.rand(min, max), util.rand(min, max));
 	}
 
 	get magnitude2() {

@@ -1,4 +1,4 @@
-import {AnimatedSprite, Sprite} from 'pixi.js';
+import {AnimatedSprite, Sprite, Texture} from 'pixi.js';
 import color from '../graphics/Color.js';
 import Color from '../graphics/Color.js';
 import {coloredGeneratedTextures} from '../graphics/generatedTextures.js';
@@ -6,7 +6,7 @@ import TextLine from '../ui/TextLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Empty, Entity, LiquidDeposit, MaterialDeposit, Projectile} from './Entity.js';
+import {Empty, Entity, LiquidDeposit, MaterialDeposit, ParticleEntity, Projectile} from './Entity.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {Tile, World} from './World.js';
@@ -1135,8 +1135,8 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 		this.tickResult = TickResult.DONE;
 		let targets = this.findTargetAttribute.targets;
 		console.assert(targets.length > 0);
+		let position = tile.position.add(tile.tileable.size.scale(.5));
 		for (let i = 0; i < this.count; i++) {
-			let position = tile.position.add(tile.tileable.size.scale(.5));
 			let velocity = targets[i % targets.length][0]
 				.subtract(position)
 				.rotateCounter(util.randWidth(this.spreadDegrees));
@@ -1360,5 +1360,44 @@ export class EntityActiveSpriteAttribute extends EntityAttribute {
 	tick(world: World, tile: Tile<Entity>): void {
 		this.sprite.currentFrame = Math.floor(this.timedAttribute.counter.ratio * this.sprite.textures.length);
 		this.tickResult = TickResult.DONE;
+	}
+}
+
+export class EntitySpawnParticleAttribute extends EntityAttribute {
+	private readonly count: number;
+	private readonly topLeft: Vector;
+	private readonly widthHeight: Vector;
+	private readonly minSize: number;
+	private readonly maxSize: number;
+	private readonly maxSpeed: number;
+	private readonly duration: number;
+	private readonly texture: Texture;
+
+	constructor(count: number, topLeft: Vector, widthHeight: Vector, minSize: number, maxSize: number, maxSpeed: number, duration: number, texture: Texture) {
+		super();
+		console.assert(count > 0);
+		console.assert(minSize > 0);
+		console.assert(maxSize >= minSize);
+		console.assert(maxSpeed >= 0);
+		console.assert(duration > 0);
+		this.count = count;
+		this.topLeft = topLeft;
+		this.widthHeight = widthHeight;
+		this.minSize = minSize;
+		this.maxSize = maxSize;
+		this.maxSpeed = maxSpeed;
+		this.duration = duration;
+		this.texture = texture;
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		this.tickResult = TickResult.DONE;
+		let topLeft = tile.position.add(tile.tileable.size.scale(.5)).add(this.topLeft);
+		for (let i = 0; i < this.count; i++) {
+			let position = topLeft.add(Vector.rand(0, 1).multiply(this.widthHeight));
+			let velocity = Vector.rand(-this.maxSpeed, this.maxSpeed);
+			let size = util.rand(this.minSize, this.maxSize);
+			world.free.addTileable(position, new ParticleEntity(velocity, size, this.duration, this.texture));
+		}
 	}
 }

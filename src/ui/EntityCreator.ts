@@ -311,7 +311,6 @@ export default class EntityCreator {
 	// }
 
 	private static createProjectileMob(metadata: ParsedLine<typeof sectionFields.mobs>) {
-		// todo use metadata damage duration
 		return new ProjectileMob(metadata.size, metadata.health, metadata.movementSpeed, 20, metadata.range, metadata.count, metadata.damageSize, metadata.projectileSpeed, metadata.collisionWidth, metadata.damage, metadata.attackLatency, 0);
 	}
 }

@@ -1,4 +1,4 @@
-import {AnimatedSprite, Container, Particle, Sprite} from 'pixi.js';
+import {AnimatedSprite, Container, Particle, Sprite, Texture} from 'pixi.js';
 import Color from '../graphics/Color.js';
 import {animatedGeneratedTextures, coloredGeneratedTextures} from '../graphics/generatedTextures.js';
 import SpriteLoader from '../graphics/SpriteLoader.js';
@@ -48,6 +48,7 @@ import {
 	EntityPowerProduceAttribute,
 	EntityPowerStorageAttribute,
 	EntityPowerStorageAttributePriority,
+	EntitySpawnParticleAttribute,
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
 	EntityTransportAttribute,
@@ -120,11 +121,11 @@ export class Entity implements Tileable {
 		this.container.addChild(sprite);
 	}
 
-	setParticle(particle: Particle) {
+	setParticle(texture: Texture) {
 		console.assert(!this.particle);
-		this.particle = particle;
-		this.particle.scaleX = this.size.x / particle.texture.width;
-		this.particle.scaleY = this.size.y / particle.texture.height;
+		this.particle = new Particle(texture);
+		this.particle.scaleX = this.size.x / texture.width;
+		this.particle.scaleY = this.size.y / texture.height;
 	}
 
 	addOverlaySprites(label: string, sprites: Sprite[]) {
@@ -628,7 +629,7 @@ export class LiquidDeposit extends Entity {
 export class ProjectileMob extends Entity {
 	constructor(size: number, health: number, movementSpeed: number, visualRange: number, attackRange: number, projectileCount: number, projectileDamageSize: number, projectileSpeed: number, projectileCollisionSize: number, projectileDamage: number, projectileAttackLatency: number, projectileSpreadDegrees: number) {
 		super('Projectile Mob', '', new Vector(size));
-		this.setParticle(new Particle(animatedGeneratedTextures.lowTierMob.textures[0]));
+		this.setParticle(animatedGeneratedTextures.lowTierMob.textures[0]);
 		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(movementSpeed);
 		this.addAttribute(mobHerdPositionAttribute);
 		let findTargetAttribute = new EntityFindTargetAttribute(visualRange, 1, false, true);
@@ -651,7 +652,7 @@ export class ProjectileMob extends Entity {
 export class Projectile extends Entity {
 	constructor(velocity: Vector, damageSize: number, duration: number, collisionSize: number, damage: number, sourceFriendly: boolean) {
 		super('Projectile', '', new Vector(collisionSize));
-		this.setParticle(new Particle(coloredGeneratedTextures.fullRect.texture(sourceFriendly ? Color.PROJECTILE_BLUE : Color.PROJECTILE_RED)));
+		this.setParticle(coloredGeneratedTextures.fullRect.texture(sourceFriendly ? Color.PROJECTILE_BLUE : Color.PROJECTILE_RED));
 		// todo homing projectile
 		this.addAttribute(new EntityDirectionMovementAttribute(velocity));
 		let collisionFindTargetAttribute = new EntityFindTargetAttribute(collisionSize, 1, sourceFriendly, !sourceFriendly);
@@ -660,8 +661,21 @@ export class Projectile extends Entity {
 			collisionFindTargetAttribute,
 			damageSize ? damageFindTargetAttribute : null,
 			new EntityDamageTargetAttribute(damageFindTargetAttribute, damage),
+			new EntitySpawnParticleAttribute(5, Vector.V0, Vector.V0, .1, .2, .015, 50, coloredGeneratedTextures.fullRect.texture(sourceFriendly ? Color.PROJECTILE_BLUE : Color.PROJECTILE_RED)),
 			new EntityExpireProjectileAttribute(),
 		].filter(v => v) as EntityAttribute[]));
+		this.addAttribute(new EntityChainAttribute([
+			new EntityTimedAttribute(duration),
+			new EntityExpireProjectileAttribute(),
+		]));
+	}
+}
+
+export class ParticleEntity extends Entity {
+	constructor(velocity: Vector, size: number, duration: number, texture: Texture) {
+		super('Particle', '', new Vector(size));
+		this.setParticle(texture);
+		this.addAttribute(new EntityDirectionMovementAttribute(velocity));
 		this.addAttribute(new EntityChainAttribute([
 			new EntityTimedAttribute(duration),
 			new EntityExpireProjectileAttribute(),
