@@ -43,6 +43,7 @@ import {
 	EntityNonEmptyLiquidStorage,
 	EntityNonEmptyMaterialStorage,
 	EntityOutflowAttribute,
+	EntityParallelAttribute,
 	EntityPowerConductAttribute,
 	EntityPowerConsumeAttribute,
 	EntityPowerProduceAttribute,
@@ -52,7 +53,6 @@ import {
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
 	EntityTransportAttribute,
-	TickResult,
 	TooltipType,
 } from './EntityAttribute.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
@@ -67,7 +67,7 @@ export class Entity implements Tileable {
 	readonly size: Vector;
 	readonly tilingSize: Vector;
 	readonly rotation: Rotation;
-	private readonly attributes: EntityAttribute[] = [];
+	private readonly attribute = new EntityParallelAttribute([]);
 	private readonly attributesMap: Record<string, EntityAttribute[]> = {};
 	container: Container | null = null;
 	particle: Particle | null = null;
@@ -95,7 +95,7 @@ export class Entity implements Tileable {
 	}
 
 	addAttribute(attribute: EntityAttribute) {
-		this.attributes.push(attribute);
+		this.attribute.addAttribute(attribute);
 		this.addAttributeToMap(attribute);
 	}
 
@@ -137,25 +137,19 @@ export class Entity implements Tileable {
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
-		return this.attributes.flatMap(attribute => attribute.tooltip(type));
+		return this.attribute.tooltip(type);
 	}
 
 	get tooltipRange(): number {
-		return this.attributes.find(attribute => attribute.tooltipRange)?.tooltipRange || 0;
+		return this.attribute.tooltipRange;
 	}
 
 	get selectable(): boolean {
-		return this.attributes.some(attribute => attribute.selectable);
+		return this.attribute.selectable;
 	}
 
 	tick(world: World, tile: Tile<Entity>) {
-		for (let attribute of this.attributes) {
-			attribute.tick(world, tile);
-			if (attribute.tickResult === TickResult.END_TICK) {
-				attribute.tickResult = TickResult.NOT_DONE;
-				return;
-			}
-		}
+		this.attribute.tick(world, tile);
 	}
 }
 

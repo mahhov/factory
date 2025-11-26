@@ -259,11 +259,9 @@ abstract class EntityParentAttribute extends EntityAttribute {
 
 	constructor(attributes: EntityAttribute[]) {
 		super();
-		console.assert(attributes.length > 1);
 		this.attributes = attributes;
 	}
 
-	// todo merge these 3 methods with entity. make entity.attributes a subclass of parent attribute
 	tooltip(type: TooltipType): TextLine[] {
 		return this.attributes.flatMap(attribute => attribute.tooltip(type));
 	}
@@ -278,6 +276,22 @@ abstract class EntityParentAttribute extends EntityAttribute {
 
 	get childAttributes(): EntityAttribute[] {
 		return this.attributes;
+	}
+}
+
+export class EntityParallelAttribute extends EntityParentAttribute {
+	addAttribute(attribute: EntityAttribute) {
+		this.childAttributes.push(attribute);
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		for (let attribute of this.childAttributes) {
+			attribute.tick(world, tile);
+			if (attribute.tickResult === TickResult.END_TICK) {
+				attribute.tickResult = TickResult.NOT_DONE;
+				return;
+			}
+		}
 	}
 }
 
