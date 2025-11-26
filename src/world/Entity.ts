@@ -140,6 +140,10 @@ export class Entity implements Tileable {
 		return this.attributes.flatMap(attribute => attribute.tooltip(type));
 	}
 
+	get tooltipRange(): number {
+		return this.attributes.find(attribute => attribute.tooltipRange)?.tooltipRange || 0;
+	}
+
 	get selectable(): boolean {
 		return this.attributes.some(attribute => attribute.selectable);
 	}

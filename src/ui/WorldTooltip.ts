@@ -26,7 +26,7 @@ export default class WorldTooltip {
 	private readonly input: Input;
 	private readonly world: World;
 	private readonly multilineText: MultilineText;
-	private readonly selectionRect = new Container();
+	private readonly container = new Container();
 	private cachedSelection: Selection | null = null;
 	private selection: Selection | null = null;
 
@@ -36,7 +36,7 @@ export default class WorldTooltip {
 		this.input = input;
 		this.world = world;
 		this.multilineText = new MultilineText(painter);
-		painter.uiContainer.addChild(this.selectionRect);
+		painter.uiContainer.addChild(this.container);
 		painter.addListener('resize', () => this.dirty());
 	}
 
@@ -87,27 +87,38 @@ export default class WorldTooltip {
 
 	tick() {
 		if (!this.selection) {
-			this.selectionRect.removeChildren();
+			this.container.removeChildren();
 			this.multilineText.lines = [];
 			this.multilineText.tick();
 			return;
 		}
 
-		let topLeft = this.camera.worldToCanvas(this.selection.tile.position.multiply(this.world.size.invert));
-		let bottomRight = this.camera.worldToCanvas(this.selection.tile.position.add(this.selection.tile.tileable.size).multiply(this.world.size.invert));
-		let bottomRightShift = bottomRight.add(new Vector(3 / 1000));
-		let size = bottomRight.subtract(topLeft);
+		let outline = this.tileToCanvas(this.selection.tile.position, this.selection.tile.tileable.size);
 
-		this.multilineText.position = bottomRightShift;
+		this.multilineText.position = outline.bottomRight.add(new Vector(3 / 1000));
 		this.multilineText.lines = this.selection.tile.tileable.tooltip(this.input.shiftDown ? TooltipType.PLACER : TooltipType.WORLD);
 		this.multilineText.tick();
 
 		if (this.cachedSelection !== this.selection) {
 			this.cachedSelection = this.selection;
-			this.selectionRect.removeChildren();
-			this.selectionRect.addChild(new Graphics()
-				.rect(topLeft.x, topLeft.y, size.x, size.y)
+			this.container.removeChildren();
+			this.container.addChild(new Graphics()
+				.rect(outline.topLeft.x, outline.topLeft.y, outline.size.x, outline.size.y)
 				.stroke({width: (this.selection.selected ? 3 : 1) / this.painter.minCanvasSize, color: this.selection.selected ? Color.SELECTED_RECT_OUTLINE : Color.RECT_OUTLINE}));
+			let range = this.selection.tile.tileable.tooltipRange;
+			if (range) {
+				let rangeV = new Vector(range);
+				let rangeCircle = this.tileToCanvas(this.selection.tile.position.add(this.selection.tile.tileable.size.scale(.5)), rangeV);
+				this.container.addChild(new Graphics()
+					.circle(rangeCircle.topLeft.x, rangeCircle.topLeft.y, rangeCircle.size.x)
+					.stroke({width: 1 / this.painter.minCanvasSize, color: Color.RECT_OUTLINE}));
+			}
 		}
+	}
+
+	tileToCanvas(position: Vector, size: Vector) {
+		let topLeft = this.camera.worldToCanvas(position.multiply(this.world.size.invert));
+		let bottomRight = this.camera.worldToCanvas(position.add(size).multiply(this.world.size.invert));
+		return {topLeft, bottomRight, size: bottomRight.subtract(topLeft)};
 	}
 }

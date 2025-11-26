@@ -96,6 +96,10 @@ export abstract class EntityAttribute {
 		return [];
 	}
 
+	get tooltipRange(): number {
+		return 0;
+	}
+
 	get selectable(): boolean {
 		return false;
 	}
@@ -259,8 +263,13 @@ abstract class EntityParentAttribute extends EntityAttribute {
 		this.attributes = attributes;
 	}
 
+	// todo merge these 3 methods with entity. make entity.attributes a subclass of parent attribute
 	tooltip(type: TooltipType): TextLine[] {
 		return this.attributes.flatMap(attribute => attribute.tooltip(type));
+	}
+
+	get tooltipRange(): number {
+		return this.attributes.find(attribute => attribute.tooltipRange)?.tooltipRange || 0;
 	}
 
 	get selectable(): boolean {
@@ -1285,6 +1294,10 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 		this.targets = EntityFindTargetAttribute.findTargetsWithinRange(position, this.range, this.numTargets, this.targetFriendly, world);
 		if (this.targets.length)
 			this.tickResult = TickResult.DONE;
+	}
+
+	get tooltipRange(): number {
+		return this.range;
 	}
 }
 
