@@ -60,7 +60,7 @@ let getLineDestinations = (origin: Vector, size: Vector, rotation: Rotation, ran
 };
 
 let connectionSprite = (sprite: Sprite, delta: Vector): Sprite | null => {
-	let s = sprite.width;
+	let s = 8;
 	let thickness = s / 16;
 	if (delta.x > 1) {
 		sprite.x = s;
@@ -180,6 +180,7 @@ export class EntityBuildableAttribute extends EntityAttribute {
 
 export class EntityHealthAttribute extends EntityAttribute {
 	private readonly maxHealth: number;
+	private lastHealth: number;
 	health: number;
 	readonly sourceFriendly: boolean;
 
@@ -187,6 +188,7 @@ export class EntityHealthAttribute extends EntityAttribute {
 		super();
 		console.assert(health > 0);
 		this.maxHealth = health;
+		this.lastHealth = health;
 		this.health = health;
 		this.sourceFriendly = sourceFriendly;
 	}
@@ -198,8 +200,23 @@ export class EntityHealthAttribute extends EntityAttribute {
 			else
 				world.free.removeTile(tile);
 			this.tickResult = TickResult.END_TICK;
-		} else
-			this.tickResult = TickResult.DONE;
+			return;
+		}
+
+		if (tile.tileable.container) {
+			let sprites = [];
+			if (this.health !== this.lastHealth) {
+				let sprite = new Sprite(coloredGeneratedTextures.fullRect.texture(Color.DAMAGED_RED));
+				console.log(tile.tileable.size.x);
+				sprite.width = tile.tileable.size.x * 8;
+				sprite.height = tile.tileable.size.y * 8;
+				sprites.push(sprite);
+				this.lastHealth = Math.max(this.lastHealth - 3, this.health);
+			}
+			tile.tileable.addOverlaySprites('EntityHealthAttribute', sprites);
+		}
+
+		this.tickResult = TickResult.DONE;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
