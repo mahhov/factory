@@ -68,7 +68,7 @@ class Spawner {
 			let spawnCenter = min.add(Vector.rand(0, 1).multiply(delta));
 			for (let j = 0; j < stage.mobsPerCluster; j++) {
 				let offset = Vector.rand(-stage.clusterRadius, stage.clusterRadius);
-				free.addTileable(spawnCenter.add(offset), EntityCreator.createMobEntity(MobType.ARTILLERY_TRUCK));
+				free.addTileable(spawnCenter.add(offset), EntityCreator.createMobEntity(MobType.SWARM_DRONE));
 			}
 		}
 	}

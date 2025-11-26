@@ -207,7 +207,6 @@ export class EntityHealthAttribute extends EntityAttribute {
 			let sprites = [];
 			if (this.health !== this.lastHealth) {
 				let sprite = new Sprite(coloredGeneratedTextures.fullRect.texture(Color.DAMAGED_RED));
-				console.log(tile.tileable.size.x);
 				sprite.width = tile.tileable.size.x * 8;
 				sprite.height = tile.tileable.size.y * 8;
 				sprites.push(sprite);
