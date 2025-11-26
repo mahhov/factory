@@ -661,7 +661,8 @@ export class Projectile extends Entity {
 			collisionFindTargetAttribute,
 			damageSize ? damageFindTargetAttribute : null,
 			new EntityDamageTargetAttribute(damageFindTargetAttribute, damage),
-			new EntitySpawnParticleAttribute(5, Vector.V0, Vector.V0, .1, .2, .015, 50, coloredGeneratedTextures.fullRect.texture(sourceFriendly ? Color.PROJECTILE_BLUE : Color.PROJECTILE_RED)),
+			new EntitySpawnParticleAttribute(5, Vector.V0, Vector.V0, .15, .3, .015, 50, coloredGeneratedTextures.fullRect.texture(Color.SMOKE_GRAY)),
+			damageSize ? new EntitySpawnParticleAttribute(1, Vector.V0, Vector.V0, damageSize * 2, damageSize * 2, 0, 50, coloredGeneratedTextures.fullRect.texture(Color.DAMAGE_AREA_RED)) : null,
 			new EntityExpireProjectileAttribute(),
 		].filter(v => v) as EntityAttribute[]));
 		this.addAttribute(new EntityChainAttribute([

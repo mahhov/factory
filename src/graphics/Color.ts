@@ -34,7 +34,9 @@ enum Color {
 	MOB_YELLOW = '#ffff00',
 	PROJECTILE_RED = '#ff0000',
 	PROJECTILE_BLUE = '#0000ff',
+	SMOKE_GRAY = '#aaaaaa',
 	DAMAGED_RED = '#ff0000aa',
+	DAMAGE_AREA_RED = '#ff000044',
 
 	SPRITE_REPLACEMENT_1 = '#ff0000',
 	SPRITE_REPLACEMENT_2 = '#00ff00',
