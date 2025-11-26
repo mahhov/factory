@@ -1104,6 +1104,7 @@ export class EntityLiquidDisplayAttribute extends EntityAttribute {
 export class EntitySpawnProjectileAttribute extends EntityAttribute {
 	private readonly findTargetAttribute: EntityFindTargetAttribute;
 	private readonly count: number;
+	private readonly damageSize: number;
 	private readonly speed: number;
 	private readonly duration: number;
 	private readonly collisionSize: number;
@@ -1111,15 +1112,17 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 	private readonly spreadDegrees: number;
 	private readonly sourceFriendly: boolean;
 
-	constructor(findTargetAttribute: EntityFindTargetAttribute, count: number, speed: number, duration: number, collisionSize: number, damage: number, spreadDegrees: number, sourceFriendly: boolean) {
+	constructor(findTargetAttribute: EntityFindTargetAttribute, count: number, damageSize: number, speed: number, duration: number, collisionSize: number, damage: number, spreadDegrees: number, sourceFriendly: boolean) {
 		super();
 		console.assert(count > 0);
+		console.assert(damageSize >= 0);
 		console.assert(speed > 0);
 		console.assert(duration > 0);
 		console.assert(collisionSize > 0);
 		console.assert(damage > 0);
 		this.findTargetAttribute = findTargetAttribute;
 		this.count = count;
+		this.damageSize = damageSize;
 		this.speed = speed;
 		this.duration = duration;
 		this.collisionSize = collisionSize;
@@ -1139,7 +1142,7 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 				.rotateCounter(util.randWidth(this.spreadDegrees));
 			if (velocity.magnitude2 > this.speed ** 2)
 				velocity = velocity.setMagnitude(this.speed);
-			world.free.addTileable(position, new Projectile(velocity, this.duration, this.collisionSize, this.damage, this.sourceFriendly));
+			world.free.addTileable(position, new Projectile(velocity, this.damageSize, this.duration, this.collisionSize, this.damage, this.sourceFriendly));
 		}
 	}
 }

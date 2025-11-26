@@ -568,7 +568,7 @@ export class Turret extends Building {
 			findTargetAttribute,
 			new EntityChainAttribute([
 				new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
-				new EntitySpawnProjectileAttribute(findTargetAttribute, 3, .4, 40, .2, 10, 10, true),
+				new EntitySpawnProjectileAttribute(findTargetAttribute, 3, 0, .4, 40, .2, 10, 10, true),
 				new EntityTimedAttribute(40 / 4),
 			]),
 			new EntityTimedAttribute(40)));
@@ -626,7 +626,7 @@ export class LiquidDeposit extends Entity {
 }
 
 export class ProjectileMob extends Entity {
-	constructor(size: number, health: number, movementSpeed: number, visualRange: number, attackRange: number, projectileCount: number, projectileSpeed: number, projectileCollisionSize: number, projectileDamage: number, projectileAttackLatency: number, projectileSpreadDegrees: number) {
+	constructor(size: number, health: number, movementSpeed: number, visualRange: number, attackRange: number, projectileCount: number, projectileDamageSize: number, projectileSpeed: number, projectileCollisionSize: number, projectileDamage: number, projectileAttackLatency: number, projectileSpreadDegrees: number) {
 		super('Projectile Mob', '', new Vector(size));
 		this.setParticle(new Particle(animatedGeneratedTextures.lowTierMob.textures[0]));
 		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(movementSpeed);
@@ -637,7 +637,7 @@ export class ProjectileMob extends Entity {
 			new EntityChainAttribute([
 				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, false),
 				new EntityMobMoveTowardsPositionAttribute(findTargetAttribute, attackRange, movementSpeed),
-				new EntitySpawnProjectileAttribute(findTargetAttribute, projectileCount, projectileSpeed, attackRange / projectileSpeed, projectileCollisionSize, projectileDamage, projectileSpreadDegrees, false),
+				new EntitySpawnProjectileAttribute(findTargetAttribute, projectileCount, projectileDamageSize, projectileSpeed, attackRange / projectileSpeed, projectileCollisionSize, projectileDamage, projectileSpreadDegrees, false),
 				new EntityTimedAttribute(projectileAttackLatency),
 			]),
 			new EntityChainAttribute([
@@ -649,17 +649,19 @@ export class ProjectileMob extends Entity {
 }
 
 export class Projectile extends Entity {
-	constructor(velocity: Vector, duration: number, collisionSize: number, damage: number, sourceFriendly: boolean) {
+	constructor(velocity: Vector, damageSize: number, duration: number, collisionSize: number, damage: number, sourceFriendly: boolean) {
 		super('Projectile', '', new Vector(collisionSize));
 		this.setParticle(new Particle(coloredGeneratedTextures.fullRect.texture(sourceFriendly ? Color.PROJECTILE_BLUE : Color.PROJECTILE_RED)));
 		// todo homing projectile
 		this.addAttribute(new EntityDirectionMovementAttribute(velocity));
-		let findTargetAttribute = new EntityFindTargetAttribute(collisionSize, 1, sourceFriendly, !sourceFriendly);
+		let collisionFindTargetAttribute = new EntityFindTargetAttribute(collisionSize, 1, sourceFriendly, !sourceFriendly);
+		let damageFindTargetAttribute = damageSize ? new EntityFindTargetAttribute(damageSize, 10, sourceFriendly, !sourceFriendly) : collisionFindTargetAttribute;
 		this.addAttribute(new EntityChainAttribute([
-			findTargetAttribute,
-			new EntityDamageTargetAttribute(findTargetAttribute, damage),
+			collisionFindTargetAttribute,
+			damageSize ? damageFindTargetAttribute : null,
+			new EntityDamageTargetAttribute(damageFindTargetAttribute, damage),
 			new EntityExpireProjectileAttribute(),
-		]));
+		].filter(v => v) as EntityAttribute[]));
 		this.addAttribute(new EntityChainAttribute([
 			new EntityTimedAttribute(duration),
 			new EntityExpireProjectileAttribute(),
