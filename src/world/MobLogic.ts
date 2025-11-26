@@ -16,7 +16,8 @@ export default class MobLogic {
 
 	constructor(painter: Painter, world: World) {
 		this.herdManager = new HerdManager(world.size);
-		this.multilineText = new MultilineText(painter, new Vector(.5, .005), [], Anchor.TOP_CENTER);
+		this.multilineText = new MultilineText(painter, Vector.V0, [], Anchor.TOP_CENTER);
+		painter.addListener('resize', (size: Vector) => this.multilineText.position = new Vector(size.x / painter.minCanvasSize / 2, .005));
 	}
 
 	sendWave() {
