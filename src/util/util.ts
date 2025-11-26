@@ -104,6 +104,20 @@ namespace util {
 		})!;
 		return pick[0];
 	};
+	export let randPerimeter = (size: Vector) => {
+		let r = rand(0, (size.x + size.y) * 2);
+		let x = 0;
+		let y = 0;
+		if (r < size.x * 2) {
+			x = r % size.x;
+			y = r < size.x ? size.y : 0;
+		} else {
+			r -= size.x * 2;
+			x = r < size.y ? size.x : 0;
+			y = r % size.y;
+		}
+		return new Vector(x, y);
+	};
 
 	let cos90LookupTable = arr(100000).map((_, i, a) => Math.cos(i / a.length * 90 * Math.PI / 180));
 	let cos90Lookup = (degrees: number) => {

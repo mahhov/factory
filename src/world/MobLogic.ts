@@ -49,15 +49,14 @@ class Spawner {
 	private counter = new Counter(1);
 	private stageIndex = -1;
 	private readonly stages = [
-		// new SpawnerStage(300 * 100, 1, 400, 0),
 		new SpawnerStage(300 * 100, 0, 0, 0),
-		new SpawnerStage(60 * 100, 3, 5, 5),
-		new SpawnerStage(60 * 100, 3, 5, 5),
-		new SpawnerStage(60 * 100, 6, 10, 10),
-		new SpawnerStage(50 * 100, 9, 15, 15),
-		new SpawnerStage(50 * 100, 12, 20, 20),
-		new SpawnerStage(40 * 100, 15, 25, 25),
-		new SpawnerStage(40 * 100, 18, 30, 30),
+		new SpawnerStage(60 * 100, 3, 5, 1),
+		new SpawnerStage(60 * 100, 3, 5, 1),
+		new SpawnerStage(60 * 100, 6, 10, 2),
+		new SpawnerStage(50 * 100, 9, 15, 3),
+		new SpawnerStage(50 * 100, 12, 20, 4),
+		new SpawnerStage(40 * 100, 15, 25, 5),
+		new SpawnerStage(40 * 100, 18, 30, 6),
 	];
 
 	static spawn(free: FreeWorldLayer<any>, stage: SpawnerStage) {
@@ -65,7 +64,7 @@ class Spawner {
 		let delta = free.size.subtract(Vector.V1).subtract(min.scale(2));
 		console.assert(delta.atLeast(Vector.V1));
 		for (let i = 0; i < stage.clusterCount; i++) {
-			let spawnCenter = min.add(Vector.rand(0, 1).multiply(delta));
+			let spawnCenter = min.add(util.randPerimeter(delta));
 			for (let j = 0; j < stage.mobsPerCluster; j++) {
 				let offset = Vector.rand(-stage.clusterRadius, stage.clusterRadius);
 				free.addTileable(spawnCenter.add(offset), EntityCreator.createMobEntity(MobType.SWARM_DRONE));
