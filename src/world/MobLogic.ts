@@ -48,16 +48,28 @@ class SpawnerStage {
 class Spawner {
 	private counter = new Counter(1);
 	private stageIndex = -1;
-	private readonly stages = [
-		new SpawnerStage(300 * 100, 0, 0, 0),
-		new SpawnerStage(60 * 100, 3, 5, 1),
-		new SpawnerStage(60 * 100, 3, 5, 1),
-		new SpawnerStage(60 * 100, 6, 10, 2),
-		new SpawnerStage(50 * 100, 9, 15, 3),
-		new SpawnerStage(50 * 100, 12, 20, 4),
-		new SpawnerStage(40 * 100, 15, 25, 5),
-		new SpawnerStage(40 * 100, 18, 30, 6),
-	];
+	private readonly stages: SpawnerStage[];
+
+	constructor() {
+		let sleeps = [];
+		for (let sleep = 300; sleep >= 60; sleep -= 30) {
+			sleeps.push(sleep);
+			sleeps.push(sleep);
+		}
+		for (let sleep = 50; sleep >= 40; sleep -= 10) {
+			sleeps.push(sleep);
+			sleeps.push(sleep);
+		}
+
+		new SpawnerStage(300 * 100, 0, 0, 0);
+
+		this.stages = sleeps.map((sleep, i) => {
+			let mobs = Math.round(10 * i ** 1.1);
+			let clusters = 1 + Math.round(i ** .75);
+			let mobsPerCluster = Math.ceil(mobs / clusters);
+			return new SpawnerStage(sleep * 100, clusters, mobsPerCluster, Math.ceil(mobsPerCluster / 5));
+		});
+	}
 
 	static spawn(free: FreeWorldLayer<any>, stage: SpawnerStage) {
 		let min = new Vector(stage.clusterRadius);
