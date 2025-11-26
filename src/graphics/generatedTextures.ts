@@ -645,3 +645,176 @@ export let animatedGeneratedTextures = {
 		[0, 2, 1, 4, '#F0F0F0'], [7, 2, 1, 4, '#F0F0F0'],
 	]]),
 };
+
+export let animatedGeneratedMobTextures = {
+	// 1. Swarm Drone (Size: 4x4 - Fast, Projectile)
+	swarmDrone: new AnimatedGeneratedTextures(4, [[
+		[0, 1, 4, 2, '#4C5056'], // Main Body (P-MID)
+		[0, 1, 1, 2, '#D83030'], // Thruster Left (ACCENT-HEAT)
+		[3, 1, 1, 2, '#D83030'], // Thruster Right
+		[1, 1, 2, 2, '#FACA10'], // Central Sensor (ACCENT-POWER)
+	], [
+		[0, 1, 4, 2, '#4C5056'],
+		[0, 1, 1, 2, '#F0F0F0'], // Thruster Pulse Left (P-WHITE)
+		[3, 1, 1, 2, '#F0F0F0'], // Thruster Pulse Right
+		[1, 1, 2, 2, '#D83030'], // Sensor Pulse Red
+	]]),
+
+	// 2. Assault Tank (Size: 8x8 - Slow, Tanky, Melee AoE)
+	assaultTank: new AnimatedGeneratedTextures(8, [[
+		[1, 1, 6, 6, '#4C5056'], // Main Chassis (P-MID)
+		[0, 0, 8, 2, '#1A1C20'], // Top Armor Plate
+		[0, 6, 8, 2, '#1A1C20'], // Bottom Armor Plate
+		[1, 0, 6, 8, '#9AA0AA'], // Track/Treads (P-LIGHT)
+		[3, 3, 2, 2, '#D83030'], // Melee Pulse Core (ACCENT-HEAT)
+	], [
+		[1, 1, 6, 6, '#4C5056'],
+		[0, 0, 8, 2, '#1A1C20'],
+		[0, 6, 8, 2, '#1A1C20'],
+		[1, 0, 6, 8, '#9AA0AA'],
+		[2, 2, 4, 4, '#F0F0F0'], // Melee Pulse Expanded (P-WHITE)
+	]]),
+
+	// 3. Artillery Truck (Size: 8x8 - Siege, Long Range, AoE Projectile)
+	artilleryTruck: new AnimatedGeneratedTextures(8, [[
+		[0, 1, 8, 5, '#4C5056'], // Main Truck Chassis
+		[1, 0, 6, 8, '#1A1C20'], // Tracks/Underside Shadow
+		[5, 2, 2, 3, '#FACA10'], // Loading Bay/Platform (ACCENT-POWER)
+		[0, 2, 2, 4, '#9AA0AA'], // Stabilizer Arm
+		[0, 3, 1, 2, '#D83030'], // Mortar Base (ACCENT-HEAT)
+		[1, 3, 1, 1, '#F0F0F0'], // Mortar Barrel Exit (P-WHITE)
+	], [
+		[0, 1, 8, 5, '#4C5056'],
+		[1, 0, 6, 8, '#1A1C20'],
+		[5, 2, 2, 3, '#D83030'], // Loading Bay Pulse Red
+		[0, 2, 2, 4, '#9AA0AA'],
+		[0, 3, 1, 2, '#FACA10'], // Mortar Base Pulse Yellow
+		[1, 3, 1, 1, '#F0F0F0'],
+	]]),
+
+	// 4. Zenith (Size: 16x16 - Slow, Tanky, Dual Sweeping Lasers)
+	zenith: new AnimatedGeneratedTextures(16, [[
+		[4, 4, 8, 8, '#1A1C20'], // Central Armored Core
+		[0, 7, 16, 1, '#4C5056'], // Left/Right Axis Mount
+		[7, 0, 1, 16, '#4C5056'], // Up/Down Axis Mount
+		[6, 6, 2, 2, '#D83030'], // Red Power Node
+		[0, 7, 2, 2, '#4070D0'], // Left Emitter (ACCENT-FLUID)
+		[14, 7, 2, 2, '#4070D0'], // Right Emitter
+		[7, 0, 2, 2, '#4070D0'], // Top Emitter
+		[7, 14, 2, 2, '#4070D0'], // Bottom Emitter
+	], [
+		[4, 4, 8, 8, '#1A1C20'],
+		[0, 7, 16, 1, '#4C5056'],
+		[7, 0, 1, 16, '#4C5056'],
+		[6, 6, 4, 4, '#F0F0F0'], // White Power Pulse
+		[0, 7, 1, 2, '#F0F0F0'], // Left Emitter Pulse
+		[15, 7, 1, 2, '#F0F0F0'], // Right Emitter Pulse
+		[7, 0, 2, 1, '#F0F0F0'], // Top Emitter Pulse
+		[7, 15, 2, 1, '#F0F0F0'], // Bottom Emitter Pulse
+	]]),
+
+	// 5. Scrambler Bot (Size: 4x4 - EMP Pulse/Disabler)
+	scramblerBot: new AnimatedGeneratedTextures(4, [[
+		[0, 0, 4, 4, '#1A1C20'], // Dark Core
+		[1, 1, 2, 2, '#4C5056'], // Metallic Casing
+		[1, 0, 2, 4, '#FACA10'], // Antenna 1 (ACCENT-POWER)
+		[0, 1, 4, 2, '#FACA10'], // Antenna 2
+		[1, 1, 2, 2, '#4070D0'], // EMP Center (ACCENT-FLUID)
+	], [
+		[0, 0, 4, 4, '#1A1C20'],
+		[1, 1, 2, 2, '#4C5056'],
+		[1, 0, 2, 4, '#F0F0F0'], // Antenna Pulse 1 (P-WHITE)
+		[0, 1, 4, 2, '#F0F0F0'], // Antenna Pulse 2
+		[0, 0, 4, 4, '#4070D0'], // EMP Center Pulse Expanded
+	]]),
+
+	// 6. Hive (Size: 24x24 - Slow, Spawner)
+	hive: new AnimatedGeneratedTextures(24, [[
+		[0, 0, 24, 24, '#1A1C20'], // Base Shell (P-DARK)
+		[3, 3, 18, 18, '#4C5056'], // Armored Hull
+		[11, 0, 2, 24, '#1A1C20'], // Structural Spine
+		[0, 11, 24, 2, '#1A1C20'], // Structural Cross-beam
+		[10, 10, 4, 4, '#D83030'], // Internal Core (ACCENT-HEAT)
+		[6, 6, 3, 3, '#30D850'], [15, 6, 3, 3, '#30D850'], // Top Spawning Vents (ACCENT-LIFE)
+		[6, 15, 3, 3, '#30D850'], [15, 15, 3, 3, '#30D850'], // Bottom Spawning Vents
+	], [
+		[0, 0, 24, 24, '#1A1C20'],
+		[3, 3, 18, 18, '#4C5056'],
+		[11, 0, 2, 24, '#1A1C20'],
+		[0, 11, 24, 2, '#1A1C20'],
+		[9, 9, 6, 6, '#FACA10'], // Core Pulse Yellow
+		[5, 5, 4, 4, '#F0F0F0'], [15, 5, 4, 4, '#F0F0F0'], // Vents Pulse White
+		[5, 15, 4, 4, '#F0F0F0'], [15, 15, 4, 4, '#F0F0F0'],
+	]]),
+
+	// 7. Behemoth (Size: 32x32 - Static, Four Piercing Lasers)
+	behemoth: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, '#4C5056'], // Main Chassis (P-MID)
+		[2, 2, 28, 28, '#1A1C20'], // Inner Dark Armor
+		[14, 14, 4, 4, '#FACA10'], // Central Power Core
+		[0, 0, 4, 4, '#D83030'], [28, 0, 4, 4, '#D83030'], // Top Emitters (ACCENT-HEAT)
+		[0, 28, 4, 4, '#D83030'], [28, 28, 4, 4, '#D83030'], // Bottom Emitters
+	], [
+		[0, 0, 32, 32, '#4C5056'],
+		[2, 2, 28, 28, '#1A1C20'],
+		[13, 13, 6, 6, '#F0F0F0'], // Core Pulse White
+		[1, 1, 3, 3, '#FACA10'], [28, 1, 3, 3, '#FACA10'], // Emitters Pulse Yellow
+		[1, 28, 3, 3, '#FACA10'], [28, 28, 3, 3, '#FACA10'],
+	]]),
+
+	// 8. Bomber (Size: 8x8 - Air, Drops AoE Bombs)
+	bomber: new AnimatedGeneratedTextures(8, [[
+		[0, 3, 8, 2, '#4C5056'], // Main Wing/Body
+		[3, 0, 2, 8, '#1A1C20'], // Central Fuselage Shadow
+		[3, 5, 2, 1, '#D83030'], // Bomb Bay 1 (ACCENT-HEAT)
+		[1, 3, 1, 2, '#FACA10'], // Engine Nacelle 1
+		[6, 3, 1, 2, '#FACA10'], // Engine Nacelle 2
+	], [
+		[0, 3, 8, 2, '#4C5056'],
+		[3, 0, 2, 8, '#1A1C20'],
+		[3, 6, 2, 1, '#F0F0F0'], // Bomb Bay Pulse White
+		[1, 3, 1, 2, '#D83030'], // Engine Pulse Red
+		[6, 3, 1, 2, '#D83030'],
+	]]),
+
+	// 9. Cinder Skirmisher (Size: 4x4 - Fast, Logistics Denial/Slow Trail)
+	cinderSkirmisher: new AnimatedGeneratedTextures(4, [[
+		[1, 1, 2, 2, '#1A1C20'], // Central Core
+		[1, 0, 2, 4, '#4C5056'], // Main Body (Thin/Fast)
+		[1, 3, 2, 1, '#D83030'], // Trail Emitter 1 (ACCENT-HEAT)
+		[1, 1, 2, 1, '#FACA10'], // Sensor Array
+	], [
+		[1, 1, 2, 2, '#1A1C20'],
+		[1, 0, 2, 4, '#4C5056'],
+		[1, 2, 2, 2, '#F0F0F0'], // Trail Emitter Pulse White/Extended
+		[1, 1, 2, 1, '#D83030'], // Sensor Pulse Red
+	]]),
+
+	// 10. Specter Drifter (Size: 8x8 - Wall Bypasser, Energy Drainer)
+	specterDrifter: new AnimatedGeneratedTextures(8, [[
+		[0, 0, 8, 8, '#1A1C20'], // Dark Base
+		[1, 1, 6, 6, '#4070D0'], // Translucent Blue Body (ACCENT-FLUID)
+		[3, 3, 2, 2, '#FACA10'], // Draining Core 1 (ACCENT-POWER)
+		[0, 3, 8, 2, '#F0F0F0'], // Horizontal Static Lines
+		[3, 0, 2, 8, '#F0F0F0'], // Vertical Static Lines
+	], [
+		[0, 0, 8, 8, '#1A1C20'],
+		[0, 0, 8, 8, '#4070D0'], // Blue Pulse Expanded (Fill entire)
+		[3, 3, 2, 2, '#D83030'], // Draining Core 2 (Red Pulse)
+		[0, 4, 8, 1, '#F0F0F0'], // Horizontal Static Lines Shifted
+		[4, 0, 1, 8, '#F0F0F0'], // Vertical Static Lines Shifted
+	]]),
+
+	// 11. Harvester (Size: 4x4 - Suicide Bomber)
+	harvester: new AnimatedGeneratedTextures(4, [[
+		[0, 0, 4, 4, '#4C5056'], // Armored Chassis
+		[1, 1, 2, 2, '#1A1C20'], // Inner Armored Core
+		[1, 1, 2, 2, '#D83030'], // Detonation Core 1 (ACCENT-HEAT)
+		[0, 1, 4, 2, '#FACA10'], // Charging Bar 1 (Horizontal)
+	], [
+		[0, 0, 4, 4, '#4C5056'],
+		[1, 1, 2, 2, '#1A1C20'],
+		[0, 0, 4, 4, '#F0F0F0'], // Detonation Core 2 (White Pulse Expanded)
+		[0, 1, 4, 2, '#D83030'], // Charging Bar Pulse Red (Horizontal)
+	]]),
+};
