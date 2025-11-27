@@ -71,7 +71,7 @@ export class Entity implements Tileable {
 	private readonly attribute = new EntityParallelAttribute([]);
 	private readonly attributesMap: Record<string, EntityAttribute[]> = {};
 	container: Container | null = null;
-	particle: Particle | null = null;
+	particles: Particle[] = [];
 
 	constructor(name: string, description: string, size: Vector = Vector.V1, rotation: Rotation = Rotation.UP, tilingSize: Vector = size) {
 		console.assert(!!name);
@@ -123,10 +123,11 @@ export class Entity implements Tileable {
 	}
 
 	setParticle(texture: Texture) {
-		console.assert(!this.particle);
-		this.particle = new Particle(texture);
-		this.particle.scaleX = this.size.x / texture.width;
-		this.particle.scaleY = this.size.y / texture.height;
+		console.assert(!this.particles.length);
+		let particle = new Particle(texture);
+		particle.scaleX = this.size.x / texture.width;
+		particle.scaleY = this.size.y / texture.height;
+		this.particles.push(particle);
 	}
 
 	addOverlaySprites(label: string, sprites: Sprite[]) {

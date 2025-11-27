@@ -14,7 +14,7 @@ export interface Tileable {
 	readonly name: string;
 	readonly size: Vector;
 	readonly container: Container | null;
-	readonly particle: Particle | null;
+	readonly particles: Particle[];
 }
 
 export class SpriteHolder implements Tileable {
@@ -22,7 +22,7 @@ export class SpriteHolder implements Tileable {
 	rotation!: Rotation;
 	private sprite: Sprite | null = null;
 	readonly container = new Container();
-	readonly particle = null;
+	readonly particles = [];
 
 	setEntity(entity: Entity, rotation: Rotation) {
 		if (this.entity?.name !== entity.name) {
@@ -86,14 +86,14 @@ abstract class WorldLayer {
 		this.updateGraphics(tileable, position, size);
 		if (tileable.container)
 			this.container.addChild(tileable.container);
-		if (tileable.particle) {
-			let key = tileable.particle.texture.uid;
+		tileable.particles.forEach(particle => {
+			let key = particle.texture.uid;
 			if (!this.particleContainers[key]) {
 				this.particleContainers[key] = new ParticleContainer();
 				this.container.addChild(this.particleContainers[key]);
 			}
-			this.particleContainers[key].addParticle(tileable.particle);
-		}
+			this.particleContainers[key].addParticle(particle);
+		});
 	}
 
 	protected updateGraphics(tileable: Tileable, position: Vector, size: Vector) {
@@ -102,18 +102,18 @@ abstract class WorldLayer {
 			tileable.container.width = size.x;
 			tileable.container.height = size.y;
 		}
-		if (tileable.particle) {
+		tileable.particles.forEach(particle => {
 			position = position.subtract(size.scale(.5));
-			tileable.particle.x = position.x;
-			tileable.particle.y = position.y;
-		}
+			particle.x = position.x;
+			particle.y = position.y;
+		});
 	}
 
 	protected removeGraphics(tileable: Tileable) {
 		if (tileable.container)
 			this.container.removeChild(tileable.container);
-		if (tileable.particle)
-			this.particleContainers[tileable.particle.texture.uid].removeParticle(tileable.particle);
+		tileable.particles.forEach(particle =>
+			this.particleContainers[particle.texture.uid].removeParticle(particle));
 	}
 }
 
