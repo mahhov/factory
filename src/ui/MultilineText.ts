@@ -50,9 +50,9 @@ export default class MultilineText {
 				text.style.fontFamily = 'Arial';
 				this.textContainer.addChild(text);
 				text.eventMode = 'static';
-				text.on('click', () => tooltipLines[i].callback());
 			},
 			(text: Text, i: number, tooltipLine: TextLine) => {
+				text.onclick = () => tooltipLine.callback();
 				text.text = tooltipLine.string;
 				if (text.style.fontSize !== tooltipLine.size)
 					text.style.fontSize = tooltipLine.size;
