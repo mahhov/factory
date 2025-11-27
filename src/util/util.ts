@@ -150,16 +150,6 @@ namespace util {
 		sources.forEach((source, i) => updater(values[i], i, source));
 	};
 
-	// 'iron wall' => 'Iron Wall'
-	export let lowerCaseToTitleCase = (str: string): string => str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
-	// 'flux-sand' -> 'FLUX_SAND'
-	export let dashCaseToSnakeCase = (str: string): string => str.split('-').join('_').toUpperCase();
-	// 'IrON waLl' -> 'ironWall'
-	export let titleCaseToCamelCase = (str: string): string => str
-		.split(' ')
-		.map((s, i) => i ? s[0].toUpperCase() + s.slice(1).toLowerCase() : s.toLowerCase())
-		.join('');
-	export let snakeCaseToTitleCase = (str: string): string => lowerCaseToTitleCase(str.split('_').join(' '));
 	export let textPercent = (ratio: number, size: number = 6): string => {
 		let chars = '░▒▓█';
 		let value = ratio * size;

@@ -1,3 +1,4 @@
+import {toSnakeCase, toTitleCase} from '../util/stringCase.js';
 import util from '../util/util.js';
 import {Liquid, Material, Resource, ResourceUtils} from './Resource.js';
 
@@ -18,7 +19,7 @@ let parseNumber = (str: string): number => str === '-' ? 0 : Number(str);
 let parseResourceCount = <T extends Resource>(str: string, resourceEnum: Record<string, string | T>): ResourceUtils.Count<T> => {
 	console.assert(/^\d+ [\w\-]+$/.test(str));
 	let [count, resourceDash] = str.split(' ');
-	let resourceStr = util.dashCaseToSnakeCase(resourceDash);
+	let resourceStr = toSnakeCase(resourceDash);
 	console.assert(resourceStr in resourceEnum);
 	return new ResourceUtils.Count(resourceEnum[resourceStr] as T, Number(count));
 };
@@ -68,7 +69,7 @@ let parseSection2 = <F2 extends FieldHandlerDictionary2>(mdString: string, field
 
 export let sectionFields = {
 	buildings: {
-		name: (data: StringRecord) => util.lowerCaseToTitleCase(data.name),
+		name: (data: StringRecord) => toTitleCase(data.name),
 		buildTime: (data: StringRecord) => parseNumber(data['build time']),
 		buildCost: (data: StringRecord) => parseResourceCounts(data['build cost'], Material),
 		materialInput: (data: StringRecord) => parseResourceCounts(data['material / second'], Material),
@@ -82,7 +83,7 @@ export let sectionFields = {
 		description: (data: StringRecord) => data.description,
 	},
 	turrets: {
-		name: (data: StringRecord) => util.lowerCaseToTitleCase(data.name),
+		name: (data: StringRecord) => toTitleCase(data.name),
 		buildTime: (data: StringRecord) => parseNumber(data['build time']),
 		buildCost: (data: StringRecord) => parseResourceCounts(data['build cost'], Material),
 		attackRate: (data: StringRecord) => parseNumber(data['attacks / second']),
@@ -96,7 +97,7 @@ export let sectionFields = {
 		description: (data: StringRecord) => data.description,
 	},
 	mobs: {
-		name: (data: StringRecord) => util.lowerCaseToTitleCase(data.name),
+		name: (data: StringRecord) => toTitleCase(data.name),
 		size: (data: StringRecord) => parseNumber(data.size),
 		health: (data: StringRecord) => parseNumber(data.health),
 		movementSpeed: (data: StringRecord) => parseNumber(data['movement speed']),

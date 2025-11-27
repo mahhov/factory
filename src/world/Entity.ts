@@ -3,6 +3,7 @@ import Color from '../graphics/Color.js';
 import {animatedGeneratedTextures, coloredGeneratedTextures} from '../graphics/generatedTextures.js';
 import SpriteLoader from '../graphics/SpriteLoader.js';
 import TextLine from '../ui/TextLine.js';
+import {toCamelCase} from '../util/stringCase.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {
@@ -82,7 +83,7 @@ export class Entity implements Tileable {
 		this.addAttribute(new EntityNameAttribute(name));
 		if (description)
 			this.addAttribute(new EntityDescriptionAttribute(description));
-		let spriteName = util.titleCaseToCamelCase(name);
+		let spriteName = toCamelCase(name);
 		if (spriteName in animatedGeneratedTextures)
 			this.setSprite(new AnimatedSprite(animatedGeneratedTextures[spriteName as keyof typeof animatedGeneratedTextures]));
 	}
