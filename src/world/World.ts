@@ -87,8 +87,6 @@ abstract class WorldLayer {
 		if (tileable.container)
 			this.container.addChild(tileable.container);
 		if (tileable.particle) {
-			tileable.particle.scaleX *= this.size.invert.x;
-			tileable.particle.scaleY *= this.size.invert.y;
 			let key = tileable.particle.texture.uid;
 			if (!this.particleContainers[key]) {
 				this.particleContainers[key] = new ParticleContainer();
@@ -100,13 +98,12 @@ abstract class WorldLayer {
 
 	protected updateGraphics(tileable: Tileable, position: Vector, size: Vector) {
 		if (tileable.container) {
-			tileable.container.position = position.multiply(this.size.invert);
-			size = this.size.invert.multiply(size);
+			tileable.container.position = position;
 			tileable.container.width = size.x;
 			tileable.container.height = size.y;
 		}
 		if (tileable.particle) {
-			position = position.subtract(size.scale(.5)).multiply(this.size.invert);
+			position = position.subtract(size.scale(.5));
 			tileable.particle.x = position.x;
 			tileable.particle.y = position.y;
 		}
@@ -353,29 +350,31 @@ export class World {
 	readonly freeMobHerdPositionAttributeOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>;
 	readonly mobLogic;
 	private paused = false;
+	readonly container = new Container();
 
-	constructor(size: Vector, painter: Painter, cameraContainer: Container) {
+	constructor(size: Vector, painter: Painter) {
 		this.size = size;
+		this.container.scale = size.invert;
 		this.playerLogic = new PlayerLogic(painter);
 
 		this.terrain = new GridWorldLayer(new Empty(), size);
-		cameraContainer.addChild(this.terrain.container);
+		this.container.addChild(this.terrain.container);
 		generateTerrain(this.terrain);
 
 		this.live = new LiveGridWorldLayer(new Empty(), size);
-		cameraContainer.addChild(this.live.container);
+		this.container.addChild(this.live.container);
 		this.live.replaceTileable(size.scale(.5).floor, this.playerLogic.base);
 
 		this.queue = new OrderedGridWorldLayer(new Empty(), size);
-		cameraContainer.addChild(this.queue.container);
+		this.container.addChild(this.queue.container);
 		this.queue.container.alpha = .4;
 
 		this.planning = new GridWorldLayer(new SpriteHolder().setEntity(new Empty(), Rotation.UP), size);
-		cameraContainer.addChild(this.planning.container);
+		this.container.addChild(this.planning.container);
 		this.planning.container.alpha = .4;
 
 		this.free = new FreeWorldLayer<Entity>(size);
-		cameraContainer.addChild(this.free.container);
+		this.container.addChild(this.free.container);
 		this.freeMobHerdPositionAttributeOverlay = this.free.addChunkOverlay(6, entity => entity.getAttribute(EntityMobHerdPositionAttribute));
 
 		this.mobLogic = new MobLogic(painter, this);
