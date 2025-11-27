@@ -76,6 +76,7 @@ export class Tile<T extends Tileable> {
 abstract class WorldLayer {
 	readonly size: Vector;
 	readonly container = new Container();
+	readonly particleContainers: Record<string, ParticleContainer> = {};
 
 	constructor(size: Vector) {
 		this.size = size;
@@ -85,6 +86,16 @@ abstract class WorldLayer {
 		this.updateGraphics(tileable, position, size);
 		if (tileable.container)
 			this.container.addChild(tileable.container);
+		if (tileable.particle) {
+			tileable.particle.scaleX *= this.size.invert.x;
+			tileable.particle.scaleY *= this.size.invert.y;
+			let key = tileable.particle.texture.uid;
+			if (!this.particleContainers[key]) {
+				this.particleContainers[key] = new ParticleContainer();
+				this.container.addChild(this.particleContainers[key]);
+			}
+			this.particleContainers[key].addParticle(tileable.particle);
+		}
 	}
 
 	protected updateGraphics(tileable: Tileable, position: Vector, size: Vector) {
@@ -94,11 +105,18 @@ abstract class WorldLayer {
 			tileable.container.width = size.x;
 			tileable.container.height = size.y;
 		}
+		if (tileable.particle) {
+			position = position.subtract(size.scale(.5)).multiply(this.size.invert);
+			tileable.particle.x = position.x;
+			tileable.particle.y = position.y;
+		}
 	}
 
 	protected removeGraphics(tileable: Tileable) {
 		if (tileable.container)
 			this.container.removeChild(tileable.container);
+		if (tileable.particle)
+			this.particleContainers[tileable.particle.texture.uid].removeParticle(tileable.particle);
 	}
 }
 
@@ -289,37 +307,7 @@ export class FreeWorldLayerChunkOverlay<T extends Tileable, S> {
 export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	readonly tiles: Tile<T>[] = [];
 	readonly container = new Container();
-	readonly particleContainers: Record<string, ParticleContainer> = {};
 	private readonly chunkOverlays: FreeWorldLayerChunkOverlay<T, any>[] = [];
-
-	protected addGraphics(tileable: Tileable, position: Vector, size: Vector) {
-		super.addGraphics(tileable, position, size);
-		if (tileable.particle) {
-			tileable.particle.scaleX *= this.size.invert.x;
-			tileable.particle.scaleY *= this.size.invert.y;
-			let key = tileable.particle.texture.uid;
-			if (!this.particleContainers[key]) {
-				this.particleContainers[key] = new ParticleContainer();
-				this.container.addChild(this.particleContainers[key]);
-			}
-			this.particleContainers[key].addParticle(tileable.particle);
-		}
-	}
-
-	protected updateGraphics(tileable: Tileable, position: Vector, size: Vector) {
-		super.updateGraphics(tileable, position, size);
-		if (tileable.particle) {
-			position = position.subtract(size.scale(.5)).multiply(this.size.invert);
-			tileable.particle.x = position.x;
-			tileable.particle.y = position.y;
-		}
-	}
-
-	protected removeGraphics(tileable: Tileable) {
-		super.removeGraphics(tileable);
-		if (tileable.particle)
-			this.particleContainers[tileable.particle.texture.uid].removeParticle(tileable.particle);
-	}
 
 	addTileable(position: Vector, tileable: T) {
 		let tile = new Tile(position, tileable);
