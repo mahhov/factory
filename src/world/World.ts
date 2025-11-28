@@ -22,7 +22,7 @@ export class SpriteHolder implements Tileable {
 	rotation!: Rotation;
 	private sprite: Sprite | null = null;
 	readonly container = new Container();
-	readonly particles = [];
+	readonly particles: Particle[] = [];
 
 	setEntity(entity: Entity, rotation: Rotation) {
 		if (this.entity?.name !== entity.name) {
@@ -76,7 +76,7 @@ export class Tile<T extends Tileable> {
 abstract class WorldLayer {
 	readonly size: Vector;
 	readonly container = new Container();
-	readonly particleContainers: Record<string, ParticleContainer> = {};
+	private readonly particleContainers: Record<string, ParticleContainer> = {};
 
 	constructor(size: Vector) {
 		this.size = size;
@@ -86,14 +86,22 @@ abstract class WorldLayer {
 		this.updateGraphics(tileable, position, size);
 		if (tileable.container)
 			this.container.addChild(tileable.container);
-		tileable.particles.forEach(particle => {
-			let key = particle.texture.uid;
-			if (!this.particleContainers[key]) {
-				this.particleContainers[key] = new ParticleContainer();
-				this.container.addChild(this.particleContainers[key]);
-			}
-			this.particleContainers[key].addParticle(particle);
-		});
+		tileable.particles.forEach(particle =>
+			this.addGraphicsParticle(particle));
+	}
+
+	addGraphicsParticle(particle: Particle) {
+		let key = particle.texture.uid;
+		if (!this.particleContainers[key]) {
+			this.particleContainers[key] = new ParticleContainer();
+			this.container.addChild(this.particleContainers[key]);
+		}
+		this.particleContainers[key].addParticle(particle);
+	}
+
+	removeGraphicsParticle(particle: Particle) {
+		let key = particle.texture.uid;
+		this.particleContainers[key].removeParticle(particle);
 	}
 
 	protected updateGraphics(tileable: Tileable, position: Vector, size: Vector) {

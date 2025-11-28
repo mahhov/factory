@@ -138,6 +138,20 @@ export class Entity implements Tileable {
 		});
 	}
 
+	addOverlayParticle(texture: Texture, size: Vector, world: World) {
+		let particle = new Particle(texture);
+		particle.scaleX = size.x / texture.width;
+		particle.scaleY = size.y / texture.height;
+		this.particles.push(particle);
+		world.live.addGraphicsParticle(particle);
+		return particle;
+	}
+
+	removeOverlayParticle(particle: Particle, world: World) {
+		this.particles.splice(this.particles.indexOf(particle), 1);
+		world.live.removeGraphicsParticle(particle)
+	}
+
 	tooltip(type: TooltipType): TextLine[] {
 		return this.attribute.tooltip(type);
 	}

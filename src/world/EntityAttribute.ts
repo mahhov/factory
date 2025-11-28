@@ -1,4 +1,4 @@
-import {AnimatedSprite, Sprite, Texture} from 'pixi.js';
+import {AnimatedSprite, Particle, Sprite, Texture} from 'pixi.js';
 import color from '../graphics/Color.js';
 import Color from '../graphics/Color.js';
 import {coloredGeneratedTextures} from '../graphics/generatedTextures.js';
@@ -1368,6 +1368,8 @@ export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
 	private readonly timedAttribute: EntityTimedAttribute;
 	private readonly rotation: Rotation;
+	private material: Material | null = null;
+	private particle: Particle | null = null;
 
 	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, timedAttribute: EntityTimedAttribute, rotation: Rotation) {
 		super();
@@ -1377,14 +1379,23 @@ export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		if (this.materialStorageAttribute.empty)
-			tile.tileable.addOverlaySprites('EntityMaterialFullSpriteAttribute', []);
-		else {
-			let color = ResourceUtils.materialColor(this.materialStorageAttribute.peek!);
-			let sprite = new Sprite(coloredGeneratedTextures.materialIndicator.texture(color));
+		if (this.materialStorageAttribute.empty) {
+			if (this.particle) {
+				tile.tileable.removeOverlayParticle(this.particle, world);
+				this.material = null;
+				this.particle = null;
+			}
+		} else {
+			let material = this.materialStorageAttribute.peek!;
+			if (material !== this.material) {
+				this.material = material;
+				let color = ResourceUtils.materialColor(material);
+				this.particle = tile.tileable.addOverlayParticle(coloredGeneratedTextures.fullRect.texture(color), new Vector(.5), world);
+			}
 			let shiftRatio = this.timedAttribute.counter.ratio || 1;
-			sprite.position = RotationUtils.positionShift(this.rotation).scale((shiftRatio - .5) * sprite.width);
-			tile.tileable.addOverlaySprites('EntityMaterialFullSpriteAttribute', [sprite]);
+			let shift = RotationUtils.positionShift(this.rotation);
+			this.particle!.x = tile.tileable.container!.position.x + shift.x * (shiftRatio - .5) + .25;
+			this.particle!.y = tile.tileable.container!.position.y + shift.y * (shiftRatio - .5) + .25;
 		}
 		this.tickResult = TickResult.DONE;
 	}
