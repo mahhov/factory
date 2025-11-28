@@ -187,6 +187,7 @@ export class EntityHealthAttribute extends EntityAttribute {
 	private lastHealth: number;
 	health: number;
 	readonly sourceFriendly: boolean;
+	private particle: Particle | null = null;
 
 	constructor(health: number, sourceFriendly: boolean) {
 		super();
@@ -208,15 +209,15 @@ export class EntityHealthAttribute extends EntityAttribute {
 		}
 
 		if (tile.tileable.container) {
-			let sprites = [];
-			if (this.health !== this.lastHealth) {
-				let sprite = new Sprite(coloredGeneratedTextures.fullRect.texture(Color.DAMAGED_RED));
-				sprite.width = tile.tileable.size.x * 8;
-				sprite.height = tile.tileable.size.y * 8;
-				sprites.push(sprite);
+			if (this.health !== this.lastHealth && !this.particle) {
+				this.particle = tile.tileable.addOverlayParticle(coloredGeneratedTextures.fullRect.texture(Color.DAMAGED_RED), tile.tileable.size, world);
+				this.particle.x = tile.position.x;
+				this.particle.y = tile.position.y;
 				this.lastHealth = Math.max(this.lastHealth - 3, this.health);
+			} else if (this.health === this.lastHealth && this.particle) {
+				tile.tileable.removeOverlayParticle(this.particle, world);
+				this.particle = null;
 			}
-			tile.tileable.addOverlaySprites('EntityHealthAttribute', sprites);
 		}
 
 		this.tickResult = TickResult.DONE;
