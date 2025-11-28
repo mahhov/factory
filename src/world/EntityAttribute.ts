@@ -471,6 +471,7 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	private readonly showTooltip: boolean;
 	private readonly quantities: Record<Material, number>;
 	private readonly ordered: Material[] = [];
+	empty: boolean = true;
 
 	constructor(type: EntityMaterialStorageAttributeType, totalCapacity: number, materialCapacities: ResourceUtils.Count<Material>[], inputRotations: Rotation[], showTooltip: boolean) {
 		super();
@@ -488,10 +489,6 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 
 	private getMaterialCapacity(material: Material): number {
 		return this.capacities.find(capacity => capacity.resource === material)?.quantity ?? 0;
-	}
-
-	get empty() {
-		return !this.ordered.length;
 	}
 
 	get peek(): Material | undefined {
@@ -523,12 +520,14 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	add(materialCount: ResourceUtils.Count<Material>) {
 		this.quantities[materialCount.resource] += materialCount.quantity;
 		util.arr(materialCount.quantity).forEach(() => this.ordered.push(materialCount.resource));
+		this.empty = false;
 	}
 
 	remove(materialCount: ResourceUtils.Count<Material>) {
 		this.quantities[materialCount.resource] -= materialCount.quantity;
 		for (let i = 0; i < materialCount.quantity; i++)
 			this.ordered.splice(this.ordered.findLastIndex(material => material === materialCount.resource), 1);
+		this.empty = !this.ordered.length;
 	}
 
 	acceptsRotation(rotation: Rotation): boolean {
