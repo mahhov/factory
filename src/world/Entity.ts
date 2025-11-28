@@ -149,7 +149,7 @@ export class Entity implements Tileable {
 
 	removeOverlayParticle(particle: Particle, world: World) {
 		this.particles.splice(this.particles.indexOf(particle), 1);
-		world.live.removeGraphicsParticle(particle)
+		world.live.removeGraphicsParticle(particle);
 	}
 
 	tooltip(type: TooltipType): TextLine[] {

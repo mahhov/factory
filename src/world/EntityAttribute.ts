@@ -1394,8 +1394,11 @@ export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 			}
 			let shiftRatio = this.timedAttribute.counter.ratio || 1;
 			let shift = RotationUtils.positionShift(this.rotation);
-			this.particle!.x = tile.tileable.container!.position.x + shift.x * (shiftRatio - .5) + .25;
-			this.particle!.y = tile.tileable.container!.position.y + shift.y * (shiftRatio - .5) + .25;
+			let position = tile.position
+				.add(shift.scale(shiftRatio - .5))
+				.add(new Vector(.25));
+			this.particle!.x = position.x;
+			this.particle!.y = position.y;
 		}
 		this.tickResult = TickResult.DONE;
 	}
