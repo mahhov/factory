@@ -47,8 +47,12 @@ let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation)
 			size = new Vector(1, size.y);
 			break;
 	}
-	let shift = RotationUtils.positionShift(rotation);
-	return origin.iterate(size).map(border => border.add(shift));
+	origin = origin.add(RotationUtils.positionShift(rotation));
+	let destinations = [];
+	for (let x = 0; x < size.x; x++)
+		for (let y = 0; y < size.y; y++)
+			destinations.push(origin.add(new Vector(x, y)));
+	return destinations;
 };
 
 let getLineDestinations = (origin: Vector, size: Vector, rotation: Rotation, range: number): Vector[] => {
