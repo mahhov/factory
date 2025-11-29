@@ -579,23 +579,28 @@ export class EntityTransportAttribute extends EntityAttribute {
 	}
 
 	static move(fromMaterialStorageAttribute: EntityMaterialStorageAttribute, outputRotations: Rotation[], materialCounts: ResourceUtils.Count<Material>[], world: World, tile: Tile<Entity>): boolean {
+		util.shuffleInPlace(materialCounts);
 		return util.shuffleInPlace(outputRotations).some(rotation =>
-			util.shuffleInPlace(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
-				.flatMap(destination => world.live.getTileBounded(destination)?.tileable.getAttributes(EntityMaterialStorageAttribute) || [])
-				.filter(destinationMaterialStorageAttribute => destinationMaterialStorageAttribute.acceptsRotation(rotation))
-				.filter(destinationMaterialStorageAttribute =>
-					fromMaterialStorageAttribute.type === destinationMaterialStorageAttribute.type ||
-					fromMaterialStorageAttribute.type === EntityMaterialStorageAttributeType.ANY ||
-					destinationMaterialStorageAttribute.type === EntityMaterialStorageAttributeType.ANY)
-				.some(destinationMaterialStorageAttribute =>
-					util.shuffleInPlace(materialCounts).some(materialCount => {
-						if (destinationMaterialStorageAttribute!.hasCapacity(materialCount)) {
-							fromMaterialStorageAttribute.remove(materialCount);
-							destinationMaterialStorageAttribute!.add(materialCount);
-							return true;
-						}
-						return false;
-					})));
+			util.shuffleInPlace(getAdjacentDestinations(tile.position, tile.tileable.size, rotation)).some(destination => {
+				let tile = world.live.getTileBounded(destination);
+				if (!tile) return false;
+				return tile.tileable.getAttributes(EntityMaterialStorageAttribute).some(destinationMaterialStorageAttribute => {
+						if (!destinationMaterialStorageAttribute.acceptsRotation(rotation)) return false;
+						if (fromMaterialStorageAttribute.type !== destinationMaterialStorageAttribute.type &&
+							fromMaterialStorageAttribute.type !== EntityMaterialStorageAttributeType.ANY &&
+							destinationMaterialStorageAttribute.type !== EntityMaterialStorageAttributeType.ANY)
+							return false;
+						return materialCounts.some(materialCount => {
+							if (destinationMaterialStorageAttribute!.hasCapacity(materialCount)) {
+								fromMaterialStorageAttribute.remove(materialCount);
+								destinationMaterialStorageAttribute!.add(materialCount);
+								return true;
+							}
+							return false;
+						});
+					},
+				);
+			}));
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
@@ -763,6 +768,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 	private readonly range: number;
 	private connections: Entity[] = [];
 	private oldConnections: Entity[] = [];
+	private particles: Particle[] = [];
 
 	constructor(range: number) {
 		super();
