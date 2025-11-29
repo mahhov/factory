@@ -30,6 +30,7 @@ let liquidCountsString = (liquidCounts: ResourceUtils.Count<Liquid>[]) =>
 let materialRatiosString = (materialTuples: [Material, number, number][]) =>
 	materialTuples.map(materialTuple => `${materialTuple[1]} / ${materialTuple[2]} ${ResourceUtils.materialString(materialTuple[0])}`);
 
+// todo cache return values of getAdjacentDestinations & getLineDestinations at the callsites
 let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation): Vector[] => {
 	switch (rotation) {
 		case Rotation.UP:
@@ -58,9 +59,13 @@ let getAdjacentDestinations = (origin: Vector, size: Vector, rotation: Rotation)
 let getLineDestinations = (origin: Vector, size: Vector, rotation: Rotation, range: number): Vector[] => {
 	let adjacents = getAdjacentDestinations(origin, size, rotation);
 	let shift = RotationUtils.positionShift(rotation);
-	return util.arr(range)
-		.map(offsetMagnitude => shift.scale(offsetMagnitude))
-		.flatMap(offset => adjacents.map(adjacent => adjacent.add(offset)));
+	let destinations = [];
+	for (let r = 0; r < range; r++) {
+		let offset = shift.scale(r);
+		for (let adjacent of adjacents)
+			destinations.push(adjacent.add(offset));
+	}
+	return destinations;
 };
 
 let connectionSprite = (sprite: Sprite, delta: Vector): Sprite | null => {
@@ -789,6 +794,7 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 	}
 }
 
+// todo optimize
 export class EntityPowerConductAttribute extends EntityAttribute {
 	private readonly range: number;
 	private connections: Entity[] = [];
