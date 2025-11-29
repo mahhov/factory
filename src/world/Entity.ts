@@ -543,7 +543,7 @@ export class Base extends Entity {
 	constructor() {
 		super('Base', '', new Vector(5));
 		this.addAttribute(new EntityHealthAttribute(4000, true));
-		this.addAttribute(new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(util.debug ? 500000 : 500), util.enumValues(Rotation), true));
+		this.addAttribute(new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(util.debug ? 500000 : 2000), util.enumValues(Rotation), true));
 	}
 }
 

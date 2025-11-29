@@ -11,7 +11,7 @@ export default class PlayerLogic {
 	private readonly multilineText: MultilineText;
 
 	constructor(painter: Painter) {
-		this.materials.add(new ResourceUtils.Count(Material.IRON, 500));
+		this.materials.add(new ResourceUtils.Count(Material.IRON, 400));
 		if (util.debug)
 			util.enumValues(Material).forEach(material =>
 				this.materials.add(new ResourceUtils.Count(material, 10000)));
