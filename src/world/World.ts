@@ -76,16 +76,18 @@ export class Tile<T extends Tileable> {
 abstract class WorldLayer {
 	readonly size: Vector;
 	readonly container = new Container();
+	readonly spriteContainer = new Container();
 	private readonly particleContainers: Record<string, ParticleContainer> = {};
 
 	constructor(size: Vector) {
 		this.size = size;
+		this.container.addChild(this.spriteContainer);
 	}
 
 	protected addGraphics(tileable: Tileable, position: Vector, size: Vector) {
 		this.updateGraphics(tileable, position, size);
 		if (tileable.container)
-			this.container.addChild(tileable.container);
+			this.spriteContainer.addChild(tileable.container);
 		tileable.particles.forEach(particle =>
 			this.addGraphicsParticle(particle));
 	}
@@ -118,7 +120,7 @@ abstract class WorldLayer {
 
 	protected removeGraphics(tileable: Tileable) {
 		if (tileable.container)
-			this.container.removeChild(tileable.container);
+			this.spriteContainer.removeChild(tileable.container);
 		tileable.particles.forEach(particle =>
 			this.particleContainers[particle.texture.uid].removeParticle(particle));
 	}
@@ -208,8 +210,9 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 
 	clearAllEntities() {
 		this.grid.forEach(column => column.forEach(tile => tile.tileable = this.defaultTileable));
-		this.container.removeChildren();
+		this.spriteContainer.removeChildren();
 		// doesn't add default grid to `this.container`
+		// doesn't clear particle containers
 	}
 }
 
