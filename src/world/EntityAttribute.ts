@@ -91,6 +91,31 @@ let connectionSprite = (sprite: Sprite, delta: Vector): Sprite | null => {
 	return sprite;
 };
 
+let connectionVectors = (delta: Vector): [Vector, Vector] | null => {
+	let thickness = 1 / 16;
+	if (delta.x > 1) {
+		return [
+			new Vector(1, 1 / 2 - thickness / 2),
+			new Vector(1 * (delta.x - 1), thickness)];
+	}
+	if (delta.x < -1) {
+		return [
+			new Vector(0, 1 / 2 - thickness / 2),
+			new Vector(1 * (delta.x + 1), thickness)];
+	}
+	if (delta.y > 1) {
+		return [
+			new Vector(1 / 2 - thickness / 2, 1),
+			new Vector(thickness, 1 * (delta.y - 1))];
+	}
+	if (delta.y < -1) {
+		return [
+			new Vector(1 / 2 - thickness / 2, 0),
+			new Vector(thickness, 1 * (delta.y + 1))];
+	}
+	return null;
+};
+
 export abstract class EntityAttribute {
 	tickResult: TickResult = TickResult.NOT_DONE;
 
@@ -1042,6 +1067,7 @@ export class EntityLiquidBridgeConnectAttribute extends EntityAttribute {
 	readonly rotation: Rotation;
 	private readonly range: number;
 	connectedPosition: Vector | null = null;
+	private particle: Particle | null = null;
 
 	constructor(rotation: Rotation, range: number) {
 		super();
@@ -1052,17 +1078,25 @@ export class EntityLiquidBridgeConnectAttribute extends EntityAttribute {
 	tick(world: World, tile: Tile<Entity>): void {
 		this.tickResult = TickResult.DONE;
 
-		this.connectedPosition = getLineDestinations(tile.position, tile.tileable.size, this.rotation, this.range).find(destination =>
+		let connectedPosition = getLineDestinations(tile.position, tile.tileable.size, this.rotation, this.range).find(destination =>
 			world.live.getTileBounded(destination)?.tileable.getAttribute(EntityLiquidBridgeConnectAttribute)) || null;
+		if (!connectedPosition && !this.connectedPosition) return;
+		if (connectedPosition && this.connectedPosition && connectedPosition.equals(this.connectedPosition)) return;
+		this.connectedPosition = connectedPosition;
 
-		if (this.connectedPosition) {
-			let sprite = connectionSprite(new Sprite(coloredGeneratedTextures.fullRect.texture(Color.LIQUID_TEXT)), this.connectedPosition.subtract(tile.position));
-			if (sprite) {
-				tile.tileable.addOverlaySprites('EntityLiquidBridgeTransportAttribute', [sprite]);
-				return;
-			}
+		if (this.particle) {
+			tile.tileable.removeOverlayParticle(this.particle, world);
+			this.particle = null;
 		}
-		tile.tileable.addOverlaySprites('EntityLiquidBridgeTransportAttribute', []);
+
+		let cvs = connectedPosition && connectionVectors(connectedPosition.subtract(tile.position));
+		if (cvs) {
+			let texture = coloredGeneratedTextures.fullRect.texture(Color.LIQUID_TEXT);
+			this.particle = tile.tileable.addOverlayParticle(texture, cvs[1], world);
+			let position = tile.position.add(cvs[0]);
+			this.particle.x = position.x;
+			this.particle.y = position.y;
+		}
 	}
 }
 
