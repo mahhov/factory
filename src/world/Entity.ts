@@ -627,7 +627,8 @@ export class LiquidDeposit extends Entity {
 
 	constructor(liquid: Liquid) {
 		super('Liquid Deposit', '');
-		this.setSprite(new AnimatedSprite(liquid === Liquid.WATER ? animatedGeneratedTextures.waterDeposit : animatedGeneratedTextures.methaneDeposit));
+		let animatedGeneratedTexture = liquid === Liquid.WATER ? animatedGeneratedTextures.waterDeposit : animatedGeneratedTextures.methaneDeposit;
+		this.setParticle(animatedGeneratedTexture.textures[0]);
 		this.liquid = liquid;
 		this.addAttribute(new EntityLiquidDisplayAttribute(liquid));
 	}
