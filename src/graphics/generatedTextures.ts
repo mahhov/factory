@@ -818,3 +818,94 @@ export let animatedGeneratedMobTextures = {
 		[0, 1, 4, 2, '#D83030'], // Charging Bar Pulse Red (Horizontal)
 	]]),
 };
+
+export const EnvironmentAssets = {
+	// --- Mineral Deposits (16x16) ---
+
+	// 1. Iron Deposit (Reddish-brown, rocky - now with irregular veins)
+	ironDeposit: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4C5056'],    // Base Rock (P-MID)
+		[2, 2, 12, 12, '#1A1C20'],    // Darker inner rock (P-DARK)
+
+		// Irregular Iron vein chunks (ACCENT-HEAT)
+		[4, 5, 3, 2, '#D83030'],
+		[7, 9, 5, 3, '#D83030'],
+		[1, 1, 2, 4, '#D83030'],
+
+		// Iron glint/highlight (ACCENT-POWER) - scattered
+		[8, 11, 2, 2, '#FACA10'],
+		[3, 5, 1, 1, '#FACA10'],
+		[12, 2, 1, 1, '#FACA10'],
+	]]),
+
+	// 2. Sand Deposit (Sandy, granular - now with less uniform grain)
+	sandDeposit: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#E0C79C'],    // Base Sand (P-SAND)
+		[1, 1, 14, 14, '#CBB48C'],    // Darker sand texture
+
+		// Irregular granular texture (CBB48C)
+		[3, 0, 1, 16, '#CBB48C'],     // Vertical line 1
+		[8, 0, 1, 16, '#CBB48C'],     // Vertical line 2
+		[0, 4, 16, 1, '#CBB48C'],     // Horizontal line 1
+		[0, 10, 16, 1, '#CBB48C'],    // Horizontal line 2
+		[1, 1, 2, 2, '#CBB48C'],      // Corner patch
+		[13, 13, 2, 2, '#CBB48C'],    // Corner patch
+	]]),
+
+	// 3. Titanium Deposit (Gray with fractured energy veins)
+	titaniumDeposit: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4C5056'],    // Base Rock (P-MID)
+		[2, 2, 12, 12, '#1A1C20'],    // Darker inner rock (P-DARK)
+
+		// Titanium ore chunks (P-LIGHT)
+		[4, 4, 8, 8, '#9AA0AA'],
+		[1, 1, 3, 3, '#9AA0AA'],
+		[12, 12, 3, 3, '#9AA0AA'],
+
+		// Fractured energy vein (ACCENT-POWER)
+		[3, 3, 10, 1, '#FACA10'],     // Top line
+		[12, 4, 1, 8, '#FACA10'],     // Right line
+		[3, 12, 10, 1, '#FACA10'],    // Bottom line
+		[4, 4, 1, 8, '#FACA10'],      // Left line
+		[7, 7, 2, 2, '#F0F0F0'],      // Central pulse
+	]]),
+
+	// 4. Graphite Deposit (Very dark gray, scattered fragmented chunks)
+	graphiteDeposit: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#1A1C20'],    // Base Dark Rock (P-DARK)
+
+		// Scattered fragmented Graphite chunks (P-GRAPHITE and P-MID)
+		[1, 1, 3, 3, '#333333'],
+		[5, 4, 4, 4, '#4C5056'],
+		[11, 2, 3, 4, '#333333'],
+		[2, 10, 4, 3, '#4C5056'],
+		[9, 11, 6, 4, '#333333'],
+
+		// Crystalline glint (P-LIGHT)
+		[7, 6, 2, 2, '#9AA0AA'],
+		[4, 1, 1, 1, '#9AA0AA'],
+		[13, 13, 1, 1, '#9AA0AA'],
+	]]),
+
+	// --- Liquid Textures (16x16) ---
+
+	// 5. Water (Blue, slightly wavy/glowing - Remains as tiling base)
+	water: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#4070D0'],    // Base Water (ACCENT-FLUID)
+		[1, 1, 14, 14, '#3060C0'],    // Darker water depth
+		[2, 2, 12, 12, '#4070D0'],    // Lighter surface
+		[4, 7, 8, 2, '#6090E0'],      // Surface wave/shine
+		[7, 4, 2, 8, '#6090E0'],      // Surface wave/shine
+	]]),
+
+	// 6. Methane (Greenish-blue, gaseous/glowing - Remains as tiling base)
+	methane: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, '#80D0B0'],    // Base Methane (P-METHANE)
+		[1, 1, 14, 14, '#60B090'],    // Darker gaseous depth
+		[2, 2, 12, 12, '#80D0B0'],    // Lighter gaseous surface
+		[4, 4, 8, 8, '#A0E0C0'],      // Central glow/emission
+		[1, 7, 2, 2, '#F0F0F0'],      // Small light emission (P-WHITE)
+		[13, 7, 2, 2, '#F0F0F0'],     // Small light emission
+	]]),
+};
+

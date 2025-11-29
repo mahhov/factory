@@ -41,10 +41,10 @@ namespace SpriteLoader {
 	};
 
 	let coloredTextureCache: Record<string, Texture> = {};
-	export let getColoredSprite = (resource: Resource, frame: string, newColors: ColorSource[]): Sprite => {
+	export let getColoredTexture = (resource: Resource, frame: string, newColors: ColorSource[]): Texture => {
 		let key = [resource, frame, ...newColors].join();
 		coloredTextureCache[key] ||= createColoredTexture(resource, frame, newColors);
-		return new Sprite(coloredTextureCache[key]);
+		return coloredTextureCache[key];
 	};
 }
 

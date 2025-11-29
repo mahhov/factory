@@ -111,7 +111,6 @@ abstract class WorldLayer {
 			tileable.container.height = size.y;
 		}
 		tileable.particles.forEach(particle => {
-			position = position.subtract(size.scale(.5));
 			particle.x = position.x;
 			particle.y = position.y;
 		});
@@ -333,6 +332,14 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		this.tiles.splice(index, 1);
 		this.chunkOverlays.forEach(chunkOverlay => chunkOverlay.remove(tile));
 		this.removeGraphics(tile.tileable);
+	}
+
+	protected updateGraphics(tileable: Tileable, position: Vector, size: Vector) {
+		tileable.particles.forEach(particle => {
+			position = position.subtract(size.scale(.5));
+			particle.x = position.x;
+			particle.y = position.y;
+		});
 	}
 
 	inBounds(position: Vector, size: Vector) {

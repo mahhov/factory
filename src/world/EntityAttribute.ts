@@ -1368,6 +1368,7 @@ export class EntityExpireProjectileAttribute extends EntityAttribute {
 
 // Sprite attributes
 
+// todo liquid overlay attribute
 export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
 	private readonly timedAttribute: EntityTimedAttribute;

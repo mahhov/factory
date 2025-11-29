@@ -595,7 +595,8 @@ export class MaterialDeposit extends Entity {
 
 	constructor(material: Material) {
 		super('Material Deposit', '');
-		this.setSprite(SpriteLoader.getColoredSprite(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [ResourceUtils.materialColor(material)]));
+		let texture = SpriteLoader.getColoredTexture(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [ResourceUtils.materialColor(material)]);
+		this.setParticle(texture);
 		this.material = material;
 		this.addAttribute(new EntityMaterialDisplayAttribute(material));
 	}
