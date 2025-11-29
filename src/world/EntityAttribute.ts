@@ -1372,10 +1372,9 @@ export class EntityExpireProjectileAttribute extends EntityAttribute {
 	}
 }
 
-// Sprite attributes
+// Graphic attributes
 
-// todo liquid overlay attribute
-export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
+export class EntityMaterialOverlayAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
 	private readonly timedAttribute: EntityTimedAttribute;
 	private readonly rotation: Rotation;
@@ -1410,6 +1409,39 @@ export class EntityMaterialFullSpriteAttribute extends EntityAttribute {
 				.add(new Vector(.25));
 			this.particle!.x = position.x;
 			this.particle!.y = position.y;
+		}
+		this.tickResult = TickResult.DONE;
+	}
+}
+
+export class EntityLiquidOverlayAttribute extends EntityAttribute {
+	private readonly liquidStorageAttribute: EntityLiquidStorageAttribute;
+	private liquid: Liquid | null = null;
+	private particle: Particle | null = null;
+
+	constructor(liquidStorageAttribute: EntityLiquidStorageAttribute) {
+		super();
+		this.liquidStorageAttribute = liquidStorageAttribute;
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		if (!this.liquidStorageAttribute.liquidCount.quantity) {
+			if (this.particle) {
+				tile.tileable.removeOverlayParticle(this.particle, world);
+				this.liquid = null;
+				this.particle = null;
+			}
+		} else {
+			let liquid = this.liquidStorageAttribute.liquidCount.resource;
+			if (liquid !== this.liquid) {
+				this.liquid = liquid;
+				let color = ResourceUtils.liquidColor(liquid);
+				let size = tile.tileable.size.scale(.25);
+				this.particle = tile.tileable.addOverlayParticle(coloredGeneratedTextures.fullRect.texture(color), size, world);
+				let position = tile.position.add(tile.tileable.size.subtract(size).scale(.5));
+				this.particle.x = position.x;
+				this.particle.y = position.y;
+			}
 		}
 		this.tickResult = TickResult.DONE;
 	}

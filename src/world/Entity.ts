@@ -27,12 +27,13 @@ import {
 	EntityLiquidDisplayAttribute,
 	EntityLiquidDryExtractorAttribute,
 	EntityLiquidExtractorAttribute,
+	EntityLiquidOverlayAttribute,
 	EntityLiquidStorageAttribute,
 	EntityLiquidTransportAttribute,
 	EntityMaterialConsumeAttribute,
 	EntityMaterialDisplayAttribute,
 	EntityMaterialExtractorAttribute,
-	EntityMaterialFullSpriteAttribute,
+	EntityMaterialOverlayAttribute,
 	EntityMaterialPickerAttribute,
 	EntityMaterialProduceAttribute,
 	EntityMaterialStorageAttribute,
@@ -249,8 +250,7 @@ export class Conveyor extends Building {
 			timedAttribute,
 			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
 		]));
-		this.addAttribute(new EntityMaterialFullSpriteAttribute(materialStorageAttribute, timedAttribute, rotation));
-		this.addAttribute(new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute));
+		this.addAttribute(new EntityMaterialOverlayAttribute(materialStorageAttribute, timedAttribute, rotation));
 	}
 }
 
@@ -474,7 +474,7 @@ export class Pipe extends Building {
 			timedAttribute,
 			new EntityLiquidTransportAttribute(liquidStorageAttribute, [rotation]),
 		]));
-		this.addAttribute(new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute));
+		this.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
 	}
 }
 
@@ -491,7 +491,7 @@ export class PipeBridge extends Building {
 			timedAttribute,
 			new EntityLiquidBridgeTransportAttribute(liquidStorageAttribute, liquidBridgeConnectAttribute),
 		]));
-		this.addAttribute(new EntityActiveSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute));
+		this.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
 	}
 }
 
@@ -535,6 +535,7 @@ export class Tank extends Building {
 			new EntityTimedAttribute(40),
 			new EntityLiquidTransportAttribute(liquidStorageAttribute, util.enumValues(Rotation)),
 		]));
+		this.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
 	}
 }
 

@@ -46,7 +46,7 @@ import {
 	EntityMaterialConsumeAttribute,
 	EntityMaterialDisplayAttribute,
 	EntityMaterialExtractorAttribute,
-	EntityMaterialFullSpriteAttribute,
+	EntityMaterialOverlayAttribute,
 	EntityMaterialPickerAttribute,
 	EntityMaterialProduceAttribute,
 	EntityMaterialStorageAttribute,
@@ -145,7 +145,7 @@ let typeMap: TypeMap = {
 	EntityDirectionMovementAttribute,
 	EntityDamageTargetAttribute,
 	EntityExpireProjectileAttribute,
-	EntityMaterialFullSpriteAttribute,
+	EntityMaterialFullSpriteAttribute: EntityMaterialOverlayAttribute,
 	EntityActiveSpriteAttribute,
 
 	Vector,
