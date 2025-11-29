@@ -280,7 +280,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 						world.queue.replaceTileable(new Vector(x, y), EntityCreator.createToolEntity(this.tool, this.rotation));
 
 		} else {
-			let vertical = Math.abs(iterations.y) > Math.abs(iterations.x);
+			let vertical = Math.abs(delta.y) > Math.abs(delta.x);
 			let rotation = vertical ?
 				delta.y > 0 ? Rotation.DOWN : Rotation.UP :
 				delta.x > 0 ? Rotation.RIGHT : Rotation.LEFT;
