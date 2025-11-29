@@ -28,7 +28,7 @@ let toolTree = {
 	liquidExtractors: [Tool.PUMP, Tool.POWERED_PUMP, Tool.WELL],
 	liquidTransport: [Tool.PIPE, Tool.PIPE_BRIDGE, Tool.PIPE_DISTRIBUTOR, Tool.PIPE_JUNCTION, Tool.TANK],
 	walls: [Tool.STEEL_WALL, Tool.TITANIUM_WALL],
-	turrets: [Tool.SHRAPNEL_TURRET, Tool.PIERCING_TURRET, Tool.ARC_TURRET, Tool.SIEGE_TURRET, Tool.LASER_TURRET],
+	turrets: [Tool.SHRAPNEL_TURRET /*, Tool.PIERCING_TURRET, Tool.ARC_TURRET, Tool.SIEGE_TURRET, Tool.LASER_TURRET*/],
 };
 type ToolGroup = keyof typeof toolTree;
 
