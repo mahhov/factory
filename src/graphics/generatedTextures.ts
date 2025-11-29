@@ -343,7 +343,7 @@ export let animatedGeneratedTextures = {
 		[4, 6, 8, 2, '#D83030'], // Charge bar 2
 	]]),
 
-	// --- FLUID/AIR (Simple Flow) ---
+	// --- AIR (Simple Flow) ---
 	airVent: new AnimatedGeneratedTextures(8, [[
 		[1, 1, 6, 6, '#9AA0AA'], [3, 0, 2, 1, '#4070D0'], [3, 7, 2, 1, '#4070D0'],
 		[0, 3, 1, 2, '#4070D0'], [7, 3, 1, 2, '#4070D0'], [3, 0, 2, 1, '#F0F0F0'], // Air pulse 1
@@ -369,26 +369,25 @@ export let animatedGeneratedTextures = {
 		[7, 12, 2, 4, '#D83030'], [12, 7, 4, 2, '#D83030'],
 		[1, 8, 2, 2, '#FACA10'], // Methane pulse 2
 	]]),
+
+	// fluid
+	// Pump (Transparent background)
 	pump: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, '#4C5056'], [1, 1, 14, 14, '#1A1C20'],
-		[7, 0, 2, 16, '#4070D0'], [0, 7, 16, 2, '#4070D0'],
+		[7, 0, 2, 16, '#d07240'], [0, 7, 16, 2, '#d07240'],
 		[7, 4, 2, 2, '#F0F0F0'], [7, 10, 2, 2, '#F0F0F0'],
 		[4, 7, 2, 2, '#F0F0F0'], [10, 7, 2, 2, '#F0F0F0'], // Impeller 1: Cross
 	], [
-		[0, 0, 16, 16, '#4C5056'], [1, 1, 14, 14, '#1A1C20'],
-		[7, 0, 2, 16, '#4070D0'], [0, 7, 16, 2, '#4070D0'],
+		[7, 0, 2, 16, '#d07240'], [0, 7, 16, 2, '#d07240'],
 		[4, 4, 2, 2, '#F0F0F0'], [10, 4, 2, 2, '#F0F0F0'],
 		[4, 10, 2, 2, '#F0F0F0'], [10, 10, 2, 2, '#F0F0F0'], // Impeller 2: Diagonal
 	]]),
 	poweredPump: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, '#4C5056'], [1, 1, 14, 14, '#1A1C20'],
-		[7, 0, 2, 16, '#4070D0'], [0, 7, 16, 2, '#4070D0'],
+		[7, 0, 2, 16, '#d07240'], [0, 7, 16, 2, '#d07240'],
 		[1, 1, 2, 2, '#D83030'],
 		[7, 4, 2, 2, '#FACA10'], [7, 10, 2, 2, '#FACA10'],
 		[4, 7, 2, 2, '#FACA10'], [10, 7, 2, 2, '#FACA10'], // Impeller 1: Cross
 	], [
-		[0, 0, 16, 16, '#4C5056'], [1, 1, 14, 14, '#1A1C20'],
-		[7, 0, 2, 16, '#4070D0'], [0, 7, 16, 2, '#4070D0'],
+ 		[7, 0, 2, 16, '#d07240'], [0, 7, 16, 2, '#d07240'],
 		[1, 1, 2, 2, '#D83030'],
 		[4, 4, 2, 2, '#FACA10'], [10, 4, 2, 2, '#FACA10'],
 		[4, 10, 2, 2, '#FACA10'], [10, 10, 2, 2, '#FACA10'], // Impeller 2: Diagonal
@@ -405,15 +404,15 @@ export let animatedGeneratedTextures = {
 		[14, 14, 4, 4, '#4070D0'], // Water pulse 2
 	]]),
 	pipe: new AnimatedGeneratedTextures(8, [[
-		[3, 0, 2, 8, '#4070D0'], [3, 1, 2, 2, '#F0F0F0'], // Fluid pulse 1
+		[3, 0, 2, 8, '#9AA0AA'], [3, 1, 2, 2, '#F0F0F0'], // Fluid pulse 1
 	], [
-		[3, 0, 2, 8, '#4070D0'], [3, 5, 2, 2, '#F0F0F0'], // Fluid pulse 2
+		[3, 0, 2, 8, '#9AA0AA'], [3, 5, 2, 2, '#F0F0F0'], // Fluid pulse 2
 	]]),
 	pipeBridge: new AnimatedGeneratedTextures(8, [[
 		[0, 0, 8, 8, '#1A1C20'], // Dark space background for pop effect
 
 		// Main elevated pipe segment (bright blue)
-		[3, 0, 2, 8, '#4070D0'], // Central blue pipe
+		[3, 0, 2, 8, '#9AA0AA'], // Central blue pipe
 
 		// Subtle structural elements (dark gray/silver)
 		[2, 0, 1, 1, '#9AA0AA'], [5, 0, 1, 1, '#9AA0AA'], // Top "anchors"
@@ -424,7 +423,7 @@ export let animatedGeneratedTextures = {
 	], [
 		[0, 0, 8, 8, '#1A1C20'],
 
-		[3, 0, 2, 8, '#4070D0'], // Central blue pipe
+		[3, 0, 2, 8, '#9AA0AA'], // Central blue pipe
 
 		// Subtle structural elements
 		[2, 0, 1, 1, '#9AA0AA'], [5, 0, 1, 1, '#9AA0AA'],
@@ -434,28 +433,28 @@ export let animatedGeneratedTextures = {
 		[3, 5, 2, 2, '#F0F0F0'], // Frame 2 pulse (shifted)
 	]]),
 	pipeDistributor: new AnimatedGeneratedTextures(8, [[
-		[3, 3, 2, 2, '#4070D0'], [3, 0, 2, 3, '#9AA0AA'],
+		[3, 3, 2, 2, '#9AA0AA'], [3, 0, 2, 3, '#9AA0AA'],
 		[3, 5, 2, 3, '#9AA0AA'], [0, 3, 3, 2, '#9AA0AA'],
 		[5, 3, 3, 2, '#9AA0AA'], [3, 4, 2, 1, '#F0F0F0'], // Center pulse 1
 	], [
-		[3, 3, 2, 2, '#4070D0'], [3, 0, 2, 3, '#9AA0AA'],
+		[3, 3, 2, 2, '#9AA0AA'], [3, 0, 2, 3, '#9AA0AA'],
 		[3, 5, 2, 3, '#9AA0AA'], [0, 3, 3, 2, '#9AA0AA'],
 		[5, 3, 3, 2, '#9AA0AA'], [3, 3, 2, 2, '#F0F0F0'], // Center pulse 2
 	]]),
 	pipeJunction: new AnimatedGeneratedTextures(8, [[
-		[0, 3, 8, 2, '#4070D0'], [3, 0, 2, 8, '#4070D0'],
+		[0, 3, 8, 2, '#9AA0AA'], [3, 0, 2, 8, '#9AA0AA'],
 		[3, 3, 2, 2, '#F0F0F0'], // Center flash 1
 	], [
-		[0, 3, 8, 2, '#4070D0'], [3, 0, 2, 8, '#4070D0'],
+		[0, 3, 8, 2, '#9AA0AA'], [3, 0, 2, 8, '#9AA0AA'],
 		[3, 3, 2, 2, '#FACA10'], // Center flash 2
 	]]),
 	tank: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, '#4070D0'], [1, 1, 14, 14, '#1A1C20'],
+		[0, 0, 16, 16, '#9AA0AA'], [1, 1, 14, 14, '#1A1C20'],
 		[4, 4, 8, 1, '#F0F0F0'], [4, 6, 8, 1, '#F0F0F0'],
 		[4, 8, 8, 1, '#F0F0F0'], [4, 10, 8, 1, '#F0F0F0'],
 		[5, 5, 6, 6, '#9AA0AA'], // Fluid surface ripple 1
 	], [
-		[0, 0, 16, 16, '#4070D0'], [1, 1, 14, 14, '#1A1C20'],
+		[0, 0, 16, 16, '#9AA0AA'], [1, 1, 14, 14, '#1A1C20'],
 		[4, 4, 8, 1, '#F0F0F0'], [4, 6, 8, 1, '#F0F0F0'],
 		[4, 8, 8, 1, '#F0F0F0'], [4, 10, 8, 1, '#F0F0F0'],
 		[4, 4, 8, 8, '#F0F0F0'], // Fluid surface ripple 2
