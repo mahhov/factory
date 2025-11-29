@@ -757,7 +757,7 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 
 	private static takePower(consumer: Entity, quantity: number, priority: EntityPowerStorageAttributePriority): number {
 		let taken = 0;
-		let visited = new Set();
+		let visited: Set<Entity> = new Set();
 		let queue = [consumer];
 		while (queue.length) {
 			let tileable = queue.pop()!;
@@ -772,9 +772,11 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 						break;
 				}
 			}
-			tileable.getAttribute(EntityPowerConductAttribute)?.allConnections
-				.filter(entity => !visited.has(entity) && entity.getAttribute(EntityPowerConductAttribute))
-				.forEach(entity => queue.push(entity));
+			let attribute = tileable.getAttribute(EntityPowerConductAttribute)!;
+			attribute.allConnections.forEach(connection => {
+				if (!visited.has(connection))
+					queue.push(connection);
+			});
 		}
 		return taken;
 	}
@@ -794,12 +796,12 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 	}
 }
 
-// todo optimize
 export class EntityPowerConductAttribute extends EntityAttribute {
 	private readonly range: number;
-	private connections: Entity[] = [];
-	private oldConnections: Entity[] = [];
-	private particles: Particle[] = [];
+	private connections: [[Vector, Entity] | null, [Vector, Entity] | null, [Vector, Entity] | null, [Vector, Entity] | null] = [null, null, null, null];
+	private externalConnectionsCommitted: Entity[] = [];
+	private externalConnectionsPending: Entity[] = [];
+	private particles: [Particle | null, Particle | null, Particle | null, Particle | null] = [null, null, null, null];
 
 	constructor(range: number) {
 		super();
@@ -808,33 +810,51 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		let connectionDeltas: Vector[] = [];
-		this.oldConnections = this.connections;
-		this.connections = [];
-		util.enumValues(Rotation).forEach(rotation =>
+		this.externalConnectionsCommitted = this.externalConnectionsPending;
+		this.externalConnectionsPending = [];
+
+		let connections: [[Vector, Entity] | null, [Vector, Entity] | null, [Vector, Entity] | null, [Vector, Entity] | null] = [null, null, null, null];
+		util.enumValues(Rotation).forEach((rotation, i) =>
 			getLineDestinations(tile.position, tile.tileable.size, rotation, this.range).some(destination => {
-				// todo this will only allow 1 connection in each direction. won't work when size is > 1
 				let searchTile = world.live.getTileBounded(destination);
-				// todo some tiles should block
-				if (!searchTile)
-					return true;
+				if (!searchTile) return true;
 				let conductAttribute = searchTile.tileable.getAttribute(EntityPowerConductAttribute);
-				if (conductAttribute) {
-					connectionDeltas.push(destination.subtract(tile.position));
-					this.connections.push(searchTile.tileable);
-					conductAttribute.connections.push(tile.tileable);
-					return true;
-				}
+				if (!conductAttribute) return false;
+				connections[i] = [destination, searchTile.tileable];
+				conductAttribute.externalConnectionsPending.push(tile.tileable);
+				return true;
 			}));
-		let sprites = connectionDeltas
-			.map(delta => connectionSprite(new Sprite(coloredGeneratedTextures.fullRect.texture(Color.POWER_TEXT)), delta))
-			.filter(v => v) as Sprite[];
-		tile.tileable.addOverlaySprites('EntityPowerConductAttribute', sprites);
-		this.tickResult = TickResult.DONE;
+
+		connections.forEach((connection, i) => {
+			if (!connection && !this.connections[i]) return;
+			if (connection && this.connections[i] && connection[0].equals(this.connections[i][0])) return;
+
+			if (this.particles[i]) {
+				tile.tileable.removeOverlayParticle(this.particles[i], world);
+				this.particles[i] = null;
+			}
+
+			let cvs = connection && connectionVectors(connection[0].subtract(tile.position));
+			if (cvs) {
+				let texture = coloredGeneratedTextures.fullRect.texture(Color.POWER_TEXT);
+				this.particles[i] = tile.tileable.addOverlayParticle(texture, cvs[1], world);
+				let position = tile.position.add(cvs[0]);
+				this.particles[i].x = position.x;
+				this.particles[i].y = position.y;
+			}
+		});
+
+		this.connections = connections;
 	}
 
-	get allConnections() {
-		return this.connections.concat(this.oldConnections).filter(util.unique);
+	get allConnections(): Entity[] {
+		let all: Entity[] = [];
+		this.connections.forEach(connection => {
+			if (connection)
+				all.push(connection[1]);
+		});
+		this.externalConnectionsCommitted.forEach(connection => all.push(connection));
+		return all;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
