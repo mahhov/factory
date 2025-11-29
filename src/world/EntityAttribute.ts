@@ -1015,10 +1015,11 @@ export class EntityLiquidTransportAttribute extends EntityAttribute {
 
 	static move(fromLiquidStorageAttribute: EntityLiquidStorageAttribute, outputRotations: Rotation[], world: World, tile: Tile<Entity>): boolean {
 		return util.shuffleInPlace(outputRotations).some(rotation =>
-			util.shuffleInPlace(getAdjacentDestinations(tile.position, tile.tileable.size, rotation))
-				.flatMap(destination => world.live.getTileBounded(destination)?.tileable.getAttributes(EntityLiquidStorageAttribute) || [])
-				.filter(destinationLiquidStorageAttribute => destinationLiquidStorageAttribute.acceptsRotation(rotation))
-				.some(destinationLiquidStorageAttribute => {
+			util.shuffleInPlace(getAdjacentDestinations(tile.position, tile.tileable.size, rotation)).some(destination => {
+				let tile = world.live.getTileBounded(destination);
+				if (!tile) return false;
+				return tile.tileable.getAttributes(EntityLiquidStorageAttribute).some(destinationLiquidStorageAttribute => {
+					if (!destinationLiquidStorageAttribute.acceptsRotation(rotation)) return false;
 					let liquidCount = fromLiquidStorageAttribute.liquidCount;
 					let take = destinationLiquidStorageAttribute!.tryToAdd(liquidCount);
 					if (take) {
@@ -1026,7 +1027,8 @@ export class EntityLiquidTransportAttribute extends EntityAttribute {
 						return true;
 					}
 					return false;
-				}));
+				});
+			}));
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
