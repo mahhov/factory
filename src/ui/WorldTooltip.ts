@@ -86,6 +86,7 @@ export default class WorldTooltip {
 	}
 
 	tick() {
+		// todo are we calling tick too often
 		if (!this.selection) {
 			this.container.removeChildren();
 			this.multilineText.lines = [];

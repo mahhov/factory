@@ -10,6 +10,7 @@ import TextLine from './ui/TextLine.js';
 import WorldTooltip from './ui/WorldTooltip.js';
 import BackgroundMusic from './util/BackgroundMusic.js';
 import Vector from './util/Vector.js';
+import Tutorial from './world/Tutorial.js';
 import {World} from './world/World.js';
 
 class Loop {
@@ -61,18 +62,16 @@ let world = new World(new Vector(300), painter);
 camera.container.addChild(world.container);
 let placer = new Placer(painter, camera, input, world);
 let worldTooltip = new WorldTooltip(painter, camera, input, world);
+let tutorial = new Tutorial(painter, world, camera);
 let controller = new Controller(camera, placer, world, worldTooltip, input, painter);
 let backgroundMusic = BackgroundMusic.load();
 let fpsText = new MultilineText(painter, new Vector(1, 0), [], Anchor.TOP_RIGHT);
 let renderLoop = new Loop(fpsText, 0, 'render fps', () => {});
 app.ticker.add(() => renderLoop.run());
+let tickables = [world, camera, input, worldTooltip, tutorial];
 let updateLoop = new Loop(fpsText, 1, 'update fps', () => {
-	if (!document.hidden) {
-		world.tick();
-		camera.tick();
-		input.tick();
-		worldTooltip.tick();
-	}
+	if (!document.hidden)
+		tickables.forEach(tickable => tickable.tick());
 });
 setInterval(() => updateLoop.run(), 10);
 window.addEventListener('resize', resize);

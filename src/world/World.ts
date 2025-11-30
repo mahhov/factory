@@ -360,13 +360,13 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 export class World {
 	readonly size: Vector;
 	readonly playerLogic;
+	readonly mobLogic;
 	readonly terrain: GridWorldLayer<Entity>;
 	readonly live: LiveGridWorldLayer<Entity>;
 	readonly queue: OrderedGridWorldLayer<Entity>;
 	readonly planning: GridWorldLayer<SpriteHolder>;
 	readonly free: FreeWorldLayer<Entity>;
 	readonly freeMobHerdPositionAttributeOverlay: FreeWorldLayerChunkOverlay<Entity, EntityMobHerdPositionAttribute>;
-	readonly mobLogic;
 	private paused = false;
 	readonly container = new Container();
 
@@ -374,6 +374,7 @@ export class World {
 		this.size = size;
 		this.container.scale = size.invert;
 		this.playerLogic = new PlayerLogic(painter);
+		this.mobLogic = new MobLogic(painter, this);
 
 		this.terrain = new GridWorldLayer(new Empty(), size);
 		this.container.addChild(this.terrain.container);
@@ -394,8 +395,6 @@ export class World {
 		this.free = new FreeWorldLayer<Entity>(size);
 		this.container.addChild(this.free.container);
 		this.freeMobHerdPositionAttributeOverlay = this.free.addChunkOverlay(6, entity => entity.getAttribute(EntityMobHerdPositionAttribute));
-
-		this.mobLogic = new MobLogic(painter, this);
 	}
 
 	get width() {
@@ -412,18 +411,17 @@ export class World {
 
 	tick() {
 		if (this.paused) return;
-		this.mobLogic.tick(this);
 		this.playerLogic.tick();
+		this.mobLogic.tick(this);
 		this.tickLive();
 		this.tickQueue();
-		this.tickMobLayer();
+		this.tickFree();
 	}
 
 	private tickLive() {
 		this.live.nonEmptyPositions.forEach(position => {
 			let tile = this.live.getTileUnchecked(position);
-			if (tile.position.equals(position))
-				tile.tileable.tick(this, tile);
+			tile.tileable.tick(this, tile);
 		});
 	}
 
@@ -465,7 +463,7 @@ export class World {
 		// todo recycle materials on destruction
 	}
 
-	private tickMobLayer() {
+	private tickFree() {
 		this.free.tiles.forEach(tile => tile.tileable.tick(this, tile));
 	}
 }

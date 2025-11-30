@@ -37,7 +37,8 @@ export default class MultilineText {
 	}
 
 	tick() {
-		if (!this.lines) {
+		// todo are we calling tick too often
+		if (!this.lines.length) {
 			this.textContainer.removeChildren();
 			this.textBackgroundContainer.visible = false;
 			return;
