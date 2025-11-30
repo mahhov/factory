@@ -266,7 +266,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			.ceil;
 		this.world.planning.clearAllEntities();
 
-		if (this.tool === Tool.CLEAR || util.debug && this.tool === Tool.CONVEYOR) {
+		if (this.tool === Tool.CLEAR || this.tool === Tool.STEEL_WALL || this.tool === Tool.TITANIUM_WALL) {
 			let minPosition = this.startPosition.min(this.endPosition).clamp(Vector.V0, world.size.subtract(Vector.V1));
 			let maxPosition = this.startPosition.max(this.endPosition).clamp(Vector.V0, world.size.subtract(Vector.V1));
 			let i = 0;
