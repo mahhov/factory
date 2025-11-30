@@ -1120,8 +1120,8 @@ export class EntityLiquidBridgeTransportAttribute extends EntityAttribute {
 
 		let transported = this.liquidBridgeConnectAttribute.connectedPosition ?
 			world.live.getTileUnchecked(this.liquidBridgeConnectAttribute.connectedPosition).tileable.getAttributes(EntityLiquidStorageAttribute)
-				.filter(liquidStorageAttribute => liquidStorageAttribute.acceptsRotation(this.liquidBridgeConnectAttribute.rotation))
 				.some(destinationLiquidStorageAttribute => {
+					if (!destinationLiquidStorageAttribute.acceptsRotation(this.liquidBridgeConnectAttribute.rotation)) return false;
 					let liquidCount = this.liquidStorageAttribute.liquidCount;
 					let take = destinationLiquidStorageAttribute!.tryToAdd(liquidCount);
 					if (take) {
