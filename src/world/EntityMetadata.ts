@@ -17,7 +17,7 @@ type ParsedSection2<T extends FieldHandlerDictionary2> = {
 let parseNumber = (str: string): number => str === '-' ? 0 : Number(str);
 
 let parseResourceCount = <T extends Resource>(str: string, resourceEnum: Record<string, string | T>): ResourceUtils.Count<T> => {
-	console.assert(/^\d+ [\w\-]+$/.test(str));
+	console.assert(/^\d*\.?\d+ [\w\-]+$/.test(str));
 	let [count, resourceDash] = str.split(' ');
 	let resourceStr = toSnakeCase(resourceDash);
 	console.assert(resourceStr in resourceEnum);

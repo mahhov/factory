@@ -429,7 +429,6 @@ export class EntityMaterialProduceAttribute extends EntityAttribute {
 export class EntityMaterialExtractorAttribute extends EntityAttribute {
 	private readonly materialStorageAttribute: EntityMaterialStorageAttribute;
 	private readonly outputPerTier: number[];
-	private readonly quantities: Record<Material, number>;
 
 	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, outputPerTier: number[]) {
 		super();
@@ -437,27 +436,18 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 		console.assert(outputPerTier.every(output => output >= 0));
 		this.materialStorageAttribute = materialStorageAttribute;
 		this.outputPerTier = outputPerTier;
-		this.quantities = Object.fromEntries(util.enumValues(Material)
-			.map(material => [material, 0])) as Record<Material, number>;
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		let some = tile.position.iterate(tile.tileable.size).map(position => {
-			let tile = world.terrain.getTileBounded(position);
+		tile.position.iterate(tile.tileable.size).forEach(position => {
+			let tile = world.terrain.getTileUnchecked(position);
 			if (!(tile?.tileable instanceof MaterialDeposit)) return;
-			let capacity = this.materialStorageAttribute.capacity(tile.tileable.material) - this.quantities[tile.tileable.material];
+			let capacity = this.materialStorageAttribute.capacity(tile.tileable.material);
 			let add = Math.min(this.outputPerTier[tile.tileable.materialTier] || 0, capacity);
-			this.quantities[tile.tileable.material] += add;
-			return add;
-		}).some(v => v);
-		if (!some) return;
-		util.enumValues(Material).forEach(material => {
-			let n = Math.floor(this.quantities[material]);
-			if (!n) return;
-			this.quantities[material] -= n;
-			this.materialStorageAttribute.add(new ResourceUtils.Count(material, n));
+			if (!add) return;
+			this.materialStorageAttribute.add(new ResourceUtils.Count(tile.tileable.material, add));
+			this.tickResult = TickResult.DONE;
 		});
-		this.tickResult = TickResult.DONE;
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
@@ -501,11 +491,11 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 	readonly type: EntityMaterialStorageAttributeType;
 	private readonly totalCapacity: number;
 	private readonly capacities: ResourceUtils.Count<Material>[];
+	private totalQuantity: number = 0;
+	private readonly quantities: Record<Material, number>;
 	private readonly inputRotations: Rotation[];
 	private readonly showTooltip: boolean;
-	private readonly quantities: Record<Material, number>;
-	private readonly ordered: Material[] = [];
-	empty: boolean = true;
+	atLeast1: boolean = false;
 
 	constructor(type: EntityMaterialStorageAttributeType, totalCapacity: number, materialCapacities: ResourceUtils.Count<Material>[], inputRotations: Rotation[], showTooltip: boolean) {
 		super();
@@ -515,31 +505,27 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 		this.type = type;
 		this.totalCapacity = totalCapacity;
 		this.capacities = materialCapacities;
+		this.quantities = Object.fromEntries(util.enumValues(Material).map(material => [material, 0])) as Record<Material, number>;
 		this.inputRotations = inputRotations;
 		this.showTooltip = showTooltip;
-		this.quantities = Object.fromEntries(util.enumValues(Material)
-			.map(material => [material, 0])) as Record<Material, number>;
 	}
 
 	private getMaterialCapacity(material: Material): number {
 		return this.capacities.find(capacity => capacity.resource === material)?.quantity ?? 0;
 	}
 
-	get peek(): Material | undefined {
-		return this.ordered.at(-1);
-	}
-
 	capacity(material: Material): number {
-		return Math.min(this.totalCapacity - this.ordered.length, this.getMaterialCapacity(material) - this.quantities[material]);
+		return Math.min(this.totalCapacity - this.totalQuantity, this.getMaterialCapacity(material) - this.quantities[material]);
 	}
 
 	hasCapacity(materialCount: ResourceUtils.Count<Material>): boolean {
 		return this.capacity(materialCount.resource) >= materialCount.quantity;
 	}
 
+	// todo deprecated
 	get quantityCounts(): ResourceUtils.Count<Material>[] {
 		return Object.entries(this.quantities)
-			.filter(([_, quantity]) => quantity)
+			.filter(([_, quantity]) => quantity >= 1)
 			.map(([material, quantity]) => new ResourceUtils.Count(Number(material) as Material, quantity));
 	}
 
@@ -553,15 +539,16 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 
 	add(materialCount: ResourceUtils.Count<Material>) {
 		this.quantities[materialCount.resource] += materialCount.quantity;
-		util.arr(materialCount.quantity).forEach(() => this.ordered.push(materialCount.resource));
-		this.empty = false;
+		this.totalQuantity += materialCount.quantity;
+		this.atLeast1 ||= this.quantities[materialCount.resource] >= 1;
 	}
 
 	remove(materialCount: ResourceUtils.Count<Material>) {
+		let oldQuantity = this.quantities[materialCount.resource];
 		this.quantities[materialCount.resource] -= materialCount.quantity;
-		for (let i = 0; i < materialCount.quantity; i++)
-			this.ordered.splice(this.ordered.findLastIndex(material => material === materialCount.resource), 1);
-		this.empty = !this.ordered.length;
+		this.totalQuantity -= materialCount.quantity;
+		if (oldQuantity >= 1 && this.quantities[materialCount.resource] < 1)
+			this.atLeast1 = Object.values(this.quantities).some(quantity => quantity >= 1);
 	}
 
 	acceptsRotation(rotation: Rotation): boolean {
@@ -592,7 +579,7 @@ export class EntityNonEmptyMaterialStorage extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		if (!this.materialStorageAttribute.empty)
+		if (this.materialStorageAttribute.atLeast1)
 			this.tickResult = TickResult.DONE;
 	}
 }
@@ -634,8 +621,8 @@ export class EntityTransportAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		if (this.materialStorageAttribute.empty) return;
-		let material = this.materialStorageAttribute.peek!;
+		if (!this.materialStorageAttribute.atLeast1) return;
+		let material = this.materialStorageAttribute.quantityCounts[0].resource;
 		if (EntityTransportAttribute.move(this.materialStorageAttribute, this.outputRotations, [new ResourceUtils.Count(material, 1)], world, tile))
 			this.tickResult = TickResult.DONE;
 	}
@@ -650,8 +637,9 @@ export class EntityOutflowAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		if (this.materialStorageAttribute.empty) return;
-		if (EntityTransportAttribute.move(this.materialStorageAttribute, util.enumValues(Rotation), this.materialStorageAttribute.quantityCounts.map(materialCount => new ResourceUtils.Count(materialCount.resource, 1)), world, tile))
+		if (!this.materialStorageAttribute.atLeast1) return;
+		let materialCounts = this.materialStorageAttribute.quantityCounts.map(materialCount => new ResourceUtils.Count(materialCount.resource, 1));
+		if (EntityTransportAttribute.move(this.materialStorageAttribute, util.enumValues(Rotation), materialCounts, world, tile))
 			this.tickResult = TickResult.DONE;
 	}
 }
@@ -1442,14 +1430,14 @@ export class EntityMaterialOverlayAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		if (this.materialStorageAttribute.empty) {
+		if (!this.materialStorageAttribute.atLeast1) {
 			if (this.particle) {
 				tile.tileable.removeOverlayParticle(this.particle, world);
 				this.material = null;
 				this.particle = null;
 			}
 		} else {
-			let material = this.materialStorageAttribute.peek!;
+			let material = this.materialStorageAttribute.quantityCounts[0].resource;
 			if (material !== this.material) {
 				this.material = material;
 				let color = ResourceUtils.materialColor(material);
