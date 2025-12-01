@@ -968,18 +968,15 @@ export let EnvironmentAssets = {
 };
 let colors = {
 	white: '#ffffff',
-
 	tier1: '#00ff00',
 	tier2: '#ff8800',
 	tier3: '#00ffaa',
 	tier4: '#ff00ff',
 	tier4Secondary: '#880088',
-
 	cornerGrey: '#aaaaaa',
 	wallGrey: '#444444',
 	axilGrey: '#222222',
 	backgroundGrey: '#111111',
-
 	steel: '#aaaaaa',
 	metaglass: '#11ced5',
 	metaglassSecondary: '#444466',
@@ -988,6 +985,7 @@ let colors = {
 	thermiteSecondary: '#ffaa00',
 	exidium: '#ff33cc',
 	exidiumSecondary: '#444455',
+	solar: '#000044',
 };
 let extractorTextures = {
 	extractor: new AnimatedGeneratedTextures(16, [[
@@ -1124,5 +1122,74 @@ let factoryTextures = {
 		[24, 24, 4, 4, colors.cornerGrey],
 	]]),
 };
+let powerGeneratorTextures = {
+	thermalGenerator: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, colors.backgroundGrey],
+		[0, 0, 1, 1, colors.cornerGrey],
+		[15, 0, 1, 1, colors.cornerGrey],
+		[0, 15, 1, 1, colors.cornerGrey],
+		[15, 15, 1, 1, colors.cornerGrey],
+		[1, 0, 14, 1, colors.wallGrey],
+		[1, 15, 14, 1, colors.wallGrey],
+		[0, 1, 1, 14, colors.wallGrey],
+		[15, 1, 1, 14, colors.wallGrey],
+		[7, 7, 2, 2, colors.tier2],
+	]]),
+	solarArray: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, colors.backgroundGrey],
+		[0, 0, 1, 1, colors.cornerGrey],
+		[15, 0, 1, 1, colors.cornerGrey],
+		[0, 15, 1, 1, colors.cornerGrey],
+		[15, 15, 1, 1, colors.cornerGrey],
+		[1, 0, 14, 1, colors.wallGrey],
+		[1, 15, 14, 1, colors.wallGrey],
+		[0, 1, 1, 14, colors.wallGrey],
+		[15, 1, 1, 14, colors.wallGrey],
+		[2, 2, 12, 12, colors.solar],
+		[7, 7, 2, 2, colors.white],
+	]]),
+	methaneBurner: new AnimatedGeneratedTextures(24, [[
+		[0, 0, 24, 24, colors.backgroundGrey],
+		[0, 0, 1, 1, colors.cornerGrey],
+		[23, 0, 1, 1, colors.cornerGrey],
+		[0, 23, 1, 1, colors.cornerGrey],
+		[23, 23, 1, 1, colors.cornerGrey],
+		[1, 0, 22, 1, colors.wallGrey],
+		[1, 23, 22, 1, colors.wallGrey],
+		[0, 1, 1, 22, colors.wallGrey],
+		[23, 1, 1, 22, colors.wallGrey],
+		[6, 6, 12, 12, colors.axilGrey],
+		[10, 10, 4, 4, colors.tier3],
+	]]),
+	graphiteBurner: new AnimatedGeneratedTextures(24, [[
+		[0, 0, 24, 24, colors.backgroundGrey],
+		[0, 0, 1, 1, colors.cornerGrey],
+		[23, 0, 1, 1, colors.cornerGrey],
+		[0, 23, 1, 1, colors.cornerGrey],
+		[23, 23, 1, 1, colors.cornerGrey],
+		[1, 0, 22, 1, colors.wallGrey],
+		[1, 23, 22, 1, colors.wallGrey],
+		[0, 1, 1, 22, colors.wallGrey],
+		[23, 1, 1, 22, colors.wallGrey],
+		[6, 6, 12, 12, colors.axilGrey],
+		[9, 9, 6, 6, colors.tier4],
+	]]),
+	thermiteReactor: new AnimatedGeneratedTextures(24, [[
+		[0, 0, 24, 24, colors.backgroundGrey],
+		[0, 0, 1, 1, colors.cornerGrey],
+		[23, 0, 1, 1, colors.cornerGrey],
+		[0, 23, 1, 1, colors.cornerGrey],
+		[23, 23, 1, 1, colors.cornerGrey],
+		[1, 0, 22, 1, colors.wallGrey],
+		[1, 23, 22, 1, colors.wallGrey],
+		[0, 1, 1, 22, colors.wallGrey],
+		[23, 1, 1, 22, colors.wallGrey],
+		[2, 2, 20, 20, colors.white],
+		[8, 8, 8, 8, colors.thermite],
+		[11, 2, 2, 20, colors.thermite],
+		[2, 11, 20, 2, colors.thermite],
+	]]),
+};
 Object.entries(extractorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(factoryTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
+Object.entries(powerGeneratorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
