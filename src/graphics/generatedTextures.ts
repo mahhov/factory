@@ -969,15 +969,20 @@ export let EnvironmentAssets = {
 let colors = {
 	white: '#ffffff',
 	black: '#000000',
+
 	tier1: '#00ff00',
 	tier2: '#ff8800',
 	tier3: '#00ffaa',
 	tier4: '#ff00ff',
 	tier4Secondary: '#880088',
+
 	cornerGrey: '#aaaaaa',
 	wallGrey: '#444444',
 	axilGrey: '#222222',
 	backgroundGrey: '#111111',
+
+	titanium: '#4457c8',
+
 	steel: '#aaaaaa',
 	metaglass: '#11ced5',
 	metaglassSecondary: '#444466',
@@ -986,9 +991,11 @@ let colors = {
 	thermiteSecondary: '#ffaa00',
 	exidium: '#ff33cc',
 	exidiumSecondary: '#444455',
-	solar: '#000044',
+
 	water: '#6090E0',
 	methane: '#33cc66',
+
+	solar: '#000044',
 };
 let extractorTextures = {
 	extractor: new AnimatedGeneratedTextures(16, [[
@@ -1212,7 +1219,26 @@ let ventTextures = {
 		[2, 6, 12, 4, colors.methane],
 	]]),
 };
+let wallTextures = {
+	steelWall: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, colors.axilGrey],
+		[1, 1, 14, 14, colors.backgroundGrey],
+	]]),
+	titaniumWall: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, colors.axilGrey],
+		[1, 1, 14, 14, colors.backgroundGrey],
+		[3, 3, 10, 10, colors.titanium],
+		[4, 4, 8, 8, colors.backgroundGrey],
+	]]),
+};
 Object.entries(extractorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(factoryTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(powerGeneratorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(ventTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
+Object.entries(wallTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
+
+// todo material infra
+// todo power infra
+// todo liquid extractors
+// todo liquid infra
+// todo wall, turret, mob
