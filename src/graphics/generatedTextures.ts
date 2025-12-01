@@ -1285,6 +1285,22 @@ let powerInfrastructureTextures = {
 		[4, 7, 8, 2, colors.white],
 	]]),
 };
+let storageTextures = {
+	tank: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, colors.wallGrey],
+		[1, 1, 14, 14, colors.backgroundGrey],
+		[0, 0, 1, 1, colors.cornerGrey],
+		[15, 0, 1, 1, colors.cornerGrey],
+		[0, 15, 1, 1, colors.cornerGrey],
+		[15, 15, 1, 1, colors.cornerGrey],
+		[7, 1, 2, 2, colors.cornerGrey],
+		[7, 13, 2, 2, colors.cornerGrey],
+		[1, 7, 2, 2, colors.cornerGrey],
+		[13, 7, 2, 2, colors.cornerGrey],
+		[3, 3, 10, 10, colors.wallGrey],
+		[4, 4, 8, 8, colors.black],
+	]]),
+};
 Object.entries(extractorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(factoryTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(powerGeneratorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
@@ -1292,6 +1308,7 @@ Object.entries(ventTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = 
 Object.entries(wallTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(liquidTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(powerInfrastructureTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
+Object.entries(storageTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 
 // todo material infra
 // todo liquid infra
