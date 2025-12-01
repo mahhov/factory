@@ -996,6 +996,7 @@ let colors = {
 	methane: '#33cc66',
 
 	solar: '#000044',
+	power: '#ffae00',
 };
 let extractorTextures = {
 	extractor: new AnimatedGeneratedTextures(16, [[
@@ -1270,14 +1271,28 @@ let liquidTextures = {
 		[9, 9, 6, 6, colors.water],
 	]]),
 };
+let powerInfrastructureTextures = {
+	conductor: new AnimatedGeneratedTextures(8, [[
+		[3, 0, 2, 8, colors.power],
+		[0, 3, 8, 2, colors.power],
+		[3, 3, 2, 2, colors.white],
+	]]),
+	battery: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, colors.power],
+		[1, 1, 14, 14, colors.backgroundGrey],
+		[4, 4, 8, 8, colors.wallGrey],
+		[7, 4, 2, 8, colors.white],
+		[4, 7, 8, 2, colors.white],
+	]]),
+};
 Object.entries(extractorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(factoryTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(powerGeneratorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(ventTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(wallTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(liquidTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
+Object.entries(powerInfrastructureTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 
 // todo material infra
-// todo power infra
 // todo liquid infra
 // todo turret, mob
