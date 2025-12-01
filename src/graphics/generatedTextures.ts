@@ -1287,18 +1287,31 @@ let powerInfrastructureTextures = {
 };
 let storageTextures = {
 	tank: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, colors.wallGrey],
+		[0, 0, 16, 16, colors.cornerGrey],
 		[1, 1, 14, 14, colors.backgroundGrey],
-		[0, 0, 1, 1, colors.cornerGrey],
-		[15, 0, 1, 1, colors.cornerGrey],
-		[0, 15, 1, 1, colors.cornerGrey],
-		[15, 15, 1, 1, colors.cornerGrey],
-		[7, 1, 2, 2, colors.cornerGrey],
-		[7, 13, 2, 2, colors.cornerGrey],
-		[1, 7, 2, 2, colors.cornerGrey],
-		[13, 7, 2, 2, colors.cornerGrey],
 		[3, 3, 10, 10, colors.wallGrey],
 		[4, 4, 8, 8, colors.black],
+	]]),
+};
+let pipeTextures = {
+	pipe: new AnimatedGeneratedTextures(8, [[
+		[3, 0, 2, 8, colors.white],
+		[3, 1, 2, 1, colors.wallGrey],
+	]]),
+	pipeJunction: new AnimatedGeneratedTextures(8, [[
+		[3, 0, 2, 8, colors.white],
+		[0, 3, 8, 2, colors.white],
+		[3, 3, 2, 2, colors.wallGrey],
+	]]),
+	pipeDistributor: new AnimatedGeneratedTextures(8, [[
+		[3, 0, 2, 8, colors.white],
+		[0, 3, 8, 2, colors.white],
+		[2, 2, 4, 4, colors.white],
+	]]),
+	pipeBridge: new AnimatedGeneratedTextures(8, [[
+		[2, 2, 4, 4, colors.cornerGrey],
+		[3, 0, 2, 8, colors.white],
+		[3, 1, 2, 1, colors.wallGrey],
 	]]),
 };
 Object.entries(extractorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
@@ -1309,6 +1322,7 @@ Object.entries(wallTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = 
 Object.entries(liquidTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(powerInfrastructureTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(storageTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
+Object.entries(pipeTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 
 // todo material infra
 // todo liquid infra
