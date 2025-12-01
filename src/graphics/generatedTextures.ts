@@ -1258,36 +1258,16 @@ let liquidTextures = {
 		[5, 4, 6, 8, colors.tier3],
 		[5, 5, 6, 6, colors.black],
 	]]),
-
-	// --- T3/T4: well (24x24) ---
 	well: new AnimatedGeneratedTextures(24, [[
-		// 1. Solid Base
-		[0, 0, 24, 24, colors.backgroundGrey],
-
-		// 2. Corner Supports (1x1 at the edge)
+		[0, 0, 24, 24, colors.wallGrey],
+		[1, 1, 22, 22, colors.backgroundGrey],
 		[0, 0, 1, 1, colors.cornerGrey],
 		[23, 0, 1, 1, colors.cornerGrey],
 		[0, 23, 1, 1, colors.cornerGrey],
 		[23, 23, 1, 1, colors.cornerGrey],
-
-		// 3. Walls (1px thick)
-		[1, 0, 22, 1, colors.wallGrey],
-		[1, 23, 22, 1, colors.wallGrey],
-		[0, 1, 1, 22, colors.wallGrey],
-		[23, 1, 1, 22, colors.wallGrey],
-
-		// 4. Well Casing (Stone/Earth color)
-		[2, 2, 20, 20, '#664422'], // Earth/stone color
-
-		// 5. Liquid Source (Deep central water pool)
-		[4, 4, 16, 16, colors.water],
-
-		// 6. Extraction/Lifting Mechanism (Heavy crossing bars)
-		[11, 2, 2, 20, colors.axilGrey], // Vertical lift
-		[2, 11, 20, 2, colors.axilGrey], // Horizontal support
-
-		// 7. Well Opening (Small hole in the center of the mechanism)
-		[10, 10, 4, 4, colors.wallGrey],
+		[8, 9, 8, 6, colors.water],
+		[9, 8, 6, 8, colors.water],
+		[9, 9, 6, 6, colors.water],
 	]]),
 };
 Object.entries(extractorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
@@ -1299,6 +1279,5 @@ Object.entries(liquidTextures).forEach(([x, y]) => animatedGeneratedTextures[x] 
 
 // todo material infra
 // todo power infra
-// todo liquid extractors
 // todo liquid infra
-// todo wall, turret, mob
+// todo turret, mob
