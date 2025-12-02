@@ -1386,6 +1386,86 @@ let storageTextures = {
 		[13, 7, 2, 2, colors.steel],
 	]]),
 };
+let turretTextures = {
+	shrapnelTurret: new AnimatedGeneratedTextures(16, [[
+		[1, 1, 5, 5, colors.wallGrey],
+		[10, 1, 5, 5, colors.wallGrey],
+		[1, 10, 5, 5, colors.wallGrey],
+		[10, 10, 5, 5, colors.wallGrey],
+		[2, 2, 3, 3, colors.tier1],
+		[11, 2, 3, 3, colors.tier1],
+		[2, 11, 3, 3, colors.tier1],
+		[11, 11, 3, 3, colors.tier1],
+		[3, 3, 10, 10, colors.wallGrey],
+		[4, 4, 8, 8, colors.tier1],
+	]]),
+	piercingTurret: new AnimatedGeneratedTextures(16, [[
+		[1, 1, 5, 5, colors.wallGrey],
+		[10, 1, 5, 5, colors.wallGrey],
+		[1, 10, 5, 5, colors.wallGrey],
+		[10, 10, 5, 5, colors.wallGrey],
+		[2, 2, 3, 3, colors.tier2],
+		[11, 2, 3, 3, colors.tier2],
+		[2, 11, 3, 3, colors.tier2],
+		[11, 11, 3, 3, colors.tier2],
+		[3, 3, 10, 10, colors.wallGrey],
+		[4, 4, 8, 8, colors.tier2],
+	]]),
+	jetTurret: new AnimatedGeneratedTextures(16, [[
+		[1, 1, 5, 5, colors.cornerGrey],
+		[10, 1, 5, 5, colors.cornerGrey],
+		[1, 10, 5, 5, colors.cornerGrey],
+		[10, 10, 5, 5, colors.cornerGrey],
+		[2, 2, 12, 12, colors.wallGrey],
+		[3, 3, 10, 10, colors.tier3],
+	]]),
+	arcTurret: new AnimatedGeneratedTextures(16, [[
+		[1, 1, 4, 4, colors.white],
+		[11, 1, 4, 4, colors.white],
+		[1, 11, 4, 4, colors.white],
+		[11, 11, 4, 4, colors.white],
+		[3, 3, 10, 10, colors.black],
+		[4, 4, 8, 8, colors.white],
+		[5, 5, 6, 6, colors.black],
+	]]),
+
+	siegeTurret: new AnimatedGeneratedTextures(24, [[
+		// 1. Corner Modules (Legs - 6x6, start at 1,1)
+		[1, 1, 6, 6, colors.axilGrey],
+		[17, 1, 6, 6, colors.axilGrey],
+		[1, 17, 6, 6, colors.axilGrey],
+		[17, 17, 6, 6, colors.axilGrey],
+
+		// 2. Large Center Core (Overlaps corners, 16x16)
+		[4, 4, 16, 16, colors.wallGrey], // Heavy Mount/Base
+
+		// NEW DETAIL: Magazine Reinforcement (Dark bars framing the loader)
+		[6, 6, 12, 12, colors.axilGrey], // Inner Magazine Casing
+		[8, 4, 8, 2, colors.wallGrey],   // Top Reinforcement Strap
+		[8, 18, 8, 2, colors.wallGrey],  // Bottom Reinforcement Strap
+
+		[8, 8, 8, 8, colors.tier3],        // Tier 3 Weapon Core (8x8)
+	]]),
+
+	// --- T6: piercingLaserTurret (24x24) - Charging Laser (High Energy) ---
+	piercingLaserTurret: new AnimatedGeneratedTextures(24, [[
+		// 1. Corner Modules (Legs - 6x6, start at 1,1, Energy Ports)
+		[1, 1, 6, 6, colors.tier4Secondary],
+		[17, 1, 6, 6, colors.tier4Secondary],
+		[1, 17, 6, 6, colors.tier4Secondary],
+		[17, 17, 6, 6, colors.tier4Secondary],
+
+		// 2. Large Center Core (Overlaps corners, 16x16)
+		[4, 4, 16, 16, colors.axilGrey], // Energy Shielding
+
+		// NEW DETAIL: Charging Conduits/Flow (White lines over the shielding)
+		[11, 4, 2, 16, colors.white],    // Vertical Conduits
+		[4, 11, 16, 2, colors.white],    // Horizontal Conduits
+
+		[6, 6, 12, 12, colors.wallGrey],    // Inner Wall Frame
+		[8, 8, 8, 8, colors.white],         // Charging Capacitor Core (8x8)
+	]]),
+};
 Object.entries(extractorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(factoryTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(powerGeneratorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
@@ -1396,5 +1476,6 @@ Object.entries(powerInfrastructureTextures).forEach(([x, y]) => animatedGenerate
 Object.entries(pipeTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(infraTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(storageTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
+Object.entries(turretTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 
 // todo turret, mob
