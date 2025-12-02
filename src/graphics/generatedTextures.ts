@@ -1295,8 +1295,8 @@ let storageTextures = {
 };
 let pipeTextures = {
 	pipe: new AnimatedGeneratedTextures(8, [[
-		[3, 0, 2, 8, colors.white],
-		[3, 1, 2, 1, colors.wallGrey],
+		[2, 0, 1, 8, colors.white],
+		[5, 0, 1, 8, colors.white],
 	]]),
 	pipeJunction: new AnimatedGeneratedTextures(8, [[
 		[3, 0, 2, 8, colors.white],
@@ -1314,6 +1314,43 @@ let pipeTextures = {
 		[3, 1, 2, 1, colors.wallGrey],
 	]]),
 };
+let infraTextures = {
+	conveyor: new AnimatedGeneratedTextures(8, [[
+		[3, 0, 2, 8, colors.white],
+		[3, 1, 2, 1, colors.wallGrey],
+	]]),
+	highSpeedConveyor: new AnimatedGeneratedTextures(8, [[
+		[3, 0, 2, 8, colors.white],
+		[3, 1, 2, 1, colors.wallGrey],
+		[3, 3, 2, 1, colors.wallGrey],
+	]]),
+	packedConveyor: new AnimatedGeneratedTextures(8, [[
+		[2, 0, 4, 8, colors.white],
+		[3, 1, 2, 1, colors.wallGrey],
+		[3, 3, 2, 1, colors.wallGrey],
+	]]),
+	distributor: new AnimatedGeneratedTextures(8, [[
+		[3, 0, 2, 8, colors.white],
+		[0, 3, 8, 2, colors.white],
+	]]),
+	junction: new AnimatedGeneratedTextures(8, [[
+		[3, 0, 2, 8, colors.white],
+		[0, 3, 8, 2, colors.white],
+		[3, 3, 2, 2, colors.wallGrey],
+	]]),
+	storage: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, colors.cornerGrey],
+		[1, 1, 14, 14, colors.backgroundGrey],
+		[3, 3, 10, 10, colors.wallGrey],
+		[4, 4, 8, 8, colors.black],
+	]]),
+	dispenser: new AnimatedGeneratedTextures(8, [[
+		[1, 1, 6, 6, colors.white],
+		[2, 2, 4, 4, colors.black],
+		[3, 3, 2, 3, colors.white],
+		[3, 5, 2, 3, colors.cornerGrey],
+	]]),
+};
 Object.entries(extractorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(factoryTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(powerGeneratorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
@@ -1323,7 +1360,6 @@ Object.entries(liquidTextures).forEach(([x, y]) => animatedGeneratedTextures[x] 
 Object.entries(powerInfrastructureTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(storageTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(pipeTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
+Object.entries(infraTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 
-// todo material infra
-// todo liquid infra
 // todo turret, mob
