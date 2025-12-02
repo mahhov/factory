@@ -1365,6 +1365,68 @@ let infraTextures = {
 	// 	[3, 1, 2, 1, colors.wallGrey],
 	// ]]),
 };
+let storageTextures = {
+	// --- 1. Liquid Storage Tank (Focus: Fluid/Reflection) ---
+	tank: new AnimatedGeneratedTextures(16, [[
+		// 1. Solid Base
+		[0, 0, 16, 16, colors.backgroundGrey],
+
+		// 2. Outer Frame (1px walls and corners)
+		[1, 0, 14, 1, colors.wallGrey],
+		[1, 15, 14, 1, colors.wallGrey],
+		[0, 1, 1, 14, colors.wallGrey],
+		[15, 1, 1, 14, colors.wallGrey],
+		[0, 0, 1, 1, colors.cornerGrey],
+		[15, 0, 1, 1, colors.cornerGrey],
+		[0, 15, 1, 1, colors.cornerGrey],
+		[15, 15, 1, 1, colors.cornerGrey],
+
+		// 3. Heavy Metal Casing (axilGrey)
+		[2, 2, 12, 12, colors.axilGrey],
+
+		// 4. Liquid Fill Area (Large central block of water)
+		[3, 3, 10, 10, colors.water],
+
+		// 5. Liquid Surface Detail (Reflection/surface detail)
+		[4, 4, 8, 8, colors.white],
+
+		// 6. Access Hatches/Indicators (4-way symmetric)
+		[7, 1, 2, 2, colors.white],
+		[7, 13, 2, 2, colors.white],
+		[1, 7, 2, 2, colors.white],
+		[13, 7, 2, 2, colors.white],
+	]]),
+
+	// --- 2. Material Storage Building (Focus: Casing/Door Access) ---
+	storage: new AnimatedGeneratedTextures(16, [[
+		// 1. Solid Base
+		[0, 0, 16, 16, colors.backgroundGrey],
+
+		// 2. Outer Frame (1px walls and corners)
+		[1, 0, 14, 1, colors.wallGrey],
+		[1, 15, 14, 1, colors.wallGrey],
+		[0, 1, 1, 14, colors.wallGrey],
+		[15, 1, 1, 14, colors.wallGrey],
+		[0, 0, 1, 1, colors.cornerGrey],
+		[15, 0, 1, 1, colors.cornerGrey],
+		[0, 15, 1, 1, colors.cornerGrey],
+		[15, 15, 1, 1, colors.cornerGrey],
+
+		// 3. Heavy Metal Casing (Largest block, wallGrey)
+		[2, 2, 12, 12, colors.wallGrey],
+
+		// 4. Internal Volume (Dark, enclosed space, axilGrey)
+		[3, 3, 10, 10, colors.axilGrey],
+
+		// 5. Access Door/Hatch (Breaks symmetry to indicate access for discrete items)
+		[6, 1, 4, 10, colors.cornerGrey], // Large vertical door panel (WallGrey)
+		[7, 2, 2, 8, colors.white],       // Door handle/Hinge line (White for visibility)
+
+		// 6. Reinforcement/Internal Stack Hint (Small dark blocks in center of axilGrey volume)
+		[4, 4, 2, 2, colors.backgroundGrey], // Stacked crate hint
+		[10, 10, 2, 2, colors.backgroundGrey], // Stacked crate hint
+	]]),
+};
 Object.entries(extractorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(factoryTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(powerGeneratorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
@@ -1374,5 +1436,6 @@ Object.entries(liquidTextures).forEach(([x, y]) => animatedGeneratedTextures[x] 
 Object.entries(powerInfrastructureTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(pipeTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(infraTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
+Object.entries(storageTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 
 // todo turret, mob
