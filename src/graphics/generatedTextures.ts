@@ -1285,33 +1285,42 @@ let powerInfrastructureTextures = {
 		[4, 7, 8, 2, colors.white],
 	]]),
 };
-let storageTextures = {
-	tank: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, colors.cornerGrey],
-		[1, 1, 14, 14, colors.backgroundGrey],
-		[3, 3, 10, 10, colors.wallGrey],
-		[4, 4, 8, 8, colors.black],
-	]]),
-};
 let pipeTextures = {
 	pipe: new AnimatedGeneratedTextures(8, [[
 		[2, 0, 1, 8, colors.white],
 		[5, 0, 1, 8, colors.white],
-	]]),
-	pipeJunction: new AnimatedGeneratedTextures(8, [[
-		[3, 0, 2, 8, colors.white],
-		[0, 3, 8, 2, colors.white],
-		[3, 3, 2, 2, colors.wallGrey],
-	]]),
-	pipeDistributor: new AnimatedGeneratedTextures(8, [[
-		[3, 0, 2, 8, colors.white],
-		[0, 3, 8, 2, colors.white],
-		[2, 2, 4, 4, colors.white],
+		[3, 0, 2, 8, colors.backgroundGrey],
+		[3, 1, 2, 1, colors.cornerGrey],
 	]]),
 	pipeBridge: new AnimatedGeneratedTextures(8, [[
-		[2, 2, 4, 4, colors.cornerGrey],
-		[3, 0, 2, 8, colors.white],
-		[3, 1, 2, 1, colors.wallGrey],
+		[0, 0, 8, 2, colors.cornerGrey],
+		[0, 6, 8, 2, colors.cornerGrey],
+		[2, 0, 1, 8, colors.white],
+		[5, 0, 1, 8, colors.white],
+		[3, 0, 2, 8, colors.backgroundGrey],
+		[3, 1, 2, 1, colors.cornerGrey],
+	]]),
+	pipeDistributor: new AnimatedGeneratedTextures(8, [[
+		[2, 0, 1, 8, colors.white],
+		[5, 0, 1, 8, colors.white],
+		[0, 2, 8, 1, colors.white],
+		[0, 5, 8, 1, colors.white],
+		[3, 0, 2, 8, colors.backgroundGrey],
+		[0, 3, 8, 2, colors.backgroundGrey],
+	]]),
+	pipeJunction: new AnimatedGeneratedTextures(8, [[
+		[0, 2, 8, 1, colors.white],
+		[0, 5, 8, 1, colors.white],
+		[3, 0, 2, 8, colors.backgroundGrey],
+		[0, 3, 8, 2, colors.backgroundGrey],
+		[2, 0, 1, 8, colors.white],
+		[5, 0, 1, 8, colors.white],
+	]]),
+	tank: new AnimatedGeneratedTextures(16, [[ // todo
+		[0, 0, 16, 16, colors.cornerGrey],
+		[1, 1, 14, 14, colors.backgroundGrey],
+		[3, 3, 10, 10, colors.wallGrey],
+		[4, 4, 8, 8, colors.black],
 	]]),
 };
 let infraTextures = {
@@ -1324,19 +1333,14 @@ let infraTextures = {
 		[3, 1, 2, 1, colors.wallGrey],
 		[3, 3, 2, 1, colors.wallGrey],
 	]]),
-	packedConveyor: new AnimatedGeneratedTextures(8, [[
-		[2, 0, 4, 8, colors.white],
-		[3, 1, 2, 1, colors.wallGrey],
-		[3, 3, 2, 1, colors.wallGrey],
-	]]),
 	distributor: new AnimatedGeneratedTextures(8, [[
 		[3, 0, 2, 8, colors.white],
 		[0, 3, 8, 2, colors.white],
 	]]),
 	junction: new AnimatedGeneratedTextures(8, [[
 		[3, 0, 2, 8, colors.white],
-		[0, 3, 8, 2, colors.white],
-		[3, 3, 2, 2, colors.wallGrey],
+		[0, 3, 2, 2, colors.white],
+		[6, 3, 2, 2, colors.white],
 	]]),
 	storage: new AnimatedGeneratedTextures(16, [[
 		[0, 0, 16, 16, colors.cornerGrey],
@@ -1350,6 +1354,16 @@ let infraTextures = {
 		[3, 3, 2, 3, colors.white],
 		[3, 5, 2, 3, colors.cornerGrey],
 	]]),
+	packedConveyor: new AnimatedGeneratedTextures(8, [[
+		[2, 0, 4, 8, colors.white],
+		[3, 1, 2, 1, colors.wallGrey],
+		[3, 3, 2, 1, colors.wallGrey],
+	]]),
+	// bridge: new AnimatedGeneratedTextures(8, [[
+	// 	[2, 2, 4, 4, colors.cornerGrey],
+	// 	[3, 0, 2, 8, colors.white],
+	// 	[3, 1, 2, 1, colors.wallGrey],
+	// ]]),
 };
 Object.entries(extractorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(factoryTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
@@ -1358,7 +1372,6 @@ Object.entries(ventTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = 
 Object.entries(wallTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(liquidTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(powerInfrastructureTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
-Object.entries(storageTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(pipeTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(infraTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 
