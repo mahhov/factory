@@ -385,25 +385,18 @@ export class World {
 		this.live.replaceTileable(size.scale(.5).floor, this.playerLogic.base);
 
 		([
-			['lowTierMob', 8 / 8],
-			['swarmDrone', 8 / 8],
-			['swarmLeader', 16 / 8],
-			['lowTierMob2', 8 / 8],
-			['swarmLeader2', 8 / 8],
-			['swarmDrone2', 4 / 8],
-			['assaultTank', 8 / 8],
-			['artilleryTruck', 8 / 8],
-			['zenith', 16 / 8],
-			['scramblerBot', 4 / 8],
-			['hive', 24 / 8],
-			['behemoth', 32 / 8],
-			['bomber', 8 / 8],
-			['cinderSkirmisher', 4 / 8],
-			['specterDrifter', 8 / 8],
-			['harvester', 4 / 8],
+			['swarmDrone', 1],
+			['meleeTank', 2],
+			['artillery', 2],
+			['zenith', 3],
+			['scrambler', 1],
+			['hive', 4],
+			['behemoth', 5],
+			['bomber', 2],
+			['harvester', 1],
 		] as [string, number][]).forEach(([texture, size], i) => {
 			let entity = new Entity(texture, '', new Vector(size));
-			this.live.replaceTileable(new Vector(136 + 3 * i, 143), entity);
+			this.live.replaceTileable(new Vector(136 + 4 * i, 143), entity);
 		});
 
 		this.queue = new OrderedGridWorldLayer(new Empty(), size);

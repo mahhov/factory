@@ -1,6 +1,14 @@
 import {CanvasSource, Texture, TextureStyle} from 'pixi.js';
 
 TextureStyle.defaultOptions.scaleMode = 'nearest';
+
+// maps [1,N] xy to [0,N-1] xy
+// maps [1,N] x2y2 to wh
+// creates concentric shapes nesting each color
+let cornersToConcentricRects = (xyx2y2s: [number, number, number, number][], colors: string[]): [number, number, number, number, string][] =>
+	colors.flatMap((color, i) =>
+		xyx2y2s.map(([x1, y1, x2, y2]) => [x1 - 1 + i, y1 - 1 + i, x2 - x1 + 1 - i * 2, y2 - y1 + 1 - i * 2, color] as [number, number, number, number, string]));
+
 let rectToTexture = (size: number, rects: [number, number, number, number, string][]): Texture => {
 	let canvas = document.createElement('canvas');
 	canvas.width = size;
@@ -1455,236 +1463,110 @@ let turretTextures = {
 	]]),
 };
 let hostileTextures = {
-	// --- 1. lowTierMob (8x8) - Ground Unit ---
-	lowTierMob: new AnimatedGeneratedTextures(8, [[
-		[2, 2, 4, 4, '#8B0000'], // Central Body
-
-		// Appendages/Treads (Heavy, offset dark metal)
-		[0, 2, 2, 1, colors.axilGrey], // Left-Top
-		[0, 5, 2, 1, colors.axilGrey], // Left-Bottom
-		[6, 2, 2, 1, colors.axilGrey], // Right-Top
-		[6, 5, 2, 1, colors.axilGrey], // Right-Bottom
-
-		[2, 0, 1, 2, colors.axilGrey], // Top-Left
-		[5, 0, 1, 2, colors.axilGrey], // Top-Right
-		[2, 6, 1, 2, colors.axilGrey], // Bottom-Left
-		[5, 6, 1, 2, colors.axilGrey], // Bottom-Right
-
-		[3, 3, 2, 2, colors.white], // Central Eye
-	]]),
-
-	// --- 2. swarmDrone (8x8) - Flying Unit ---
 	swarmDrone: new AnimatedGeneratedTextures(8, [[
-		[2, 2, 4, 4, '#B7410E'], // Central Body/Engine Core
-		[3, 3, 2, 2, colors.axilGrey], // Weapon/Sensor Emitter
-
-		// Diagonal Wings (Simulated by 1x1 steps)
-		[0, 0, 2, 2, colors.wallGrey], // TL Wing
-		[6, 0, 2, 2, colors.wallGrey], // TR Wing
-		[0, 6, 2, 2, colors.wallGrey], // BL Wing
-		[6, 6, 2, 2, colors.wallGrey], // BR Wing
-
-		// Secondary Diagonal Steps (to extend the shape)
-		[1, 1, 1, 1, colors.wallGrey],
-		[6, 1, 1, 1, colors.wallGrey],
-		[1, 6, 1, 1, colors.wallGrey],
-		[6, 6, 1, 1, colors.wallGrey],
-	]]),// --- 3. swarmLeader (16x16) - Commanding Unit ---
-	swarmLeader: new AnimatedGeneratedTextures(16, [[
-		[4, 4, 8, 8, '#8B0000'], // Central Body
-		[0, 6, 16, 4, colors.axilGrey], // Horizontal Armor
-		[6, 0, 4, 16, colors.axilGrey], // Vertical Armor
-
-		[6, 6, 4, 4, colors.tier4], // Command/Weapon Core
-
-		// Asymmetric Sensor (Tier 4 Secondary color on the top edge)
-		[7, 0, 2, 2, colors.tier4Secondary],
-
-		// Auxiliary Sensors (White points on the perimeter)
-		[5, 5, 2, 2, colors.white],
-		[9, 5, 2, 2, colors.white],
-		[5, 9, 2, 2, colors.white],
-		[9, 9, 2, 2, colors.white],
+		[0, 0, 3, 3, colors.white],
+		[5, 0, 3, 3, colors.white],
+		[0, 5, 3, 3, colors.white],
+		[5, 5, 3, 3, colors.white],
+		[1, 1, 1, 1, colors.black],
+		[6, 1, 1, 1, colors.black],
+		[1, 6, 1, 1, colors.black],
+		[6, 6, 1, 1, colors.black],
+		[2, 2, 4, 4, colors.hostileOrange],
+		[3, 3, 2, 2, colors.black],
 	]]),
-
-
-	lowTierMob2: new AnimatedGeneratedTextures(8, [[
-		[0, 0, 8, 8, '#D83030'],
-		[2, 2, 4, 4, '#F0F0F0'],
-	], [
-		[1, 1, 6, 6, '#D83030'],
-		[2, 2, 4, 4, '#F0F0F0'],
+	meleeTank: new AnimatedGeneratedTextures(16, [[
+		[3, 2, 10, 1, colors.hostileOrange],
+		[4, 4, 2, 2, colors.white],
+		[10, 4, 2, 2, colors.white],
+		[7, 5, 2, 2, colors.white],
+		[3, 10, 2, 3, colors.white],
+		[11, 10, 2, 3, colors.white],
+		[6, 8, 1, 4, colors.white],
+		[9, 8, 1, 4, colors.white],
 	]]),
-	swarmLeader2: new AnimatedGeneratedTextures(8, [[
-		[0, 0, 8, 8, '#1A1C20'],
-		[1, 1, 6, 6, '#D83030'],
-		[3, 3, 2, 2, '#FACA10'],
-		[0, 3, 1, 2, '#F0F0F0'],
-		[7, 3, 1, 2, '#F0F0F0'],
-	], [
-		[0, 0, 8, 8, '#1A1C20'],
-		[0, 0, 8, 8, '#D83030'],
-		[2, 2, 4, 4, '#FACA10'],
-		[0, 2, 1, 4, '#F0F0F0'],
-		[7, 2, 1, 4, '#F0F0F0'],
+	artillery: new AnimatedGeneratedTextures(16, [[
+		[2, 3, 1, 3, colors.white],
+		[13, 3, 1, 3, colors.white],
+		[2, 11, 1, 2, colors.white],
+		[13, 11, 1, 2, colors.white],
+		[4, 2, 1, 6, colors.white],
+		[11, 2, 1, 6, colors.white],
+		[6, 1, 4, 2, colors.white],
+		[6, 4, 4, 1, colors.white],
+		[6, 6, 4, 1, colors.white],
+		[7, 8, 2, 4, colors.white],
+		[7, 13, 2, 2, colors.white],
+		[4, 9, 2, 5, colors.hostileOrange],
+		[10, 9, 2, 5, colors.hostileOrange],
 	]]),
-
-	swarmDrone2: new AnimatedGeneratedTextures(4, [[
-		[0, 1, 4, 2, '#4C5056'],
-		[0, 1, 1, 2, '#D83030'],
-		[3, 1, 1, 2, '#D83030'],
-		[1, 1, 2, 2, '#FACA10'],
-	], [
-		[0, 1, 4, 2, '#4C5056'],
-		[0, 1, 1, 2, '#F0F0F0'],
-		[3, 1, 1, 2, '#F0F0F0'],
-		[1, 1, 2, 2, '#D83030'],
+	zenith: new AnimatedGeneratedTextures(24, [[
+		[0, 0, 9, 10, colors.white],
+		[1, 1, 7, 8, colors.black],
+		[15, 0, 9, 10, colors.white],
+		[16, 1, 7, 8, colors.black],
+		[0, 13, 9, 10, colors.white],
+		[1, 14, 7, 8, colors.black],
+		[15, 13, 9, 10, colors.white],
+		[16, 14, 7, 8, colors.black],
+		[4, 4, 16, 15, colors.white],
+		[5, 5, 14, 13, colors.black],
+		[4, 4, 16, 15, colors.white],
+		[5, 5, 14, 13, colors.black],
+		[3, 7, 7, 14, colors.white],
+		[4, 8, 5, 12, colors.hostileRed],
+		[14, 7, 7, 14, colors.white],
+		[15, 8, 5, 12, colors.hostileRed],
 	]]),
-	assaultTank: new AnimatedGeneratedTextures(8, [[
-		[1, 1, 6, 6, '#4C5056'],
-		[0, 0, 8, 2, '#1A1C20'],
-		[0, 6, 8, 2, '#1A1C20'],
-		[1, 0, 6, 8, '#9AA0AA'],
-		[3, 3, 2, 2, '#D83030'],
-	], [
-		[1, 1, 6, 6, '#4C5056'],
-		[0, 0, 8, 2, '#1A1C20'],
-		[0, 6, 8, 2, '#1A1C20'],
-		[1, 0, 6, 8, '#9AA0AA'],
-		[2, 2, 4, 4, '#F0F0F0'],
+	scrambler: new AnimatedGeneratedTextures(8, [[
+		[0, 0, 3, 3, colors.hostileRed],
+		[5, 0, 3, 3, colors.hostileRed],
+		[0, 5, 3, 3, colors.hostileRed],
+		[5, 5, 3, 3, colors.hostileRed],
+		[1, 1, 1, 1, colors.black],
+		[6, 1, 1, 1, colors.black],
+		[1, 6, 1, 1, colors.black],
+		[6, 6, 1, 1, colors.black],
+		[2, 2, 4, 4, colors.white],
+		[3, 3, 2, 2, colors.black],
 	]]),
-	artilleryTruck: new AnimatedGeneratedTextures(8, [[
-		[0, 1, 8, 5, '#4C5056'],
-		[1, 0, 6, 8, '#1A1C20'],
-		[5, 2, 2, 3, '#FACA10'],
-		[0, 2, 2, 4, '#9AA0AA'],
-		[0, 3, 1, 2, '#D83030'],
-		[1, 3, 1, 1, '#F0F0F0'],
-	], [
-		[0, 1, 8, 5, '#4C5056'],
-		[1, 0, 6, 8, '#1A1C20'],
-		[5, 2, 2, 3, '#D83030'],
-		[0, 2, 2, 4, '#9AA0AA'],
-		[0, 3, 1, 2, '#FACA10'],
-		[1, 3, 1, 1, '#F0F0F0'],
+	hive: new AnimatedGeneratedTextures(32, [[
+		...cornersToConcentricRects([
+				[4, 4, 11, 8],
+				[4, 4, 8, 11],
+				[22, 4, 29, 8],
+				[25, 4, 29, 11],
+				[4, 22, 8, 29],
+				[4, 25, 11, 29],
+				[22, 25, 29, 29],
+				[25, 22, 29, 29],
+				[13, 1, 20, 7],
+				[1, 13, 7, 20],
+				[26, 13, 32, 20],
+				[13, 26, 20, 32],
+				[9, 13, 24, 20],
+				[13, 9, 20, 24],
+				[10, 10, 23, 23],
+			], [colors.white, colors.hostileRed],
+		),
+		...cornersToConcentricRects([
+				[9, 13, 24, 20],
+				[13, 9, 20, 24],
+				[10, 10, 23, 23],
+			], [colors.white, colors.black],
+		),
 	]]),
-	zenith: new AnimatedGeneratedTextures(16, [[
-		[4, 4, 8, 8, '#1A1C20'],
-		[0, 7, 16, 1, '#4C5056'],
-		[7, 0, 1, 16, '#4C5056'],
-		[6, 6, 2, 2, '#D83030'],
-		[0, 7, 2, 2, '#4070D0'],
-		[14, 7, 2, 2, '#4070D0'],
-		[7, 0, 2, 2, '#4070D0'],
-		[7, 14, 2, 2, '#4070D0'],
-	], [
-		[4, 4, 8, 8, '#1A1C20'],
-		[0, 7, 16, 1, '#4C5056'],
-		[7, 0, 1, 16, '#4C5056'],
-		[6, 6, 4, 4, '#F0F0F0'],
-		[0, 7, 1, 2, '#F0F0F0'],
-		[15, 7, 1, 2, '#F0F0F0'],
-		[7, 0, 2, 1, '#F0F0F0'],
-		[7, 15, 2, 1, '#F0F0F0'],
+	behemoth: new AnimatedGeneratedTextures(40, [[
+		[0, 0, 40, 40, colors.white],
+		[1, 1, 38, 38, colors.hostileRed],
 	]]),
-	scramblerBot: new AnimatedGeneratedTextures(4, [[
-		[0, 0, 4, 4, '#1A1C20'],
-		[1, 1, 2, 2, '#4C5056'],
-		[1, 0, 2, 4, '#FACA10'],
-		[0, 1, 4, 2, '#FACA10'],
-		[1, 1, 2, 2, '#4070D0'],
-	], [
-		[0, 0, 4, 4, '#1A1C20'],
-		[1, 1, 2, 2, '#4C5056'],
-		[1, 0, 2, 4, '#F0F0F0'],
-		[0, 1, 4, 2, '#F0F0F0'],
-		[0, 0, 4, 4, '#4070D0'],
+	bomber: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, colors.white],
+		[1, 1, 14, 14, colors.hostileRed],
 	]]),
-	hive: new AnimatedGeneratedTextures(24, [[
-		[0, 0, 24, 24, '#1A1C20'],
-		[3, 3, 18, 18, '#4C5056'],
-		[11, 0, 2, 24, '#1A1C20'],
-		[0, 11, 24, 2, '#1A1C20'],
-		[10, 10, 4, 4, '#D83030'],
-		[6, 6, 3, 3, '#30D850'],
-		[15, 6, 3, 3, '#30D850'],
-		[6, 15, 3, 3, '#30D850'],
-		[15, 15, 3, 3, '#30D850'],
-	], [
-		[0, 0, 24, 24, '#1A1C20'],
-		[3, 3, 18, 18, '#4C5056'],
-		[11, 0, 2, 24, '#1A1C20'],
-		[0, 11, 24, 2, '#1A1C20'],
-		[9, 9, 6, 6, '#FACA10'],
-		[5, 5, 4, 4, '#F0F0F0'],
-		[15, 5, 4, 4, '#F0F0F0'],
-		[5, 15, 4, 4, '#F0F0F0'],
-		[15, 15, 4, 4, '#F0F0F0'],
-	]]),
-	behemoth: new AnimatedGeneratedTextures(32, [[
-		[0, 0, 32, 32, '#4C5056'],
-		[2, 2, 28, 28, '#1A1C20'],
-		[14, 14, 4, 4, '#FACA10'],
-		[0, 0, 4, 4, '#D83030'],
-		[28, 0, 4, 4, '#D83030'],
-		[0, 28, 4, 4, '#D83030'],
-		[28, 28, 4, 4, '#D83030'],
-	], [
-		[0, 0, 32, 32, '#4C5056'],
-		[2, 2, 28, 28, '#1A1C20'],
-		[13, 13, 6, 6, '#F0F0F0'],
-		[1, 1, 3, 3, '#FACA10'],
-		[28, 1, 3, 3, '#FACA10'],
-		[1, 28, 3, 3, '#FACA10'],
-		[28, 28, 3, 3, '#FACA10'],
-	]]),
-	bomber: new AnimatedGeneratedTextures(8, [[
-		[0, 3, 8, 2, '#4C5056'],
-		[3, 0, 2, 8, '#1A1C20'],
-		[3, 5, 2, 1, '#D83030'],
-		[1, 3, 1, 2, '#FACA10'],
-		[6, 3, 1, 2, '#FACA10'],
-	], [
-		[0, 3, 8, 2, '#4C5056'],
-		[3, 0, 2, 8, '#1A1C20'],
-		[3, 6, 2, 1, '#F0F0F0'],
-		[1, 3, 1, 2, '#D83030'],
-		[6, 3, 1, 2, '#D83030'],
-	]]),
-	cinderSkirmisher: new AnimatedGeneratedTextures(4, [[
-		[1, 1, 2, 2, '#1A1C20'],
-		[1, 0, 2, 4, '#4C5056'],
-		[1, 3, 2, 1, '#D83030'],
-		[1, 1, 2, 1, '#FACA10'],
-	], [
-		[1, 1, 2, 2, '#1A1C20'],
-		[1, 0, 2, 4, '#4C5056'],
-		[1, 2, 2, 2, '#F0F0F0'],
-		[1, 1, 2, 1, '#D83030'],
-	]]),
-	specterDrifter: new AnimatedGeneratedTextures(8, [[
-		[0, 0, 8, 8, '#1A1C20'],
-		[1, 1, 6, 6, '#4070D0'],
-		[3, 3, 2, 2, '#FACA10'],
-		[0, 3, 8, 2, '#F0F0F0'],
-		[3, 0, 2, 8, '#F0F0F0'],
-	], [
-		[0, 0, 8, 8, '#1A1C20'],
-		[0, 0, 8, 8, '#4070D0'],
-		[3, 3, 2, 2, '#D83030'],
-		[0, 4, 8, 1, '#F0F0F0'],
-		[4, 0, 1, 8, '#F0F0F0'],
-	]]),
-	harvester: new AnimatedGeneratedTextures(4, [[
-		[0, 0, 4, 4, '#4C5056'],
-		[1, 1, 2, 2, '#1A1C20'],
-		[1, 1, 2, 2, '#D83030'],
-		[0, 1, 4, 2, '#FACA10'],
-	], [
-		[0, 0, 4, 4, '#4C5056'],
-		[1, 1, 2, 2, '#1A1C20'],
-		[0, 0, 4, 4, '#F0F0F0'],
-		[0, 1, 4, 2, '#D83030'],
+	harvester: new AnimatedGeneratedTextures(8, [[
+		[0, 0, 8, 8, colors.white],
+		[1, 1, 6, 6, colors.hostileRed],
 	]]),
 };
 
