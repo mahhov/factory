@@ -649,7 +649,7 @@ export class LiquidDeposit extends Entity {
 export class ProjectileMob extends Entity {
 	constructor(size: number, health: number, movementSpeed: number, visualRange: number, attackRange: number, projectileCount: number, projectileDamageSize: number, projectileSpeed: number, projectileCollisionSize: number, projectileDamage: number, projectileAttackLatency: number, projectileSpreadDegrees: number) {
 		super('Projectile Mob', '', new Vector(size));
-		this.setParticle(animatedGeneratedTextures.lowTierMob.textures[0]);
+		this.setParticle(animatedGeneratedTextures.swarmDrone.textures[0]);
 		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(movementSpeed);
 		this.addAttribute(mobHerdPositionAttribute);
 		let findTargetAttribute = new EntityFindTargetAttribute(visualRange, 1, false, true);
