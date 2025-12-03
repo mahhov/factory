@@ -199,6 +199,7 @@ export class Empty extends Entity {
 export class Clear extends Entity {
 	constructor() {
 		super('Clear', '');
+		this.setSprite(new Sprite(coloredGeneratedTextures.fullRect.texture(Color.PROJECTILE_RED)));
 	}
 }
 

@@ -48,7 +48,6 @@ export let coloredGeneratedTextures = {
 	]),
 };
 export let animatedGeneratedTextures = {
-	clear: new AnimatedGeneratedTextures(8, [[[0, 0, 8, 8, '#D83030']]]),
 	extractor: new AnimatedGeneratedTextures(16, [[
 		[0, 0, 16, 1, '#4C5056'],
 		[0, 15, 16, 1, '#4C5056'],
