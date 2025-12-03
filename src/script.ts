@@ -56,7 +56,7 @@ document.body.appendChild(app.canvas);
 await SpriteLoader.init(app.renderer);
 let painter = new Painter(app.stage);
 painter.addListener('resize', (size: Vector) => fpsText.position = new Vector(size.x / painter.minCanvasSize, 0));
-let camera = new Camera(painter, new Vector(.4), .2);
+let camera = new Camera(painter, new Vector(.45), .1);
 let input = new Input(app.canvas, painter);
 let world = new World(new Vector(300), painter);
 camera.container.addChild(world.container);
