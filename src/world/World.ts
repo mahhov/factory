@@ -9,7 +9,6 @@ import {EntityBuildableAttribute, EntityMobHerdPositionAttribute, TickResult, To
 import MobLogic from './MobLogic.js';
 import PlayerLogic from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
-import EntityCreator, {Tool} from '../ui/EntityCreator.js';
 
 export interface Tileable {
 	readonly name: string;
@@ -386,13 +385,22 @@ export class World {
 		this.live.replaceTileable(size.scale(.5).floor, this.playerLogic.base);
 
 		([
-			['shrapnelTurret', 2],
-			['piercingTurret', 2],
-			['jetTurret', 2],
-			['arcTurret', 2],
-			['siegeTurret', 3],
-			['piercingLaserTurret', 3],
-			['geometricBase', 3],
+			['lowTierMob', 8 / 8],
+			['swarmDrone', 8 / 8],
+			['swarmLeader', 16 / 8],
+			['lowTierMob2', 8 / 8],
+			['swarmLeader2', 8 / 8],
+			['swarmDrone2', 4 / 8],
+			['assaultTank', 8 / 8],
+			['artilleryTruck', 8 / 8],
+			['zenith', 16 / 8],
+			['scramblerBot', 4 / 8],
+			['hive', 24 / 8],
+			['behemoth', 32 / 8],
+			['bomber', 8 / 8],
+			['cinderSkirmisher', 4 / 8],
+			['specterDrifter', 8 / 8],
+			['harvester', 4 / 8],
 		] as [string, number][]).forEach(([texture, size], i) => {
 			let entity = new Entity(texture, '', new Vector(size));
 			this.live.replaceTileable(new Vector(136 + 3 * i, 143), entity);
