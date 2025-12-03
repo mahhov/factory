@@ -1366,9 +1366,7 @@ let infraTextures = {
 	// ]]),
 };
 let storageTextures = {
-	// --- 1. Liquid Storage Tank (Focus: Fluid/Reflection) ---
 	tank: new AnimatedGeneratedTextures(16, [[
-		// 1. Solid Base
 		[0, 0, 16, 16, colors.water],
 		[1, 1, 14, 14, colors.backgroundGrey],
 		[4, 4, 8, 8, colors.white],
@@ -1377,35 +1375,122 @@ let storageTextures = {
 		[1, 7, 2, 2, colors.white],
 		[13, 7, 2, 2, colors.white],
 	]]),
-
-	// --- 2. Material Storage Building (Focus: Casing/Door Access) ---
 	storage: new AnimatedGeneratedTextures(16, [[
-		// 1. Solid Base
-		[0, 0, 16, 16, colors.backgroundGrey],
-
-		// 2. Outer Frame (1px walls and corners)
-		[1, 0, 14, 1, colors.wallGrey],
-		[1, 15, 14, 1, colors.wallGrey],
-		[0, 1, 1, 14, colors.wallGrey],
-		[15, 1, 1, 14, colors.wallGrey],
-		[0, 0, 1, 1, colors.cornerGrey],
-		[15, 0, 1, 1, colors.cornerGrey],
-		[0, 15, 1, 1, colors.cornerGrey],
-		[15, 15, 1, 1, colors.cornerGrey],
-
-		// 3. Heavy Metal Casing (Largest block, wallGrey)
+		[0, 0, 16, 16, colors.steel],
+		[1, 1, 14, 14, colors.backgroundGrey],
 		[2, 2, 12, 12, colors.wallGrey],
+		[3, 3, 10, 10, colors.backgroundGrey],
+		[7, 1, 2, 2, colors.steel],
+		[7, 13, 2, 2, colors.steel],
+		[1, 7, 2, 2, colors.steel],
+		[13, 7, 2, 2, colors.steel],
+	]]),
+};
+let turretTextures = {
+	shrapnelTurret: new AnimatedGeneratedTextures(16, [[
+		[1, 1, 5, 5, colors.wallGrey],
+		[10, 1, 5, 5, colors.wallGrey],
+		[1, 10, 5, 5, colors.wallGrey],
+		[10, 10, 5, 5, colors.wallGrey],
+		[2, 2, 3, 3, colors.tier1],
+		[11, 2, 3, 3, colors.tier1],
+		[2, 11, 3, 3, colors.tier1],
+		[11, 11, 3, 3, colors.tier1],
+		[3, 3, 10, 10, colors.wallGrey],
+		[4, 4, 8, 8, colors.tier1],
+		[6, 5, 1, 1, colors.wallGrey],
+		[9, 5, 1, 1, colors.wallGrey],
+		[6, 7, 1, 1, colors.wallGrey],
+		[9, 7, 1, 1, colors.wallGrey],
+	]]),
+	piercingTurret: new AnimatedGeneratedTextures(16, [[
+		[1, 1, 5, 5, colors.wallGrey],
+		[10, 1, 5, 5, colors.wallGrey],
+		[1, 10, 5, 5, colors.wallGrey],
+		[10, 10, 5, 5, colors.wallGrey],
+		[2, 2, 3, 3, colors.tier2],
+		[11, 2, 3, 3, colors.tier2],
+		[2, 11, 3, 3, colors.tier2],
+		[11, 11, 3, 3, colors.tier2],
+		[3, 3, 10, 10, colors.wallGrey],
+		[4, 4, 8, 8, colors.tier2],
+		[7, 5, 2, 2, colors.wallGrey],
+	]]),
+	jetTurret: new AnimatedGeneratedTextures(16, [[
+		[1, 1, 5, 5, colors.cornerGrey],
+		[10, 1, 5, 5, colors.cornerGrey],
+		[1, 10, 5, 5, colors.cornerGrey],
+		[10, 10, 5, 5, colors.cornerGrey],
+		[2, 2, 12, 12, colors.wallGrey],
+		[3, 3, 10, 10, colors.tier3],
+		[5, 4, 6, 2, colors.wallGrey],
+	]]),
+	arcTurret: new AnimatedGeneratedTextures(16, [[
+		[1, 1, 4, 4, colors.white],
+		[11, 1, 4, 4, colors.white],
+		[1, 11, 4, 4, colors.white],
+		[11, 11, 4, 4, colors.white],
+		[3, 3, 10, 10, colors.black],
+		[4, 4, 8, 8, colors.white],
+		[5, 5, 6, 6, colors.black],
+	]]),
 
-		// 4. Internal Volume (Dark, enclosed space, axilGrey)
-		[3, 3, 10, 10, colors.axilGrey],
+	// --- T5: siegeTurret (24x24) - Heavy Detail ---
+	siegeTurret: new AnimatedGeneratedTextures(24, [[
+		// 1. Corner Modules (Legs - 6x6, start at 1,1)
+		[1, 1, 6, 6, colors.axilGrey],
+		[17, 1, 6, 6, colors.axilGrey],
+		[1, 17, 6, 6, colors.axilGrey],
+		[17, 17, 6, 6, colors.axilGrey],
 
-		// 5. Access Door/Hatch (Breaks symmetry to indicate access for discrete items)
-		[6, 1, 4, 10, colors.cornerGrey], // Large vertical door panel (WallGrey)
-		[7, 2, 2, 8, colors.white],       // Door handle/Hinge line (White for visibility)
+		// 2. Large Center Core (Overlaps corners, 18x18 for thicker wall)
+		[3, 3, 18, 18, colors.wallGrey], // Heavy Mount/Base (Expanded to cover more overlap)
 
-		// 6. Reinforcement/Internal Stack Hint (Small dark blocks in center of axilGrey volume)
-		[4, 4, 2, 2, colors.backgroundGrey], // Stacked crate hint
-		[10, 10, 2, 2, colors.backgroundGrey], // Stacked crate hint
+		// DETAILED CORE LAYERS
+		[5, 5, 14, 14, colors.axilGrey],  // Inner Magazine Casing (AxilGrey)
+		[7, 7, 10, 10, colors.wallGrey],  // Reinforcement Ring (WallGrey)
+		[8, 8, 8, 8, colors.tier3],        // Tier 3 Weapon Core (8x8)
+
+		// MAGAZINE LOADERS (Small, dark blocks)
+		[4, 4, 2, 2, colors.axilGrey],
+		[18, 4, 2, 2, colors.axilGrey],
+		[4, 18, 2, 2, colors.axilGrey],
+		[18, 18, 2, 2, colors.axilGrey],
+	]]),
+
+	// --- T6: piercingLaserTurret (24x24) - Heavy Detail ---
+	piercingLaserTurret: new AnimatedGeneratedTextures(24, [[
+		// 1. Corner Modules (Legs - 6x6, start at 1,1, Energy Ports)
+		[1, 1, 6, 6, colors.tier4Secondary],
+		[17, 1, 6, 6, colors.tier4Secondary],
+		[1, 17, 6, 6, colors.tier4Secondary],
+		[17, 17, 6, 6, colors.tier4Secondary],
+
+		// 2. Large Center Core (Overlaps corners, 18x18 for thicker wall)
+		[3, 3, 18, 18, colors.axilGrey], // Energy Shielding (AxilGrey base)
+
+		// DETAILED CORE LAYERS
+		[5, 5, 14, 14, colors.wallGrey],   // Outer Wall Frame (WallGrey)
+		[7, 7, 10, 10, colors.axilGrey],  // Inner Confinement Casing (AxilGrey)
+		[8, 8, 8, 8, colors.white],        // Charging Capacitor Core (8x8)
+
+		// ENERGY CONDUIT FLOW (Rendered over the confinement casing)
+		[11, 5, 2, 14, colors.tier4],    // Vertical Conduits
+		[5, 11, 14, 2, colors.tier4],    // Horizontal Conduits
+	]]),
+
+	geometricBase: new AnimatedGeneratedTextures(24, [[
+		[0, 0, 8, 8, colors.wallGrey],
+		[0, 16, 8, 8, colors.wallGrey],
+		[16, 0, 8, 8, colors.wallGrey],
+		[16, 16, 8, 8, colors.wallGrey],
+		[1, 1, 6, 6, colors.tier4Secondary],
+		[1, 17, 6, 6, colors.tier4Secondary],
+		[17, 1, 6, 6, colors.tier4Secondary],
+		[17, 17, 6, 6, colors.tier4Secondary],
+		[6, 4, 16, 16, colors.wallGrey],
+		[5, 5, 14, 14, colors.tier4],
+		[10, 6, 4, 4, colors.white],
 	]]),
 };
 Object.entries(extractorTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
@@ -1418,5 +1503,6 @@ Object.entries(powerInfrastructureTextures).forEach(([x, y]) => animatedGenerate
 Object.entries(pipeTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(infraTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 Object.entries(storageTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
+Object.entries(turretTextures).forEach(([x, y]) => animatedGeneratedTextures[x] = y);
 
 // todo turret, mob

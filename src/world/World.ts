@@ -9,6 +9,7 @@ import {EntityBuildableAttribute, EntityMobHerdPositionAttribute, TickResult, To
 import MobLogic from './MobLogic.js';
 import PlayerLogic from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
+import EntityCreator, {Tool} from '../ui/EntityCreator.js';
 
 export interface Tileable {
 	readonly name: string;
@@ -383,6 +384,19 @@ export class World {
 		this.live = new LiveGridWorldLayer(new Empty(), size);
 		this.container.addChild(this.live.container);
 		this.live.replaceTileable(size.scale(.5).floor, this.playerLogic.base);
+
+		([
+			['shrapnelTurret', 2],
+			['piercingTurret', 2],
+			['jetTurret', 2],
+			['arcTurret', 2],
+			['siegeTurret', 3],
+			['piercingLaserTurret', 3],
+			['geometricBase', 3],
+		] as [string, number][]).forEach(([texture, size], i) => {
+			let entity = new Entity(texture, '', new Vector(size));
+			this.live.replaceTileable(new Vector(136 + 3 * i, 143), entity);
+		});
 
 		this.queue = new OrderedGridWorldLayer(new Empty(), size);
 		this.container.addChild(this.queue.container);
