@@ -72,7 +72,8 @@ export let textureColors = {
 	ironSecondary: '#a37a4b',
 	ironTernary: '#ffcc99',
 	fluxSand: '#f7e560',
-	fluxSandSecondary: '#e6d555',
+	fluxSandSecondary: '#baab4d',
+	fluxSandTernary: '#d5c659',
 	sulphur: '#527149',
 	sulphurSecondary: '#344530',
 	titanium: '#4457c8',
@@ -112,12 +113,12 @@ export let animatedGeneratedTextures = {
 		[10, 8, 2, 2, textureColors.ironTernary],
 	]]),
 	fluxSandDeposit: new AnimatedGeneratedTextures(8, [[
-		[0, 0, 8, 8, textureColors.fluxSand],
+		[0, 0, 8, 8, textureColors.fluxSandTernary],
 		[0, 0, 4, 3, textureColors.fluxSandSecondary],
 		[3, 4, 4, 4, textureColors.fluxSandSecondary],
 		[1, 5, 2, 2, textureColors.fluxSandSecondary],
 		[5, 1, 2, 2, textureColors.fluxSandSecondary],
-		[4, 4, 1, 1, textureColors.fluxSand],
+		[4, 4, 1, 1, textureColors.fluxSandTernary],
 		[7, 0, 1, 1, textureColors.fluxSandSecondary],
 		[0, 7, 1, 1, textureColors.fluxSandSecondary],
 	]]),
@@ -163,6 +164,7 @@ export let animatedGeneratedTextures = {
 	]]),
 
 	extractor: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, textureColors.black],
 		[0, 0, 1, 1, textureColors.cornerGrey],
 		[15, 0, 1, 1, textureColors.cornerGrey],
 		[0, 15, 1, 1, textureColors.cornerGrey],
@@ -176,6 +178,7 @@ export let animatedGeneratedTextures = {
 		[15, 1, 1, 14, textureColors.wallGrey],
 	]]),
 	reinforcedExtractor: new AnimatedGeneratedTextures(24, [[
+		[0, 0, 24, 24, textureColors.black],
 		[0, 0, 1, 1, textureColors.cornerGrey],
 		[23, 0, 1, 1, textureColors.cornerGrey],
 		[0, 23, 1, 1, textureColors.cornerGrey],
@@ -189,6 +192,7 @@ export let animatedGeneratedTextures = {
 		[23, 1, 1, 22, textureColors.wallGrey],
 	]]),
 	quadraticExtractor: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, textureColors.black],
 		[0, 0, 1, 1, textureColors.cornerGrey],
 		[31, 0, 1, 1, textureColors.cornerGrey],
 		[0, 31, 1, 1, textureColors.cornerGrey],
@@ -206,6 +210,7 @@ export let animatedGeneratedTextures = {
 		[31, 1, 1, 30, textureColors.wallGrey],
 	]]),
 	laserExtractor: new AnimatedGeneratedTextures(32, [[
+		[0, 0, 32, 32, textureColors.black],
 		[0, 0, 1, 1, textureColors.cornerGrey],
 		[31, 0, 1, 1, textureColors.cornerGrey],
 		[0, 31, 1, 1, textureColors.cornerGrey],
