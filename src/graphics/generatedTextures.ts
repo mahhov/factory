@@ -48,9 +48,6 @@ class AnimatedGeneratedTextures {
 }
 
 export let coloredGeneratedTextures = {
-	materialIndicator: new ColoredGeneratedTexture(8, color => [
-		[2, 2, 4, 4, color],
-	]),
 	fullRect: new ColoredGeneratedTexture(1, color => [
 		[0, 0, 1, 1, color],
 	]),
@@ -71,7 +68,20 @@ let colors = {
 	axilGrey: '#222222',
 	backgroundGrey: '#111111',
 
+	iron: '#d4a56e',
+	ironSecondary: '#a37a4b',
+	ironTernary: '#ffcc99',
+	sand: '#f7e560',
+	sandSecondary: '#e6d555',
+	sulphur: '#527149',
+	sulphurSecondary: '#344530',
 	titanium: '#4457c8',
+	titaniumSecondary: '#7788e8',
+	titaniumBackground: '#151a35',
+	graphite: '#9772ad',
+	graphiteSecondary: '#413d45',
+	graphiteTernary: '#bc9ed3',
+	graphiteBackground: '#272429',
 
 	steel: '#aaaaaa',
 	metaglass: '#11ced5',
@@ -92,137 +102,52 @@ let colors = {
 	hostileOrange: '#faca10',
 };
 
-export let EnvironmentAssets = {
+export let animatedGeneratedTextures = {
 	ironDeposit: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, '#4C5056'],
-		[2, 2, 12, 12, '#1A1C20'],
-		[4, 5, 3, 2, '#D83030'],
-		[7, 9, 5, 3, '#D83030'],
-		[1, 1, 2, 4, '#D83030'],
-		[8, 11, 2, 2, '#FACA10'],
-		[3, 5, 1, 1, '#FACA10'],
-		[12, 2, 1, 1, '#FACA10'],
+		[2, 3, 6, 4, colors.iron],
+		[10, 5, 4, 6, colors.ironSecondary],
+		[1, 10, 3, 4, colors.ironSecondary],
+		[10, 8, 2, 2, colors.ironTernary],
 	]]),
-	sandDeposit: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, '#E0C79C'],
-		[1, 1, 14, 14, '#CBB48C'],
-		[3, 0, 1, 16, '#CBB48C'],
-		[8, 0, 1, 16, '#CBB48C'],
-		[0, 4, 16, 1, '#CBB48C'],
-		[0, 10, 16, 1, '#CBB48C'],
-		[1, 1, 2, 2, '#CBB48C'],
-		[13, 13, 2, 2, '#CBB48C'],
+	sandDeposit: new AnimatedGeneratedTextures(8, [[
+		[0, 0, 8, 8, colors.sand],
+		[0, 0, 4, 3, colors.sandSecondary],
+		[3, 4, 4, 4, colors.sandSecondary],
+		[1, 5, 2, 2, colors.sandSecondary],
+		[5, 1, 2, 2, colors.sandSecondary],
+		[4, 4, 1, 1, colors.sand],
+		[7, 0, 1, 1, colors.sandSecondary],
+		[0, 7, 1, 1, colors.sandSecondary],
 	]]),
-	titaniumDeposit: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, '#4C5056'],
-		[2, 2, 12, 12, '#1A1C20'],
-		[4, 4, 8, 8, '#9AA0AA'],
-		[1, 1, 3, 3, '#9AA0AA'],
-		[12, 12, 3, 3, '#9AA0AA'],
-		[3, 3, 10, 1, '#FACA10'], [12, 4, 1, 8, '#FACA10'],
-		[3, 12, 10, 1, '#FACA10'],
-		[4, 4, 1, 8, '#FACA10'],
-		[7, 7, 2, 2, '#F0F0F0'],
+	sulphurDeposit: new AnimatedGeneratedTextures(8, [[
+		[4, 1, 3, 2, colors.sulphur],
+		[2, 5, 2, 2, colors.sulphur],
+		[5, 2, 2, 2, colors.sulphurSecondary],
+		[1, 7, 1, 1, colors.sulphurSecondary],
+		[7, 1, 1, 1, colors.sulphurSecondary],
+		[4, 4, 1, 1, colors.sulphur],
+	]]),
+	titaniumDeposit: new AnimatedGeneratedTextures(8, [[
+		[0, 0, 8, 8, colors.titaniumBackground],
+		[4, 4, 3, 3, colors.titanium],
+		[1, 6, 1, 2, colors.titaniumSecondary],
+		[6, 1, 2, 1, colors.titaniumSecondary],
+		[0, 3, 2, 2, colors.titanium],
+		[4, 4, 2, 2, colors.titaniumSecondary],
 	]]),
 	graphiteDeposit: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, '#1A1C20'],
-		[1, 1, 3, 3, '#333333'],
-		[5, 4, 4, 4, '#4C5056'],
-		[11, 2, 3, 4, '#333333'],
-		[2, 10, 4, 3, '#4C5056'],
-		[9, 11, 6, 4, '#333333'],
-		[7, 6, 2, 2, '#9AA0AA'],
-		[4, 1, 1, 1, '#9AA0AA'],
-		[13, 13, 1, 1, '#9AA0AA'],
-	]]),
-	water: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, '#4070D0'],
-		[1, 1, 14, 14, '#3060C0'],
-		[2, 2, 12, 12, '#4070D0'],
-		[4, 7, 8, 2, '#6090E0'],
-		[7, 4, 2, 8, '#6090E0'],
-	]]),
-	methane: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, '#80D0B0'],
-		[1, 1, 14, 14, '#60B090'],
-		[2, 2, 12, 12, '#80D0B0'],
-		[4, 4, 8, 8, '#A0E0C0'],
-		[1, 7, 2, 2, '#F0F0F0'],
-		[13, 7, 2, 2, '#F0F0F0'],
-	]]),
-};
-
-export let animatedGeneratedTextures = {
-	// --- 1. sandDeposit (Seamless Tiling) ---
-	sandDeposit: new AnimatedGeneratedTextures(8, [[
-		// Solid Sand Base
-		[0, 0, 8, 8, "#f7e560"],
-
-		// Minimal Texture Break (For slight variation without breaking tile edge)
-		[1, 1, 6, 6, "#fce97a"], // Lighter central reflection/dune
-		[0, 4, 1, 1, "#e6d555"], // Darker grain
-		[7, 3, 1, 1, "#e6d555"],
+		[0, 0, 16, 16, colors.graphiteBackground],
+		[1, 1, 3, 3, colors.graphiteSecondary],
+		[5, 4, 4, 4, colors.graphite],
+		[11, 2, 3, 4, colors.graphiteSecondary],
+		[2, 10, 4, 3, colors.graphite],
+		[9, 11, 6, 4, colors.graphiteSecondary],
+		[7, 6, 2, 2, colors.graphiteTernary],
+		[4, 1, 1, 1, colors.graphiteTernary],
+		[13, 13, 1, 1, colors.graphiteTernary],
 	]]),
 
-	// --- 2. ironDeposit (Non-Seamless) ---
-	ironDeposit: new AnimatedGeneratedTextures(8, [[
-		// Dark Earth/Rock Base
-		[0, 0, 8, 8, "#333333"],
-
-		// Chunks of Iron Ore
-		[1, 1, 3, 3, "#d4a56e"], // TL Chunk
-		[5, 4, 3, 3, "#d4a56e"], // BR Chunk
-
-		// Smaller scattered veins
-		[2, 5, 1, 1, "#d4a56e"],
-		[6, 2, 1, 1, "#d4a56e"],
-	]]),
-
-	// --- 3. sulphurDeposit (Non-Seamless) ---
-	sulphurDeposit: new AnimatedGeneratedTextures(8, [[
-		// Dark Earth/Rock Base
-		[0, 0, 8, 8, "#333333"],
-
-		// Sulphur Veins (Greenish pattern)
-		[1, 3, 6, 2, "#527149"], // Horizontal Vein
-		[3, 1, 2, 6, "#527149"], // Vertical Vein
-
-		// Central Core
-		[3, 3, 2, 2, "#628159"], // Brighter Sulphur Core
-	]]),
-
-	// --- 4. titaniumDeposit (Non-Seamless) ---
-	titaniumDeposit: new AnimatedGeneratedTextures(8, [[
-		// Dark Earth/Rock Base
-		[0, 0, 8, 8, "#333333"],
-
-		// Central Titanium Node (Bright blue/purple)
-		[3, 3, 2, 2, "#4457c8"],
-
-		// Outer Titanium Shards/Veins
-		[1, 1, 1, 1, "#4457c8"],
-		[6, 1, 1, 1, "#4457c8"],
-		[1, 6, 1, 1, "#4457c8"],
-		[6, 6, 1, 1, "#4457c8"],
-	]]),
-
-	// --- 5. graphiteDeposit (Non-Seamless) ---
-	graphiteDeposit: new AnimatedGeneratedTextures(8, [[
-		// Dark Earth/Rock Base
-		[0, 0, 8, 8, "#333333"],
-
-		// Graphite Veins/Chunks (Darker purple/gray)
-		[2, 2, 4, 4, "#9772ad"], // Large central vein
-
-		// Scattered Flecks
-		[0, 0, 1, 1, "#9772ad"],
-		[7, 7, 1, 1, "#9772ad"],
-		[5, 1, 1, 1, "#9772ad"],
-	]]),
-
-	// todo animate all
-	// todo add material deposits
-	waterDeposit: new AnimatedGeneratedTextures(16, [[ // todo update
+	waterDeposit: new AnimatedGeneratedTextures(16, [[
 		[0, 0, 16, 16, '#4070D0'],
 		[7, 7, 2, 2, '#F0F0F0'],
 		[3, 8, 2, 1, '#F0F0F0'],
@@ -233,11 +158,11 @@ export let animatedGeneratedTextures = {
 		[4, 7, 2, 2, '#4070D0'],
 		[10, 7, 2, 2, '#4070D0'],
 	]]),
-	methaneDeposit: new AnimatedGeneratedTextures(16, [[ // todo update
+	methaneDeposit: new AnimatedGeneratedTextures(16, [[
 		[0, 0, 16, 16, '#30D850'],
-		[7, 7, 2, 2, '#FACA10'],
-		[3, 3, 2, 2, '#FACA10'],
-		[11, 11, 2, 2, '#FACA10'],
+		[7, 7, 2, 2, '#3d9f52'],
+		[3, 3, 2, 2, '#3d9f52'],
+		[11, 11, 2, 2, '#3d9f52'],
 	], [
 		[0, 0, 16, 16, '#30D850'],
 		[6, 6, 4, 4, '#30D850'],
