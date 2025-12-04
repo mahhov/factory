@@ -1,6 +1,6 @@
 import {Container, Graphics, Text} from 'pixi.js';
 import Camera from '../Camera.js';
-import Color from '../graphics/Color.js';
+import uiColors from '../graphics/uiColors.js';
 import Painter from '../graphics/Painter.js';
 import Emitter from '../util/Emitter.js';
 import {toTitleCase} from '../util/stringCase.js';
@@ -70,11 +70,11 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			this.toolGroupSelectionRect
 				.clear()
 				.rect(0, 0, ...Placer.toolUiCoordinates(true, 0)[1])
-				.stroke({width: 3 / painter.minCanvasSize, color: Color.SELECTED_RECT_OUTLINE});
+				.stroke({width: 3 / painter.minCanvasSize, color: uiColors.SELECTED_RECT_OUTLINE});
 			this.toolSelectionRect
 				.clear()
 				.rect(0, 0, ...Placer.toolUiCoordinates(false, 0)[1])
-				.stroke({width: 3 / painter.minCanvasSize, color: Color.SELECTED_RECT_OUTLINE});
+				.stroke({width: 3 / painter.minCanvasSize, color: uiColors.SELECTED_RECT_OUTLINE});
 		});
 
 		this.multilineText = new MultilineText(painter);
@@ -191,17 +191,17 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 		[spriteContainer.width, spriteContainer.height] = coordinates[1];
 		iconContainer.addChild(new Graphics()
 			.rect(...coordinates[0], ...coordinates[1])
-			.fill({width: 1 / this.painter.minCanvasSize, color: Color.TEXT_RECT_BACKGROUND}));
+			.fill({width: 1 / this.painter.minCanvasSize, color: uiColors.TEXT_RECT_BACKGROUND}));
 		iconContainer.addChild(spriteContainer);
 		iconContainer.addChild(new Graphics()
 			.rect(...coordinates[0], ...coordinates[1])
-			.stroke({width: 1 / this.painter.minCanvasSize, color: Color.RECT_OUTLINE}));
+			.stroke({width: 1 / this.painter.minCanvasSize, color: uiColors.RECT_OUTLINE}));
 		textContainer.addChild(new Text({
 			text,
 			style: {
 				fontFamily: 'Arial',
 				fontSize: 10,
-				fill: Color.DEFAULT_TEXT,
+				fill: uiColors.DEFAULT_TEXT,
 			},
 			x: coordinates[0][0] * 1000 + 1,
 			y: coordinates[0][1] * 1000 - 1,
@@ -324,7 +324,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 	}
 
 	private showToolGroupTooltip(index: number) {
-		this.multilineText.lines = [new TextLine(toTitleCase(Object.keys(toolTree)[index] as ToolGroup), {color: Color.NAME_TEXT})];
+		this.multilineText.lines = [new TextLine(toTitleCase(Object.keys(toolTree)[index] as ToolGroup), {color: uiColors.NAME_TEXT})];
 		let coordinates = Placer.toolUiCoordinates(true, index);
 		this.multilineText.position = new Vector(coordinates[0][0], coordinates[0][1]);
 		this.multilineText.tick();

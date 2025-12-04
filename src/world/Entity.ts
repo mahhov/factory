@@ -1,5 +1,5 @@
 import {AnimatedSprite, Container, Particle, Sprite, Texture} from 'pixi.js';
-import Color from '../graphics/Color.js';
+import uiColors from '../graphics/uiColors.js';
 import {animatedGeneratedTextures, coloredGeneratedTextures} from '../graphics/generatedTextures.js';
 import TextLine from '../ui/TextLine.js';
 import {toCamelCase} from '../util/stringCase.js';
@@ -198,7 +198,7 @@ export class Empty extends Entity {
 export class Clear extends Entity {
 	constructor() {
 		super('Clear', '');
-		this.setSprite(new Sprite(coloredGeneratedTextures.fullRect.texture(Color.PROJECTILE_RED)));
+		this.setSprite(new Sprite(coloredGeneratedTextures.fullRect.texture(uiColors.PROJECTILE_RED)));
 	}
 }
 
@@ -608,7 +608,7 @@ export class MaterialDeposit extends Entity {
 			case Material.IRON:
 				return animatedGeneratedTextures.ironDeposit.textures[0];
 			case Material.FLUX_SAND:
-				return animatedGeneratedTextures.sandDeposit.textures[0];
+				return animatedGeneratedTextures.fluxSandDeposit.textures[0];
 			case Material.SULPHUR:
 				return animatedGeneratedTextures.sulphurDeposit.textures[0];
 			case Material.TITANIUM:
@@ -696,7 +696,7 @@ export class ProjectileMob extends Entity {
 export class Projectile extends Entity {
 	constructor(velocity: Vector, damageSize: number, duration: number, collisionSize: number, damage: number, sourceFriendly: boolean) {
 		super('Projectile', '', new Vector(collisionSize));
-		this.setParticle(coloredGeneratedTextures.fullRect.texture(sourceFriendly ? Color.PROJECTILE_BLUE : Color.PROJECTILE_RED));
+		this.setParticle(coloredGeneratedTextures.fullRect.texture(sourceFriendly ? uiColors.PROJECTILE_BLUE : uiColors.PROJECTILE_RED));
 		// todo homing projectile
 		this.addAttribute(new EntityDirectionMovementAttribute(velocity));
 		let collisionFindTargetAttribute = new EntityFindTargetAttribute(collisionSize, 1, sourceFriendly, !sourceFriendly);
@@ -705,8 +705,8 @@ export class Projectile extends Entity {
 			collisionFindTargetAttribute,
 			damageSize ? damageFindTargetAttribute : null,
 			new EntityDamageTargetAttribute(damageFindTargetAttribute, damage),
-			new EntitySpawnParticleAttribute(5, Vector.V0, Vector.V0, .15, .3, .015, 50, coloredGeneratedTextures.fullRect.texture(Color.SMOKE_GRAY)),
-			damageSize ? new EntitySpawnParticleAttribute(1, Vector.V0, Vector.V0, damageSize * 2, damageSize * 2, 0, 50, coloredGeneratedTextures.fullRect.texture(Color.DAMAGE_AREA_RED)) : null,
+			new EntitySpawnParticleAttribute(5, Vector.V0, Vector.V0, .15, .3, .015, 50, coloredGeneratedTextures.fullRect.texture(uiColors.SMOKE_GRAY)),
+			damageSize ? new EntitySpawnParticleAttribute(1, Vector.V0, Vector.V0, damageSize * 2, damageSize * 2, 0, 50, coloredGeneratedTextures.fullRect.texture(uiColors.DAMAGE_AREA_RED)) : null,
 			new EntityExpireProjectileAttribute(),
 		].filter(v => v) as EntityAttribute[]));
 		this.addAttribute(new EntityChainAttribute([

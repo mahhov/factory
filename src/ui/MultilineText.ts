@@ -1,5 +1,5 @@
 import {Container, Graphics, Text} from 'pixi.js';
-import Color from '../graphics/Color.js';
+import uiColors from '../graphics/uiColors.js';
 import Painter from '../graphics/Painter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
@@ -33,7 +33,7 @@ export default class MultilineText {
 		this.textBackgroundContainer.visible = false;
 		this.textBackgroundContainer.addChild(new Graphics()
 			.rect(0, 0, 1, 1)
-			.fill({color: Color.TEXT_RECT_BACKGROUND}));
+			.fill({color: uiColors.TEXT_RECT_BACKGROUND}));
 	}
 
 	tick() {

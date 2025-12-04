@@ -1,5 +1,5 @@
 import {FillInput} from 'pixi.js';
-import Color from '../graphics/Color.js';
+import uiColors from '../graphics/uiColors.js';
 
 interface Options {
 	callback?: () => void;
@@ -17,6 +17,6 @@ export default class TextLine {
 		this.string = string;
 		this.callback = options?.callback || (() => {});
 		this.size = options?.size || 14;
-		this.color = options?.color || Color.DEFAULT_TEXT;
+		this.color = options?.color || uiColors.DEFAULT_TEXT;
 	}
 }

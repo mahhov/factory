@@ -1,5 +1,5 @@
 import Camera from '../Camera.js';
-import Color from '../graphics/Color.js';
+import uiColors from '../graphics/uiColors.js';
 import Painter from '../graphics/Painter.js';
 import MultilineText from '../ui/MultilineText.js';
 import TextLine from '../ui/TextLine.js';
@@ -23,9 +23,9 @@ abstract class TutorialStep {
 class CameraTutorial extends TutorialStep {
 	constructor() {
 		super([
-			new TextLine('Camera Tutorial', {color: Color.NAME_TEXT}),
-			new TextLine('Use WASD or drag the middle mouse button to the pan camera.', {color: Color.DESCRIPTION_TEXT}),
-			new TextLine('Use QE or mouse wheel to zoom the camera.', {color: Color.DESCRIPTION_TEXT}),
+			new TextLine('Camera Tutorial', {color: uiColors.NAME_TEXT}),
+			new TextLine('Use WASD or drag the middle mouse button to the pan camera.', {color: uiColors.DESCRIPTION_TEXT}),
+			new TextLine('Use QE or mouse wheel to zoom the camera.', {color: uiColors.DESCRIPTION_TEXT}),
 		]);
 	}
 
@@ -37,10 +37,10 @@ class CameraTutorial extends TutorialStep {
 class ExtractorTutorial extends TutorialStep {
 	constructor() {
 		super([
-			new TextLine('Placement Tutorial', {color: Color.NAME_TEXT}),
-			new TextLine('Press <1> to select the extractor.', {color: Color.DESCRIPTION_TEXT}),
-			new TextLine('Or use the buttons at the bottom.', {color: Color.DESCRIPTION_TEXT}),
-			new TextLine('Click on an iron deposit to place the extractor.', {color: Color.DESCRIPTION_TEXT}),
+			new TextLine('Placement Tutorial', {color: uiColors.NAME_TEXT}),
+			new TextLine('Press <1> to select the extractor.', {color: uiColors.DESCRIPTION_TEXT}),
+			new TextLine('Or use the buttons at the bottom.', {color: uiColors.DESCRIPTION_TEXT}),
+			new TextLine('Click on an iron deposit to place the extractor.', {color: uiColors.DESCRIPTION_TEXT}),
 		]);
 	}
 
@@ -74,10 +74,10 @@ class ObtainMaterial extends TutorialStep {
 class IronTutorial extends ObtainMaterial {
 	constructor() {
 		super([
-			new TextLine('Transport Tutorial', {color: Color.NAME_TEXT}),
-			new TextLine('Press <ctrl+2> to select the conveyor belt.', {color: Color.DESCRIPTION_TEXT}),
-			new TextLine('Or use the buttons at the bottom.', {color: Color.DESCRIPTION_TEXT}),
-			new TextLine('Drag to create a path from the extractor to your base.', {color: Color.DESCRIPTION_TEXT}),
+			new TextLine('Transport Tutorial', {color: uiColors.NAME_TEXT}),
+			new TextLine('Press <ctrl+2> to select the conveyor belt.', {color: uiColors.DESCRIPTION_TEXT}),
+			new TextLine('Or use the buttons at the bottom.', {color: uiColors.DESCRIPTION_TEXT}),
+			new TextLine('Drag to create a path from the extractor to your base.', {color: uiColors.DESCRIPTION_TEXT}),
 		], Material.IRON);
 	}
 }
@@ -85,8 +85,8 @@ class IronTutorial extends ObtainMaterial {
 class SteelTutorial extends ObtainMaterial {
 	constructor() {
 		super([
-			new TextLine('Production Tutorial', {color: Color.NAME_TEXT}),
-			new TextLine('Combine iron and flux-sand in a Steel Smelter to create steel.', {color: Color.DESCRIPTION_TEXT}),
+			new TextLine('Production Tutorial', {color: uiColors.NAME_TEXT}),
+			new TextLine('Combine iron and flux-sand in a Steel Smelter to create steel.', {color: uiColors.DESCRIPTION_TEXT}),
 		], Material.STEEL);
 	}
 }

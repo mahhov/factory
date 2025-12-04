@@ -1,7 +1,6 @@
 import {AnimatedSprite, Particle, Sprite, Texture} from 'pixi.js';
-import color from '../graphics/Color.js';
-import Color from '../graphics/Color.js';
 import {coloredGeneratedTextures} from '../graphics/generatedTextures.js';
+import uiColors from '../graphics/uiColors.js';
 import TextLine from '../ui/TextLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
@@ -153,7 +152,7 @@ export class EntityNameAttribute extends EntityAttribute {
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
-		return [new TextLine(this.name, {color: Color.NAME_TEXT})];
+		return [new TextLine(this.name, {color: uiColors.NAME_TEXT})];
 	}
 }
 
@@ -168,7 +167,7 @@ export class EntityDescriptionAttribute extends EntityAttribute {
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			[new TextLine(this.text, {color: Color.DESCRIPTION_TEXT})] :
+			[new TextLine(this.text, {color: uiColors.DESCRIPTION_TEXT})] :
 			[];
 	}
 }
@@ -244,7 +243,7 @@ export class EntityHealthAttribute extends EntityAttribute {
 
 		if (tile.tileable.container) {
 			if (this.health !== this.lastHealth && !this.particle) {
-				this.particle = tile.tileable.addOverlayParticle(coloredGeneratedTextures.fullRect.texture(Color.DAMAGED_RED), tile.tileable.size, world);
+				this.particle = tile.tileable.addOverlayParticle(coloredGeneratedTextures.fullRect.texture(uiColors.DAMAGED_RED), tile.tileable.size, world);
 				this.particle.x = tile.position.x;
 				this.particle.y = tile.position.y;
 				this.lastHealth = Math.max(this.lastHealth - 3, this.health);
@@ -259,8 +258,8 @@ export class EntityHealthAttribute extends EntityAttribute {
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			[new TextLine(`Health ${this.maxHealth}`, {color: Color.HEALTH_TEXT})] :
-			[new TextLine(`Health ${util.textPercent(this.health / this.maxHealth)}`, {color: Color.HEALTH_TEXT})];
+			[new TextLine(`Health ${this.maxHealth}`, {color: uiColors.HEALTH_TEXT})] :
+			[new TextLine(`Health ${util.textPercent(this.health / this.maxHealth)}`, {color: uiColors.HEALTH_TEXT})];
 	}
 
 	get selectable(): boolean {
@@ -698,7 +697,7 @@ export class EntityPowerProduceAttribute extends EntityAttribute {
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			[new TextLine(`Produces ${this.quantity} power`, {color: color.POWER_TEXT})] :
+			[new TextLine(`Produces ${this.quantity} power`, {color: uiColors.POWER_TEXT})] :
 			[];
 	}
 }
@@ -723,7 +722,7 @@ export class EntityPowerConsumeAttribute extends EntityAttribute {
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			[new TextLine(`Consumes ${this.quantity} power`, {color: color.POWER_TEXT})] :
+			[new TextLine(`Consumes ${this.quantity} power`, {color: uiColors.POWER_TEXT})] :
 			[];
 	}
 }
@@ -779,8 +778,8 @@ export class EntityPowerStorageAttribute extends EntityAttribute {
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			this.priority === EntityPowerStorageAttributePriority.STORAGE ? [new TextLine(`Stores ${this.capacity} power`, {color: color.POWER_TEXT})] : [] :
-			[new TextLine(`Power ${util.textPercent(this.quantity / this.capacity)}`, {color: color.POWER_TEXT})];
+			this.priority === EntityPowerStorageAttributePriority.STORAGE ? [new TextLine(`Stores ${this.capacity} power`, {color: uiColors.POWER_TEXT})] : [] :
+			[new TextLine(`Power ${util.textPercent(this.quantity / this.capacity)}`, {color: uiColors.POWER_TEXT})];
 	}
 }
 
@@ -825,7 +824,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 
 			let cvs = connection && connectionVectors(connection.subtract(tile.position));
 			if (cvs) {
-				let texture = coloredGeneratedTextures.fullRect.texture(Color.POWER_TEXT);
+				let texture = coloredGeneratedTextures.fullRect.texture(uiColors.POWER_TEXT);
 				this.particles[i] = tile.tileable.addOverlayParticle(texture, cvs[1], world);
 				let position = tile.position.add(cvs[0]);
 				this.particles[i].x = position.x;
@@ -839,7 +838,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
 			[] :
-			[new TextLine(`Connections ${this.allConnections.length}`, {color: color.POWER_TEXT})];
+			[new TextLine(`Connections ${this.allConnections.length}`, {color: uiColors.POWER_TEXT})];
 	}
 }
 
@@ -863,8 +862,8 @@ export class EntityCoolantProduceAttribute extends EntityAttribute {
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			[new TextLine(`Produces ${this.maxQuantity} coolant`, {color: color.COOLANT_TEXT})] :
-			[new TextLine(`Coolant ${util.textPercent(this.quantity / this.maxQuantity)}`, {color: color.COOLANT_TEXT})];
+			[new TextLine(`Produces ${this.maxQuantity} coolant`, {color: uiColors.COOLANT_TEXT})] :
+			[new TextLine(`Coolant ${util.textPercent(this.quantity / this.maxQuantity)}`, {color: uiColors.COOLANT_TEXT})];
 	}
 }
 
@@ -897,8 +896,8 @@ export class EntityCoolantConsumeAttribute extends EntityAttribute {
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			[new TextLine(`Consumes ${this.quantity} coolant`, {color: color.COOLANT_TEXT})] :
-			[new TextLine(`Coolant ${util.textPercent(this.consumed / this.quantity)}`, {color: color.COOLANT_TEXT})];
+			[new TextLine(`Consumes ${this.quantity} coolant`, {color: uiColors.COOLANT_TEXT})] :
+			[new TextLine(`Coolant ${util.textPercent(this.consumed / this.quantity)}`, {color: uiColors.COOLANT_TEXT})];
 	}
 }
 
@@ -927,7 +926,7 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			[new TextLine(`Pumps ${this.outputPerTier.join('/')} liquid / area`, {color: color.LIQUID_TEXT})] :
+			[new TextLine(`Pumps ${this.outputPerTier.join('/')} liquid / area`, {color: uiColors.LIQUID_TEXT})] :
 			[];
 	}
 }
@@ -949,7 +948,7 @@ export class EntityLiquidDryExtractorAttribute extends EntityAttribute {
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			[new TextLine(`Pumps ${liquidCountsString([this.liquidCount])}`, {color: color.LIQUID_TEXT})] :
+			[new TextLine(`Pumps ${liquidCountsString([this.liquidCount])}`, {color: uiColors.LIQUID_TEXT})] :
 			[];
 	}
 }
@@ -973,7 +972,7 @@ export class EntityLiquidConsumeAttribute extends EntityAttribute {
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			[new TextLine(`Requires ${liquidCountsString([this.liquidCount])}`, {color: color.LIQUID_TEXT})] :
+			[new TextLine(`Requires ${liquidCountsString([this.liquidCount])}`, {color: uiColors.LIQUID_TEXT})] :
 			[];
 	}
 }
@@ -1014,7 +1013,7 @@ export class EntityLiquidStorageAttribute extends EntityAttribute {
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
 			[] :
-			[new TextLine(`${ResourceUtils.liquidString(this.liquidCount.resource)} ${util.textPercent(this.liquidCount.quantity / this.maxQuantity)}`, {color: color.LIQUID_TEXT})];
+			[new TextLine(`${ResourceUtils.liquidString(this.liquidCount.resource)} ${util.textPercent(this.liquidCount.quantity / this.maxQuantity)}`, {color: uiColors.LIQUID_TEXT})];
 	}
 }
 
@@ -1096,7 +1095,7 @@ export class EntityLiquidBridgeConnectAttribute extends EntityAttribute {
 
 		let cvs = connectedPosition && connectionVectors(connectedPosition.subtract(tile.position));
 		if (cvs) {
-			let texture = coloredGeneratedTextures.fullRect.texture(Color.LIQUID_TEXT);
+			let texture = coloredGeneratedTextures.fullRect.texture(uiColors.LIQUID_TEXT);
 			this.particle = tile.tileable.addOverlayParticle(texture, cvs[1], world);
 			let position = tile.position.add(cvs[0]);
 			this.particle.x = position.x;
@@ -1145,7 +1144,7 @@ export class EntityMaterialPickerAttribute extends EntityAttribute {
 		return type === TooltipType.PLACER ?
 			[] :
 			util.enumValues(Material).map(material => {
-				let color = material === this.material ? Color.SELECTED_TEXT : undefined;
+				let color = material === this.material ? uiColors.SELECTED_TEXT : undefined;
 				return new TextLine(ResourceUtils.materialString(material), {callback: () => this.material = material, color});
 			});
 	}

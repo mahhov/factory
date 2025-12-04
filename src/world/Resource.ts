@@ -1,5 +1,5 @@
-import Color from '../graphics/Color.js';
-import {toTitleCase} from '../util/stringCase.js';
+import {textureColors} from '../graphics/generatedTextures.js';
+import {toCamelCase, toTitleCase} from '../util/stringCase.js';
 
 export enum Material {
 	IRON, FLUX_SAND, SULPHUR,
@@ -23,10 +23,6 @@ export namespace ResourceUtils {
 			this.resource = resource;
 			this.quantity = quantity;
 		}
-
-		static fromTuples<T extends Resource>(tuples: [T, number][]): Count<T>[] {
-			return tuples.map(tuple => new Count(...tuple));
-		}
 	}
 
 	export let materialString = (material: Material): string => {
@@ -38,12 +34,12 @@ export namespace ResourceUtils {
 	};
 
 	export let materialColor = (material: Material): string => {
-		let key = `MATERIAL_${Material[material]}` as unknown as keyof typeof Color;
-		return Color[key];
+		let key = toCamelCase(Material[material]) as unknown as keyof typeof textureColors;
+		return textureColors[key];
 	};
 
 	export let liquidColor = (liquid: Liquid): string => {
-		let key = `LIQUID_${Liquid[liquid]}` as unknown as keyof typeof Color;
-		return Color[key];
+		let key = toCamelCase(Liquid[liquid]) as unknown as keyof typeof textureColors;
+		return textureColors[key];
 	};
 }

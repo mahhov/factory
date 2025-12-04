@@ -1,6 +1,6 @@
 import {Container, Graphics} from 'pixi.js';
 import Camera from '../Camera.js';
-import Color from '../graphics/Color.js';
+import uiColors from '../graphics/uiColors.js';
 import Painter from '../graphics/Painter.js';
 import Vector from '../util/Vector.js';
 import {Entity} from '../world/Entity.js';
@@ -105,14 +105,14 @@ export default class WorldTooltip {
 			this.container.removeChildren();
 			this.container.addChild(new Graphics()
 				.rect(outline.topLeft.x, outline.topLeft.y, outline.size.x, outline.size.y)
-				.stroke({width: (this.selection.selected ? 3 : 1) / this.painter.minCanvasSize, color: this.selection.selected ? Color.SELECTED_RECT_OUTLINE : Color.RECT_OUTLINE}));
+				.stroke({width: (this.selection.selected ? 3 : 1) / this.painter.minCanvasSize, color: this.selection.selected ? uiColors.SELECTED_RECT_OUTLINE : uiColors.RECT_OUTLINE}));
 			let range = this.selection.tile.tileable.tooltipRange;
 			if (range) {
 				let rangeV = new Vector(range);
 				let rangeCircle = this.tileToCanvas(this.selection.tile.position.add(this.selection.tile.tileable.size.scale(.5)), rangeV);
 				this.container.addChild(new Graphics()
 					.circle(rangeCircle.topLeft.x, rangeCircle.topLeft.y, rangeCircle.size.x)
-					.stroke({width: 1 / this.painter.minCanvasSize, color: Color.RECT_OUTLINE}));
+					.stroke({width: 1 / this.painter.minCanvasSize, color: uiColors.RECT_OUTLINE}));
 			}
 		}
 	}
