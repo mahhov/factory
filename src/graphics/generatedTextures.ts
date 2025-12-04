@@ -153,6 +153,73 @@ export let EnvironmentAssets = {
 };
 
 export let animatedGeneratedTextures = {
+	// --- 1. sandDeposit (Seamless Tiling) ---
+	sandDeposit: new AnimatedGeneratedTextures(8, [[
+		// Solid Sand Base
+		[0, 0, 8, 8, "#f7e560"],
+
+		// Minimal Texture Break (For slight variation without breaking tile edge)
+		[1, 1, 6, 6, "#fce97a"], // Lighter central reflection/dune
+		[0, 4, 1, 1, "#e6d555"], // Darker grain
+		[7, 3, 1, 1, "#e6d555"],
+	]]),
+
+	// --- 2. ironDeposit (Non-Seamless) ---
+	ironDeposit: new AnimatedGeneratedTextures(8, [[
+		// Dark Earth/Rock Base
+		[0, 0, 8, 8, "#333333"],
+
+		// Chunks of Iron Ore
+		[1, 1, 3, 3, "#d4a56e"], // TL Chunk
+		[5, 4, 3, 3, "#d4a56e"], // BR Chunk
+
+		// Smaller scattered veins
+		[2, 5, 1, 1, "#d4a56e"],
+		[6, 2, 1, 1, "#d4a56e"],
+	]]),
+
+	// --- 3. sulphurDeposit (Non-Seamless) ---
+	sulphurDeposit: new AnimatedGeneratedTextures(8, [[
+		// Dark Earth/Rock Base
+		[0, 0, 8, 8, "#333333"],
+
+		// Sulphur Veins (Greenish pattern)
+		[1, 3, 6, 2, "#527149"], // Horizontal Vein
+		[3, 1, 2, 6, "#527149"], // Vertical Vein
+
+		// Central Core
+		[3, 3, 2, 2, "#628159"], // Brighter Sulphur Core
+	]]),
+
+	// --- 4. titaniumDeposit (Non-Seamless) ---
+	titaniumDeposit: new AnimatedGeneratedTextures(8, [[
+		// Dark Earth/Rock Base
+		[0, 0, 8, 8, "#333333"],
+
+		// Central Titanium Node (Bright blue/purple)
+		[3, 3, 2, 2, "#4457c8"],
+
+		// Outer Titanium Shards/Veins
+		[1, 1, 1, 1, "#4457c8"],
+		[6, 1, 1, 1, "#4457c8"],
+		[1, 6, 1, 1, "#4457c8"],
+		[6, 6, 1, 1, "#4457c8"],
+	]]),
+
+	// --- 5. graphiteDeposit (Non-Seamless) ---
+	graphiteDeposit: new AnimatedGeneratedTextures(8, [[
+		// Dark Earth/Rock Base
+		[0, 0, 8, 8, "#333333"],
+
+		// Graphite Veins/Chunks (Darker purple/gray)
+		[2, 2, 4, 4, "#9772ad"], // Large central vein
+
+		// Scattered Flecks
+		[0, 0, 1, 1, "#9772ad"],
+		[7, 7, 1, 1, "#9772ad"],
+		[5, 1, 1, 1, "#9772ad"],
+	]]),
+
 	// todo animate all
 	// todo add material deposits
 	waterDeposit: new AnimatedGeneratedTextures(16, [[ // todo update

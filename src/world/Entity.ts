@@ -1,7 +1,6 @@
 import {AnimatedSprite, Container, Particle, Sprite, Texture} from 'pixi.js';
 import Color from '../graphics/Color.js';
 import {animatedGeneratedTextures, coloredGeneratedTextures} from '../graphics/generatedTextures.js';
-import SpriteLoader from '../graphics/SpriteLoader.js';
 import TextLine from '../ui/TextLine.js';
 import {toCamelCase} from '../util/stringCase.js';
 import util from '../util/util.js';
@@ -599,10 +598,27 @@ export class MaterialDeposit extends Entity {
 
 	constructor(material: Material) {
 		super('Material Deposit', '');
-		let texture = SpriteLoader.getColoredTexture(SpriteLoader.Resource.TERRAIN, 'resource-deposit.png', [ResourceUtils.materialColor(material)]);
-		this.setParticle(texture);
 		this.material = material;
+		this.setParticle(this.texture);
 		this.addAttribute(new EntityMaterialDisplayAttribute(material));
+	}
+
+	get texture(): Texture {
+		switch (this.material) {
+			case Material.IRON:
+				return animatedGeneratedTextures.ironDeposit.textures[0];
+			case Material.FLUX_SAND:
+				return animatedGeneratedTextures.sandDeposit.textures[0];
+			case Material.SULPHUR:
+				return animatedGeneratedTextures.sulphurDeposit.textures[0];
+			case Material.TITANIUM:
+				return animatedGeneratedTextures.titaniumDeposit.textures[0];
+			case Material.GRAPHITE:
+				return animatedGeneratedTextures.graphiteDeposit.textures[0];
+			default:
+				console.assert(false);
+				return undefined as never;
+		}
 	}
 
 	get materialTier(): number {
@@ -615,12 +631,9 @@ export class MaterialDeposit extends Entity {
 				return 1;
 			case Material.GRAPHITE:
 				return 2;
-			case Material.STEEL:
-			case Material.METAGLASS:
-			case Material.PLASTEEL:
-			case Material.THERMITE:
-			case Material.EXIDIUM:
-				return -1;
+			default:
+				console.assert(false);
+				return undefined as never;
 		}
 	}
 }
@@ -630,10 +643,21 @@ export class LiquidDeposit extends Entity {
 
 	constructor(liquid: Liquid) {
 		super('Liquid Deposit', '');
-		let animatedGeneratedTexture = liquid === Liquid.WATER ? animatedGeneratedTextures.waterDeposit : animatedGeneratedTextures.methaneDeposit;
-		this.setParticle(animatedGeneratedTexture.textures[0]);
 		this.liquid = liquid;
+		this.setParticle(this.texture);
 		this.addAttribute(new EntityLiquidDisplayAttribute(liquid));
+	}
+
+	get texture(): Texture {
+		switch (this.liquid) {
+			case Liquid.WATER:
+				return animatedGeneratedTextures.waterDeposit.textures[0];
+			case Liquid.METHANE:
+				return animatedGeneratedTextures.methaneDeposit.textures[0];
+			default:
+				console.assert(false);
+				return undefined as never;
+		}
 	}
 
 	get liquidTier(): number {
