@@ -92,8 +92,10 @@ let colors = {
 	exidium: '#ff33cc',
 	exidiumSecondary: '#444455',
 
-	water: '#6090E0',
-	methane: '#33cc66',
+	water: '#4070D0',
+	waterSecondary: '#a1b1ff',
+	methane: '#686737',
+	methaneSecondary: '#4a955a',
 
 	solar: '#000044',
 	power: '#ffae00',
@@ -148,26 +150,16 @@ export let animatedGeneratedTextures = {
 	]]),
 
 	waterDeposit: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, '#4070D0'],
-		[7, 7, 2, 2, '#F0F0F0'],
-		[3, 8, 2, 1, '#F0F0F0'],
-		[11, 7, 2, 1, '#F0F0F0'],
-	], [
-		[0, 0, 16, 16, '#4070D0'],
-		[6, 6, 4, 4, '#4070D0'],
-		[4, 7, 2, 2, '#4070D0'],
-		[10, 7, 2, 2, '#4070D0'],
+		[0, 0, 16, 16, colors.water],
+		[7, 7, 2, 2, colors.waterSecondary],
+		[3, 8, 2, 1, colors.waterSecondary],
+		[11, 7, 2, 1, colors.waterSecondary],
 	]]),
 	methaneDeposit: new AnimatedGeneratedTextures(16, [[
-		[0, 0, 16, 16, '#30D850'],
-		[7, 7, 2, 2, '#3d9f52'],
-		[3, 3, 2, 2, '#3d9f52'],
-		[11, 11, 2, 2, '#3d9f52'],
-	], [
-		[0, 0, 16, 16, '#30D850'],
-		[6, 6, 4, 4, '#30D850'],
-		[4, 4, 2, 2, '#30D850'],
-		[10, 10, 2, 2, '#30D850'],
+		[0, 0, 16, 16, colors.methane],
+		[7, 7, 3, 3, colors.methaneSecondary],
+		[3, 3, 2, 2, colors.methaneSecondary],
+		[11, 11, 2, 2, colors.methaneSecondary],
 	]]),
 
 	extractor: new AnimatedGeneratedTextures(16, [[
