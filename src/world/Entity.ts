@@ -76,13 +76,13 @@ export class Entity implements Tileable {
 	particles: Particle[] = [];
 
 	constructor(name: string, description: string, size: Vector = Vector.V1, rotation: Rotation = Rotation.UP, tilingSize: Vector = size) {
-		console.assert(!!name);
 		this.name = name;
 		this.size = size;
 		this.tilingSize = tilingSize;
 		this.rotation = rotation;
 
-		this.addAttribute(new EntityNameAttribute(name));
+		if (name)
+			this.addAttribute(new EntityNameAttribute(name));
 		if (description)
 			this.addAttribute(new EntityDescriptionAttribute(description));
 		let spriteName = toCamelCase(name);
@@ -597,7 +597,7 @@ export class MaterialDeposit extends Entity {
 	readonly material: Material;
 
 	constructor(material: Material) {
-		super('Material Deposit', '');
+		super('', '');
 		this.material = material;
 		this.setParticle(this.texture);
 		this.addAttribute(new EntityMaterialDisplayAttribute(material));
@@ -642,7 +642,7 @@ export class LiquidDeposit extends Entity {
 	readonly liquid: Liquid;
 
 	constructor(liquid: Liquid) {
-		super('Liquid Deposit', '');
+		super('', '');
 		this.liquid = liquid;
 		this.setParticle(this.texture);
 		this.addAttribute(new EntityLiquidDisplayAttribute(liquid));
