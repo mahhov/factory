@@ -242,10 +242,12 @@ export class EntityHealthAttribute extends EntityAttribute {
 		}
 
 		if (tile.tileable.container) {
-			if (this.health !== this.lastHealth && !this.particle) {
-				this.particle = tile.tileable.addOverlayParticle(coloredGeneratedTextures.fullRect.texture(uiColors.DAMAGED_RED), tile.tileable.size, world);
-				this.particle.x = tile.position.x;
-				this.particle.y = tile.position.y;
+			if (this.health !== this.lastHealth) {
+				if (!this.particle) {
+					this.particle = tile.tileable.addOverlayParticle(coloredGeneratedTextures.fullRect.texture(uiColors.DAMAGED_RED), tile.tileable.size, world);
+					this.particle.x = tile.position.x;
+					this.particle.y = tile.position.y;
+				}
 				this.lastHealth = Math.max(this.lastHealth - 3, this.health);
 			} else if (this.health === this.lastHealth && this.particle) {
 				tile.tileable.removeOverlayParticle(this.particle, world);

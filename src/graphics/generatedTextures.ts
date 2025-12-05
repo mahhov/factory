@@ -761,5 +761,3 @@ export let animatedGeneratedTextures = {
 		[1, 1, 6, 6, textureColors.hostileRed],
 	]]),
 };
-
-// todo turret, mob
