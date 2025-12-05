@@ -393,6 +393,10 @@ export class World {
 		this.live.replaceTileable(size.scale(.5).floor, this.playerLogic.base);
 
 		([
+			['extractor', 2],
+			['reinforcedExtractor', 2],
+			['quadraticExtractor', 3],
+			['laserExtractor', 4],
 			['steelSmelter', 2],
 			['metaglassFoundry', 2],
 			['plasteelMixer', 3],
