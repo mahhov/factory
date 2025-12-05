@@ -491,45 +491,69 @@ export let animatedGeneratedTextures = {
 		[15, 15, 2, 2, '#9AA0AA'],
 	]]),
 
-	base: new AnimatedGeneratedTextures(40, [[ // todo update
-		[0, 0, 40, 40, '#1A1C20'],
-		[0, 0, 40, 2, '#4C5056'],
-		[0, 38, 40, 2, '#4C5056'],
-		[0, 0, 2, 40, '#4C5056'],
-		[38, 0, 2, 40, '#4C5056'],
-		[4, 4, 2, 2, '#D83030'],
-		[34, 34, 2, 2, '#D83030'],
-		[34, 4, 2, 2, '#D83030'],
-		[4, 34, 2, 2, '#D83030'],
-		[10, 10, 2, 2, '#D83030'],
-		[28, 28, 2, 2, '#D83030'],
-		[28, 10, 2, 2, '#D83030'],
-		[10, 28, 2, 2, '#D83030'],
-		[18, 18, 4, 4, '#F0F0F0'],
-		[18, 0, 4, 4, '#30D850'],
-		[18, 36, 4, 4, '#30D850'],
-		[0, 18, 4, 4, '#FACA10'],
-		[36, 18, 4, 4, '#FACA10'],
-	], [
-		[0, 0, 40, 40, '#1A1C20'],
-		[0, 0, 40, 2, '#4C5056'],
-		[0, 38, 40, 2, '#4C5056'],
-		[0, 0, 2, 40, '#4C5056'],
-		[38, 0, 2, 40, '#4C5056'],
-		[3, 3, 4, 4, '#D83030'],
-		[33, 33, 4, 4, '#D83030'],
-		[33, 3, 4, 4, '#D83030'],
-		[3, 33, 4, 4, '#D83030'],
-		[9, 9, 4, 4, '#D83030'],
-		[27, 27, 4, 4, '#D83030'],
-		[27, 9, 4, 4, '#D83030'],
-		[9, 27, 4, 4, '#D83030'],
-		[17, 17, 6, 6, '#FACA10'],
-		[17, 0, 6, 6, '#30D850'],
-		[17, 34, 6, 6, '#30D850'],
-		[0, 17, 6, 6, '#FACA10'],
-		[34, 17, 6, 6, '#FACA10'],
-	]]),
+// --- base (40x40) - Corrected 8-Spoke Octagon ---
+		base: new AnimatedGeneratedTextures(40, [[
+			// 1. Background Octagon (Rendered first, defining the visible boundary)
+			// Wide sections (BackgroundGrey fill)
+			[0, 14, 40, 12, textureColors.backgroundGrey], // Wide horizontal fill
+			[14, 0, 12, 40, textureColors.backgroundGrey], // Wide vertical fill
+			[4, 4, 32, 32, textureColors.backgroundGrey], // Central square fill (Covers corners)
+
+
+			// 2. Octagonal Structure (wallGrey - The 8 Walls forming the perimeter frame)
+
+			// Cardinal Walls (Straight sections, 12px long, 4px thick)
+			[14, 0, 12, 4, textureColors.wallGrey],     // Top
+			[14, 36, 12, 4, textureColors.wallGrey],    // Bottom
+			[0, 14, 4, 12, textureColors.wallGrey],     // Left
+			[36, 14, 4, 12, textureColors.wallGrey],    // Right
+
+			// Diagonal Walls (Corner sections, 4px thick)
+			[4, 4, 8, 4, textureColors.wallGrey],
+			[4, 8, 4, 4, textureColors.wallGrey],
+			[28, 4, 8, 4, textureColors.wallGrey],
+			[32, 8, 4, 4, textureColors.wallGrey],
+			[4, 32, 8, 4, textureColors.wallGrey],
+			[4, 28, 4, 4, textureColors.wallGrey],
+			[28, 32, 8, 4, textureColors.wallGrey],
+			[32, 28, 4, 4, textureColors.wallGrey],
+
+
+			// 3. Central Power Core (Exidium Core - The nexus)
+			[16, 16, 8, 8, textureColors.exidium],
+			[18, 18, 4, 4, textureColors.white], // Center beacon
+
+			// 4. EIGHT External Bright Nodes (2x2 white squares)
+			// Cardinal Nodes (Center of each straight wall)
+			[19, 2, 2, 2, textureColors.white],   // Top (Y=2)
+			[19, 36, 2, 2, textureColors.white],  // Bottom (Y=36)
+			[2, 19, 2, 2, textureColors.white],   // Left (X=2)
+			[36, 19, 2, 2, textureColors.white],  // Right (X=36)
+
+			// Diagonal Nodes (Center of each corner section)
+			[6, 6, 2, 2, textureColors.white],    // TL Node
+			[32, 6, 2, 2, textureColors.white],   // TR Node
+			[6, 32, 2, 2, textureColors.white],   // BL Node
+			[32, 32, 2, 2, textureColors.white],  // BR Node
+
+			// 5. EIGHT Axil Spokes (axilGrey - Connecting nodes to the core)
+
+			// Cardinal Spokes
+			[19, 4, 2, 12, textureColors.axilGrey],
+			[19, 24, 2, 12, textureColors.axilGrey],
+			[4, 19, 12, 2, textureColors.axilGrey],
+			[24, 19, 12, 2, textureColors.axilGrey],
+
+			// Diagonal Spokes (Stepped 2x2 lines connecting the nodes to the core)
+			[8, 8, 2, 2, textureColors.axilGrey],
+			[12, 12, 2, 2, textureColors.axilGrey],
+			[30, 8, 2, 2, textureColors.axilGrey],
+			[26, 12, 2, 2, textureColors.axilGrey],
+			[8, 30, 2, 2, textureColors.axilGrey],
+			[12, 26, 2, 2, textureColors.axilGrey],
+			[30, 30, 2, 2, textureColors.axilGrey],
+			[26, 26, 2, 2, textureColors.axilGrey],
+		]]),
 
 	pipe: new AnimatedGeneratedTextures(8, [[
 		[2, 0, 1, 8, textureColors.cornerGrey],
