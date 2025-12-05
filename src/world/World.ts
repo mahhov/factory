@@ -396,9 +396,11 @@ export class World {
 			['steelSmelter', 2],
 			['metaglassFoundry', 2],
 			['plasteelMixer', 3],
+			['thermiteForge', 4],
+			['exidiumCatalyst', 4],
 		] as [string, number][]).forEach(([texture, size], i) => {
 			let entity = new Entity(texture, '', new Vector(size));
-			let timedAttribute = new EntityTimedAttribute(40);
+			let timedAttribute = new EntityTimedAttribute(160);
 			entity.addAttribute(timedAttribute);
 			entity.addAttribute(new EntityActiveSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute));
 			this.live.replaceTileable(new Vector(136 + 4 * i, 143), entity);
