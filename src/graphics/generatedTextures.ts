@@ -42,8 +42,9 @@ class ColoredGeneratedTexture<T extends string[]> {
 class AnimatedGeneratedTextures {
 	readonly textures: Texture[];
 
-	constructor(size: number, rectsArray: [number, number, number, number, string][][]) {
-		this.textures = rectsArray.map(rects => rectToTexture(size, rects));
+	constructor(size: number, rectsArray: [number, number, number, number, string][][], frameOrder?: number[]) {
+		let textures = rectsArray.map(rects => rectToTexture(size, rects));
+		this.textures = frameOrder ? frameOrder.map(i => textures[i]) : textures;
 	}
 }
 
@@ -382,21 +383,8 @@ export let animatedGeneratedTextures = {
 			[4, 4, 8, 8, textureColors.wallGrey],
 			[6, 6, 4, 4, textureColors.steel],
 			[7, 7, 2, 2, textureColors.white],
-		], [
-			[0, 0, 16, 16, textureColors.backgroundGrey],
-			[6, 0, 4, 1, textureColors.wallGrey],
-			[6, 15, 4, 1, textureColors.wallGrey],
-			[0, 6, 1, 4, textureColors.wallGrey],
-			[15, 6, 1, 4, textureColors.wallGrey],
-			[0, 0, 1, 1, textureColors.cornerGrey],
-			[15, 0, 1, 1, textureColors.cornerGrey],
-			[0, 15, 1, 1, textureColors.cornerGrey],
-			[15, 15, 1, 1, textureColors.cornerGrey],
-
-			[5, 5, 6, 6, textureColors.wallGrey],
-			[6, 6, 4, 4, textureColors.steel],
 		],
-	]),
+	], [0, 1, 2, 1]),
 	metaglassFoundry: new AnimatedGeneratedTextures(16, [
 		[
 			[0, 0, 16, 16, textureColors.backgroundGrey],
@@ -444,26 +432,8 @@ export let animatedGeneratedTextures = {
 			[3, 3, 10, 10, textureColors.metaglassSecondary],
 			[6, 6, 4, 4, textureColors.metaglass],
 			[7, 7, 2, 2, textureColors.white],
-		], [
-			[0, 0, 16, 16, textureColors.backgroundGrey],
-			[6, 0, 4, 1, textureColors.wallGrey],
-			[6, 15, 4, 1, textureColors.wallGrey],
-			[0, 6, 1, 4, textureColors.wallGrey],
-			[15, 6, 1, 4, textureColors.wallGrey],
-			[0, 0, 1, 1, textureColors.cornerGrey],
-			[15, 0, 1, 1, textureColors.cornerGrey],
-			[0, 15, 1, 1, textureColors.cornerGrey],
-			[15, 15, 1, 1, textureColors.cornerGrey],
-
-			[3, 3, 2, 2, textureColors.metaglassSecondary],
-			[11, 3, 2, 2, textureColors.metaglassSecondary],
-			[3, 11, 2, 2, textureColors.metaglassSecondary],
-			[11, 11, 2, 2, textureColors.metaglassSecondary],
-			[4, 4, 8, 8, textureColors.metaglassSecondary],
-			[6, 6, 4, 4, textureColors.metaglass],
-			[7, 7, 2, 2, textureColors.white],
 		],
-	]),
+	], [0, 1, 2, 1]),
 	plasteelMixer: new AnimatedGeneratedTextures(24, [[
 		[0, 0, 24, 24, textureColors.backgroundGrey],
 		[9, 0, 6, 1, textureColors.wallGrey],
@@ -479,7 +449,76 @@ export let animatedGeneratedTextures = {
 		[9, 9, 6, 6, textureColors.plasteel],
 		[11, 7, 2, 10, textureColors.plasteel],
 		[7, 11, 10, 2, textureColors.plasteel],
-	]]),
+	], [
+		[0, 0, 24, 24, textureColors.backgroundGrey],
+		[9, 0, 6, 1, textureColors.wallGrey],
+		[9, 23, 6, 1, textureColors.wallGrey],
+		[0, 9, 1, 6, textureColors.wallGrey],
+		[23, 9, 1, 6, textureColors.wallGrey],
+		[0, 0, 1, 1, textureColors.cornerGrey],
+		[23, 0, 1, 1, textureColors.cornerGrey],
+		[0, 23, 1, 1, textureColors.cornerGrey],
+		[23, 23, 1, 1, textureColors.cornerGrey],
+
+		[6, 6, 12, 12, textureColors.axilGrey],
+		[9, 9, 6, 6, textureColors.plasteel],
+		[11, 7, 2, 10, textureColors.plasteel],
+		[7, 11, 10, 2, textureColors.plasteel],
+		[11, 11, 2, 2, textureColors.cornerGrey],
+	], [
+		[0, 0, 24, 24, textureColors.backgroundGrey],
+		[9, 0, 6, 1, textureColors.wallGrey],
+		[9, 23, 6, 1, textureColors.wallGrey],
+		[0, 9, 1, 6, textureColors.wallGrey],
+		[23, 9, 1, 6, textureColors.wallGrey],
+		[0, 0, 1, 1, textureColors.cornerGrey],
+		[23, 0, 1, 1, textureColors.cornerGrey],
+		[0, 23, 1, 1, textureColors.cornerGrey],
+		[23, 23, 1, 1, textureColors.cornerGrey],
+
+		[6, 6, 12, 12, textureColors.axilGrey],
+		[9, 9, 6, 6, textureColors.plasteel],
+		[11, 7, 2, 10, textureColors.plasteel],
+		[7, 11, 10, 2, textureColors.plasteel],
+		[10, 10, 4, 4, textureColors.cornerGrey],
+		[11, 11, 2, 2, textureColors.plasteel],
+	], [
+		[0, 0, 24, 24, textureColors.backgroundGrey],
+		[9, 0, 6, 1, textureColors.wallGrey],
+		[9, 23, 6, 1, textureColors.wallGrey],
+		[0, 9, 1, 6, textureColors.wallGrey],
+		[23, 9, 1, 6, textureColors.wallGrey],
+		[0, 0, 1, 1, textureColors.cornerGrey],
+		[23, 0, 1, 1, textureColors.cornerGrey],
+		[0, 23, 1, 1, textureColors.cornerGrey],
+		[23, 23, 1, 1, textureColors.cornerGrey],
+
+		[6, 6, 12, 12, textureColors.axilGrey],
+		[9, 9, 6, 6, textureColors.plasteel],
+		[11, 7, 2, 10, textureColors.plasteel],
+		[7, 11, 10, 2, textureColors.plasteel],
+		[9, 9, 6, 6, textureColors.cornerGrey],
+		[10, 10, 4, 4, textureColors.plasteel],
+	], [
+		[0, 0, 24, 24, textureColors.backgroundGrey],
+		[9, 0, 6, 1, textureColors.wallGrey],
+		[9, 23, 6, 1, textureColors.wallGrey],
+		[0, 9, 1, 6, textureColors.wallGrey],
+		[23, 9, 1, 6, textureColors.wallGrey],
+		[0, 0, 1, 1, textureColors.cornerGrey],
+		[23, 0, 1, 1, textureColors.cornerGrey],
+		[0, 23, 1, 1, textureColors.cornerGrey],
+		[23, 23, 1, 1, textureColors.cornerGrey],
+
+		[6, 6, 12, 12, textureColors.axilGrey],
+		[9, 9, 6, 6, textureColors.plasteel],
+		[11, 7, 2, 10, textureColors.plasteel],
+		[7, 11, 10, 2, textureColors.plasteel],
+		[11, 7, 2, 2, textureColors.cornerGrey],
+		[11, 15, 2, 2, textureColors.cornerGrey],
+		[7, 11, 2, 2, textureColors.cornerGrey],
+		[15, 11, 2, 2, textureColors.cornerGrey],
+	]], [0, 1, 2, 3, 4, 3, 2, 1]),
 	thermiteForge: new AnimatedGeneratedTextures(32, [[
 		[0, 0, 32, 32, textureColors.backgroundGrey],
 		[8, 8, 16, 16, textureColors.axilGrey],

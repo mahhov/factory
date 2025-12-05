@@ -5,7 +5,15 @@ import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
-import {EntityActiveSpriteAttribute, EntityBuildableAttribute, EntityMobHerdPositionAttribute, EntityTimedAttribute, TickResult, TooltipType} from './EntityAttribute.js';
+import {
+	EntityActiveSpriteAttribute,
+	EntityActiveSpriteLoopBackAttribute,
+	EntityBuildableAttribute,
+	EntityMobHerdPositionAttribute,
+	EntityTimedAttribute,
+	TickResult,
+	TooltipType,
+} from './EntityAttribute.js';
 import MobLogic from './MobLogic.js';
 import PlayerLogic from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
@@ -385,7 +393,9 @@ export class World {
 		this.live.replaceTileable(size.scale(.5).floor, this.playerLogic.base);
 
 		([
-			['laserExtractor', 3],
+			['steelSmelter', 2],
+			['metaglassFoundry', 2],
+			['plasteelMixer', 3],
 		] as [string, number][]).forEach(([texture, size], i) => {
 			let entity = new Entity(texture, '', new Vector(size));
 			let timedAttribute = new EntityTimedAttribute(40);
