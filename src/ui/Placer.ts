@@ -260,19 +260,6 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			.ceil;
 		this.world.planning.clearAllEntities();
 
-		let minPosition = this.startPosition.min(this.endPosition).clamp(Vector.V0, world.size.subtract(Vector.V1));
-		let maxPosition = this.startPosition.max(this.endPosition).clamp(Vector.V0, world.size.subtract(Vector.V1));
-		let i = 0;
-		for (let x = minPosition.x; x <= maxPosition.x; x += toolEntity.tilingSize.x)
-			for (let y = minPosition.y; y <= maxPosition.y; y += toolEntity.tilingSize.y)
-				if (planning) {
-					let spriteHolder = this.getSpriteHolder(i++);
-					spriteHolder.setEntity(toolEntity, this.rotation);
-					world.planning.addTileableUnchecked(new Vector(x, y), spriteHolder);
-				} else
-					world.queue.replaceTileable(new Vector(x, y), EntityCreator.createToolEntity(this.tool, this.rotation));
-		return;
-
 		if (this.tool === Tool.CLEAR || this.tool === Tool.STEEL_WALL || this.tool === Tool.TITANIUM_WALL) {
 			let minPosition = this.startPosition.min(this.endPosition).clamp(Vector.V0, world.size.subtract(Vector.V1));
 			let maxPosition = this.startPosition.max(this.endPosition).clamp(Vector.V0, world.size.subtract(Vector.V1));
