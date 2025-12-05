@@ -1,5 +1,5 @@
 import {AnimatedSprite, Container, Particle, ParticleContainer, Sprite} from 'pixi.js';
-import {generatedTextures} from '../graphics/generatedTextures.js';
+import {generatedTextures, textureColors} from '../graphics/generatedTextures.js';
 import Painter from '../graphics/Painter.js';
 import TextLine from '../ui/TextLine.js';
 import {generateTerrain} from '../util/Noise.js';
@@ -399,6 +399,27 @@ export class World {
 			let entity = new Entity(texture, '', new Vector(size));
 			let timedAttribute = new EntityTimedAttribute(160);
 			entity.addAttribute(timedAttribute);
+			if (i < 3) {
+				let colors = [
+					textureColors.tier1Secondary,
+					textureColors.tier2Secondary,
+					textureColors.tier3Secondary,
+				];
+				let sprite = new Sprite(generatedTextures.extractorTop.texture(size * 8, colors[i]));
+				Entity.rotateSprite(sprite, Rotation.UP);
+				entity.addOverlaySprites('x', [sprite]);
+				entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, true));
+			}
+			if (i === 3) {
+				let sprite = new Sprite(generatedTextures.extractorTop.texture(size * 8, textureColors.tier4));
+				let spriteCounter = new Sprite(generatedTextures.extractorTop.texture(size * 4, textureColors.tier4Secondary));
+				Entity.rotateSprite(sprite, Rotation.UP);
+				Entity.rotateSprite(spriteCounter, Rotation.UP);
+				spriteCounter.position = new Vector(size * 4);
+				entity.addOverlaySprites('x', [sprite, spriteCounter]);
+				entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, true));
+				entity.addAttribute(new EntityRotateSpriteAttribute(spriteCounter, timedAttribute, true));
+			}
 			entity.addAttribute(new EntityActiveSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute));
 			this.live.replaceTileable(new Vector(136 + 4 * i, 143), entity);
 		});

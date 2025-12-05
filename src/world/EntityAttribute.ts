@@ -1505,6 +1505,25 @@ export class EntityActiveSpriteAttribute extends EntityAttribute {
 	}
 }
 
+export class EntityRotateSpriteAttribute extends EntityAttribute {
+	private readonly sprite: Sprite;
+	private readonly timedAttribute: EntityTimedAttribute;
+	private readonly clockwise: boolean;
+
+	constructor(sprite: Sprite, timedAttribute: EntityTimedAttribute, clockwise: boolean) {
+		super();
+		this.sprite = sprite;
+		this.timedAttribute = timedAttribute;
+		this.clockwise = clockwise;
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		let ratio = this.clockwise ? this.timedAttribute.counter.ratio : 1 - this.timedAttribute.counter.ratio;
+		this.sprite.angle = ratio * 360;
+		this.tickResult = TickResult.DONE;
+	}
+}
+
 export class EntitySpawnParticleAttribute extends EntityAttribute {
 	private readonly count: number;
 	private readonly topLeft: Vector;
