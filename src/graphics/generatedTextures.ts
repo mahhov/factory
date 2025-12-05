@@ -330,8 +330,11 @@ export let animatedGeneratedTextures = {
 	dispenser: new AnimatedGeneratedTextures(8, [[
 		[1, 1, 6, 6, textureColors.cornerGrey],
 		[2, 2, 4, 4, textureColors.wallGrey],
-		[3, 3, 2, 3, textureColors.cornerGrey],
-		[3, 5, 2, 3, textureColors.cornerGrey],
+		[3, 3, 2, 5, textureColors.cornerGrey],
+	],[
+		[1, 1, 6, 6, textureColors.cornerGrey],
+		[2, 2, 4, 4, textureColors.wallGrey],
+		[3, 2, 2, 5, textureColors.cornerGrey],
 	]]),
 	// bridge: new AnimatedGeneratedTextures(8, [[
 	// 	[2, 2, 4, 4, colors.wallGrey],
