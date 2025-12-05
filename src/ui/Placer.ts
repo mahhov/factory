@@ -1,7 +1,7 @@
 import {Container, Graphics, Text} from 'pixi.js';
 import Camera from '../Camera.js';
-import uiColors from '../graphics/uiColors.js';
 import Painter from '../graphics/Painter.js';
+import uiColors from '../graphics/uiColors.js';
 import Emitter from '../util/Emitter.js';
 import {toTitleCase} from '../util/stringCase.js';
 import util from '../util/util.js';
@@ -70,11 +70,11 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			this.toolGroupSelectionRect
 				.clear()
 				.rect(0, 0, ...Placer.toolUiCoordinates(true, 0)[1])
-				.stroke({width: 3 / painter.minCanvasSize, color: uiColors.SELECTED_RECT_OUTLINE});
+				.stroke({width: 3 / painter.minCanvasSize, color: uiColors.SELECTED_RECT_OUTLINE, alignment: -.5});
 			this.toolSelectionRect
 				.clear()
 				.rect(0, 0, ...Placer.toolUiCoordinates(false, 0)[1])
-				.stroke({width: 3 / painter.minCanvasSize, color: uiColors.SELECTED_RECT_OUTLINE});
+				.stroke({width: 3 / painter.minCanvasSize, color: uiColors.SELECTED_RECT_OUTLINE, alignment: -.5});
 		});
 
 		this.multilineText = new MultilineText(painter);
@@ -189,13 +189,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 	private addToolUiButton(coordinates: [number, number][], iconContainer: Container, spriteContainer: Container, textContainer: Container, text: string) {
 		[spriteContainer.x, spriteContainer.y] = coordinates[0];
 		[spriteContainer.width, spriteContainer.height] = coordinates[1];
-		iconContainer.addChild(new Graphics()
-			.rect(...coordinates[0], ...coordinates[1])
-			.fill({width: 1 / this.painter.minCanvasSize, color: uiColors.TEXT_RECT_BACKGROUND}));
 		iconContainer.addChild(spriteContainer);
-		iconContainer.addChild(new Graphics()
-			.rect(...coordinates[0], ...coordinates[1])
-			.stroke({width: 1 / this.painter.minCanvasSize, color: uiColors.RECT_OUTLINE}));
 		textContainer.addChild(new Text({
 			text,
 			style: {
