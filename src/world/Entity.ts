@@ -1,6 +1,6 @@
 import {AnimatedSprite, Container, Particle, Sprite, Texture} from 'pixi.js';
-import uiColors from '../graphics/uiColors.js';
 import {animatedGeneratedTextures, coloredGeneratedTextures} from '../graphics/generatedTextures.js';
+import uiColors from '../graphics/uiColors.js';
 import TextLine from '../ui/TextLine.js';
 import {toCamelCase} from '../util/stringCase.js';
 import util from '../util/util.js';

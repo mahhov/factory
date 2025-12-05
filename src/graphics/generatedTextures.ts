@@ -331,7 +331,7 @@ export let animatedGeneratedTextures = {
 		[1, 1, 6, 6, textureColors.cornerGrey],
 		[2, 2, 4, 4, textureColors.wallGrey],
 		[3, 3, 2, 5, textureColors.cornerGrey],
-	],[
+	], [
 		[1, 1, 6, 6, textureColors.cornerGrey],
 		[2, 2, 4, 4, textureColors.wallGrey],
 		[3, 2, 2, 5, textureColors.cornerGrey],

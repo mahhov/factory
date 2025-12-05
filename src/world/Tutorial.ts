@@ -1,6 +1,6 @@
 import Camera from '../Camera.js';
-import uiColors from '../graphics/uiColors.js';
 import Painter from '../graphics/Painter.js';
+import uiColors from '../graphics/uiColors.js';
 import MultilineText from '../ui/MultilineText.js';
 import TextLine from '../ui/TextLine.js';
 import Vector from '../util/Vector.js';

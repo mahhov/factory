@@ -1,5 +1,4 @@
 import {toSnakeCase, toTitleCase} from '../util/stringCase.js';
-import util from '../util/util.js';
 import {Liquid, Material, Resource, ResourceUtils} from './Resource.js';
 
 type StringRecord = Record<string, string>;

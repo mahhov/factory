@@ -1,7 +1,7 @@
 import {Container, Graphics} from 'pixi.js';
 import Camera from '../Camera.js';
-import uiColors from '../graphics/uiColors.js';
 import Painter from '../graphics/Painter.js';
+import uiColors from '../graphics/uiColors.js';
 import Vector from '../util/Vector.js';
 import {Entity} from '../world/Entity.js';
 import {TooltipType} from '../world/EntityAttribute.js';

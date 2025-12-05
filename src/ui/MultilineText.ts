@@ -1,6 +1,6 @@
 import {Container, Graphics, Text} from 'pixi.js';
-import uiColors from '../graphics/uiColors.js';
 import Painter from '../graphics/Painter.js';
+import uiColors from '../graphics/uiColors.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import TextLine from './TextLine.js';
