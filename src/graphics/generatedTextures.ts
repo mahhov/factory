@@ -479,17 +479,6 @@ export let animatedGeneratedTextures = {
 		[9, 8, 6, 8, textureColors.water],
 		[9, 9, 6, 6, textureColors.water],
 	]]),
-	bunker: new AnimatedGeneratedTextures(32, [[ // todo update
-		[0, 0, 32, 1, '#4C5056'],
-		[0, 31, 32, 1, '#4C5056'],
-		[0, 0, 1, 32, '#4C5056'],
-		[31, 0, 1, 32, '#4C5056'],
-		[8, 8, 16, 1, '#D83030'],
-		[8, 23, 16, 1, '#D83030'],
-		[8, 8, 1, 16, '#D83030'],
-		[23, 8, 1, 16, '#D83030'],
-		[15, 15, 2, 2, '#9AA0AA'],
-	]]),
 
 	base: new AnimatedGeneratedTextures(40, [[
 		[0, 0, 40, 40, textureColors.wallGrey],
@@ -577,7 +566,17 @@ export let animatedGeneratedTextures = {
 		[3, 3, 10, 10, textureColors.titanium],
 		[4, 4, 8, 8, textureColors.backgroundGrey],
 	]]),
-
+	bunker: new AnimatedGeneratedTextures(16, [[
+		[0, 0, 16, 16, textureColors.axilGrey],
+		[1, 1, 14, 14, textureColors.backgroundGrey],
+		[3, 3, 10, 10, textureColors.plasteel],
+		[5, 5, 6, 6, textureColors.backgroundGrey],
+		[3, 3, 2, 2, textureColors.axilGrey],
+		[11, 3, 2, 2, textureColors.axilGrey],
+		[3, 11, 2, 2, textureColors.axilGrey],
+		[11, 11, 2, 2, textureColors.axilGrey],
+		[6, 6, 4, 4, textureColors.plasteel],
+	]]),
 	shrapnelTurret: new AnimatedGeneratedTextures(16, [[
 		[1, 1, 5, 5, textureColors.wallGrey],
 		[10, 1, 5, 5, textureColors.wallGrey],

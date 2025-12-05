@@ -385,15 +385,7 @@ export class World {
 		this.live.replaceTileable(size.scale(.5).floor, this.playerLogic.base);
 
 		([
-			['swarmDrone', 1],
-			['meleeTank', 2],
-			['artillery', 2],
-			['zenith', 3],
-			['scrambler', 1],
-			['hive', 4],
-			['behemoth', 5],
-			['bomber', 2],
-			['harvester', 1],
+			['bunker', 2],
 		] as [string, number][]).forEach(([texture, size], i) => {
 			let entity = new Entity(texture, '', new Vector(size));
 			this.live.replaceTileable(new Vector(136 + 4 * i, 143), entity);
