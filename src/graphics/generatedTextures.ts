@@ -22,24 +22,33 @@ let rectToTexture = (size: number, rects: [number, number, number, number, strin
 	return new Texture({source});
 };
 
-class ColoredGeneratedTexture<T extends string[]> {
+class ParameterizedGeneratedTexture<T extends any[]> {
 	private readonly textureCache: Record<string, Texture> = {};
-	protected readonly size: number;
-	private readonly rectsHandler: (...colors: T) => [number, number, number, number, string][];
+	private readonly generator: (...params: T) => Texture;
 
-	constructor(size: number, rectsHandler: (...colors: T) => [number, number, number, number, string][]) {
-		this.size = size;
-		this.rectsHandler = rectsHandler;
+	constructor(generator: (...params: T) => Texture) {
+		this.generator = generator;
 	}
 
-	texture(...colors: T): Texture {
-		let key = colors.join();
-		this.textureCache[key] ||= rectToTexture(this.size, this.rectsHandler(...colors));
+	texture(...params: T): Texture {
+		let key = params.join();
+		this.textureCache[key] ||= this.generator(...params);
 		return this.textureCache[key];
 	}
 }
 
-class AnimatedGeneratedTextures {
+class SizedParameterizedGeneratedTexture<T extends any[]> extends ParameterizedGeneratedTexture<T> {
+	protected readonly size: number;
+	private readonly rectsHandler: (...params: T) => [number, number, number, number, string][];
+
+	constructor(size: number, rectsHandler: (...params: T) => [number, number, number, number, string][]) {
+		super((...params: T) => rectToTexture(size, rectsHandler(...params)));
+		this.size = size;
+		this.rectsHandler = rectsHandler;
+	}
+}
+
+export class AnimatedGeneratedTextures {
 	readonly textures: Texture[];
 
 	constructor(size: number, rectsArray: [number, number, number, number, string][][], frameOrder?: number[]) {
@@ -47,12 +56,6 @@ class AnimatedGeneratedTextures {
 		this.textures = frameOrder ? frameOrder.map(i => textures[i]) : textures;
 	}
 }
-
-export let coloredGeneratedTextures = {
-	fullRect: new ColoredGeneratedTexture(1, color => [
-		[0, 0, 1, 1, color],
-	]),
-};
 
 export let textureColors = {
 	white: '#ffffff',
@@ -109,7 +112,11 @@ export let textureColors = {
 	hostileOrange: '#faca10',
 };
 
-export let animatedGeneratedTextures = {
+export let generatedTextures = {
+	fullRect: new SizedParameterizedGeneratedTexture(1, (color: string) => [
+		[0, 0, 1, 1, color],
+	]),
+
 	ironDeposit: new AnimatedGeneratedTextures(16, [[
 		[2, 3, 6, 4, textureColors.iron],
 		[10, 5, 4, 6, textureColors.ironSecondary],
@@ -175,8 +182,6 @@ export let animatedGeneratedTextures = {
 		[0, 15, 1, 1, textureColors.cornerGrey],
 		[15, 15, 1, 1, textureColors.cornerGrey],
 		[6, 6, 4, 4, textureColors.tier1],
-		[7, 0, 2, 16, textureColors.axilGrey],
-		[0, 7, 16, 2, textureColors.axilGrey],
 	], [
 		[0, 0, 16, 16, textureColors.wallGrey],
 		[1, 1, 14, 14, textureColors.black],
@@ -186,9 +191,11 @@ export let animatedGeneratedTextures = {
 		[15, 15, 1, 1, textureColors.cornerGrey],
 		[5, 5, 6, 6, textureColors.tier1Secondary],
 		[6, 6, 4, 4, textureColors.tier1],
-		[7, 0, 2, 16, textureColors.axilGrey],
-		[0, 7, 16, 2, textureColors.axilGrey],
 	]]),
+	extractorTop: new ParameterizedGeneratedTexture((size: number) => rectToTexture(size, [
+		[size / 2 - 1, 0, 2, size, textureColors.axilGrey],
+		[0, size / 2 - 1, size, 2, textureColors.axilGrey],
+	])),
 	reinforcedExtractor: new AnimatedGeneratedTextures(24, [[
 		[0, 0, 24, 24, textureColors.wallGrey],
 		[1, 1, 22, 22, textureColors.black],
@@ -197,8 +204,6 @@ export let animatedGeneratedTextures = {
 		[0, 23, 1, 1, textureColors.cornerGrey],
 		[23, 23, 1, 1, textureColors.cornerGrey],
 		[9, 9, 6, 6, textureColors.tier2],
-		[11, 0, 2, 24, textureColors.axilGrey],
-		[0, 11, 24, 2, textureColors.axilGrey],
 	], [
 		[0, 0, 24, 24, textureColors.wallGrey],
 		[1, 1, 22, 22, textureColors.black],
@@ -208,8 +213,6 @@ export let animatedGeneratedTextures = {
 		[23, 23, 1, 1, textureColors.cornerGrey],
 		[8, 8, 8, 8, textureColors.tier2Secondary],
 		[9, 9, 6, 6, textureColors.tier2],
-		[11, 0, 2, 24, textureColors.axilGrey],
-		[0, 11, 24, 2, textureColors.axilGrey],
 	]]),
 	quadraticExtractor: new AnimatedGeneratedTextures(32, [[
 		[0, 0, 32, 32, textureColors.wallGrey],
@@ -223,8 +226,6 @@ export let animatedGeneratedTextures = {
 		[14, 20, 4, 4, textureColors.tier3],
 		[8, 14, 4, 4, textureColors.tier3],
 		[20, 14, 4, 4, textureColors.tier3],
-		[15, 0, 2, 32, textureColors.axilGrey],
-		[0, 15, 32, 2, textureColors.axilGrey],
 	], [
 		[0, 0, 32, 32, textureColors.wallGrey],
 		[1, 1, 30, 30, textureColors.black],
@@ -243,8 +244,6 @@ export let animatedGeneratedTextures = {
 		[14, 20, 4, 4, textureColors.tier3],
 		[8, 14, 4, 4, textureColors.tier3],
 		[20, 14, 4, 4, textureColors.tier3],
-		[15, 0, 2, 32, textureColors.axilGrey],
-		[0, 15, 32, 2, textureColors.axilGrey],
 	]]),
 	laserExtractor: new AnimatedGeneratedTextures(32, [[
 		[0, 0, 32, 32, textureColors.wallGrey],

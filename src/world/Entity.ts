@@ -1,5 +1,5 @@
 import {AnimatedSprite, Container, Particle, Sprite, Texture} from 'pixi.js';
-import {animatedGeneratedTextures, coloredGeneratedTextures} from '../graphics/generatedTextures.js';
+import {AnimatedGeneratedTextures, generatedTextures} from '../graphics/generatedTextures.js';
 import uiColors from '../graphics/uiColors.js';
 import TextLine from '../ui/TextLine.js';
 import {toCamelCase} from '../util/stringCase.js';
@@ -86,8 +86,9 @@ export class Entity implements Tileable {
 		if (description)
 			this.addAttribute(new EntityDescriptionAttribute(description));
 		let spriteName = toCamelCase(name);
-		if (spriteName in animatedGeneratedTextures)
-			this.setSprite(new AnimatedSprite(animatedGeneratedTextures[spriteName as keyof typeof animatedGeneratedTextures]));
+		let generatedTexture = generatedTextures[spriteName as keyof typeof generatedTextures];
+		if (generatedTexture instanceof AnimatedGeneratedTextures)
+			this.setSprite(new AnimatedSprite(generatedTexture));
 	}
 
 	static rotateSprite(sprite: Sprite, rotation: Rotation) {
@@ -198,7 +199,7 @@ export class Empty extends Entity {
 export class Clear extends Entity {
 	constructor() {
 		super('Clear', '');
-		this.setSprite(new Sprite(coloredGeneratedTextures.fullRect.texture(uiColors.PROJECTILE_RED)));
+		this.setSprite(new Sprite(generatedTextures.fullRect.texture(uiColors.PROJECTILE_RED)));
 	}
 }
 
@@ -606,15 +607,15 @@ export class MaterialDeposit extends Entity {
 	get texture(): Texture {
 		switch (this.material) {
 			case Material.IRON:
-				return animatedGeneratedTextures.ironDeposit.textures[0];
+				return generatedTextures.ironDeposit.textures[0];
 			case Material.FLUX_SAND:
-				return animatedGeneratedTextures.fluxSandDeposit.textures[0];
+				return generatedTextures.fluxSandDeposit.textures[0];
 			case Material.SULPHUR:
-				return animatedGeneratedTextures.sulphurDeposit.textures[0];
+				return generatedTextures.sulphurDeposit.textures[0];
 			case Material.TITANIUM:
-				return animatedGeneratedTextures.titaniumDeposit.textures[0];
+				return generatedTextures.titaniumDeposit.textures[0];
 			case Material.GRAPHITE:
-				return animatedGeneratedTextures.graphiteDeposit.textures[0];
+				return generatedTextures.graphiteDeposit.textures[0];
 			default:
 				console.assert(false);
 				return undefined as never;
@@ -651,9 +652,9 @@ export class LiquidDeposit extends Entity {
 	get texture(): Texture {
 		switch (this.liquid) {
 			case Liquid.WATER:
-				return animatedGeneratedTextures.waterDeposit.textures[0];
+				return generatedTextures.waterDeposit.textures[0];
 			case Liquid.METHANE:
-				return animatedGeneratedTextures.methaneDeposit.textures[0];
+				return generatedTextures.methaneDeposit.textures[0];
 			default:
 				console.assert(false);
 				return undefined as never;
@@ -673,7 +674,7 @@ export class LiquidDeposit extends Entity {
 export class ProjectileMob extends Entity {
 	constructor(size: number, health: number, movementSpeed: number, visualRange: number, attackRange: number, projectileCount: number, projectileDamageSize: number, projectileSpeed: number, projectileCollisionSize: number, projectileDamage: number, projectileAttackLatency: number, projectileSpreadDegrees: number) {
 		super('Projectile Mob', '', new Vector(size));
-		this.setParticle(animatedGeneratedTextures.swarmDrone.textures[0]);
+		this.setParticle(generatedTextures.swarmDrone.textures[0]);
 		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(movementSpeed);
 		this.addAttribute(mobHerdPositionAttribute);
 		let findTargetAttribute = new EntityFindTargetAttribute(visualRange, 1, false, true);
@@ -696,7 +697,7 @@ export class ProjectileMob extends Entity {
 export class Projectile extends Entity {
 	constructor(velocity: Vector, damageSize: number, duration: number, collisionSize: number, damage: number, sourceFriendly: boolean) {
 		super('Projectile', '', new Vector(collisionSize));
-		this.setParticle(coloredGeneratedTextures.fullRect.texture(sourceFriendly ? uiColors.PROJECTILE_BLUE : uiColors.PROJECTILE_RED));
+		this.setParticle(generatedTextures.fullRect.texture(sourceFriendly ? uiColors.PROJECTILE_BLUE : uiColors.PROJECTILE_RED));
 		// todo homing projectile
 		this.addAttribute(new EntityDirectionMovementAttribute(velocity));
 		let collisionFindTargetAttribute = new EntityFindTargetAttribute(collisionSize, 1, sourceFriendly, !sourceFriendly);
@@ -705,8 +706,8 @@ export class Projectile extends Entity {
 			collisionFindTargetAttribute,
 			damageSize ? damageFindTargetAttribute : null,
 			new EntityDamageTargetAttribute(damageFindTargetAttribute, damage),
-			new EntitySpawnParticleAttribute(5, Vector.V0, Vector.V0, .15, .3, .015, 50, coloredGeneratedTextures.fullRect.texture(uiColors.SMOKE_GRAY)),
-			damageSize ? new EntitySpawnParticleAttribute(1, Vector.V0, Vector.V0, damageSize * 2, damageSize * 2, 0, 50, coloredGeneratedTextures.fullRect.texture(uiColors.DAMAGE_AREA_RED)) : null,
+			new EntitySpawnParticleAttribute(5, Vector.V0, Vector.V0, .15, .3, .015, 50, generatedTextures.fullRect.texture(uiColors.SMOKE_GRAY)),
+			damageSize ? new EntitySpawnParticleAttribute(1, Vector.V0, Vector.V0, damageSize * 2, damageSize * 2, 0, 50, generatedTextures.fullRect.texture(uiColors.DAMAGE_AREA_RED)) : null,
 			new EntityExpireProjectileAttribute(),
 		].filter(v => v) as EntityAttribute[]));
 		this.addAttribute(new EntityChainAttribute([

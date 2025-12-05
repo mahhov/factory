@@ -1,5 +1,5 @@
 import {AnimatedSprite, Particle, Sprite, Texture} from 'pixi.js';
-import {coloredGeneratedTextures} from '../graphics/generatedTextures.js';
+import {generatedTextures} from '../graphics/generatedTextures.js';
 import uiColors from '../graphics/uiColors.js';
 import TextLine from '../ui/TextLine.js';
 import Counter from '../util/Counter.js';
@@ -244,7 +244,7 @@ export class EntityHealthAttribute extends EntityAttribute {
 		if (tile.tileable.container) {
 			if (this.health !== this.lastHealth) {
 				if (!this.particle) {
-					this.particle = tile.tileable.addOverlayParticle(coloredGeneratedTextures.fullRect.texture(uiColors.DAMAGED_RED), tile.tileable.size, world);
+					this.particle = tile.tileable.addOverlayParticle(generatedTextures.fullRect.texture(uiColors.DAMAGED_RED), tile.tileable.size, world);
 					this.particle.x = tile.position.x;
 					this.particle.y = tile.position.y;
 				}
@@ -826,7 +826,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 
 			let cvs = connection && connectionVectors(connection.subtract(tile.position));
 			if (cvs) {
-				let texture = coloredGeneratedTextures.fullRect.texture(uiColors.POWER_TEXT);
+				let texture = generatedTextures.fullRect.texture(uiColors.POWER_TEXT);
 				this.particles[i] = tile.tileable.addOverlayParticle(texture, cvs[1], world);
 				let position = tile.position.add(cvs[0]);
 				this.particles[i].x = position.x;
@@ -1097,7 +1097,7 @@ export class EntityLiquidBridgeConnectAttribute extends EntityAttribute {
 
 		let cvs = connectedPosition && connectionVectors(connectedPosition.subtract(tile.position));
 		if (cvs) {
-			let texture = coloredGeneratedTextures.fullRect.texture(uiColors.LIQUID_TEXT);
+			let texture = generatedTextures.fullRect.texture(uiColors.LIQUID_TEXT);
 			this.particle = tile.tileable.addOverlayParticle(texture, cvs[1], world);
 			let position = tile.position.add(cvs[0]);
 			this.particle.x = position.x;
@@ -1442,7 +1442,7 @@ export class EntityMaterialOverlayAttribute extends EntityAttribute {
 			if (material !== this.material) {
 				this.material = material;
 				let color = ResourceUtils.materialColor(material);
-				this.particle = tile.tileable.addOverlayParticle(coloredGeneratedTextures.fullRect.texture(color), new Vector(.5), world);
+				this.particle = tile.tileable.addOverlayParticle(generatedTextures.fullRect.texture(color), new Vector(.5), world);
 			}
 			let shiftRatio = this.timedAttribute.counter.ratio || 1;
 			let shift = RotationUtils.positionShift(this.rotation);
@@ -1479,7 +1479,7 @@ export class EntityLiquidOverlayAttribute extends EntityAttribute {
 				this.liquid = liquid;
 				let color = ResourceUtils.liquidColor(liquid);
 				let size = tile.tileable.size.scale(.25);
-				this.particle = tile.tileable.addOverlayParticle(coloredGeneratedTextures.fullRect.texture(color), size, world);
+				this.particle = tile.tileable.addOverlayParticle(generatedTextures.fullRect.texture(color), size, world);
 				let position = tile.position.add(tile.tileable.size.subtract(size).scale(.5));
 				this.particle.x = position.x;
 				this.particle.y = position.y;

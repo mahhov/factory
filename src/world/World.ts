@@ -1,19 +1,12 @@
 import {AnimatedSprite, Container, Particle, ParticleContainer, Sprite} from 'pixi.js';
+import {generatedTextures} from '../graphics/generatedTextures.js';
 import Painter from '../graphics/Painter.js';
 import TextLine from '../ui/TextLine.js';
 import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
-import {
-	EntityActiveSpriteAttribute,
-	EntityActiveSpriteLoopBackAttribute,
-	EntityBuildableAttribute,
-	EntityMobHerdPositionAttribute,
-	EntityTimedAttribute,
-	TickResult,
-	TooltipType,
-} from './EntityAttribute.js';
+import {EntityActiveSpriteAttribute, EntityBuildableAttribute, EntityMobHerdPositionAttribute, EntityRotateSpriteAttribute, EntityTimedAttribute, TickResult, TooltipType} from './EntityAttribute.js';
 import MobLogic from './MobLogic.js';
 import PlayerLogic from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
@@ -394,8 +387,8 @@ export class World {
 
 		([
 			['extractor', 2],
-			['reinforcedExtractor', 2],
-			['quadraticExtractor', 3],
+			['reinforcedExtractor', 3],
+			['quadraticExtractor', 4],
 			['laserExtractor', 4],
 			['steelSmelter', 2],
 			['metaglassFoundry', 2],
