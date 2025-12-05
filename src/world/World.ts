@@ -1,11 +1,11 @@
-import {Container, Particle, ParticleContainer, Sprite} from 'pixi.js';
+import {AnimatedSprite, Container, Particle, ParticleContainer, Sprite} from 'pixi.js';
 import Painter from '../graphics/Painter.js';
 import TextLine from '../ui/TextLine.js';
 import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
-import {EntityBuildableAttribute, EntityMobHerdPositionAttribute, TickResult, TooltipType} from './EntityAttribute.js';
+import {EntityActiveSpriteAttribute, EntityBuildableAttribute, EntityMobHerdPositionAttribute, EntityTimedAttribute, TickResult, TooltipType} from './EntityAttribute.js';
 import MobLogic from './MobLogic.js';
 import PlayerLogic from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
@@ -385,9 +385,12 @@ export class World {
 		this.live.replaceTileable(size.scale(.5).floor, this.playerLogic.base);
 
 		([
-			['bunker', 2],
+			['laserExtractor', 3],
 		] as [string, number][]).forEach(([texture, size], i) => {
 			let entity = new Entity(texture, '', new Vector(size));
+			let timedAttribute = new EntityTimedAttribute(40);
+			entity.addAttribute(timedAttribute);
+			entity.addAttribute(new EntityActiveSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute));
 			this.live.replaceTileable(new Vector(136 + 4 * i, 143), entity);
 		});
 
