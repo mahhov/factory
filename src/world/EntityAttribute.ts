@@ -1499,7 +1499,7 @@ export class EntityLiquidOverlayAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityActiveSpriteAttribute extends EntityAttribute {
+export class EntityAnimateSpriteAttribute extends EntityAttribute {
 	private readonly sprite: AnimatedSprite;
 	private readonly timedAttribute: EntityTimedAttribute;
 

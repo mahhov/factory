@@ -27,7 +27,7 @@ import {
 	Well,
 } from '../world/Entity.js';
 import {
-	EntityActiveSpriteAttribute,
+	EntityAnimateSpriteAttribute,
 	EntityBuildableAttribute,
 	EntityCoolantConsumeAttribute,
 	EntityCoolantProduceAttribute,
@@ -145,8 +145,8 @@ let typeMap: TypeMap = {
 	EntityDirectionMovementAttribute,
 	EntityDamageTargetAttribute,
 	EntityExpireProjectileAttribute,
-	EntityMaterialFullSpriteAttribute: EntityMaterialOverlayAttribute,
-	EntityActiveSpriteAttribute,
+	EntityMaterialOverlayAttribute,
+	EntityAnimateSpriteAttribute,
 
 	Vector,
 	Counter,

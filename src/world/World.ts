@@ -6,7 +6,7 @@ import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
-import {EntityActiveSpriteAttribute, EntityBuildableAttribute, EntityMobHerdPositionAttribute, EntityRotateSpriteAttribute, EntityTimedAttribute, TickResult, TooltipType} from './EntityAttribute.js';
+import {EntityAnimateSpriteAttribute, EntityBuildableAttribute, EntityMobHerdPositionAttribute, EntityRotateSpriteAttribute, EntityTimedAttribute, TickResult, TooltipType} from './EntityAttribute.js';
 import MobLogic from './MobLogic.js';
 import PlayerLogic from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
@@ -420,7 +420,7 @@ export class World {
 				entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, 4, true));
 				entity.addAttribute(new EntityRotateSpriteAttribute(spriteCounter, timedAttribute, 4, true));
 			}
-			entity.addAttribute(new EntityActiveSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute));
+			entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute));
 			this.live.replaceTileable(new Vector(136 + 4 * i, 143), entity);
 		});
 
