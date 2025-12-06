@@ -440,21 +440,24 @@ export class EntityMaterialExtractorAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		tile.position.iterate(tile.tileable.size).forEach(position => {
-			let tile = world.terrain.getTileUnchecked(position);
-			if (!(tile?.tileable instanceof MaterialDeposit)) return;
-			let capacity = this.materialStorageAttribute.capacity(tile.tileable.material);
-			let add = Math.min(this.outputPerTier[tile.tileable.materialTier] || 0, capacity);
-			if (!add) return;
-			this.materialStorageAttribute.add(new ResourceUtils.Count(tile.tileable.material, add));
-			this.tickResult = TickResult.DONE;
-		});
+		let area = tile.tileable.size.x * tile.tileable.size.y;
+		for (let x = 0; x < tile.tileable.size.x; x++)
+			for (let y = 0; y < tile.tileable.size.y; y++) {
+				let position = new Vector(x, y);
+				let tile = world.terrain.getTileUnchecked(position);
+				if (!(tile?.tileable instanceof MaterialDeposit)) continue;
+				let capacity = this.materialStorageAttribute.capacity(tile.tileable.material);
+				let add = Math.min(this.outputPerTier[tile.tileable.materialTier] / area || 0, capacity);
+				if (!add) continue;
+				this.materialStorageAttribute.add(new ResourceUtils.Count(tile.tileable.material, add));
+				this.tickResult = TickResult.DONE;
+			}
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			[new TextLine(`Extracts ${this.outputPerTier.join('/')} material / area`, {})] :
-			[]; // todo print extraction rate. likewise for liquid extraction
+			[new TextLine(`Extracts ${this.outputPerTier.join('/')} material`, {})] :
+			[]; // todo print recent extraction rate. likewise for liquid extraction.
 	}
 }
 
@@ -916,19 +919,21 @@ export class EntityLiquidExtractorAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		let some = tile.position.iterate(tile.tileable.size).map(position => {
-			let tile = world.terrain.getTileBounded(position);
-			if (!(tile?.tileable instanceof LiquidDeposit)) return false;
-			let quantity = this.outputPerTier[tile.tileable.liquidTier] || 0;
-			return this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count(tile.tileable.liquid, quantity));
-		}).some(v => v);
-		if (some)
-			this.tickResult = TickResult.DONE;
+		let area = tile.tileable.size.x * tile.tileable.size.y;
+		for (let x = 0; x < tile.tileable.size.x; x++)
+			for (let y = 0; y < tile.tileable.size.y; y++) {
+				let position = new Vector(x, y);
+				let tile = world.terrain.getTileUnchecked(position);
+				if (!(tile?.tileable instanceof LiquidDeposit)) continue;
+				let quantity = this.outputPerTier[tile.tileable.liquidTier] / area || 0;
+				if (this.liquidStorageAttribute.tryToAdd(new ResourceUtils.Count(tile.tileable.liquid, quantity)))
+					this.tickResult = TickResult.DONE;
+			}
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
 		return type === TooltipType.PLACER ?
-			[new TextLine(`Pumps ${this.outputPerTier.join('/')} liquid / area`, {color: uiColors.LIQUID_TEXT})] :
+			[new TextLine(`Pumps ${this.outputPerTier.join('/')} liquid`, {color: uiColors.LIQUID_TEXT})] :
 			[];
 	}
 }

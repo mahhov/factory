@@ -28,7 +28,7 @@ let parseResourceCounts = <T extends Resource>(str: string, resourceEnum: Record
 
 let parseBuildingOutput = (str: string): ResourceUtils.Count<Material> | number[] | number => {
 	if (str === '-') return [];
-	if (/^\d*\.?\d+ t\d+(, \d*\.?\d+ t\d+)* resource \/ area$/.test(str)) {
+	if (/^\d*\.?\d+ t\d+(, \d*\.?\d+ t\d+)* resource$/.test(str)) {
 		return [...str
 			.matchAll(/(\d*\.?\d+) t(\d+)/g)
 			.map((m, i) => {
