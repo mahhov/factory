@@ -528,9 +528,14 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 
 	// todo deprecated
 	get quantityCounts(): ResourceUtils.Count<Material>[] {
-		return Object.entries(this.quantities)
-			.filter(([_, quantity]) => quantity >= 1)
-			.map(([material, quantity]) => new ResourceUtils.Count(Number(material) as Material, quantity));
+		if (!this.atLeast1) return [];
+		let counts: ResourceUtils.Count<Material>[] = [];
+		util.enumValues(Material).forEach(material => {
+			let quantity = this.quantities[material];
+			if (quantity >= 1)
+				counts.push(new ResourceUtils.Count(Number(material) as Material, quantity));
+		});
+		return counts;
 	}
 
 	quantity(material: Material): number {
