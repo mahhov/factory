@@ -1,5 +1,6 @@
 export default class Counter {
 	n: number;
+	loopI: number = 0;
 	i = 0; // [0, n). tick() returns true if i === n - 1
 
 	constructor(n: number) {
@@ -9,6 +10,10 @@ export default class Counter {
 
 	get ratio() {
 		return this.i / this.n;
+	}
+
+	ratioFactored(slowFactor: number) {
+		return (this.i / this.n + this.loopI % slowFactor) / slowFactor;
 	}
 
 	// will consume 1 tick() call if it were to return false
@@ -33,6 +38,8 @@ export default class Counter {
 	// returns true once every n calls
 	tick(): boolean {
 		this.i = (this.i + 1) % this.n;
+		if (!this.i)
+			this.loopI++;
 		return !this.i;
 	}
 

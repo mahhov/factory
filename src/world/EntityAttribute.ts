@@ -1518,17 +1518,20 @@ export class EntityActiveSpriteAttribute extends EntityAttribute {
 export class EntityRotateSpriteAttribute extends EntityAttribute {
 	private readonly sprite: Sprite;
 	private readonly timedAttribute: EntityTimedAttribute;
+	private readonly slowFactor: number;
 	private readonly clockwise: boolean;
 
-	constructor(sprite: Sprite, timedAttribute: EntityTimedAttribute, clockwise: boolean) {
+	constructor(sprite: Sprite, timedAttribute: EntityTimedAttribute, slowFactor: number, clockwise: boolean) {
 		super();
 		this.sprite = sprite;
 		this.timedAttribute = timedAttribute;
+		this.slowFactor = slowFactor;
 		this.clockwise = clockwise;
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		let ratio = this.clockwise ? this.timedAttribute.counter.ratio : 1 - this.timedAttribute.counter.ratio;
+		let ratio = this.timedAttribute.counter.ratioFactored(this.slowFactor);
+		if (!this.clockwise) ratio = 1 - ratio;
 		this.sprite.angle = ratio * 360;
 		this.tickResult = TickResult.DONE;
 	}

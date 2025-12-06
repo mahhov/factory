@@ -397,7 +397,7 @@ export class World {
 			['exidiumCatalyst', 4],
 		] as [string, number][]).forEach(([texture, size], i) => {
 			let entity = new Entity(texture, '', new Vector(size));
-			let timedAttribute = new EntityTimedAttribute(160);
+			let timedAttribute = new EntityTimedAttribute(40);
 			entity.addAttribute(timedAttribute);
 			if (i < 3) {
 				let colors = [
@@ -408,7 +408,7 @@ export class World {
 				let sprite = new Sprite(generatedTextures.extractorTop.texture(size * 8, colors[i]));
 				Entity.rotateSprite(sprite, Rotation.UP);
 				entity.addOverlaySprites('x', [sprite]);
-				entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, true));
+				entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, 4, true));
 			}
 			if (i === 3) {
 				let sprite = new Sprite(generatedTextures.extractorTop.texture(size * 8, textureColors.tier4));
@@ -417,8 +417,8 @@ export class World {
 				Entity.rotateSprite(spriteCounter, Rotation.UP);
 				spriteCounter.position = new Vector(size * 4);
 				entity.addOverlaySprites('x', [sprite, spriteCounter]);
-				entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, true));
-				entity.addAttribute(new EntityRotateSpriteAttribute(spriteCounter, timedAttribute, true));
+				entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, 4, true));
+				entity.addAttribute(new EntityRotateSpriteAttribute(spriteCounter, timedAttribute, 4, true));
 			}
 			entity.addAttribute(new EntityActiveSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute));
 			this.live.replaceTileable(new Vector(136 + 4 * i, 143), entity);
