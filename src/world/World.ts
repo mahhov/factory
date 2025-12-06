@@ -385,18 +385,17 @@ export class World {
 		this.container.addChild(this.live.container);
 		this.live.replaceTileable(size.scale(.5).floor, this.playerLogic.base);
 
-		let slow = 8;
 		([
-			['extractor', 2],
-			['reinforcedExtractor', 3],
-			['quadraticExtractor', 4],
-			['laserExtractor', 4],
-			['steelSmelter', 2],
-			['metaglassFoundry', 2],
-			['plasteelMixer', 3],
-			['thermiteForge', 4],
-			['exidiumCatalyst', 4],
-		] as [string, number][]).forEach(([texture, size], i) => {
+			['extractor', 2, 10],
+			['reinforcedExtractor', 3, 20],
+			['quadraticExtractor', 4, 40],
+			['laserExtractor', 4, 80],
+			['steelSmelter', 2, 40],
+			['metaglassFoundry', 2, 40],
+			['plasteelMixer', 3, 40],
+			['thermiteForge', 4, 40],
+			['exidiumCatalyst', 4, 40],
+		] as [string, number, number][]).forEach(([texture, size, slow], i) => {
 			let entity = new Entity(texture, '', new Vector(size));
 			let timedAttribute = new EntityTimedAttribute(40);
 			entity.addAttribute(timedAttribute);
