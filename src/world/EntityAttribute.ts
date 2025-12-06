@@ -1502,15 +1502,17 @@ export class EntityLiquidOverlayAttribute extends EntityAttribute {
 export class EntityAnimateSpriteAttribute extends EntityAttribute {
 	private readonly sprite: AnimatedSprite;
 	private readonly timedAttribute: EntityTimedAttribute;
+	private readonly slowFactor: number;
 
-	constructor(sprite: AnimatedSprite, timedAttribute: EntityTimedAttribute) {
+	constructor(sprite: AnimatedSprite, timedAttribute: EntityTimedAttribute, slowFactor: number) {
 		super();
 		this.sprite = sprite;
 		this.timedAttribute = timedAttribute;
+		this.slowFactor = slowFactor;
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		this.sprite.currentFrame = Math.floor(this.timedAttribute.counter.ratio * this.sprite.textures.length);
+		this.sprite.currentFrame = Math.floor(this.timedAttribute.counter.ratioFactored(this.slowFactor) * this.sprite.textures.length);
 		this.tickResult = TickResult.DONE;
 	}
 }

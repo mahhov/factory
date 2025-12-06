@@ -237,7 +237,7 @@ export class Extractor extends Building {
 		this.addAttribute(new EntityOutflowAttribute(materialStorageAttribute));
 		if (powerInput)
 			this.addAttribute(new EntityPowerConductAttribute(0));
-		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute));
+		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
 	}
 }
 
@@ -310,7 +310,7 @@ export class Factory extends Building {
 		this.addAttribute(new EntityOutflowAttribute(outputMaterialStorageAttribute));
 		if (powerInput)
 			this.addAttribute(new EntityPowerConductAttribute(0));
-		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute));
+		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
 	}
 }
 
@@ -335,7 +335,7 @@ export class Dispenser extends Building {
 			timedAttribute,
 			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
 		]));
-		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute));
+		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
 	}
 }
 
@@ -369,7 +369,7 @@ export class Generator extends Building {
 			new EntityPowerProduceAttribute(outputPowerStorageAttribute, powerOutput),
 		].filter(v => v) as EntityAttribute[]));
 		this.addAttribute(new EntityPowerConductAttribute(0));
-		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute));
+		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
 	}
 }
 
@@ -410,7 +410,7 @@ export class Vent extends Building {
 		].filter(v => v) as EntityAttribute[]));
 		if (powerInput)
 			this.addAttribute(new EntityPowerConductAttribute(0));
-		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute));
+		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
 	}
 }
 
@@ -436,7 +436,7 @@ export class Pump extends Building {
 		]));
 		if (powerInput)
 			this.addAttribute(new EntityPowerConductAttribute(0));
-		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute));
+		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
 	}
 }
 
@@ -462,7 +462,7 @@ export class Well extends Building {
 		]));
 		if (powerInput)
 			this.addAttribute(new EntityPowerConductAttribute(0));
-		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute));
+		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
 	}
 }
 

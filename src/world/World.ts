@@ -385,6 +385,7 @@ export class World {
 		this.container.addChild(this.live.container);
 		this.live.replaceTileable(size.scale(.5).floor, this.playerLogic.base);
 
+		let slow = 8;
 		([
 			['extractor', 2],
 			['reinforcedExtractor', 3],
@@ -408,7 +409,7 @@ export class World {
 				let sprite = new Sprite(generatedTextures.extractorTop.texture(size * 8, colors[i]));
 				Entity.rotateSprite(sprite, Rotation.UP);
 				entity.addOverlaySprites('x', [sprite]);
-				entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, 4, true));
+				entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, slow, true));
 			}
 			if (i === 3) {
 				let sprite = new Sprite(generatedTextures.extractorTop.texture(size * 8, textureColors.tier4));
@@ -417,10 +418,10 @@ export class World {
 				Entity.rotateSprite(spriteCounter, Rotation.UP);
 				spriteCounter.position = new Vector(size * 4);
 				entity.addOverlaySprites('x', [sprite, spriteCounter]);
-				entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, 4, true));
-				entity.addAttribute(new EntityRotateSpriteAttribute(spriteCounter, timedAttribute, 4, true));
+				entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, slow, true));
+				entity.addAttribute(new EntityRotateSpriteAttribute(spriteCounter, timedAttribute, slow, true));
 			}
-			entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute));
+			entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, slow));
 			this.live.replaceTileable(new Vector(136 + 4 * i, 143), entity);
 		});
 
