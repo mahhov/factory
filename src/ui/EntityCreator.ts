@@ -4,7 +4,6 @@ import {
 	Battery,
 	Clear,
 	Conductor,
-	Conveyor,
 	Dispenser,
 	Distributor,
 	Empty,
@@ -26,9 +25,20 @@ import {
 	Wall,
 	Well,
 } from '../world/Entity.js';
+import {
+	EntityBuildableAttribute,
+	EntityChainAttribute,
+	EntityHealthAttribute,
+	EntityMaterialOverlayAttribute,
+	EntityMaterialStorageAttribute,
+	EntityMaterialStorageAttributeType,
+	EntityNonEmptyMaterialStorage,
+	EntityTimedAttribute,
+	EntityTransportAttribute,
+} from '../world/EntityAttribute.js';
 import {findEntityMetadata, ParsedLine, sectionFields} from '../world/EntityMetadata.js';
 import {Liquid, Material, ResourceUtils} from '../world/Resource.js';
-import {Rotation} from '../world/Rotation.js';
+import {Rotation, RotationUtils} from '../world/Rotation.js';
 
 export enum Tool {
 	// todo copy/paste
@@ -59,6 +69,11 @@ export enum MobType {
 	HARVESTER,
 }
 
+let standardDuration = 40;
+
+let getMaterialCounts = (count: number): ResourceUtils.Count<Material>[] =>
+	util.enumValues(Material).map(material => new ResourceUtils.Count(material, count));
+
 export default class EntityCreator {
 	private static cachedToolEntities_: Record<Tool, Entity>;
 
@@ -84,15 +99,15 @@ export default class EntityCreator {
 				return EntityCreator.createToolExtractor(findEntityMetadata('buildings', 'Laser Extractor'));
 
 			case Tool.CONVEYOR:
-				return EntityCreator.createToolConveyor(findEntityMetadata('buildings', 'Conveyor'), rotation);
+				return EntityCreator.createToolConveyor(findEntityMetadata('buildings', 'Conveyor'), false, rotation);
 			case Tool.HIGH_SPEED_CONVEYOR:
-				return EntityCreator.createToolConveyor(findEntityMetadata('buildings', 'High Speed Conveyor'), rotation);
+				return EntityCreator.createToolConveyor(findEntityMetadata('buildings', 'High Speed Conveyor'), false, rotation);
 			case Tool.DISTRIBUTOR:
 				return EntityCreator.createToolDistributor(findEntityMetadata('buildings', 'Distributor'));
 			case Tool.JUNCTION:
 				return EntityCreator.createToolJunction(findEntityMetadata('buildings', 'Junction'));
 			case Tool.PACKED_CONVEYOR:
-				return EntityCreator.createToolPackedConveyor(findEntityMetadata('buildings', 'Packed Conveyor'), rotation);
+				return EntityCreator.createToolConveyor(findEntityMetadata('buildings', 'Packed Conveyor'), true, rotation);
 			case Tool.STORAGE:
 				return EntityCreator.createToolStorage(findEntityMetadata('buildings', 'Storage'));
 			case Tool.DISPENSER:
@@ -167,12 +182,30 @@ export default class EntityCreator {
 		}
 	}
 
+	private static createBuilding(metadata: ParsedLine<typeof sectionFields.buildings>, rotation?: Rotation, tilingSize?: Vector): Entity {
+		let entity = new Entity(metadata.name, metadata.description, new Vector(metadata.size), rotation, tilingSize);
+		entity.addAttribute(new EntityBuildableAttribute(metadata.buildTime, metadata.buildCost));
+		entity.addAttribute(new EntityHealthAttribute(metadata.health, true));
+		return entity;
+	}
+
 	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		return new Extractor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.heatOutput, metadata.output as number[]);
 	}
 
-	private static createToolConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Conveyor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, false, rotation);
+	private static createToolConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, packed: boolean, rotation: Rotation) {
+		let entity = this.createBuilding(metadata, rotation);
+		let type = packed ? EntityMaterialStorageAttributeType.PACKED : EntityMaterialStorageAttributeType.NORMAL;
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(type, 1, getMaterialCounts(Infinity), RotationUtils.except(RotationUtils.opposite(rotation)), true);
+		entity.addAttribute(materialStorageAttribute);
+		let timedAttribute = new EntityTimedAttribute(standardDuration / (metadata.output as number));
+		entity.addAttribute(new EntityChainAttribute([
+			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
+			timedAttribute,
+			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
+		]));
+		entity.addAttribute(new EntityMaterialOverlayAttribute(materialStorageAttribute, timedAttribute, rotation));
+		return entity;
 	}
 
 	private static createToolDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {
@@ -181,10 +214,6 @@ export default class EntityCreator {
 
 	private static createToolJunction(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		return new Junction(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
-	}
-
-	private static createToolPackedConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Conveyor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, true, rotation);
 	}
 
 	private static createToolStorage(metadata: ParsedLine<typeof sectionFields.buildings>) {

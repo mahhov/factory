@@ -1,5 +1,5 @@
 import {AnimatedSprite, Container, Particle, Sprite, Texture} from 'pixi.js';
-import {AnimatedGeneratedTextures, generatedTextures} from '../graphics/generatedTextures.js';
+import {AnimatedGeneratedTextures, generatedTextures, textureColors} from '../graphics/generatedTextures.js';
 import uiColors from '../graphics/uiColors.js';
 import TextLine from '../ui/TextLine.js';
 import {toCamelCase} from '../util/stringCase.js';
@@ -32,7 +32,6 @@ import {
 	EntityMaterialConsumeAttribute,
 	EntityMaterialDisplayAttribute,
 	EntityMaterialExtractorAttribute,
-	EntityMaterialOverlayAttribute,
 	EntityMaterialPickerAttribute,
 	EntityMaterialProduceAttribute,
 	EntityMaterialStorageAttribute,
@@ -50,6 +49,7 @@ import {
 	EntityPowerProduceAttribute,
 	EntityPowerStorageAttribute,
 	EntityPowerStorageAttributePriority,
+	EntityRotateSpriteAttribute,
 	EntitySpawnParticleAttribute,
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
@@ -232,22 +232,6 @@ export class Extractor extends Building {
 		if (powerInput)
 			this.addAttribute(new EntityPowerConductAttribute(0));
 		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
-	}
-}
-
-export class Conveyor extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number, packed: boolean, rotation: Rotation) {
-		super(name, description, size, buildTime, buildCost, health, rotation);
-		let type = packed ? EntityMaterialStorageAttributeType.PACKED : EntityMaterialStorageAttributeType.NORMAL;
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(type, 1, getMaterialCounts(Infinity), RotationUtils.except(RotationUtils.opposite(rotation)), true);
-		this.addAttribute(materialStorageAttribute);
-		let timedAttribute = new EntityTimedAttribute(standardDuration / rate);
-		this.addAttribute(new EntityChainAttribute([
-			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
-			timedAttribute,
-			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
-		]));
-		this.addAttribute(new EntityMaterialOverlayAttribute(materialStorageAttribute, timedAttribute, rotation));
 	}
 }
 
