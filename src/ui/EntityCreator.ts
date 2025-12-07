@@ -1,7 +1,7 @@
 import {AnimatedSprite} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Clear, Empty, Entity, Extractor, PipeBridge, PipeDistributor, PipeJunction, ProjectileMob, Tank, Turret, Wall} from '../world/Entity.js';
+import {Clear, Empty, Entity, Extractor, PipeDistributor, PipeJunction, ProjectileMob, Tank, Turret, Wall} from '../world/Entity.js';
 import {
 	EntityAnimateSpriteAttribute,
 	EntityAttribute,
@@ -11,6 +11,8 @@ import {
 	EntityCoolantProduceAttribute,
 	EntityHealthAttribute,
 	EntityInflowAttribute,
+	EntityLiquidBridgeConnectAttribute,
+	EntityLiquidBridgeTransportAttribute,
 	EntityLiquidConsumeAttribute,
 	EntityLiquidDryExtractorAttribute,
 	EntityLiquidExtractorAttribute,
@@ -365,9 +367,19 @@ export default class EntityCreator {
 
 	private static createToolPipeBridge(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
 		// todo get 4 from metadata
-
-
-		return new PipeBridge(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation, 4);
+		let range = 4;
+		let entity = this.createBuilding(metadata, rotation, new Vector(range));
+		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), metadata.output as number, RotationUtils.except(RotationUtils.opposite(rotation)));
+		entity.addAttribute(liquidStorageAttribute);
+		let liquidBridgeConnectAttribute = new EntityLiquidBridgeConnectAttribute(rotation, range);
+		entity.addAttribute(liquidBridgeConnectAttribute);
+		entity.addAttribute(new EntityChainAttribute([
+			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
+			new EntityTimedAttribute(standardDuration),
+			new EntityLiquidBridgeTransportAttribute(liquidStorageAttribute, liquidBridgeConnectAttribute),
+		]));
+		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
+		return entity;
 	}
 
 	private static createToolPipeDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {

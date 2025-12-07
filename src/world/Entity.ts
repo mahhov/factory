@@ -18,8 +18,6 @@ import {
 	EntityFindTargetAttribute,
 	EntityHealthAttribute,
 	EntityIfElseAttribute,
-	EntityLiquidBridgeConnectAttribute,
-	EntityLiquidBridgeTransportAttribute,
 	EntityLiquidDisplayAttribute,
 	EntityLiquidOverlayAttribute,
 	EntityLiquidStorageAttribute,
@@ -221,23 +219,6 @@ export class Extractor extends Building {
 		if (powerInput)
 			this.addAttribute(new EntityPowerConductAttribute(0));
 		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
-	}
-}
-
-export class PipeBridge extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number, rotation: Rotation, range: number) {
-		super(name, description, size, buildTime, buildCost, health, rotation, new Vector(range));
-		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), capacity, RotationUtils.except(RotationUtils.opposite(rotation)));
-		this.addAttribute(liquidStorageAttribute);
-		let liquidBridgeConnectAttribute = new EntityLiquidBridgeConnectAttribute(rotation, range);
-		this.addAttribute(liquidBridgeConnectAttribute);
-		let timedAttribute = new EntityTimedAttribute(standardDuration);
-		this.addAttribute(new EntityChainAttribute([
-			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
-			timedAttribute,
-			new EntityLiquidBridgeTransportAttribute(liquidStorageAttribute, liquidBridgeConnectAttribute),
-		]));
-		this.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
 	}
 }
 
