@@ -235,6 +235,24 @@ export class Extractor extends Building {
 	}
 }
 
+export class Dispenser extends Building {
+	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number, rotation: Rotation) {
+		super(name, description, size, buildTime, buildCost, health, rotation);
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.ANY, 1, getMaterialCounts(Infinity), [], true);
+		this.addAttribute(materialStorageAttribute);
+		let materialPickerAttribute = new EntityMaterialPickerAttribute();
+		this.addAttribute(materialPickerAttribute);
+		this.addAttribute(new EntityInflowAttribute(materialPickerAttribute, materialStorageAttribute, [rotation]));
+		let timedAttribute = new EntityTimedAttribute(standardDuration / rate);
+		this.addAttribute(new EntityChainAttribute([
+			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
+			timedAttribute,
+			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
+		]));
+		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
+	}
+}
+
 export class Factory extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, materialInput: ResourceUtils.Count<Material>[], powerInput: number, heatOutput: number, materialOutput: ResourceUtils.Count<Material>) {
 		super(name, description, size, buildTime, buildCost, health);
@@ -258,31 +276,6 @@ export class Factory extends Building {
 		this.addAttribute(new EntityOutflowAttribute(outputMaterialStorageAttribute));
 		if (powerInput)
 			this.addAttribute(new EntityPowerConductAttribute(0));
-		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
-	}
-}
-
-export class Storage extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
-		super(name, description, size, buildTime, buildCost, health);
-		this.addAttribute(new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(capacity), util.enumValues(Rotation), true));
-	}
-}
-
-export class Dispenser extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number, rotation: Rotation) {
-		super(name, description, size, buildTime, buildCost, health, rotation);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.ANY, 1, getMaterialCounts(Infinity), [], true);
-		this.addAttribute(materialStorageAttribute);
-		let materialPickerAttribute = new EntityMaterialPickerAttribute();
-		this.addAttribute(materialPickerAttribute);
-		this.addAttribute(new EntityInflowAttribute(materialPickerAttribute, materialStorageAttribute, [rotation]));
-		let timedAttribute = new EntityTimedAttribute(standardDuration / rate);
-		this.addAttribute(new EntityChainAttribute([
-			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
-			timedAttribute,
-			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
-		]));
 		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
 	}
 }

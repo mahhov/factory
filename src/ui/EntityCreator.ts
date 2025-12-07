@@ -16,7 +16,6 @@ import {
 	PipeJunction,
 	ProjectileMob,
 	Pump,
-	Storage,
 	Tank,
 	Turret,
 	Vent,
@@ -222,7 +221,9 @@ export default class EntityCreator {
 	}
 
 	private static createToolStorage(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Storage(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+		let entity = this.createBuilding(metadata);
+		entity.addAttribute(new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(metadata.output as number), util.enumValues(Rotation), true));
+		return entity;
 	}
 
 	private static createToolDispenser(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
