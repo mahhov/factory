@@ -610,7 +610,7 @@ export class EntityTransportAttribute extends EntityAttribute {
 			util.shuffleInPlace(getAdjacentDestinations(tile.position, tile.tileable.size, rotation)).some(destination => {
 				let tile = world.live.getTileBounded(destination);
 				if (!tile) return false;
-				return tile.tileable.getAttributes(EntityMaterialStorageAttribute).some(destinationMaterialStorageAttribute => {
+				return tile.tileable.getAttributes(EntityMaterialStorageAttribute)?.some(destinationMaterialStorageAttribute => {
 						if (!destinationMaterialStorageAttribute.acceptsRotation(rotation)) return false;
 						if (fromMaterialStorageAttribute.type !== destinationMaterialStorageAttribute.type &&
 							fromMaterialStorageAttribute.type !== EntityMaterialStorageAttributeType.ANY &&
@@ -1059,7 +1059,7 @@ export class EntityLiquidTransportAttribute extends EntityAttribute {
 			util.shuffleInPlace(getAdjacentDestinations(tile.position, tile.tileable.size, rotation)).some(destination => {
 				let tile = world.live.getTileBounded(destination);
 				if (!tile) return false;
-				return tile.tileable.getAttributes(EntityLiquidStorageAttribute).some(destinationLiquidStorageAttribute => {
+				return tile.tileable.getAttributes(EntityLiquidStorageAttribute)?.some(destinationLiquidStorageAttribute => {
 					if (!destinationLiquidStorageAttribute.acceptsRotation(rotation)) return false;
 					let liquidCount = fromLiquidStorageAttribute.liquidCount;
 					let take = destinationLiquidStorageAttribute!.tryToAdd(liquidCount);
@@ -1131,7 +1131,7 @@ export class EntityLiquidBridgeTransportAttribute extends EntityAttribute {
 
 		let transported = this.liquidBridgeConnectAttribute.connectedPosition ?
 			world.live.getTileUnchecked(this.liquidBridgeConnectAttribute.connectedPosition).tileable.getAttributes(EntityLiquidStorageAttribute)
-				.some(destinationLiquidStorageAttribute => {
+				?.some(destinationLiquidStorageAttribute => {
 					if (!destinationLiquidStorageAttribute.acceptsRotation(this.liquidBridgeConnectAttribute.rotation)) return false;
 					let liquidCount = this.liquidStorageAttribute.liquidCount;
 					let take = destinationLiquidStorageAttribute!.tryToAdd(liquidCount);

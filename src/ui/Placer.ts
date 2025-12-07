@@ -264,8 +264,8 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			let minPosition = this.startPosition.min(this.endPosition).clamp(Vector.V0, world.size.subtract(Vector.V1));
 			let maxPosition = this.startPosition.max(this.endPosition).clamp(Vector.V0, world.size.subtract(Vector.V1));
 			let i = 0;
-			for (let x = minPosition.x; x <= maxPosition.x; x++)
-				for (let y = minPosition.y; y <= maxPosition.y; y++)
+			for (let x = minPosition.x; x <= maxPosition.x; x += toolEntity.tilingSize.x)
+				for (let y = minPosition.y; y <= maxPosition.y; y += toolEntity.tilingSize.y)
 					if (planning) {
 						let spriteHolder = this.getSpriteHolder(i++);
 						spriteHolder.setEntity(toolEntity, this.rotation);

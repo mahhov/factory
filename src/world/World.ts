@@ -259,9 +259,9 @@ export class FreeWorldLayerChunkOverlay<T extends Tileable, S> {
 	private readonly size: Vector;
 	private readonly chunkSize: number;
 	readonly chunks: [Tile<T>, S][][][];
-	private readonly mapper: (t: T) => S | null;
+	private readonly mapper: (t: T) => S | undefined;
 
-	constructor(size: Vector, chunkSize: number, mapper: (t: T) => S | null) {
+	constructor(size: Vector, chunkSize: number, mapper: (t: T) => S | undefined) {
 		this.size = size;
 		this.chunkSize = chunkSize;
 		let chunkCounts = size.scale(1 / chunkSize).ceil;
@@ -359,7 +359,7 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		return position.boundBy(halfSize, this.size.subtract(halfSize));
 	}
 
-	addChunkOverlay<S>(chunkSize: number, mapper: (t: T) => S | null) {
+	addChunkOverlay<S>(chunkSize: number, mapper: (t: T) => S | undefined) {
 		let chunkOverlay = new FreeWorldLayerChunkOverlay(this.size, chunkSize, mapper);
 		this.chunkOverlays.push(chunkOverlay);
 		return chunkOverlay;

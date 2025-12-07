@@ -106,12 +106,12 @@ export class Entity implements Tileable {
 		attribute.childAttributes.forEach(childAttribute => this.addAttributeToMap(childAttribute));
 	}
 
-	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | null {
-		return this.attributesMap[attributeClass.name]?.[0] as T || null;
+	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | undefined {
+		return this.attributesMap[attributeClass.name]?.[0] as T;
 	}
 
-	getAttributes<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T[] {
-		return this.attributesMap[attributeClass.name] as T[] || [];
+	getAttributes<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T[] | undefined {
+		return this.attributesMap[attributeClass.name] as T[];
 	}
 
 	setSprite(sprite: Sprite) {
@@ -173,8 +173,8 @@ export class Empty extends Entity {
 		super('Empty', '');
 	}
 
-	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | null {
-		return null;
+	getAttribute<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T | undefined {
+		return undefined;
 	}
 
 	getAttributes<T extends EntityAttribute>(attributeClass: { new(...args: any[]): T }): T[] {
