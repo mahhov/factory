@@ -19,7 +19,6 @@ import {
 	EntityFindTargetAttribute,
 	EntityHealthAttribute,
 	EntityIfElseAttribute,
-	EntityInflowAttribute,
 	EntityLiquidBridgeConnectAttribute,
 	EntityLiquidBridgeTransportAttribute,
 	EntityLiquidConsumeAttribute,
@@ -32,7 +31,6 @@ import {
 	EntityMaterialConsumeAttribute,
 	EntityMaterialDisplayAttribute,
 	EntityMaterialExtractorAttribute,
-	EntityMaterialPickerAttribute,
 	EntityMaterialProduceAttribute,
 	EntityMaterialStorageAttribute,
 	EntityMaterialStorageAttributeType,
@@ -41,7 +39,6 @@ import {
 	EntityMobMoveTowardsPositionAttribute,
 	EntityNameAttribute,
 	EntityNonEmptyLiquidStorage,
-	EntityNonEmptyMaterialStorage,
 	EntityOutflowAttribute,
 	EntityParallelAttribute,
 	EntityPowerConductAttribute,
@@ -53,7 +50,6 @@ import {
 	EntitySpawnParticleAttribute,
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
-	EntityTransportAttribute,
 	TooltipType,
 } from './EntityAttribute.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
@@ -231,24 +227,6 @@ export class Extractor extends Building {
 		this.addAttribute(new EntityOutflowAttribute(materialStorageAttribute));
 		if (powerInput)
 			this.addAttribute(new EntityPowerConductAttribute(0));
-		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
-	}
-}
-
-export class Dispenser extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number, rotation: Rotation) {
-		super(name, description, size, buildTime, buildCost, health, rotation);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.ANY, 1, getMaterialCounts(Infinity), [], true);
-		this.addAttribute(materialStorageAttribute);
-		let materialPickerAttribute = new EntityMaterialPickerAttribute();
-		this.addAttribute(materialPickerAttribute);
-		this.addAttribute(new EntityInflowAttribute(materialPickerAttribute, materialStorageAttribute, [rotation]));
-		let timedAttribute = new EntityTimedAttribute(standardDuration / rate);
-		this.addAttribute(new EntityChainAttribute([
-			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
-			timedAttribute,
-			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
-		]));
 		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
 	}
 }

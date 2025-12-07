@@ -1,10 +1,10 @@
+import {AnimatedSprite} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {
 	Battery,
 	Clear,
 	Conductor,
-	Dispenser,
 	Empty,
 	Entity,
 	Extractor,
@@ -23,10 +23,13 @@ import {
 	Well,
 } from '../world/Entity.js';
 import {
+	EntityAnimateSpriteAttribute,
 	EntityBuildableAttribute,
 	EntityChainAttribute,
 	EntityHealthAttribute,
+	EntityInflowAttribute,
 	EntityMaterialOverlayAttribute,
+	EntityMaterialPickerAttribute,
 	EntityMaterialStorageAttribute,
 	EntityMaterialStorageAttributeType,
 	EntityNonEmptyMaterialStorage,
@@ -227,7 +230,20 @@ export default class EntityCreator {
 	}
 
 	private static createToolDispenser(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Dispenser(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
+		let entity = this.createBuilding(metadata);
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.ANY, 1, getMaterialCounts(Infinity), [], true);
+		entity.addAttribute(materialStorageAttribute);
+		let materialPickerAttribute = new EntityMaterialPickerAttribute();
+		entity.addAttribute(materialPickerAttribute);
+		entity.addAttribute(new EntityInflowAttribute(materialPickerAttribute, materialStorageAttribute, [rotation]));
+		let timedAttribute = new EntityTimedAttribute(standardDuration / (metadata.output as number));
+		entity.addAttribute(new EntityChainAttribute([
+			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
+			timedAttribute,
+			new EntityTransportAttribute(materialStorageAttribute, [rotation]),
+		]));
+		entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, 1));
+		return entity;
 	}
 
 	private static createToolFactory(metadata: ParsedLine<typeof sectionFields.buildings>) {
