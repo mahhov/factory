@@ -193,15 +193,16 @@ export default class EntityCreator {
 	                                          metadata: ParsedLine<typeof sectionFields.buildings>,
 	                                          materialStorageAttributeType: EntityMaterialStorageAttributeType,
 	                                          inputRotations: Rotation[],
-	                                          outputRotations: Rotation[]) {
+	                                          outputRotations: Rotation[]): [EntityMaterialStorageAttribute, EntityTimedAttribute] {
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(materialStorageAttributeType, 1, getMaterialCounts(Infinity), inputRotations, true);
 		entity.addAttribute(materialStorageAttribute);
-
+		let timedAttribute = new EntityTimedAttribute(standardDuration / (metadata.output as number));
 		entity.addAttribute(new EntityChainAttribute([
 			new EntityNonEmptyMaterialStorage(materialStorageAttribute),
-			new EntityTimedAttribute(standardDuration / (metadata.output as number)),
+			timedAttribute,
 			new EntityTransportAttribute(materialStorageAttribute, outputRotations),
 		]));
+		return [materialStorageAttribute, timedAttribute];
 	}
 
 	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>) {
@@ -211,8 +212,8 @@ export default class EntityCreator {
 	private static createToolConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, packed: boolean, rotation: Rotation) {
 		let entity = this.createBuilding(metadata, rotation);
 		let type = packed ? EntityMaterialStorageAttributeType.PACKED : EntityMaterialStorageAttributeType.NORMAL;
-		this.addTransportChainAttribute(entity, metadata, type, RotationUtils.except(RotationUtils.opposite(rotation)), [rotation]);
-		entity.addAttribute(new EntityMaterialOverlayAttribute(entity.getAttribute(EntityMaterialStorageAttribute)!, entity.getAttribute(EntityTimedAttribute)!, rotation));
+		let [materialStorageAttribute, timedAttribute] = this.addTransportChainAttribute(entity, metadata, type, RotationUtils.except(RotationUtils.opposite(rotation)), [rotation]);
+		entity.addAttribute(new EntityMaterialOverlayAttribute(materialStorageAttribute, timedAttribute, rotation));
 		return entity;
 	}
 
@@ -234,11 +235,11 @@ export default class EntityCreator {
 
 	private static createToolDispenser(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
 		let entity = this.createBuilding(metadata, rotation);
-		this.addTransportChainAttribute(entity, metadata, EntityMaterialStorageAttributeType.ANY, [], [rotation]);
+		let [materialStorageAttribute, timedAttribute] = this.addTransportChainAttribute(entity, metadata, EntityMaterialStorageAttributeType.ANY, [], [rotation]);
 		let materialPickerAttribute = new EntityMaterialPickerAttribute();
 		entity.addAttribute(materialPickerAttribute);
-		entity.addAttribute(new EntityInflowAttribute(materialPickerAttribute, entity.getAttribute(EntityMaterialStorageAttribute)!, [rotation]));
-		entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, entity.getAttribute(EntityTimedAttribute)!, 1));
+		entity.addAttribute(new EntityInflowAttribute(materialPickerAttribute, materialStorageAttribute, [rotation]));
+		entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, 1));
 		return entity;
 	}
 
