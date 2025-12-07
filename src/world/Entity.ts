@@ -31,7 +31,6 @@ import {
 	EntityMaterialConsumeAttribute,
 	EntityMaterialDisplayAttribute,
 	EntityMaterialExtractorAttribute,
-	EntityMaterialProduceAttribute,
 	EntityMaterialStorageAttribute,
 	EntityMaterialStorageAttributeType,
 	EntityMobHerdPositionActivateAttribute,
@@ -225,33 +224,6 @@ export class Extractor extends Building {
 			new EntityMaterialExtractorAttribute(materialStorageAttribute, outputPerTier),
 		].filter(v => v) as EntityAttribute[]));
 		this.addAttribute(new EntityOutflowAttribute(materialStorageAttribute));
-		if (powerInput)
-			this.addAttribute(new EntityPowerConductAttribute(0));
-		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
-	}
-}
-
-export class Factory extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, materialInput: ResourceUtils.Count<Material>[], powerInput: number, heatOutput: number, materialOutput: ResourceUtils.Count<Material>) {
-		super(name, description, size, buildTime, buildCost, health);
-		let inputMaterialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, materialInput.map(materialCount => new ResourceUtils.Count(materialCount.resource, 10)), util.enumValues(Rotation), false);
-		this.addAttribute(inputMaterialStorageAttribute);
-		let outputMaterialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(materialOutput.resource, 10)], [], true);
-		this.addAttribute(outputMaterialStorageAttribute);
-		let powerStorageAttribute;
-		if (powerInput) {
-			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
-			this.addAttribute(powerStorageAttribute);
-		}
-		let timedAttribute = new EntityTimedAttribute(standardDuration);
-		this.addAttribute(new EntityChainAttribute([
-			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput) : null,
-			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput) : null,
-			new EntityMaterialConsumeAttribute(inputMaterialStorageAttribute, materialInput),
-			timedAttribute,
-			new EntityMaterialProduceAttribute(outputMaterialStorageAttribute, [materialOutput]),
-		].filter(v => v) as EntityAttribute[]));
-		this.addAttribute(new EntityOutflowAttribute(outputMaterialStorageAttribute));
 		if (powerInput)
 			this.addAttribute(new EntityPowerConductAttribute(0));
 		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));

@@ -8,7 +8,6 @@ import {
 	Empty,
 	Entity,
 	Extractor,
-	Factory,
 	Generator,
 	Pipe,
 	PipeBridge,
@@ -24,15 +23,24 @@ import {
 } from '../world/Entity.js';
 import {
 	EntityAnimateSpriteAttribute,
+	EntityAttribute,
 	EntityBuildableAttribute,
 	EntityChainAttribute,
+	EntityCoolantConsumeAttribute,
 	EntityHealthAttribute,
 	EntityInflowAttribute,
+	EntityMaterialConsumeAttribute,
 	EntityMaterialOverlayAttribute,
 	EntityMaterialPickerAttribute,
+	EntityMaterialProduceAttribute,
 	EntityMaterialStorageAttribute,
 	EntityMaterialStorageAttributeType,
 	EntityNonEmptyMaterialStorage,
+	EntityOutflowAttribute,
+	EntityPowerConductAttribute,
+	EntityPowerConsumeAttribute,
+	EntityPowerStorageAttribute,
+	EntityPowerStorageAttributePriority,
 	EntityTimedAttribute,
 	EntityTransportAttribute,
 } from '../world/EntityAttribute.js';
@@ -244,7 +252,30 @@ export default class EntityCreator {
 	}
 
 	private static createToolFactory(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Factory(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.materialInput, metadata.powerInput, metadata.heatOutput, metadata.output as ResourceUtils.Count<Material>);
+		let entity = this.createBuilding(metadata);
+		let inputMaterialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, metadata.materialInput.map(materialCount => new ResourceUtils.Count(materialCount.resource, 10)), util.enumValues(Rotation), false);
+		entity.addAttribute(inputMaterialStorageAttribute);
+		let materialOutput = metadata.output as ResourceUtils.Count<Material>;
+		let outputMaterialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(materialOutput.resource, 10)], [], true);
+		entity.addAttribute(outputMaterialStorageAttribute);
+		let powerStorageAttribute;
+		if (metadata.powerInput) {
+			powerStorageAttribute = new EntityPowerStorageAttribute(metadata.powerInput, EntityPowerStorageAttributePriority.CONSUME);
+			entity.addAttribute(powerStorageAttribute);
+		}
+		let timedAttribute = new EntityTimedAttribute(standardDuration);
+		entity.addAttribute(new EntityChainAttribute([
+			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, metadata.powerInput) : null,
+			metadata.heatOutput ? new EntityCoolantConsumeAttribute(metadata.heatOutput) : null,
+			new EntityMaterialConsumeAttribute(inputMaterialStorageAttribute, metadata.materialInput),
+			timedAttribute,
+			new EntityMaterialProduceAttribute(outputMaterialStorageAttribute, [materialOutput]),
+		].filter(v => v) as EntityAttribute[]));
+		entity.addAttribute(new EntityOutflowAttribute(outputMaterialStorageAttribute));
+		if (metadata.powerInput)
+			entity.addAttribute(new EntityPowerConductAttribute(0));
+		entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, 1));
+		return entity;
 	}
 
 	private static createToolGenerator(metadata: ParsedLine<typeof sectionFields.buildings>) {
