@@ -1,7 +1,7 @@
 import {AnimatedSprite} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Battery, Clear, Empty, Entity, Extractor, Pipe, PipeBridge, PipeDistributor, PipeJunction, ProjectileMob, Pump, Tank, Turret, Vent, Wall, Well} from '../world/Entity.js';
+import {Clear, Empty, Entity, Extractor, Pipe, PipeBridge, PipeDistributor, PipeJunction, ProjectileMob, Pump, Tank, Turret, Vent, Wall, Well} from '../world/Entity.js';
 import {
 	EntityAnimateSpriteAttribute,
 	EntityAttribute,
@@ -297,7 +297,10 @@ export default class EntityCreator {
 	}
 
 	private static createToolBattery(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Battery(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+		let entity = this.createBuilding(metadata);
+		entity.addAttribute(new EntityPowerStorageAttribute(metadata.output as number, EntityPowerStorageAttributePriority.STORAGE));
+		entity.addAttribute(new EntityPowerConductAttribute(0));
+		return entity;
 	}
 
 	private static createToolVent(metadata: ParsedLine<typeof sectionFields.buildings>) {

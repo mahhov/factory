@@ -228,14 +228,6 @@ export class Extractor extends Building {
 	}
 }
 
-export class Battery extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
-		super(name, description, size, buildTime, buildCost, health);
-		this.addAttribute(new EntityPowerStorageAttribute(capacity, EntityPowerStorageAttributePriority.STORAGE));
-		this.addAttribute(new EntityPowerConductAttribute(0));
-	}
-}
-
 export class Vent extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, liquidInput: ResourceUtils.Count<Liquid> | undefined, powerInput: number, coolantOutput: number) {
 		super(name, description, size, buildTime, buildCost, health);
