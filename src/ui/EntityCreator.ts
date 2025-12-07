@@ -74,11 +74,6 @@ export default class EntityCreator {
 			case Tool.CLEAR:
 				return new Clear();
 
-			case Tool.STEEL_WALL:
-				return EntityCreator.createToolWall(findEntityMetadata('buildings', 'Steel Wall'));
-			case Tool.TITANIUM_WALL:
-				return EntityCreator.createToolWall(findEntityMetadata('buildings', 'Titanium Wall'));
-
 			case Tool.EXTRACTOR:
 				return EntityCreator.createToolExtractor(findEntityMetadata('buildings', 'Extractor'));
 			case Tool.REINFORCED_EXTRACTOR:
@@ -154,6 +149,11 @@ export default class EntityCreator {
 			case Tool.TANK:
 				return EntityCreator.createToolTank(findEntityMetadata('buildings', 'Tank'));
 
+			case Tool.STEEL_WALL:
+				return EntityCreator.createToolWall(findEntityMetadata('buildings', 'Steel Wall'));
+			case Tool.TITANIUM_WALL:
+				return EntityCreator.createToolWall(findEntityMetadata('buildings', 'Titanium Wall'));
+
 			case Tool.SHRAPNEL_TURRET:
 				return EntityCreator.createToolTurret(findEntityMetadata('turrets', 'Shrapnel Turret'));
 			case Tool.PIERCING_TURRET:
@@ -165,10 +165,6 @@ export default class EntityCreator {
 			case Tool.LASER_TURRET:
 				return EntityCreator.createToolTurret(findEntityMetadata('turrets', 'Laser Turret'));
 		}
-	}
-
-	private static createToolWall(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Wall(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health);
 	}
 
 	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>) {
@@ -246,6 +242,10 @@ export default class EntityCreator {
 
 	private static createToolTank(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		return new Tank(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+	}
+
+	private static createToolWall(metadata: ParsedLine<typeof sectionFields.buildings>) {
+		return new Wall(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health);
 	}
 
 	private static createToolTurret(metadata: ParsedLine<typeof sectionFields.turrets>) {

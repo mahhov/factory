@@ -211,12 +211,6 @@ export abstract class Building extends Entity {
 	}
 }
 
-export class Wall extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number) {
-		super(name, description, size, buildTime, buildCost, health);
-	}
-}
-
 export class Extractor extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, powerInput: number, heatOutput: number, outputPerTier: number[]) {
 		super(name, description, size, buildTime, buildCost, health);
@@ -539,6 +533,12 @@ export class Tank extends Building {
 			new EntityLiquidTransportAttribute(liquidStorageAttribute, util.enumValues(Rotation)),
 		]));
 		this.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
+	}
+}
+
+export class Wall extends Building {
+	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number) {
+		super(name, description, size, buildTime, buildCost, health);
 	}
 }
 
