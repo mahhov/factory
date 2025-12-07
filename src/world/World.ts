@@ -6,7 +6,15 @@ import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
-import {EntityAnimateSpriteAttribute, EntityBuildableAttribute, EntityMobHerdPositionAttribute, EntityRotateSpriteAttribute, EntityTimedAttribute, TickResult, TooltipType} from './EntityAttribute.js';
+import {
+	EntityAnimateSpriteAttribute,
+	EntityBuildableAttribute,
+	EntityMobHerdPositionAttribute,
+	EntityRotateSpriteAttribute,
+	EntityTimedAttribute,
+	TickResult,
+	TooltipType,
+} from './EntityAttribute.js';
 import MobLogic from './MobLogic.js';
 import PlayerLogic from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
