@@ -10,7 +10,6 @@ import {
 	Extractor,
 	Factory,
 	Generator,
-	Junction,
 	Pipe,
 	PipeBridge,
 	PipeDistributor,
@@ -102,9 +101,9 @@ export default class EntityCreator {
 			case Tool.HIGH_SPEED_CONVEYOR:
 				return EntityCreator.createToolConveyor(findEntityMetadata('buildings', 'High Speed Conveyor'), false, rotation);
 			case Tool.DISTRIBUTOR:
-				return EntityCreator.createToolDistributor(findEntityMetadata('buildings', 'Distributor'));
+				return EntityCreator.createToolDistributorJunction(findEntityMetadata('buildings', 'Distributor'), true);
 			case Tool.JUNCTION:
-				return EntityCreator.createToolJunction(findEntityMetadata('buildings', 'Junction'));
+				return EntityCreator.createToolDistributorJunction(findEntityMetadata('buildings', 'Junction'), false);
 			case Tool.PACKED_CONVEYOR:
 				return EntityCreator.createToolConveyor(findEntityMetadata('buildings', 'Packed Conveyor'), true, rotation);
 			case Tool.STORAGE:
@@ -207,22 +206,19 @@ export default class EntityCreator {
 		return entity;
 	}
 
-	private static createToolDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {
+	private static createToolDistributorJunction(metadata: ParsedLine<typeof sectionFields.buildings>, distributor: boolean) {
 		let entity = this.createBuilding(metadata);
 		util.enumValues(Rotation).forEach(rotation => {
 			let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, 1, getMaterialCounts(Infinity), [rotation], true);
 			entity.addAttribute(materialStorageAttribute);
+			let rotations = distributor ? RotationUtils.except(RotationUtils.opposite(rotation)) : [rotation];
 			entity.addAttribute(new EntityChainAttribute([
 				new EntityNonEmptyMaterialStorage(materialStorageAttribute),
 				new EntityTimedAttribute(standardDuration / (metadata.output as number)),
-				new EntityTransportAttribute(materialStorageAttribute, RotationUtils.except(RotationUtils.opposite(rotation))),
+				new EntityTransportAttribute(materialStorageAttribute, rotations),
 			]));
 		});
 		return entity;
-	}
-
-	private static createToolJunction(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Junction(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
 	}
 
 	private static createToolStorage(metadata: ParsedLine<typeof sectionFields.buildings>) {

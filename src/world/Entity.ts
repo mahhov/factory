@@ -235,21 +235,6 @@ export class Extractor extends Building {
 	}
 }
 
-export class Junction extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rate: number) {
-		super(name, description, size, buildTime, buildCost, health);
-		util.enumValues(Rotation).forEach(rotation => {
-			let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, 1, getMaterialCounts(Infinity), [rotation], true);
-			this.addAttribute(materialStorageAttribute);
-			this.addAttribute(new EntityChainAttribute([
-				new EntityNonEmptyMaterialStorage(materialStorageAttribute),
-				new EntityTimedAttribute(standardDuration / rate),
-				new EntityTransportAttribute(materialStorageAttribute, [rotation]),
-			]));
-		});
-	}
-}
-
 export class Factory extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, materialInput: ResourceUtils.Count<Material>[], powerInput: number, heatOutput: number, materialOutput: ResourceUtils.Count<Material>) {
 		super(name, description, size, buildTime, buildCost, health);
