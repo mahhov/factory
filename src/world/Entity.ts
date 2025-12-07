@@ -42,7 +42,6 @@ import {
 	EntityParallelAttribute,
 	EntityPowerConductAttribute,
 	EntityPowerConsumeAttribute,
-	EntityPowerProduceAttribute,
 	EntityPowerStorageAttribute,
 	EntityPowerStorageAttributePriority,
 	EntityRotateSpriteAttribute,
@@ -94,11 +93,10 @@ export class Entity implements Tileable {
 	}
 
 	addAttribute(attribute: EntityAttribute) {
-		this.attribute.addAttribute(attribute);
-		this.addAttributeToMap(attribute);
+		this.attribute.addAttribute(this, attribute);
 	}
 
-	private addAttributeToMap(attribute: EntityAttribute) {
+	addAttributeToMap(attribute: EntityAttribute) {
 		let key = attribute.constructor.name;
 		this.attributesMap[key] ||= [];
 		this.attributesMap[key].push(attribute);
@@ -226,40 +224,6 @@ export class Extractor extends Building {
 		this.addAttribute(new EntityOutflowAttribute(materialStorageAttribute));
 		if (powerInput)
 			this.addAttribute(new EntityPowerConductAttribute(0));
-		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
-	}
-}
-
-export class Generator extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, materialInput: ResourceUtils.Count<Material>[], powerInput: number, heatOutput: number, liquidInput: ResourceUtils.Count<Liquid> | undefined, powerOutput: number) {
-		super(name, description, size, buildTime, buildCost, health);
-		let materialStorageAttribute;
-		if (materialInput.length) {
-			materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, materialInput.map(materialCount => new ResourceUtils.Count(materialCount.resource, 10)), util.enumValues(Rotation), false);
-			this.addAttribute(materialStorageAttribute);
-		}
-		let inputPowerStorageAttribute;
-		if (powerInput) {
-			inputPowerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
-			this.addAttribute(inputPowerStorageAttribute);
-		}
-		let liquidStorageAttribute;
-		if (liquidInput) {
-			liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidInput.resource], liquidInput.quantity, util.enumValues(Rotation));
-			this.addAttribute(liquidStorageAttribute);
-		}
-		let outputPowerStorageAttribute = new EntityPowerStorageAttribute(powerOutput, EntityPowerStorageAttributePriority.PRODUCE);
-		this.addAttribute(outputPowerStorageAttribute);
-		let timedAttribute = new EntityTimedAttribute(standardDuration);
-		this.addAttribute(new EntityChainAttribute([
-			materialStorageAttribute ? new EntityMaterialConsumeAttribute(materialStorageAttribute, materialInput) : null,
-			inputPowerStorageAttribute ? new EntityPowerConsumeAttribute(inputPowerStorageAttribute, powerInput) : null,
-			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput) : null,
-			liquidStorageAttribute ? new EntityLiquidConsumeAttribute(liquidStorageAttribute, liquidInput!) : null,
-			timedAttribute,
-			new EntityPowerProduceAttribute(outputPowerStorageAttribute, powerOutput),
-		].filter(v => v) as EntityAttribute[]));
-		this.addAttribute(new EntityPowerConductAttribute(0));
 		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
 	}
 }

@@ -298,6 +298,11 @@ abstract class EntityParentAttribute extends EntityAttribute {
 		this.attributes = attributes;
 	}
 
+	addAttribute(entity: Entity, attribute: EntityAttribute) {
+		this.attributes.push(attribute);
+		entity.addAttributeToMap(attribute);
+	}
+
 	tooltip(type: TooltipType): TextLine[] {
 		return this.attributes.flatMap(attribute => attribute.tooltip(type));
 	}
@@ -316,10 +321,6 @@ abstract class EntityParentAttribute extends EntityAttribute {
 }
 
 export class EntityParallelAttribute extends EntityParentAttribute {
-	addAttribute(attribute: EntityAttribute) {
-		this.childAttributes.push(attribute);
-	}
-
 	tick(world: World, tile: Tile<Entity>): void {
 		for (let attribute of this.childAttributes) {
 			attribute.tick(world, tile);
