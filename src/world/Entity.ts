@@ -228,13 +228,6 @@ export class Extractor extends Building {
 	}
 }
 
-export class Conductor extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, range: number) {
-		super(name, description, size, buildTime, buildCost, health, Rotation.UP, new Vector(range));
-		this.addAttribute(new EntityPowerConductAttribute(range));
-	}
-}
-
 export class Battery extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
 		super(name, description, size, buildTime, buildCost, health);
