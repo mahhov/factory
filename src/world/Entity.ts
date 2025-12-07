@@ -228,32 +228,6 @@ export class Extractor extends Building {
 	}
 }
 
-export class Vent extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, liquidInput: ResourceUtils.Count<Liquid> | undefined, powerInput: number, coolantOutput: number) {
-		super(name, description, size, buildTime, buildCost, health);
-		let powerStorageAttribute;
-		if (powerInput) {
-			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
-			this.addAttribute(powerStorageAttribute);
-		}
-		let liquidStorageAttribute;
-		if (liquidInput) {
-			liquidStorageAttribute = new EntityLiquidStorageAttribute([liquidInput.resource], liquidInput.quantity, util.enumValues(Rotation));
-			this.addAttribute(liquidStorageAttribute);
-		}
-		let timedAttribute = new EntityTimedAttribute(standardDuration);
-		this.addAttribute(new EntityChainAttribute([
-			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput) : null,
-			liquidStorageAttribute ? new EntityLiquidConsumeAttribute(liquidStorageAttribute, liquidInput!) : null,
-			timedAttribute,
-			new EntityCoolantProduceAttribute(coolantOutput),
-		].filter(v => v) as EntityAttribute[]));
-		if (powerInput)
-			this.addAttribute(new EntityPowerConductAttribute(0));
-		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
-	}
-}
-
 export class Pump extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, powerInput: number, outputPerTier: number[]) {
 		super(name, description, size, buildTime, buildCost, health);

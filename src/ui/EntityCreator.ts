@@ -1,13 +1,14 @@
 import {AnimatedSprite} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Clear, Empty, Entity, Extractor, Pipe, PipeBridge, PipeDistributor, PipeJunction, ProjectileMob, Pump, Tank, Turret, Vent, Wall, Well} from '../world/Entity.js';
+import {Clear, Empty, Entity, Extractor, Pipe, PipeBridge, PipeDistributor, PipeJunction, ProjectileMob, Pump, Tank, Turret, Wall, Well} from '../world/Entity.js';
 import {
 	EntityAnimateSpriteAttribute,
 	EntityAttribute,
 	EntityBuildableAttribute,
 	EntityChainAttribute,
 	EntityCoolantConsumeAttribute,
+	EntityCoolantProduceAttribute,
 	EntityHealthAttribute,
 	EntityInflowAttribute,
 	EntityLiquidConsumeAttribute,
@@ -304,7 +305,11 @@ export default class EntityCreator {
 	}
 
 	private static createToolVent(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Vent(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.liquidInput[0], metadata.powerInput, metadata.output as number);
+		let entity = this.createBuilding(metadata);
+		let [timedAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
+		chainAttribute.addAttribute(entity, new EntityCoolantProduceAttribute(metadata.output as number));
+		entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, 1));
+		return entity;
 	}
 
 	private static createToolPump(metadata: ParsedLine<typeof sectionFields.buildings>) {
