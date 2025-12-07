@@ -11,7 +11,6 @@ import {
 	EntityBuildableAttribute,
 	EntityChainAttribute,
 	EntityCoolantConsumeAttribute,
-	EntityCoolantProduceAttribute,
 	EntityDamageTargetAttribute,
 	EntityDescriptionAttribute,
 	EntityDirectionMovementAttribute,
@@ -21,10 +20,7 @@ import {
 	EntityIfElseAttribute,
 	EntityLiquidBridgeConnectAttribute,
 	EntityLiquidBridgeTransportAttribute,
-	EntityLiquidConsumeAttribute,
 	EntityLiquidDisplayAttribute,
-	EntityLiquidDryExtractorAttribute,
-	EntityLiquidExtractorAttribute,
 	EntityLiquidOverlayAttribute,
 	EntityLiquidStorageAttribute,
 	EntityLiquidTransportAttribute,
@@ -225,21 +221,6 @@ export class Extractor extends Building {
 		if (powerInput)
 			this.addAttribute(new EntityPowerConductAttribute(0));
 		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
-	}
-}
-
-export class Pipe extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number, rotation: Rotation) {
-		super(name, description, size, buildTime, buildCost, health, rotation);
-		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), capacity, RotationUtils.except(RotationUtils.opposite(rotation)));
-		this.addAttribute(liquidStorageAttribute);
-		let timedAttribute = new EntityTimedAttribute(standardDuration);
-		this.addAttribute(new EntityChainAttribute([
-			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
-			timedAttribute,
-			new EntityLiquidTransportAttribute(liquidStorageAttribute, [rotation]),
-		]));
-		this.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
 	}
 }
 

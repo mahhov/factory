@@ -1,7 +1,7 @@
 import {AnimatedSprite} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Clear, Empty, Entity, Extractor, Pipe, PipeBridge, PipeDistributor, PipeJunction, ProjectileMob, Tank, Turret, Wall} from '../world/Entity.js';
+import {Clear, Empty, Entity, Extractor, PipeBridge, PipeDistributor, PipeJunction, ProjectileMob, Tank, Turret, Wall} from '../world/Entity.js';
 import {
 	EntityAnimateSpriteAttribute,
 	EntityAttribute,
@@ -14,6 +14,7 @@ import {
 	EntityLiquidConsumeAttribute,
 	EntityLiquidDryExtractorAttribute,
 	EntityLiquidExtractorAttribute,
+	EntityLiquidOverlayAttribute,
 	EntityLiquidStorageAttribute,
 	EntityLiquidTransportAttribute,
 	EntityMaterialConsumeAttribute,
@@ -232,10 +233,11 @@ export default class EntityCreator {
 		return [timedAttribute, chainAttribute];
 	}
 
-	private static addLiquidTransportChain(entity: Entity, liquidStorageAttribute: EntityLiquidStorageAttribute) {
+	private static addLiquidTransportChain(entity: Entity, liquidStorageAttribute: EntityLiquidStorageAttribute, rotations: Rotation[]) {
 		entity.addAttribute(new EntityChainAttribute([
 			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
-			new EntityLiquidTransportAttribute(liquidStorageAttribute, util.enumValues(Rotation)),
+			new EntityTimedAttribute(standardDuration),
+			new EntityLiquidTransportAttribute(liquidStorageAttribute, rotations),
 		]));
 	}
 
@@ -334,7 +336,7 @@ export default class EntityCreator {
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), outputPerTier[0] * metadata.size ** 2, []);
 		entity.addAttribute(liquidStorageAttribute);
 		chainAttribute.addAttribute(entity, new EntityLiquidExtractorAttribute(liquidStorageAttribute, outputPerTier));
-		this.addLiquidTransportChain(entity, liquidStorageAttribute);
+		this.addLiquidTransportChain(entity, liquidStorageAttribute, util.enumValues(Rotation));
 		this.addAnimation(entity, timedAttribute);
 		return entity;
 	}
@@ -346,13 +348,18 @@ export default class EntityCreator {
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute([Liquid.WATER], liquidOutput, []);
 		entity.addAttribute(liquidStorageAttribute);
 		chainAttribute.addAttribute(entity, new EntityLiquidDryExtractorAttribute(liquidStorageAttribute, new ResourceUtils.Count(Liquid.WATER, liquidOutput)));
-		this.addLiquidTransportChain(entity, liquidStorageAttribute);
+		this.addLiquidTransportChain(entity, liquidStorageAttribute, util.enumValues(Rotation));
 		this.addAnimation(entity, timedAttribute);
 		return entity;
 	}
 
 	private static createToolPipe(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
-		return new Pipe(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation);
+		let entity = this.createBuilding(metadata, rotation);
+		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), metadata.output as number, RotationUtils.except(RotationUtils.opposite(rotation)));
+		entity.addAttribute(liquidStorageAttribute);
+		this.addLiquidTransportChain(entity, liquidStorageAttribute, [rotation]);
+		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
+		return entity;
 	}
 
 	private static createToolPipeBridge(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
