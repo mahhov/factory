@@ -5,7 +5,6 @@ import {
 	Clear,
 	Conductor,
 	Dispenser,
-	Distributor,
 	Empty,
 	Entity,
 	Extractor,
@@ -209,7 +208,17 @@ export default class EntityCreator {
 	}
 
 	private static createToolDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Distributor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+		let entity = this.createBuilding(metadata);
+		util.enumValues(Rotation).forEach(rotation => {
+			let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, 1, getMaterialCounts(Infinity), [rotation], true);
+			entity.addAttribute(materialStorageAttribute);
+			entity.addAttribute(new EntityChainAttribute([
+				new EntityNonEmptyMaterialStorage(materialStorageAttribute),
+				new EntityTimedAttribute(standardDuration / (metadata.output as number)),
+				new EntityTransportAttribute(materialStorageAttribute, RotationUtils.except(RotationUtils.opposite(rotation))),
+			]));
+		});
+		return entity;
 	}
 
 	private static createToolJunction(metadata: ParsedLine<typeof sectionFields.buildings>) {
