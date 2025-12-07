@@ -309,8 +309,9 @@ export default class EntityCreator {
 	}
 
 	private static createToolConductor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		let entity = this.createBuilding(metadata);
-		entity.addAttribute(new EntityPowerConductAttribute(metadata.output as number));
+		let range = metadata.output as number;
+		let entity = this.createBuilding(metadata, undefined, new Vector(range));
+		entity.addAttribute(new EntityPowerConductAttribute(range));
 		return entity;
 	}
 
@@ -364,6 +365,8 @@ export default class EntityCreator {
 
 	private static createToolPipeBridge(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
 		// todo get 4 from metadata
+
+
 		return new PipeBridge(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number, rotation, 4);
 	}
 
