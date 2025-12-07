@@ -1,7 +1,7 @@
 import {AnimatedSprite} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Clear, Empty, Entity, Extractor, Pipe, PipeBridge, PipeDistributor, PipeJunction, ProjectileMob, Pump, Tank, Turret, Wall, Well} from '../world/Entity.js';
+import {Clear, Empty, Entity, Extractor, Pipe, PipeBridge, PipeDistributor, PipeJunction, ProjectileMob, Tank, Turret, Wall, Well} from '../world/Entity.js';
 import {
 	EntityAnimateSpriteAttribute,
 	EntityAttribute,
@@ -12,13 +12,16 @@ import {
 	EntityHealthAttribute,
 	EntityInflowAttribute,
 	EntityLiquidConsumeAttribute,
+	EntityLiquidExtractorAttribute,
 	EntityLiquidStorageAttribute,
+	EntityLiquidTransportAttribute,
 	EntityMaterialConsumeAttribute,
 	EntityMaterialOverlayAttribute,
 	EntityMaterialPickerAttribute,
 	EntityMaterialProduceAttribute,
 	EntityMaterialStorageAttribute,
 	EntityMaterialStorageAttributeType,
+	EntityNonEmptyLiquidStorage,
 	EntityNonEmptyMaterialStorage,
 	EntityOutflowAttribute,
 	EntityPowerConductAttribute,
@@ -317,7 +320,18 @@ export default class EntityCreator {
 	}
 
 	private static createToolPump(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Pump(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.output as number[]);
+		let entity = this.createBuilding(metadata);
+		let [timedAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
+		let outputPerTier = metadata.output as number[];
+		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), outputPerTier[0] * metadata.size ** 2, []);
+		entity.addAttribute(liquidStorageAttribute);
+		chainAttribute.addAttribute(entity, new EntityLiquidExtractorAttribute(liquidStorageAttribute, outputPerTier));
+		entity.addAttribute(new EntityChainAttribute([
+			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
+			new EntityLiquidTransportAttribute(liquidStorageAttribute, util.enumValues(Rotation)),
+		]));
+		this.addAnimation(entity, timedAttribute);
+		return entity;
 	}
 
 	private static createToolWell(metadata: ParsedLine<typeof sectionFields.buildings>) {
