@@ -183,10 +183,10 @@ export default class EntityCreator {
 	}
 
 	private static addTransportChain(entity: Entity,
-	                                          metadata: ParsedLine<typeof sectionFields.buildings>,
-	                                          materialStorageAttributeType: EntityMaterialStorageAttributeType,
-	                                          inputRotations: Rotation[],
-	                                          outputRotations: Rotation[]): [EntityMaterialStorageAttribute, EntityTimedAttribute] {
+	                                 metadata: ParsedLine<typeof sectionFields.buildings>,
+	                                 materialStorageAttributeType: EntityMaterialStorageAttributeType,
+	                                 inputRotations: Rotation[],
+	                                 outputRotations: Rotation[]): [EntityMaterialStorageAttribute, EntityTimedAttribute] {
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(materialStorageAttributeType, 1, getMaterialCounts(Infinity), inputRotations, true);
 		entity.addAttribute(materialStorageAttribute);
 		let timedAttribute = new EntityTimedAttribute(standardDuration / (metadata.output as number));
@@ -228,6 +228,10 @@ export default class EntityCreator {
 		return [timedAttribute, chainAttribute];
 	}
 
+	private static addAnimation(entity: Entity, timedAttribute: EntityTimedAttribute) {
+		entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, 1));
+	}
+
 	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		return new Extractor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.heatOutput, metadata.output as number[]);
 	}
@@ -262,7 +266,7 @@ export default class EntityCreator {
 		let materialPickerAttribute = new EntityMaterialPickerAttribute();
 		entity.addAttribute(materialPickerAttribute);
 		entity.addAttribute(new EntityInflowAttribute(materialPickerAttribute, materialStorageAttribute, [rotation]));
-		entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, 1));
+		this.addAnimation(entity, timedAttribute);
 		return entity;
 	}
 
@@ -274,7 +278,7 @@ export default class EntityCreator {
 		entity.addAttribute(outputMaterialStorageAttribute);
 		chainAttribute.addAttribute(entity, new EntityMaterialProduceAttribute(outputMaterialStorageAttribute, [materialOutput]));
 		entity.addAttribute(new EntityOutflowAttribute(outputMaterialStorageAttribute));
-		entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, 1));
+		this.addAnimation(entity, timedAttribute);
 		return entity;
 	}
 
@@ -287,7 +291,7 @@ export default class EntityCreator {
 		chainAttribute.addAttribute(entity, new EntityPowerProduceAttribute(outputPowerStorageAttribute, powerOutput));
 		if (!metadata.powerInput)
 			entity.addAttribute(new EntityPowerConductAttribute(0));
-		entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, 1));
+		this.addAnimation(entity, timedAttribute);
 		return entity;
 	}
 
@@ -308,7 +312,7 @@ export default class EntityCreator {
 		let entity = this.createBuilding(metadata);
 		let [timedAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
 		chainAttribute.addAttribute(entity, new EntityCoolantProduceAttribute(metadata.output as number));
-		entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, 1));
+		this.addAnimation(entity, timedAttribute);
 		return entity;
 	}
 
