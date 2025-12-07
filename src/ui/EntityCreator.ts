@@ -182,7 +182,7 @@ export default class EntityCreator {
 		return entity;
 	}
 
-	private static addTransportChainAttribute(entity: Entity,
+	private static addTransportChain(entity: Entity,
 	                                          metadata: ParsedLine<typeof sectionFields.buildings>,
 	                                          materialStorageAttributeType: EntityMaterialStorageAttributeType,
 	                                          inputRotations: Rotation[],
@@ -235,7 +235,7 @@ export default class EntityCreator {
 	private static createToolConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, packed: boolean, rotation: Rotation) {
 		let entity = this.createBuilding(metadata, rotation);
 		let type = packed ? EntityMaterialStorageAttributeType.PACKED : EntityMaterialStorageAttributeType.NORMAL;
-		let [materialStorageAttribute, timedAttribute] = this.addTransportChainAttribute(entity, metadata, type, RotationUtils.except(RotationUtils.opposite(rotation)), [rotation]);
+		let [materialStorageAttribute, timedAttribute] = this.addTransportChain(entity, metadata, type, RotationUtils.except(RotationUtils.opposite(rotation)), [rotation]);
 		entity.addAttribute(new EntityMaterialOverlayAttribute(materialStorageAttribute, timedAttribute, rotation));
 		return entity;
 	}
@@ -245,7 +245,7 @@ export default class EntityCreator {
 		let entity = this.createBuilding(metadata);
 		util.enumValues(Rotation).forEach(rotation => {
 			let outputRotations = distributor ? RotationUtils.except(RotationUtils.opposite(rotation)) : [rotation];
-			this.addTransportChainAttribute(entity, metadata, EntityMaterialStorageAttributeType.NORMAL, [rotation], outputRotations);
+			this.addTransportChain(entity, metadata, EntityMaterialStorageAttributeType.NORMAL, [rotation], outputRotations);
 		});
 		return entity;
 	}
@@ -258,7 +258,7 @@ export default class EntityCreator {
 
 	private static createToolDispenser(metadata: ParsedLine<typeof sectionFields.buildings>, rotation: Rotation) {
 		let entity = this.createBuilding(metadata, rotation);
-		let [materialStorageAttribute, timedAttribute] = this.addTransportChainAttribute(entity, metadata, EntityMaterialStorageAttributeType.ANY, [], [rotation]);
+		let [materialStorageAttribute, timedAttribute] = this.addTransportChain(entity, metadata, EntityMaterialStorageAttributeType.ANY, [], [rotation]);
 		let materialPickerAttribute = new EntityMaterialPickerAttribute();
 		entity.addAttribute(materialPickerAttribute);
 		entity.addAttribute(new EntityInflowAttribute(materialPickerAttribute, materialStorageAttribute, [rotation]));
