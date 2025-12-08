@@ -1,16 +1,14 @@
 import {AnimatedSprite, Container, Particle, Sprite, Texture} from 'pixi.js';
-import {AnimatedGeneratedTextures, generatedTextures, textureColors} from '../graphics/generatedTextures.js';
+import {AnimatedGeneratedTextures, generatedTextures} from '../graphics/generatedTextures.js';
 import uiColors from '../graphics/uiColors.js';
 import TextLine from '../ui/TextLine.js';
 import {toCamelCase} from '../util/stringCase.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {
-	EntityAnimateSpriteAttribute,
 	EntityAttribute,
 	EntityBuildableAttribute,
 	EntityChainAttribute,
-	EntityCoolantConsumeAttribute,
 	EntityDamageTargetAttribute,
 	EntityDescriptionAttribute,
 	EntityDirectionMovementAttribute,
@@ -21,20 +19,13 @@ import {
 	EntityLiquidDisplayAttribute,
 	EntityMaterialConsumeAttribute,
 	EntityMaterialDisplayAttribute,
-	EntityMaterialExtractorAttribute,
 	EntityMaterialStorageAttribute,
 	EntityMaterialStorageAttributeType,
 	EntityMobHerdPositionActivateAttribute,
 	EntityMobHerdPositionAttribute,
 	EntityMobMoveTowardsPositionAttribute,
 	EntityNameAttribute,
-	EntityOutflowAttribute,
 	EntityParallelAttribute,
-	EntityPowerConductAttribute,
-	EntityPowerConsumeAttribute,
-	EntityPowerStorageAttribute,
-	EntityPowerStorageAttributePriority,
-	EntityRotateSpriteAttribute,
 	EntitySpawnParticleAttribute,
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
@@ -191,30 +182,6 @@ export abstract class Building extends Entity {
 		super(name, description, size, rotation, tilingSize);
 		this.addAttribute(new EntityBuildableAttribute(buildTime, buildCost));
 		this.addAttribute(new EntityHealthAttribute(health, true));
-	}
-}
-
-export class Extractor extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, powerInput: number, heatOutput: number, outputPerTier: number[]) {
-		super(name, description, size, buildTime, buildCost, health);
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(10), [], true);
-		this.addAttribute(materialStorageAttribute);
-		let powerStorageAttribute;
-		if (powerInput) {
-			powerStorageAttribute = new EntityPowerStorageAttribute(powerInput, EntityPowerStorageAttributePriority.CONSUME);
-			this.addAttribute(powerStorageAttribute);
-		}
-		let timedAttribute = new EntityTimedAttribute(standardDuration);
-		this.addAttribute(new EntityChainAttribute([
-			powerStorageAttribute ? new EntityPowerConsumeAttribute(powerStorageAttribute, powerInput) : null,
-			heatOutput ? new EntityCoolantConsumeAttribute(heatOutput) : null,
-			timedAttribute,
-			new EntityMaterialExtractorAttribute(materialStorageAttribute, outputPerTier),
-		].filter(v => v) as EntityAttribute[]));
-		this.addAttribute(new EntityOutflowAttribute(materialStorageAttribute));
-		if (powerInput)
-			this.addAttribute(new EntityPowerConductAttribute(0));
-		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
 	}
 }
 

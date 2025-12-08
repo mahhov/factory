@@ -1,7 +1,7 @@
 import {AnimatedSprite} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Clear, Empty, Entity, Extractor, ProjectileMob, Turret} from '../world/Entity.js';
+import {Clear, Empty, Entity, ProjectileMob, Turret} from '../world/Entity.js';
 import {
 	EntityAnimateSpriteAttribute,
 	EntityAttribute,
@@ -20,6 +20,7 @@ import {
 	EntityLiquidStorageAttribute,
 	EntityLiquidTransportAttribute,
 	EntityMaterialConsumeAttribute,
+	EntityMaterialExtractorAttribute,
 	EntityMaterialOverlayAttribute,
 	EntityMaterialPickerAttribute,
 	EntityMaterialProduceAttribute,
@@ -248,7 +249,14 @@ export default class EntityCreator {
 	}
 
 	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Extractor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.powerInput, metadata.heatOutput, metadata.output as number[]);
+		let entity = this.createBuilding(metadata);
+		let [timedAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(10), [], true);
+		entity.addAttribute(materialStorageAttribute);
+		chainAttribute.addAttribute(entity, new EntityMaterialExtractorAttribute(materialStorageAttribute, metadata.output as number[]));
+		entity.addAttribute(new EntityOutflowAttribute(materialStorageAttribute));
+		this.addAnimation(entity, timedAttribute);
+		return entity;
 	}
 
 	private static createToolConveyor(metadata: ParsedLine<typeof sectionFields.buildings>, packed: boolean, rotation: Rotation) {
