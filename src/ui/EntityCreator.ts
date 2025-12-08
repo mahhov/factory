@@ -1,4 +1,5 @@
-import {AnimatedSprite} from 'pixi.js';
+import {AnimatedSprite, Sprite} from 'pixi.js';
+import {generatedTextures, textureColors} from '../graphics/generatedTextures.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Clear, Empty, Entity, getMaterialCounts, ProjectileMob, standardDuration, Turret} from '../world/Entity.js';
@@ -34,6 +35,7 @@ import {
 	EntityPowerProduceAttribute,
 	EntityPowerStorageAttribute,
 	EntityPowerStorageAttributePriority,
+	EntityRotateSpriteAttribute,
 	EntityTimedAttribute,
 	EntityTransportAttribute,
 } from '../world/EntityAttribute.js';
@@ -86,13 +88,13 @@ export default class EntityCreator {
 				return new Clear();
 
 			case Tool.EXTRACTOR:
-				return EntityCreator.createToolExtractor(findEntityMetadata('buildings', 'Extractor'));
+				return EntityCreator.createToolExtractor(findEntityMetadata('buildings', 'Extractor'), 0);
 			case Tool.REINFORCED_EXTRACTOR:
-				return EntityCreator.createToolExtractor(findEntityMetadata('buildings', 'Reinforced Extractor'));
+				return EntityCreator.createToolExtractor(findEntityMetadata('buildings', 'Reinforced Extractor'), 1);
 			case Tool.QUADRATIC_EXTRACTOR:
-				return EntityCreator.createToolExtractor(findEntityMetadata('buildings', 'Quadratic Extractor'));
+				return EntityCreator.createToolExtractor(findEntityMetadata('buildings', 'Quadratic Extractor'), 2);
 			case Tool.LASER_EXTRACTOR:
-				return EntityCreator.createToolExtractor(findEntityMetadata('buildings', 'Laser Extractor'));
+				return EntityCreator.createToolExtractor(findEntityMetadata('buildings', 'Laser Extractor'), 3);
 
 			case Tool.CONVEYOR:
 				return EntityCreator.createToolConveyor(findEntityMetadata('buildings', 'Conveyor'), false, rotation);
@@ -243,14 +245,31 @@ export default class EntityCreator {
 		entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, 1));
 	}
 
-	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>) {
+	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>, tier: number) {
 		let entity = this.createBuilding(metadata);
 		let [timedAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(10), [], true);
 		entity.addAttribute(materialStorageAttribute);
 		chainAttribute.addAttribute(entity, new EntityMaterialExtractorAttribute(materialStorageAttribute, metadata.output as number[]));
 		entity.addAttribute(new EntityOutflowAttribute(materialStorageAttribute));
+
 		this.addAnimation(entity, timedAttribute);
+		let colors = [
+			[textureColors.tier1Secondary],
+			[textureColors.tier2Secondary],
+			[textureColors.tier3Secondary],
+			[textureColors.tier4, textureColors.tier4Secondary],
+		][tier];
+		let slow = [10, 20, 40, 80][tier];
+		let sprites = colors.map((color, i) => {
+			let sprite = new Sprite(generatedTextures.extractorTop.texture(entity.size.x * (i ? 4 : 8), color));
+			Entity.rotateSprite(sprite, Rotation.UP);
+			sprite.position = new Vector(entity.size.x * 4);
+			entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, slow, true));
+			return sprite;
+		});
+		entity.addOverlaySprites('extractorTop', sprites);
+		// todo add dust particles
 		return entity;
 	}
 
@@ -478,3 +497,5 @@ export default class EntityCreator {
 }
 
 // todo name, description, & sprite attributes should be factory-ized. entity constructor should be dumb
+// todo allow chaining syntax
+// todo remove use of this. to refer to static methods
