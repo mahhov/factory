@@ -35,9 +35,9 @@ import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation} from './Rotation.js';
 import {Tile, Tileable, World} from './World.js';
 
-let standardDuration = 40;
+export let standardDuration = 40;
 
-let getMaterialCounts = (count: number): ResourceUtils.Count<Material>[] =>
+export let getMaterialCounts = (count: number): ResourceUtils.Count<Material>[] =>
 	util.enumValues(Material).map(material => new ResourceUtils.Count(material, count));
 
 export class Entity implements Tileable {

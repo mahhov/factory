@@ -1,7 +1,7 @@
 import {AnimatedSprite} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Clear, Empty, Entity, ProjectileMob, Turret} from '../world/Entity.js';
+import {Clear, Empty, Entity, getMaterialCounts, ProjectileMob, standardDuration, Turret} from '../world/Entity.js';
 import {
 	EntityAnimateSpriteAttribute,
 	EntityAttribute,
@@ -69,11 +69,6 @@ export enum MobType {
 	BOMBER,
 	HARVESTER,
 }
-
-let standardDuration = 40;
-
-let getMaterialCounts = (count: number): ResourceUtils.Count<Material>[] =>
-	util.enumValues(Material).map(material => new ResourceUtils.Count(material, count));
 
 export default class EntityCreator {
 	private static cachedToolEntities_: Record<Tool, Entity>;
