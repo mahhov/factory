@@ -1,7 +1,7 @@
 import {AnimatedSprite} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Clear, Empty, Entity, Extractor, PipeDistributor, PipeJunction, ProjectileMob, Tank, Turret, Wall} from '../world/Entity.js';
+import {Clear, Empty, Entity, Extractor, ProjectileMob, Tank, Turret, Wall} from '../world/Entity.js';
 import {
 	EntityAnimateSpriteAttribute,
 	EntityAttribute,
@@ -158,9 +158,9 @@ export default class EntityCreator {
 			case Tool.PIPE_BRIDGE:
 				return EntityCreator.createToolPipeBridge(findEntityMetadata('buildings', 'Pipe Bridge'), rotation);
 			case Tool.PIPE_DISTRIBUTOR:
-				return EntityCreator.createToolPipeDistributor(findEntityMetadata('buildings', 'Pipe Distributor'));
+				return EntityCreator.createToolPipeDistributorJunction(findEntityMetadata('buildings', 'Pipe Distributor'), true);
 			case Tool.PIPE_JUNCTION:
-				return EntityCreator.createToolPipeJunction(findEntityMetadata('buildings', 'Pipe Junction'));
+				return EntityCreator.createToolPipeDistributorJunction(findEntityMetadata('buildings', 'Pipe Distributor'), false);
 			case Tool.TANK:
 				return EntityCreator.createToolTank(findEntityMetadata('buildings', 'Tank'));
 
@@ -382,12 +382,14 @@ export default class EntityCreator {
 		return entity;
 	}
 
-	private static createToolPipeDistributor(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new PipeDistributor(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
-	}
-
-	private static createToolPipeJunction(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new PipeJunction(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+	private static createToolPipeDistributorJunction(metadata: ParsedLine<typeof sectionFields.buildings>, distributor: boolean) {
+		let entity = this.createBuilding(metadata);
+		util.enumValues(Rotation).forEach(rotation => {
+			let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), metadata.output as number, [rotation]);
+			entity.addAttribute(liquidStorageAttribute);
+			this.addLiquidTransportChain(entity, liquidStorageAttribute, distributor ? RotationUtils.except(RotationUtils.opposite(rotation)) : [rotation]);
+		});
+		return entity;
 	}
 
 	private static createToolTank(metadata: ParsedLine<typeof sectionFields.buildings>) {
@@ -465,3 +467,5 @@ export default class EntityCreator {
 		return new ProjectileMob(metadata.size, metadata.health, metadata.movementSpeed, 20, metadata.range, metadata.count, metadata.damageSize, metadata.projectileSpeed, metadata.collisionWidth, metadata.damage, metadata.attackLatency, 0);
 	}
 }
+
+// todo name, description, & sprite attributes should be factory-ized. entity constructor should be dumb

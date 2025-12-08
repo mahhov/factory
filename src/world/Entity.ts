@@ -222,36 +222,6 @@ export class Extractor extends Building {
 	}
 }
 
-export class PipeDistributor extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
-		super(name, description, size, buildTime, buildCost, health);
-		util.enumValues(Rotation).forEach(rotation => {
-			let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), capacity, [rotation]);
-			this.addAttribute(liquidStorageAttribute);
-			this.addAttribute(new EntityChainAttribute([
-				new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
-				new EntityTimedAttribute(standardDuration),
-				new EntityLiquidTransportAttribute(liquidStorageAttribute, RotationUtils.except(RotationUtils.opposite(rotation))),
-			]));
-		});
-	}
-}
-
-export class PipeJunction extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
-		super(name, description, size, buildTime, buildCost, health);
-		util.enumValues(Rotation).forEach(rotation => {
-			let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), capacity, [rotation]);
-			this.addAttribute(liquidStorageAttribute);
-			this.addAttribute(new EntityChainAttribute([
-				new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
-				new EntityTimedAttribute(standardDuration),
-				new EntityLiquidTransportAttribute(liquidStorageAttribute, [rotation]),
-			]));
-		});
-	}
-}
-
 export class Tank extends Building {
 	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
 		super(name, description, size, buildTime, buildCost, health);
