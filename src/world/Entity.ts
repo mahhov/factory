@@ -19,9 +19,6 @@ import {
 	EntityHealthAttribute,
 	EntityIfElseAttribute,
 	EntityLiquidDisplayAttribute,
-	EntityLiquidOverlayAttribute,
-	EntityLiquidStorageAttribute,
-	EntityLiquidTransportAttribute,
 	EntityMaterialConsumeAttribute,
 	EntityMaterialDisplayAttribute,
 	EntityMaterialExtractorAttribute,
@@ -31,7 +28,6 @@ import {
 	EntityMobHerdPositionAttribute,
 	EntityMobMoveTowardsPositionAttribute,
 	EntityNameAttribute,
-	EntityNonEmptyLiquidStorage,
 	EntityOutflowAttribute,
 	EntityParallelAttribute,
 	EntityPowerConductAttribute,
@@ -45,7 +41,7 @@ import {
 	TooltipType,
 } from './EntityAttribute.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
-import {Rotation, RotationUtils} from './Rotation.js';
+import {Rotation} from './Rotation.js';
 import {Tile, Tileable, World} from './World.js';
 
 let standardDuration = 40;
@@ -219,20 +215,6 @@ export class Extractor extends Building {
 		if (powerInput)
 			this.addAttribute(new EntityPowerConductAttribute(0));
 		this.addAttribute(new EntityAnimateSpriteAttribute(this.container!.children[0] as AnimatedSprite, timedAttribute, 1));
-	}
-}
-
-export class Tank extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, capacity: number) {
-		super(name, description, size, buildTime, buildCost, health);
-		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), capacity, util.enumValues(Rotation));
-		this.addAttribute(liquidStorageAttribute);
-		this.addAttribute(new EntityChainAttribute([
-			new EntityNonEmptyLiquidStorage(liquidStorageAttribute),
-			new EntityTimedAttribute(standardDuration),
-			new EntityLiquidTransportAttribute(liquidStorageAttribute, util.enumValues(Rotation)),
-		]));
-		this.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
 	}
 }
 

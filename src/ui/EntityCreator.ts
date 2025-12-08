@@ -1,7 +1,7 @@
 import {AnimatedSprite} from 'pixi.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Clear, Empty, Entity, Extractor, ProjectileMob, Tank, Turret, Wall} from '../world/Entity.js';
+import {Clear, Empty, Entity, Extractor, ProjectileMob, Turret, Wall} from '../world/Entity.js';
 import {
 	EntityAnimateSpriteAttribute,
 	EntityAttribute,
@@ -393,7 +393,12 @@ export default class EntityCreator {
 	}
 
 	private static createToolTank(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		return new Tank(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.output as number);
+		let entity = this.createBuilding(metadata);
+		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), metadata.output as number, util.enumValues(Rotation));
+		entity.addAttribute(liquidStorageAttribute);
+		this.addLiquidTransportChain(entity, liquidStorageAttribute, util.enumValues(Rotation));
+		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
+		return entity;
 	}
 
 	private static createToolWall(metadata: ParsedLine<typeof sectionFields.buildings>) {
