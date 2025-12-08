@@ -398,11 +398,11 @@ export class World {
 			['reinforcedExtractor', 3, 20],
 			['quadraticExtractor', 4, 40],
 			['laserExtractor', 4, 80],
-			['steelSmelter', 2, 40],
-			['metaglassFoundry', 2, 40],
-			['plasteelMixer', 3, 40],
-			['thermiteForge', 4, 40],
-			['exidiumCatalyst', 4, 40],
+			['steelSmelter', 2, 2],
+			['metaglassFoundry', 2, 2],
+			['plasteelMixer', 3, 2],
+			['thermiteForge', 4, 2],
+			['exidiumCatalyst', 4, 5],
 		] as [string, number, number][]).forEach(([texture, size, slow], i) => {
 			let entity = new Entity(texture, '', new Vector(size));
 			let timedAttribute = new EntityTimedAttribute(40);
