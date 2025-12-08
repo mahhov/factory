@@ -379,22 +379,57 @@ export let generatedTextures = {
 		[6, 22, 4, 4, textureColors.thermite],
 		[22, 22, 4, 4, textureColors.thermite],
 	]], [0, 1, 2, 1]),
-	exidiumCatalyst: new AnimatedGeneratedTextures(32, [
-		[
-			[0, 0, 32, 32, textureColors.backgroundGrey],
-			[10, 0, 12, 1, textureColors.wallGrey],
-			[10, 31, 12, 1, textureColors.wallGrey],
-			[0, 10, 1, 12, textureColors.wallGrey],
-			[31, 10, 1, 12, textureColors.wallGrey],
-			[0, 0, 1, 1, textureColors.cornerGrey],
-			[31, 0, 1, 1, textureColors.cornerGrey],
-			[0, 31, 1, 1, textureColors.cornerGrey],
-			[31, 31, 1, 1, textureColors.cornerGrey],
-			[6, 6, 20, 20, textureColors.exidiumSecondary],
-			[10, 10, 12, 12, textureColors.exidium],
-			[12, 12, 8, 8, textureColors.white],
-			[14, 14, 4, 4, textureColors.exidium],
-		]]),
+	exidiumCatalyst: new AnimatedGeneratedTextures(32, [[
+		...factoryBase(32, 12),
+		[14, 14, 4, 4, textureColors.exidiumSecondary],
+	], [
+		...factoryBase(32, 12),
+		[12, 12, 8, 8, textureColors.exidiumSecondary],
+		[14, 14, 4, 4, textureColors.exidium],
+	], [
+		...factoryBase(32, 12),
+		[10, 10, 12, 12, textureColors.exidiumSecondary],
+		[12, 12, 8, 8, textureColors.exidium],
+		[14, 14, 4, 4, textureColors.white],
+	], [
+		...factoryBase(32, 12),
+		[8, 8, 16, 16, textureColors.exidiumSecondary],
+		[10, 10, 12, 12, textureColors.exidium],
+		[12, 12, 8, 8, textureColors.white],
+		[14, 14, 4, 4, textureColors.exidium],
+	], [
+		...factoryBase(32, 12),
+		[6, 6, 20, 20, textureColors.exidiumSecondary],
+		[8, 8, 16, 16, textureColors.exidium],
+		[10, 10, 12, 12, textureColors.white],
+		[12, 12, 8, 8, textureColors.exidium],
+		[14, 14, 4, 4, textureColors.exidiumSecondary],
+	], [
+		...factoryBase(32, 12),
+		[6, 6, 20, 20, textureColors.exidium],
+		[8, 8, 16, 16, textureColors.white],
+		[10, 10, 12, 12, textureColors.exidium],
+		[12, 12, 8, 8, textureColors.exidiumSecondary],
+		[14, 14, 4, 4, textureColors.backgroundGrey],
+	], [
+		...factoryBase(32, 12),
+		[6, 6, 20, 20, textureColors.white],
+		[8, 8, 16, 16, textureColors.exidium],
+		[10, 10, 12, 12, textureColors.exidiumSecondary],
+		[12, 12, 8, 8, textureColors.backgroundGrey],
+	], [
+		...factoryBase(32, 12),
+		[6, 6, 20, 20, textureColors.exidium],
+		[8, 8, 16, 16, textureColors.exidiumSecondary],
+		[10, 10, 12, 12, textureColors.backgroundGrey],
+	], [
+		...factoryBase(32, 12),
+		[6, 6, 20, 20, textureColors.exidiumSecondary],
+		[8, 8, 16, 16, textureColors.backgroundGrey],
+	], [
+		...factoryBase(32, 12),
+		[6, 6, 20, 20, textureColors.backgroundGrey],
+	]]),
 
 	thermalGenerator: new AnimatedGeneratedTextures(16, [[
 		[0, 0, 16, 16, textureColors.wallGrey],
