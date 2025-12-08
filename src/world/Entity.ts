@@ -218,12 +218,6 @@ export class Extractor extends Building {
 	}
 }
 
-export class Wall extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number) {
-		super(name, description, size, buildTime, buildCost, health);
-	}
-}
-
 export class Base extends Entity {
 	constructor() {
 		super('Base', '', new Vector(5));
