@@ -523,6 +523,7 @@ export let generatedTextures = {
 		[1, 1, 6, 6, textureColors.wallGrey],
 		[3, 2, 2, 4, textureColors.water],
 		[2, 3, 4, 2, textureColors.water],
+		[3, 3, 2, 2, textureColors.black],
 	]]),
 	methaneVent: new AnimatedGeneratedTextures(16, [[
 		[0, 0, 16, 16, textureColors.wallGrey],
@@ -530,6 +531,7 @@ export let generatedTextures = {
 		[4, 4, 8, 8, textureColors.methane],
 		[6, 2, 4, 12, textureColors.methane],
 		[2, 6, 12, 4, textureColors.methane],
+		[6, 6, 4, 4, textureColors.black],
 	]]),
 
 	pump: new AnimatedGeneratedTextures(16, [[

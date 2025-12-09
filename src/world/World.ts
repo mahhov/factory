@@ -1,20 +1,11 @@
 import {AnimatedSprite, Container, Particle, ParticleContainer, Sprite} from 'pixi.js';
-import {generatedTextures, textureColors} from '../graphics/generatedTextures.js';
 import Painter from '../graphics/Painter.js';
 import TextLine from '../ui/TextLine.js';
 import {generateTerrain} from '../util/Noise.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
-import {
-	EntityAnimateSpriteAttribute,
-	EntityBuildableAttribute,
-	EntityMobHerdPositionAttribute,
-	EntityRotateSpriteAttribute,
-	EntityTimedAttribute,
-	TickResult,
-	TooltipType,
-} from './EntityAttribute.js';
+import {EntityAnimateSpriteAttribute, EntityBuildableAttribute, EntityMobHerdPositionAttribute, EntityTimedAttribute, TickResult, TooltipType} from './EntityAttribute.js';
 import MobLogic from './MobLogic.js';
 import PlayerLogic from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
@@ -394,40 +385,13 @@ export class World {
 		this.live.replaceTileable(size.scale(.5).floor, this.playerLogic.base);
 
 		([
-			['extractor', 2, 10],
-			['reinforcedExtractor', 3, 20],
-			['quadraticExtractor', 4, 40],
-			['laserExtractor', 4, 80],
-			['steelSmelter', 2, 2],
-			['metaglassFoundry', 2, 2],
-			['plasteelMixer', 3, 2],
-			['thermiteForge', 4, 2],
-			['exidiumCatalyst', 4, 2],
+			['airVent', 1, 1],
+			['waterVent', 1, 1],
+			['methaneVent', 2, 1],
 		] as [string, number, number][]).forEach(([texture, size, slow], i) => {
 			let entity = new Entity(texture, '', new Vector(size));
 			let timedAttribute = new EntityTimedAttribute(40);
 			entity.addAttribute(timedAttribute);
-			if (i < 3) {
-				let colors = [
-					textureColors.tier1Secondary,
-					textureColors.tier2Secondary,
-					textureColors.tier3Secondary,
-				];
-				let sprite = new Sprite(generatedTextures.extractorTop.texture(size * 8, colors[i]));
-				Entity.rotateSprite(sprite, Rotation.UP);
-				entity.addOverlaySprites('x', [sprite]);
-				entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, slow, true));
-			}
-			if (i === 3) {
-				let sprite = new Sprite(generatedTextures.extractorTop.texture(size * 8, textureColors.tier4));
-				let spriteCounter = new Sprite(generatedTextures.extractorTop.texture(size * 4, textureColors.tier4Secondary));
-				Entity.rotateSprite(sprite, Rotation.UP);
-				Entity.rotateSprite(spriteCounter, Rotation.UP);
-				spriteCounter.position = new Vector(size * 4);
-				entity.addOverlaySprites('x', [sprite, spriteCounter]);
-				entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, slow, true));
-				entity.addAttribute(new EntityRotateSpriteAttribute(spriteCounter, timedAttribute, slow, true));
-			}
 			entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, slow));
 			this.live.replaceTileable(new Vector(136 + 4 * i, 143), entity);
 		});

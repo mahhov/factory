@@ -204,7 +204,7 @@ export default class EntityCreator {
 		return [materialStorageAttribute, timedAttribute];
 	}
 
-	private static addConsumptionChain(entity: Entity, metadata: ParsedLine<typeof sectionFields.buildings>): [EntityTimedAttribute, EntityChainAttribute] {
+	private static addConsumptionChain(entity: Entity, metadata: ParsedLine<typeof sectionFields.buildings>): [EntityTimedAttribute, EntityLiquidStorageAttribute | undefined, EntityChainAttribute] {
 		let materialStorageAttribute;
 		if (metadata.materialInput.length) {
 			materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, metadata.materialInput.map(materialCount => new ResourceUtils.Count(materialCount.resource, 10)), util.enumValues(Rotation), false);
@@ -231,7 +231,7 @@ export default class EntityCreator {
 		entity.addAttribute(chainAttribute);
 		if (metadata.powerInput)
 			entity.addAttribute(new EntityPowerConductAttribute(0));
-		return [timedAttribute, chainAttribute];
+		return [timedAttribute, liquidStorageAttribute, chainAttribute];
 	}
 
 	private static addLiquidTransportChain(entity: Entity, liquidStorageAttribute: EntityLiquidStorageAttribute, rotations: Rotation[]) {
@@ -248,13 +248,12 @@ export default class EntityCreator {
 
 	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>, tier: number) {
 		let entity = this.createBuilding(metadata);
-		let [timedAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
+		let [timedAttribute, _, chainAttribute] = this.addConsumptionChain(entity, metadata);
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(10), [], true);
 		entity.addAttribute(materialStorageAttribute);
 		chainAttribute.addAttribute(entity, new EntityMaterialExtractorAttribute(materialStorageAttribute, metadata.output as number[]));
 		entity.addAttribute(new EntityOutflowAttribute(materialStorageAttribute));
 
-		this.addAnimation(entity, timedAttribute);
 		let colorsSlow = [
 			[[textureColors.tier1Secondary], 10],
 			[[textureColors.tier2Secondary], 20],
@@ -309,7 +308,7 @@ export default class EntityCreator {
 
 	private static createToolFactory(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		let entity = this.createBuilding(metadata);
-		let [timedAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
+		let [timedAttribute, _, chainAttribute] = this.addConsumptionChain(entity, metadata);
 		let materialOutput = metadata.output as ResourceUtils.Count<Material>;
 		let outputMaterialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(materialOutput.resource, 10)], [], true);
 		entity.addAttribute(outputMaterialStorageAttribute);
@@ -321,7 +320,7 @@ export default class EntityCreator {
 
 	private static createToolGenerator(metadata: ParsedLine<typeof sectionFields.buildings>, tier: number) {
 		let entity = this.createBuilding(metadata);
-		let [timedAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
+		let [timedAttribute, _, chainAttribute] = this.addConsumptionChain(entity, metadata);
 		let powerOutput = metadata.output as number;
 		let outputPowerStorageAttribute = new EntityPowerStorageAttribute(powerOutput, EntityPowerStorageAttributePriority.PRODUCE);
 		entity.addAttribute(outputPowerStorageAttribute);
@@ -329,8 +328,6 @@ export default class EntityCreator {
 		if (!metadata.powerInput)
 			entity.addAttribute(new EntityPowerConductAttribute(0));
 
-		entity.addAttribute(timedAttribute);
-		this.addAnimation(entity, timedAttribute);
 		let colorSizeAreaSlow = [
 			[textureColors.tier2, 2, 6, 16],
 			[textureColors.white, 2, 12, 20],
@@ -366,33 +363,33 @@ export default class EntityCreator {
 
 	private static createToolVent(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		let entity = this.createBuilding(metadata);
-		let [timedAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
+		let [_, liquidStorageAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
 		chainAttribute.addAttribute(entity, new EntityCoolantProduceAttribute(metadata.output as number));
-		this.addAnimation(entity, timedAttribute);
+
+		if (liquidStorageAttribute)
+			entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
 		return entity;
 	}
 
 	private static createToolPump(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		let entity = this.createBuilding(metadata);
-		let [timedAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
+		let [_, __, chainAttribute] = this.addConsumptionChain(entity, metadata);
 		let outputPerTier = metadata.output as number[];
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), outputPerTier[0] * metadata.size ** 2, []);
 		entity.addAttribute(liquidStorageAttribute);
 		chainAttribute.addAttribute(entity, new EntityLiquidExtractorAttribute(liquidStorageAttribute, outputPerTier));
 		this.addLiquidTransportChain(entity, liquidStorageAttribute, util.enumValues(Rotation));
-		this.addAnimation(entity, timedAttribute);
 		return entity;
 	}
 
 	private static createToolWell(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		let entity = this.createBuilding(metadata);
-		let [timedAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
+		let [_, __, chainAttribute] = this.addConsumptionChain(entity, metadata);
 		let liquidOutput = metadata.output as number;
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute([Liquid.WATER], liquidOutput, []);
 		entity.addAttribute(liquidStorageAttribute);
 		chainAttribute.addAttribute(entity, new EntityLiquidDryExtractorAttribute(liquidStorageAttribute, new ResourceUtils.Count(Liquid.WATER, liquidOutput)));
 		this.addLiquidTransportChain(entity, liquidStorageAttribute, util.enumValues(Rotation));
-		this.addAnimation(entity, timedAttribute);
 		return entity;
 	}
 
