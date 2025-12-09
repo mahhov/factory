@@ -8,6 +8,7 @@ import {
 	EntityAttribute,
 	EntityBuildableAttribute,
 	EntityChainAttribute,
+	EntityCirclePathSpriteAttribute,
 	EntityCoolantConsumeAttribute,
 	EntityCoolantProduceAttribute,
 	EntityHealthAttribute,
@@ -123,15 +124,15 @@ export default class EntityCreator {
 				return EntityCreator.createToolFactory(findEntityMetadata('buildings', 'Exidium Catalyst'));
 
 			case Tool.THERMAL_GENERATOR:
-				return EntityCreator.createToolGenerator(findEntityMetadata('buildings', 'Thermal Generator'));
+				return EntityCreator.createToolGenerator(findEntityMetadata('buildings', 'Thermal Generator'), 0);
 			case Tool.SOLAR_ARRAY:
-				return EntityCreator.createToolGenerator(findEntityMetadata('buildings', 'Solar Array'));
+				return EntityCreator.createToolGenerator(findEntityMetadata('buildings', 'Solar Array'), 1);
 			case Tool.METHANE_BURNER:
-				return EntityCreator.createToolGenerator(findEntityMetadata('buildings', 'Methane Burner'));
+				return EntityCreator.createToolGenerator(findEntityMetadata('buildings', 'Methane Burner'), 2);
 			case Tool.GRAPHITE_BURNER:
-				return EntityCreator.createToolGenerator(findEntityMetadata('buildings', 'Graphite Burner'));
+				return EntityCreator.createToolGenerator(findEntityMetadata('buildings', 'Graphite Burner'), 3);
 			case Tool.THERMITE_REACTOR:
-				return EntityCreator.createToolGenerator(findEntityMetadata('buildings', 'Thermite Reactor'));
+				return EntityCreator.createToolGenerator(findEntityMetadata('buildings', 'Thermite Reactor'), 4);
 			case Tool.CONDUCTOR:
 				return EntityCreator.createToolConductor(findEntityMetadata('buildings', 'Conductor'));
 			case Tool.BATTERY:
@@ -254,18 +255,17 @@ export default class EntityCreator {
 		entity.addAttribute(new EntityOutflowAttribute(materialStorageAttribute));
 
 		this.addAnimation(entity, timedAttribute);
-		let colors = [
-			[textureColors.tier1Secondary],
-			[textureColors.tier2Secondary],
-			[textureColors.tier3Secondary],
-			[textureColors.tier4, textureColors.tier4Secondary],
-		][tier];
-		let slow = [10, 20, 40, 80][tier];
-		let sprites = colors.map((color, i) => {
+		let colorsSlow = [
+			[[textureColors.tier1Secondary], 10],
+			[[textureColors.tier2Secondary], 20],
+			[[textureColors.tier3Secondary], 40],
+			[[textureColors.tier4, textureColors.tier4Secondary], 80],
+		][tier] as [string[], number];
+		let sprites = colorsSlow[0].map((color, i) => {
 			let sprite = new Sprite(generatedTextures.extractorTop.texture(entity.size.x * (i ? 4 : 8), color));
 			Entity.rotateSprite(sprite, Rotation.UP);
 			sprite.position = new Vector(entity.size.x * 4);
-			entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, slow, true));
+			entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, colorsSlow[1], true));
 			return sprite;
 		});
 		entity.addOverlaySprites('extractorTop', sprites);
@@ -319,7 +319,7 @@ export default class EntityCreator {
 		return entity;
 	}
 
-	private static createToolGenerator(metadata: ParsedLine<typeof sectionFields.buildings>) {
+	private static createToolGenerator(metadata: ParsedLine<typeof sectionFields.buildings>, tier: number) {
 		let entity = this.createBuilding(metadata);
 		let [timedAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
 		let powerOutput = metadata.output as number;
@@ -328,7 +328,25 @@ export default class EntityCreator {
 		chainAttribute.addAttribute(entity, new EntityPowerProduceAttribute(outputPowerStorageAttribute, powerOutput));
 		if (!metadata.powerInput)
 			entity.addAttribute(new EntityPowerConductAttribute(0));
+
+		entity.addAttribute(timedAttribute);
 		this.addAnimation(entity, timedAttribute);
+		let colorSizeAreaSlow = [
+			[textureColors.tier2, 2, 6, 16],
+			[textureColors.white, 2, 12, 20],
+			[textureColors.tier3, 4, 14, 12],
+			[textureColors.tier4, 6, 12, 4],
+			[textureColors.white, 8, 10, 2],
+		][tier] as [string, number, number, number];
+		let sprite = new Sprite(generatedTextures.fullRect.texture(colorSizeAreaSlow[0]));
+		sprite.width = colorSizeAreaSlow[1];
+		sprite.height = colorSizeAreaSlow[1];
+		let size = new Vector(colorSizeAreaSlow[1]);
+		let area = new Vector(colorSizeAreaSlow[2] - colorSizeAreaSlow[1]);
+		let centeredCorner = entity.size.scale(4).subtract(size.scale(.5));
+		sprite.position = centeredCorner;
+		entity.addAttribute(new EntityCirclePathSpriteAttribute(sprite, centeredCorner, area, timedAttribute, colorSizeAreaSlow[3], true));
+		entity.addOverlaySprites('fullRect', [sprite]);
 		return entity;
 	}
 

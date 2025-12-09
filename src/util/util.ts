@@ -104,19 +104,20 @@ namespace util {
 		})!;
 		return pick[0];
 	};
-	export let randPerimeter = (size: Vector) => {
-		let r = rand(0, (size.x + size.y) * 2);
-		let x = 0;
-		let y = 0;
-		if (r < size.x * 2) {
-			x = r % size.x;
-			y = r < size.x ? size.y : 0;
-		} else {
-			r -= size.x * 2;
-			x = r < size.y ? size.x : 0;
-			y = r % size.y;
-		}
-		return new Vector(x, y);
+
+	// returns a position on the perimeter of the rectangle with corners [0, 0] and [size.x, size.y]
+	export let perimeter = (size: Vector, ratio: number) => {
+		let distance = ratio * (size.x + size.y) * 2;
+		if (distance < size.x)
+			return new Vector(distance, 0);
+		distance -= size.x;
+		if (distance < size.y)
+			return new Vector(size.x, distance);
+		distance -= size.y;
+		if (distance < size.x)
+			return new Vector(size.x - distance, size.y);
+		distance -= size.x;
+		return new Vector(0, size.y - distance);
 	};
 
 	let cos90LookupTable = arr(100000).map((_, i, a) => Math.cos(i / a.length * 90 * Math.PI / 180));

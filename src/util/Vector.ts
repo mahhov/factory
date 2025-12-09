@@ -22,6 +22,10 @@ export default class Vector {
 		return new Vector(x, y);
 	}
 
+	static fromAngle(angle: number) {
+		return new Vector(util.cos(angle), util.sin(angle));
+	}
+
 	static rand(min: number, max: number) {
 		return new Vector(util.rand(min, max), util.rand(min, max));
 	}

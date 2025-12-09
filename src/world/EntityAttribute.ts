@@ -1540,6 +1540,60 @@ export class EntityRotateSpriteAttribute extends EntityAttribute {
 	}
 }
 
+export class EntitySquarePathSpriteAttribute extends EntityAttribute {
+	private readonly sprite: Sprite;
+	private readonly corner: Vector;
+	private readonly area: Vector;
+	private readonly timedAttribute: EntityTimedAttribute;
+	private readonly slowFactor: number;
+	private readonly clockwise: boolean;
+
+	constructor(sprite: Sprite, corner: Vector, area: Vector, timedAttribute: EntityTimedAttribute, slowFactor: number, clockwise: boolean) {
+		super();
+		this.sprite = sprite;
+		this.corner = corner;
+		this.area = area;
+		this.timedAttribute = timedAttribute;
+		this.slowFactor = slowFactor;
+		this.clockwise = clockwise;
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		let ratio = this.timedAttribute.counter.ratioFactored(this.slowFactor);
+		if (!this.clockwise) ratio = 1 - ratio;
+		let shift = util.perimeter(this.area, ratio);
+		this.sprite.position = this.corner.add(shift);
+		this.tickResult = TickResult.DONE;
+	}
+}
+
+export class EntityCirclePathSpriteAttribute extends EntityAttribute {
+	private readonly sprite: Sprite;
+	private readonly center: Vector;
+	private readonly area: Vector;
+	private readonly timedAttribute: EntityTimedAttribute;
+	private readonly slowFactor: number;
+	private readonly clockwise: boolean;
+
+	constructor(sprite: Sprite, center: Vector, area: Vector, timedAttribute: EntityTimedAttribute, slowFactor: number, clockwise: boolean) {
+		super();
+		this.sprite = sprite;
+		this.center = center;
+		this.area = area;
+		this.timedAttribute = timedAttribute;
+		this.slowFactor = slowFactor;
+		this.clockwise = clockwise;
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		let ratio = this.timedAttribute.counter.ratioFactored(this.slowFactor);
+		if (!this.clockwise) ratio = 1 - ratio;
+		let angle = ratio * 360;
+		this.sprite.position = this.center.add(Vector.fromAngle(angle).multiply(this.area.scale(.5)));
+		this.tickResult = TickResult.DONE;
+	}
+}
+
 export class EntitySpawnParticleAttribute extends EntityAttribute {
 	private readonly count: number;
 	private readonly topLeft: Vector;

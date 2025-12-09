@@ -465,18 +465,17 @@ export let generatedTextures = {
 		...generatorBase(16),
 		[4, 4, 8, 8, textureColors.wallGrey],
 		[5, 5, 6, 6, textureColors.black],
-		[7, 7, 2, 2, textureColors.tier2],
+		[7, 7, 2, 2, textureColors.tier2Secondary],
 	]]),
 	solarArray: new AnimatedGeneratedTextures(16, [[
 		...generatorBase(16),
 		[2, 2, 12, 12, textureColors.solar],
-		[7, 7, 2, 2, textureColors.white],
 	]]),
 	methaneBurner: new AnimatedGeneratedTextures(24, [[
 		...generatorBase(24),
 		[4, 4, 16, 16, textureColors.wallGrey],
 		[5, 5, 14, 14, textureColors.black],
-		[10, 10, 4, 4, textureColors.tier3],
+		[10, 10, 4, 4, textureColors.tier3Secondary],
 	]]),
 	graphiteBurner: new AnimatedGeneratedTextures(24, [[
 		...generatorBase(24),
@@ -485,7 +484,7 @@ export let generatedTextures = {
 		[3, 15, 6, 6, textureColors.axilGrey],
 		[15, 15, 6, 6, textureColors.axilGrey],
 		[6, 6, 12, 12, textureColors.black],
-		[9, 9, 6, 6, textureColors.tier4],
+		[9, 9, 6, 6, textureColors.tier4Secondary],
 	]]),
 	thermiteReactor: new AnimatedGeneratedTextures(24, [[
 		...generatorBase(24),

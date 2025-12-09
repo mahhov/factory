@@ -77,7 +77,7 @@ class Spawner {
 		let delta = free.size.subtract(Vector.V1).subtract(min.scale(2));
 		console.assert(delta.atLeast(Vector.V1));
 		for (let i = 0; i < stage.clusterCount; i++) {
-			let spawnCenter = min.add(util.randPerimeter(delta));
+			let spawnCenter = min.add(util.perimeter(delta, util.rand(0, 1)));
 			for (let j = 0; j < stage.mobsPerCluster; j++) {
 				let offset = Vector.rand(-stage.clusterRadius, stage.clusterRadius);
 				free.addTileable(spawnCenter.add(offset), EntityCreator.createMobEntity(MobType.SWARM_DRONE));
@@ -158,7 +158,7 @@ class HerdManager {
 					let position = tile.position;
 					let velocity = mobHerdPositionAttribute.velocity;
 
-					if (Math.random() < velocityUpdateFrequency) {
+					if (util.rand(0, 1) < velocityUpdateFrequency) {
 						let deltas = this.getNeighborDeltas(freeMobHerdOverlay, position);
 						let cohesion = this.calculateCohesion(deltas);
 						let separation = this.calculateSeparation(deltas);
