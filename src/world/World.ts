@@ -402,7 +402,7 @@ export class World {
 			['metaglassFoundry', 2, 2],
 			['plasteelMixer', 3, 2],
 			['thermiteForge', 4, 2],
-			['exidiumCatalyst', 4, 5],
+			['exidiumCatalyst', 4, 2],
 		] as [string, number, number][]).forEach(([texture, size, slow], i) => {
 			let entity = new Entity(texture, '', new Vector(size));
 			let timedAttribute = new EntityTimedAttribute(40);

@@ -9,6 +9,9 @@ let cornersToConcentricRects = (xyx2y2s: [number, number, number, number][], col
 	colors.flatMap((color, i) =>
 		xyx2y2s.map(([x1, y1, x2, y2]) => [x1 - 1 + i, y1 - 1 + i, x2 - x1 + 1 - i * 2, y2 - y1 + 1 - i * 2, color] as [number, number, number, number, string]));
 
+let centeredRect = (x: number, y: number, width: number, height: number, color: string): [number, number, number, number, string] =>
+	[x - Math.floor((width - 1) / 2), y - Math.floor((height - 1) / 2), width, height, color];
+
 let rectToTexture = (size: number, rects: [number, number, number, number, string][]): Texture => {
 	let canvas = document.createElement('canvas');
 	canvas.width = size;
@@ -360,34 +363,52 @@ export let generatedTextures = {
 	]], [0, 1, 2, 3, 4, 3, 2, 1]),
 	thermiteForge: new AnimatedGeneratedTextures(32, [[
 		...factoryBase(32, 12),
-		[8, 8, 16, 16, textureColors.axilGrey],
-		[12, 12, 8, 8, textureColors.thermiteSecondary],
-		[14, 14, 4, 4, textureColors.thermite],
-		[6, 6, 4, 4, textureColors.thermite],
-		[22, 6, 4, 4, textureColors.thermite],
-		[6, 22, 4, 4, textureColors.thermite],
-		[22, 22, 4, 4, textureColors.thermite],
+		centeredRect(15, 15, 16, 16, textureColors.axilGrey),
+		centeredRect(15, 15, 4, 4, textureColors.thermite),
 	], [
 		...factoryBase(32, 12),
-		[7, 7, 18, 18, textureColors.thermite],
-		[8, 8, 16, 16, textureColors.axilGrey],
-		[12, 12, 8, 8, textureColors.thermiteSecondary],
-		[14, 14, 4, 4, textureColors.thermite],
-		[6, 6, 4, 4, textureColors.thermite],
-		[22, 6, 4, 4, textureColors.thermite],
-		[6, 22, 4, 4, textureColors.thermite],
-		[22, 22, 4, 4, textureColors.thermite],
+		centeredRect(15, 15, 20, 20, textureColors.thermite),
+		centeredRect(15, 15, 16, 16, textureColors.axilGrey),
+		centeredRect(15, 15, 6, 6, textureColors.thermite),
+		centeredRect(15, 15, 2, 2, textureColors.thermiteSecondary),
 	], [
 		...factoryBase(32, 12),
-		[6, 6, 20, 20, textureColors.thermite],
-		[8, 8, 16, 16, textureColors.axilGrey],
-		[12, 12, 8, 8, textureColors.thermiteSecondary],
-		[14, 14, 4, 4, textureColors.thermite],
-		[6, 6, 4, 4, textureColors.thermite],
-		[22, 6, 4, 4, textureColors.thermite],
-		[6, 22, 4, 4, textureColors.thermite],
-		[22, 22, 4, 4, textureColors.thermite],
-	]], [0, 1, 2, 1]),
+		centeredRect(15, 15, 24, 24, textureColors.thermite),
+		centeredRect(15, 15, 16, 16, textureColors.axilGrey),
+		centeredRect(15, 15, 8, 8, textureColors.thermite),
+		centeredRect(15, 15, 4, 4, textureColors.thermiteSecondary),
+	], [
+		...factoryBase(32, 12),
+		centeredRect(15, 15, 28, 28, textureColors.thermite),
+		centeredRect(15, 15, 20, 20, textureColors.thermiteSecondary),
+		centeredRect(15, 15, 16, 16, textureColors.axilGrey),
+		centeredRect(15, 15, 10, 10, textureColors.thermite),
+		centeredRect(15, 15, 6, 6, textureColors.thermiteSecondary),
+		centeredRect(15, 15, 2, 2, textureColors.white),
+	], [
+		...factoryBase(32, 12),
+		centeredRect(15, 15, 30, 30, textureColors.thermite),
+		centeredRect(15, 15, 24, 24, textureColors.thermiteSecondary),
+		centeredRect(15, 15, 16, 16, textureColors.axilGrey),
+		centeredRect(15, 15, 10, 10, textureColors.thermite),
+		centeredRect(15, 15, 8, 8, textureColors.thermiteSecondary),
+		centeredRect(15, 15, 4, 4, textureColors.white),
+	], [
+		...factoryBase(32, 12),
+		centeredRect(15, 15, 30, 30, textureColors.thermite),
+		centeredRect(15, 15, 28, 28, textureColors.thermiteSecondary),
+		centeredRect(15, 15, 20, 20, textureColors.white),
+		centeredRect(15, 15, 16, 16, textureColors.axilGrey),
+		centeredRect(15, 15, 10, 10, textureColors.thermiteSecondary),
+		centeredRect(15, 15, 6, 6, textureColors.white),
+	], [
+		...factoryBase(32, 12),
+		centeredRect(15, 15, 30, 30, textureColors.thermiteSecondary),
+		centeredRect(15, 15, 24, 24, textureColors.white),
+		centeredRect(15, 15, 16, 16, textureColors.axilGrey),
+		centeredRect(15, 15, 10, 10, textureColors.thermiteSecondary),
+		centeredRect(15, 15, 8, 8, textureColors.white),
+	]], [0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1]),
 	exidiumCatalyst: new AnimatedGeneratedTextures(32, [[
 		...factoryBase(32, 12),
 		[14, 14, 4, 4, textureColors.exidiumSecondary],
