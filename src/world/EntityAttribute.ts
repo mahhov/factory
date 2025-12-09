@@ -1469,12 +1469,15 @@ export class EntityMaterialOverlayAttribute extends EntityAttribute {
 
 export class EntityLiquidOverlayAttribute extends EntityAttribute {
 	private readonly liquidStorageAttribute: EntityLiquidStorageAttribute;
+	private readonly size: Vector;
 	private liquid: Liquid | null = null;
 	private particle: Particle | null = null;
 
-	constructor(liquidStorageAttribute: EntityLiquidStorageAttribute) {
+	constructor(liquidStorageAttribute: EntityLiquidStorageAttribute, size: Vector) {
 		super();
+		console.assert(size.x > 0 && size.y > 0);
 		this.liquidStorageAttribute = liquidStorageAttribute;
+		this.size = size;
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
@@ -1489,9 +1492,8 @@ export class EntityLiquidOverlayAttribute extends EntityAttribute {
 			if (liquid !== this.liquid) {
 				this.liquid = liquid;
 				let color = ResourceUtils.liquidColor(liquid);
-				let size = tile.tileable.size.scale(.25);
-				this.particle = tile.tileable.addOverlayParticle(generatedTextures.fullRect.texture(color), size, world);
-				let position = tile.position.add(tile.tileable.size.subtract(size).scale(.5));
+				this.particle = tile.tileable.addOverlayParticle(generatedTextures.fullRect.texture(color), this.size, world);
+				let position = tile.position.add(tile.tileable.size.subtract(this.size).scale(.5));
 				this.particle.x = position.x;
 				this.particle.y = position.y;
 			}

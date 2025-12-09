@@ -536,9 +536,9 @@ export let generatedTextures = {
 
 	pump: new AnimatedGeneratedTextures(16, [[
 		...generatorBase(16),
-		[5, 6, 6, 4, textureColors.tier2],
-		[6, 5, 4, 6, textureColors.tier2],
-		[6, 6, 4, 4, textureColors.black],
+		[4, 5, 8, 6, textureColors.tier2],
+		[5, 4, 6, 8, textureColors.tier2],
+		[5, 5, 6, 6, textureColors.black],
 	]]),
 	poweredPump: new AnimatedGeneratedTextures(16, [[
 		...generatorBase(16),
@@ -551,6 +551,7 @@ export let generatedTextures = {
 		[8, 9, 8, 6, textureColors.water],
 		[9, 8, 6, 8, textureColors.water],
 		[9, 9, 6, 6, textureColors.water],
+		[9, 9, 6, 6, textureColors.black],
 	]]),
 
 	base: new AnimatedGeneratedTextures(40, [[

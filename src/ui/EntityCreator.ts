@@ -139,11 +139,11 @@ export default class EntityCreator {
 				return EntityCreator.createToolBattery(findEntityMetadata('buildings', 'Battery'));
 
 			case Tool.AIR_VENT:
-				return EntityCreator.createToolVent(findEntityMetadata('buildings', 'Air Vent'));
+				return EntityCreator.createToolVent(findEntityMetadata('buildings', 'Air Vent'), 0);
 			case Tool.WATER_VENT:
-				return EntityCreator.createToolVent(findEntityMetadata('buildings', 'Water Vent'));
+				return EntityCreator.createToolVent(findEntityMetadata('buildings', 'Water Vent'), 1);
 			case Tool.METHANE_VENT:
-				return EntityCreator.createToolVent(findEntityMetadata('buildings', 'Methane Vent'));
+				return EntityCreator.createToolVent(findEntityMetadata('buildings', 'Methane Vent'), 2);
 
 			case Tool.PUMP:
 				return EntityCreator.createToolPump(findEntityMetadata('buildings', 'Pump'));
@@ -343,6 +343,7 @@ export default class EntityCreator {
 		let centeredCorner = entity.size.scale(4).subtract(size.scale(.5));
 		sprite.position = centeredCorner;
 		entity.addAttribute(new EntityCirclePathSpriteAttribute(sprite, centeredCorner, area, timedAttribute, colorSizeAreaSlow[3], true));
+		// todo use particles
 		entity.addOverlaySprites('fullRect', [sprite]);
 		return entity;
 	}
@@ -361,13 +362,15 @@ export default class EntityCreator {
 		return entity;
 	}
 
-	private static createToolVent(metadata: ParsedLine<typeof sectionFields.buildings>) {
+	private static createToolVent(metadata: ParsedLine<typeof sectionFields.buildings>, tier: number) {
 		let entity = this.createBuilding(metadata);
 		let [_, liquidStorageAttribute, chainAttribute] = this.addConsumptionChain(entity, metadata);
 		chainAttribute.addAttribute(entity, new EntityCoolantProduceAttribute(metadata.output as number));
 
-		if (liquidStorageAttribute)
-			entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
+		if (liquidStorageAttribute) {
+			let size = [0, .25, .5][tier];
+			entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute, new Vector(size)));
+		}
 		return entity;
 	}
 
@@ -375,10 +378,17 @@ export default class EntityCreator {
 		let entity = this.createBuilding(metadata);
 		let [_, __, chainAttribute] = this.addConsumptionChain(entity, metadata);
 		let outputPerTier = metadata.output as number[];
-		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), outputPerTier[0] * metadata.size ** 2, []);
+		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), outputPerTier[0], []);
 		entity.addAttribute(liquidStorageAttribute);
 		chainAttribute.addAttribute(entity, new EntityLiquidExtractorAttribute(liquidStorageAttribute, outputPerTier));
 		this.addLiquidTransportChain(entity, liquidStorageAttribute, util.enumValues(Rotation));
+
+		entity.addAttribute(new EntityChainAttribute([
+			new EntityTimedAttribute(40),
+			new EntityLiquidExtractorAttribute(liquidStorageAttribute, outputPerTier),
+		]));
+
+		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute, new Vector(.5)));
 		return entity;
 	}
 
@@ -390,6 +400,13 @@ export default class EntityCreator {
 		entity.addAttribute(liquidStorageAttribute);
 		chainAttribute.addAttribute(entity, new EntityLiquidDryExtractorAttribute(liquidStorageAttribute, new ResourceUtils.Count(Liquid.WATER, liquidOutput)));
 		this.addLiquidTransportChain(entity, liquidStorageAttribute, util.enumValues(Rotation));
+
+		entity.addAttribute(new EntityChainAttribute([
+			new EntityTimedAttribute(40),
+			new EntityLiquidDryExtractorAttribute(liquidStorageAttribute, new ResourceUtils.Count(Liquid.WATER, liquidOutput)),
+		]));
+
+		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute, new Vector(.5)));
 		return entity;
 	}
 
@@ -398,7 +415,7 @@ export default class EntityCreator {
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), metadata.output as number, RotationUtils.except(RotationUtils.opposite(rotation)));
 		entity.addAttribute(liquidStorageAttribute);
 		this.addLiquidTransportChain(entity, liquidStorageAttribute, [rotation]);
-		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
+		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute, new Vector(.25)));
 		return entity;
 	}
 
@@ -415,7 +432,7 @@ export default class EntityCreator {
 			new EntityTimedAttribute(standardDuration),
 			new EntityLiquidBridgeTransportAttribute(liquidStorageAttribute, liquidBridgeConnectAttribute),
 		]));
-		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
+		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute, new Vector(.25)));
 		return entity;
 	}
 
@@ -434,7 +451,7 @@ export default class EntityCreator {
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), metadata.output as number, util.enumValues(Rotation));
 		entity.addAttribute(liquidStorageAttribute);
 		this.addLiquidTransportChain(entity, liquidStorageAttribute, util.enumValues(Rotation));
-		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute));
+		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute, new Vector(.75)));
 		return entity;
 	}
 
