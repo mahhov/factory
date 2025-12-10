@@ -536,23 +536,19 @@ export let generatedTextures = {
 
 	pump: new AnimatedGeneratedTextures(16, [[
 		...generatorBase(16),
-		[4, 5, 8, 6, textureColors.tier2],
-		[5, 4, 6, 8, textureColors.tier2],
-		[5, 5, 6, 6, textureColors.black],
 	]]),
 	poweredPump: new AnimatedGeneratedTextures(16, [[
 		...generatorBase(16),
-		[4, 5, 8, 6, textureColors.tier3],
-		[5, 4, 6, 8, textureColors.tier3],
-		[5, 5, 6, 6, textureColors.black],
 	]]),
 	well: new AnimatedGeneratedTextures(24, [[
 		...generatorBase(24),
-		[8, 9, 8, 6, textureColors.water],
-		[9, 8, 6, 8, textureColors.water],
-		[9, 9, 6, 6, textureColors.water],
-		[9, 9, 6, 6, textureColors.black],
 	]]),
+	pumpTop: new ParameterizedGeneratedTexture((color: string, colorSecondary: string) => rectToTexture(16, [
+		[4, 5, 8, 6, colorSecondary],
+		[5, 4, 6, 8, colorSecondary],
+		[5, 7, 6, 2, color],
+		[7, 5, 2, 6, color],
+	])),
 
 	base: new AnimatedGeneratedTextures(40, [[
 		[0, 0, 40, 40, textureColors.wallGrey],
@@ -835,5 +831,3 @@ export let generatedTextures = {
 		[1, 1, 6, 6, textureColors.hostileRed],
 	]]),
 };
-
-// todo animate exidiumCatalyst, generators, vents, water extractors turret

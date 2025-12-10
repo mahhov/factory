@@ -146,9 +146,9 @@ export default class EntityCreator {
 				return EntityCreator.createToolVent(findEntityMetadata('buildings', 'Methane Vent'), 2);
 
 			case Tool.PUMP:
-				return EntityCreator.createToolPump(findEntityMetadata('buildings', 'Pump'));
+				return EntityCreator.createToolPump(findEntityMetadata('buildings', 'Pump'), 0);
 			case Tool.POWERED_PUMP:
-				return EntityCreator.createToolPump(findEntityMetadata('buildings', 'Powered Pump'));
+				return EntityCreator.createToolPump(findEntityMetadata('buildings', 'Powered Pump'), 1);
 			case Tool.WELL:
 				return EntityCreator.createToolWell(findEntityMetadata('buildings', 'Well'));
 
@@ -244,6 +244,20 @@ export default class EntityCreator {
 
 	private static addAnimation(entity: Entity, timedAttribute: EntityTimedAttribute) {
 		entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, 1));
+	}
+
+	private static addPumpAnimation(entity: Entity, timedAttribute: EntityTimedAttribute, liquidStorageAttribute: EntityLiquidStorageAttribute, tier: number) {
+		let colorColorSecondarySlowSize = [
+			[textureColors.tier1, textureColors.tier1Secondary, 20, .25],
+			[textureColors.tier2, textureColors.tier2Secondary, 10, .25],
+			[textureColors.water, textureColors.waterSecondary, 40, .5],
+		][tier] as [string, string, number, number];
+		let sprite = new Sprite(generatedTextures.pumpTop.texture(colorColorSecondarySlowSize[0], colorColorSecondarySlowSize[1]));
+		Entity.rotateSprite(sprite, Rotation.UP);
+		sprite.position = new Vector(entity.size.x * 4);
+		entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, colorColorSecondarySlowSize[2], true));
+		entity.addOverlaySprites('pumpTop', [sprite]);
+		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute, new Vector(colorColorSecondarySlowSize[3])));
 	}
 
 	private static createToolExtractor(metadata: ParsedLine<typeof sectionFields.buildings>, tier: number) {
@@ -374,39 +388,27 @@ export default class EntityCreator {
 		return entity;
 	}
 
-	private static createToolPump(metadata: ParsedLine<typeof sectionFields.buildings>) {
+	private static createToolPump(metadata: ParsedLine<typeof sectionFields.buildings>, tier: number) {
 		let entity = this.createBuilding(metadata);
-		let [_, __, chainAttribute] = this.addConsumptionChain(entity, metadata);
+		let [timedAttribute, __, chainAttribute] = this.addConsumptionChain(entity, metadata);
 		let outputPerTier = metadata.output as number[];
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute(util.enumValues(Liquid), outputPerTier[0], []);
 		entity.addAttribute(liquidStorageAttribute);
 		chainAttribute.addAttribute(entity, new EntityLiquidExtractorAttribute(liquidStorageAttribute, outputPerTier));
 		this.addLiquidTransportChain(entity, liquidStorageAttribute, util.enumValues(Rotation));
-
-		entity.addAttribute(new EntityChainAttribute([
-			new EntityTimedAttribute(40),
-			new EntityLiquidExtractorAttribute(liquidStorageAttribute, outputPerTier),
-		]));
-
-		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute, new Vector(.5)));
+		this.addPumpAnimation(entity, timedAttribute, liquidStorageAttribute, tier);
 		return entity;
 	}
 
 	private static createToolWell(metadata: ParsedLine<typeof sectionFields.buildings>) {
 		let entity = this.createBuilding(metadata);
-		let [_, __, chainAttribute] = this.addConsumptionChain(entity, metadata);
+		let [timedAttribute, __, chainAttribute] = this.addConsumptionChain(entity, metadata);
 		let liquidOutput = metadata.output as number;
 		let liquidStorageAttribute = new EntityLiquidStorageAttribute([Liquid.WATER], liquidOutput, []);
 		entity.addAttribute(liquidStorageAttribute);
 		chainAttribute.addAttribute(entity, new EntityLiquidDryExtractorAttribute(liquidStorageAttribute, new ResourceUtils.Count(Liquid.WATER, liquidOutput)));
 		this.addLiquidTransportChain(entity, liquidStorageAttribute, util.enumValues(Rotation));
-
-		entity.addAttribute(new EntityChainAttribute([
-			new EntityTimedAttribute(40),
-			new EntityLiquidDryExtractorAttribute(liquidStorageAttribute, new ResourceUtils.Count(Liquid.WATER, liquidOutput)),
-		]));
-
-		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute, new Vector(.5)));
+		this.addPumpAnimation(entity, timedAttribute, liquidStorageAttribute, 2);
 		return entity;
 	}
 
