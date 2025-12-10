@@ -7,7 +7,6 @@ import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {
 	EntityAttribute,
-	EntityBuildableAttribute,
 	EntityChainAttribute,
 	EntityDamageTargetAttribute,
 	EntityDescriptionAttribute,
@@ -17,7 +16,6 @@ import {
 	EntityHealthAttribute,
 	EntityIfElseAttribute,
 	EntityLiquidDisplayAttribute,
-	EntityMaterialConsumeAttribute,
 	EntityMaterialDisplayAttribute,
 	EntityMaterialStorageAttribute,
 	EntityMaterialStorageAttributeType,
@@ -177,63 +175,11 @@ export class Clear extends Entity {
 	}
 }
 
-export abstract class Building extends Entity {
-	protected constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, rotation: Rotation = Rotation.UP, tilingSize: Vector = size) {
-		super(name, description, size, rotation, tilingSize);
-		this.addAttribute(new EntityBuildableAttribute(buildTime, buildCost));
-		this.addAttribute(new EntityHealthAttribute(health, true));
-	}
-}
-
 export class Base extends Entity {
 	constructor() {
 		super('Base', '', new Vector(5));
 		this.addAttribute(new EntityHealthAttribute(4000, true));
 		this.addAttribute(new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(util.debug ? 500000 : 2000), util.enumValues(Rotation), true));
-	}
-}
-
-export class Turret extends Building {
-	constructor(name: string, description: string, size: Vector, buildTime: number, buildCost: ResourceUtils.Count<Material>[], health: number, attackRate: number, damage: number, materialInput: number, accuracy: number, range: number, projectileSpeed: number) {
-		super(name, description, size, buildTime, buildCost, health);
-
-		// todo
-		//   attackRate
-		//   damage
-		//   materialInput
-		//   accuracy
-		//   range
-		//   damage range
-		//   projectileSpeed
-		// todo area damage not working
-		// todo area visual
-
-		// todo
-		//   on hit affects
-		//     collision:   damage
-		//     aoe:         damage, duration, aoe size, pulse frequency
-		//     chain:       projectiles or lasers can chain to other targets on hitting first target. chain count, chain distance, chain count (e.g. 1 laser chains to 3 nearby targets), and relevant projectile/laser properties (accuracy, projectile size, projectile speed, thickness)
-
-		// todo entity attributes
-		//   attacks:
-		//     projectiles: projectile count, attack rate, accuracy, projectile count spread, projectile travel distance, projectile size, projectile speed, homing speed
-		//     laser:       essentially a projectile with instant travel time. attack rate, accuracy, max distance, thickness, does it pierce,
-		//     self:        no projectile or laser, does collision, explosion, chain, pulse, etc damage style around self. frequency
-		//   aim: nearby enemy, set angles, random angles
-		//   effect: damage, stun, spawn chain attack, spawn cluster attack
-		//   target: hit target, area
-
-		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(Material.IRON, 10)], util.enumValues(Rotation), false);
-		this.addAttribute(materialStorageAttribute);
-		let findTargetAttribute = new EntityFindTargetAttribute(16, 3, true, false);
-		this.addAttribute(new EntityIfElseAttribute(
-			findTargetAttribute,
-			new EntityChainAttribute([
-				new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
-				new EntitySpawnProjectileAttribute(findTargetAttribute, 3, 0, .4, 40, .2, 10, 10, true),
-				new EntityTimedAttribute(40 / 4),
-			]),
-			new EntityTimedAttribute(standardDuration)));
 	}
 }
 

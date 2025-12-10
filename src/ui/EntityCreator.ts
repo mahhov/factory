@@ -2,7 +2,7 @@ import {AnimatedSprite, Sprite} from 'pixi.js';
 import {generatedTextures, textureColors} from '../graphics/generatedTextures.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Clear, Empty, Entity, getMaterialCounts, ProjectileMob, standardDuration, Turret} from '../world/Entity.js';
+import {Clear, Empty, Entity, getMaterialCounts, ProjectileMob, standardDuration} from '../world/Entity.js';
 import {
 	EntityAnimateSpriteAttribute,
 	EntityAttribute,
@@ -11,7 +11,9 @@ import {
 	EntityCirclePathSpriteAttribute,
 	EntityCoolantConsumeAttribute,
 	EntityCoolantProduceAttribute,
+	EntityFindTargetAttribute,
 	EntityHealthAttribute,
+	EntityIfElseAttribute,
 	EntityInflowAttribute,
 	EntityLiquidBridgeConnectAttribute,
 	EntityLiquidBridgeTransportAttribute,
@@ -37,6 +39,7 @@ import {
 	EntityPowerStorageAttribute,
 	EntityPowerStorageAttributePriority,
 	EntityRotateSpriteAttribute,
+	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
 	EntityTransportAttribute,
 } from '../world/EntityAttribute.js';
@@ -181,7 +184,7 @@ export default class EntityCreator {
 		}
 	}
 
-	private static createBuilding(metadata: ParsedLine<typeof sectionFields.buildings>, rotation?: Rotation, tilingSize?: Vector): Entity {
+	private static createBuilding(metadata: ParsedLine<typeof sectionFields.buildings | typeof sectionFields.turrets>, rotation?: Rotation, tilingSize?: Vector): Entity {
 		let entity = new Entity(metadata.name, metadata.description, new Vector(metadata.size), rotation, tilingSize);
 		entity.addAttribute(new EntityBuildableAttribute(metadata.buildTime, metadata.buildCost));
 		entity.addAttribute(new EntityHealthAttribute(metadata.health, true));
@@ -463,7 +466,39 @@ export default class EntityCreator {
 	}
 
 	private static createToolTurret(metadata: ParsedLine<typeof sectionFields.turrets>) {
-		return new Turret(metadata.name, metadata.description, new Vector(metadata.size), metadata.buildTime, metadata.buildCost, metadata.health, metadata.attackRate, metadata.damage, metadata.materialInput, metadata.accuracy, metadata.range, metadata.projectileSpeed);
+		// todo point towards enemy
+
+		let entity = this.createBuilding(metadata);
+
+		// todo metadata.attackRate, metadata.damage, metadata.materialInput, metadata.accuracy, metadata.range, metadata.projectileSpeed
+		// todo area visual
+		// todo
+		//   on hit affects
+		//     collision:   damage
+		//     aoe:         damage, duration, aoe size, pulse frequency
+		//     chain:       projectiles or lasers can chain to other targets on hitting first target. chain count, chain distance, chain count (e.g. 1 laser chains to 3 nearby targets), and relevant projectile/laser properties (accuracy, projectile size, projectile speed, thickness)
+		// todo entity attributes
+		//   attacks:
+		//     projectiles: projectile count, attack rate, accuracy, projectile count spread, projectile travel distance, projectile size, projectile speed, homing speed
+		//     laser:       essentially a projectile with instant travel time. attack rate, accuracy, max distance, thickness, does it pierce,
+		//     self:        no projectile or laser, does collision, explosion, chain, pulse, etc damage style around self. frequency
+		//   aim: nearby enemy, set angles, random angles
+		//   effect: damage, stun, spawn chain attack, spawn cluster attack
+		//   target: hit target, area
+
+		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(Material.IRON, 10)], util.enumValues(Rotation), false);
+		entity.addAttribute(materialStorageAttribute);
+		let findTargetAttribute = new EntityFindTargetAttribute(16, 3, true, false);
+		entity.addAttribute(new EntityIfElseAttribute(
+			findTargetAttribute,
+			new EntityChainAttribute([
+				new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
+				new EntitySpawnProjectileAttribute(findTargetAttribute, 3, 0, .4, 40, .2, 10, 10, true),
+				new EntityTimedAttribute(40 / 4),
+			]),
+			new EntityTimedAttribute(standardDuration)));
+
+		return entity;
 	}
 
 	static createMobEntity(mobType: MobType): Entity {
