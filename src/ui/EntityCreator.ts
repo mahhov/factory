@@ -8,7 +8,7 @@ import {
 	EntityAttribute,
 	EntityBuildableAttribute,
 	EntityChainAttribute,
-	EntityCirclePathSpriteAttribute,
+	EntityCirclePathParticleAttribute,
 	EntityCoolantConsumeAttribute,
 	EntityCoolantProduceAttribute,
 	EntityFindTargetAttribute,
@@ -346,22 +346,17 @@ export default class EntityCreator {
 			entity.addAttribute(new EntityPowerConductAttribute(0));
 
 		let colorSizeAreaSlow = [
-			[textureColors.tier2, 2, 6, 16],
-			[textureColors.white, 2, 12, 20],
-			[textureColors.tier3, 4, 14, 12],
-			[textureColors.tier4, 6, 12, 4],
-			[textureColors.white, 8, 10, 2],
+			[textureColors.tier2, .25, .75, 16],
+			[textureColors.white, .25, 1.5, 20],
+			[textureColors.tier3, .5, 1.75, 12],
+			[textureColors.tier4, .75, 1.5, 4],
+			[textureColors.white, 1, 1.25, 2],
 		][tier] as [string, number, number, number];
-		let sprite = new Sprite(generatedTextures.fullRect.texture(colorSizeAreaSlow[0]));
-		sprite.width = colorSizeAreaSlow[1];
-		sprite.height = colorSizeAreaSlow[1];
 		let size = new Vector(colorSizeAreaSlow[1]);
 		let area = new Vector(colorSizeAreaSlow[2] - colorSizeAreaSlow[1]);
-		let centeredCorner = entity.size.scale(4).subtract(size.scale(.5));
-		sprite.position = centeredCorner;
-		entity.addAttribute(new EntityCirclePathSpriteAttribute(sprite, centeredCorner, area, timedAttribute, colorSizeAreaSlow[3], true));
-		// todo use particles
-		entity.addOverlaySprites('fullRect', [sprite]);
+		let centeredCorner = entity.size.subtract(size).scale(.5);
+		let particle = entity.addInitialOverlayParticle(generatedTextures.fullRect.texture(colorSizeAreaSlow[0]), size);
+		entity.addAttribute(new EntityCirclePathParticleAttribute(particle, centeredCorner, area, timedAttribute, colorSizeAreaSlow[3], true));
 		return entity;
 	}
 

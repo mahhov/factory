@@ -97,6 +97,8 @@ export class Entity implements Tileable {
 		this.container.addChild(sprite);
 	}
 
+	// positioned and sized with tile coordinates
+	// todo merge with addInitialOverlayParticle & addOverlayParticle
 	setParticle(texture: Texture) {
 		console.assert(!this.particles.length);
 		let particle = new Particle(texture);
@@ -105,6 +107,7 @@ export class Entity implements Tileable {
 		this.particles.push(particle);
 	}
 
+	// positioned and sized with (8,8) being tile coordinate (1,1)
 	addOverlaySprites(label: string, sprites: Sprite[]) {
 		this.container!.getChildrenByLabel(label).forEach(child => child.removeFromParent());
 		sprites.forEach(sprite => {
@@ -113,11 +116,16 @@ export class Entity implements Tileable {
 		});
 	}
 
-	addOverlayParticle(texture: Texture, size: Vector, world: World) {
+	addInitialOverlayParticle(texture: Texture, size: Vector) {
 		let particle = new Particle(texture);
 		particle.scaleX = size.x / texture.width;
 		particle.scaleY = size.y / texture.height;
 		this.particles.push(particle);
+		return particle;
+	}
+
+	addOverlayParticle(texture: Texture, size: Vector, world: World) {
+		let particle = this.addInitialOverlayParticle(texture, size);
 		world.live.addGraphicsParticle(particle);
 		return particle;
 	}

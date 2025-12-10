@@ -1569,17 +1569,17 @@ export class EntitySquarePathSpriteAttribute extends EntityAttribute {
 	}
 }
 
-export class EntityCirclePathSpriteAttribute extends EntityAttribute {
-	private readonly sprite: Sprite;
+export class EntityCirclePathParticleAttribute extends EntityAttribute {
+	private readonly particle: Particle;
 	private readonly center: Vector;
 	private readonly area: Vector;
 	private readonly timedAttribute: EntityTimedAttribute;
 	private readonly slowFactor: number;
 	private readonly clockwise: boolean;
 
-	constructor(sprite: Sprite, center: Vector, area: Vector, timedAttribute: EntityTimedAttribute, slowFactor: number, clockwise: boolean) {
+	constructor(particle: Particle, center: Vector, area: Vector, timedAttribute: EntityTimedAttribute, slowFactor: number, clockwise: boolean) {
 		super();
-		this.sprite = sprite;
+		this.particle = particle;
 		this.center = center;
 		this.area = area;
 		this.timedAttribute = timedAttribute;
@@ -1591,7 +1591,11 @@ export class EntityCirclePathSpriteAttribute extends EntityAttribute {
 		let ratio = this.timedAttribute.counter.ratioFactored(this.slowFactor);
 		if (!this.clockwise) ratio = 1 - ratio;
 		let angle = ratio * 360;
-		this.sprite.position = this.center.add(Vector.fromAngle(angle).multiply(this.area.scale(.5)));
+		let position = tile.position
+			.add(this.center)
+			.add(Vector.fromAngle(angle).multiply(this.area).scale(.5));
+		this.particle.x = position.x;
+		this.particle.y = position.y;
 		this.tickResult = TickResult.DONE;
 	}
 }
