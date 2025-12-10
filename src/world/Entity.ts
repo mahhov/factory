@@ -107,16 +107,6 @@ export class Entity implements Tileable {
 		this.particles.push(particle);
 	}
 
-	// positioned and sized with (8,8) being tile coordinate (1,1)
-	// todo deprecate
-	addOverlaySprites(label: string, sprites: Sprite[]) {
-		this.container!.getChildrenByLabel(label).forEach(child => child.removeFromParent());
-		sprites.forEach(sprite => {
-			sprite.label = label;
-			this.container!.addChild(sprite);
-		});
-	}
-
 	addInitialOverlayParticle(texture: Texture, size: Vector) {
 		let particle = new Particle(texture);
 		particle.scaleX = size.x / texture.width;
