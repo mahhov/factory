@@ -95,7 +95,8 @@ abstract class WorldLayer {
 	addGraphicsParticle(particle: Particle) {
 		let key = particle.texture.uid;
 		if (!this.particleContainers[key]) {
-			this.particleContainers[key] = new ParticleContainer();
+			// todo determine which particle containers need rotation. and correct their z-orders
+			this.particleContainers[key] = new ParticleContainer({dynamicProperties: {rotation: particle.rotation === 1}});
 			this.container.addChild(this.particleContainers[key]);
 		}
 		this.particleContainers[key].addParticle(particle);

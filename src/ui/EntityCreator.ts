@@ -38,6 +38,7 @@ import {
 	EntityPowerProduceAttribute,
 	EntityPowerStorageAttribute,
 	EntityPowerStorageAttributePriority,
+	EntityRotateParticleAttribute,
 	EntityRotateSpriteAttribute,
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
@@ -253,13 +254,13 @@ export default class EntityCreator {
 		let colorColorSecondarySlowSize = [
 			[textureColors.tier1, textureColors.tier1Secondary, 20, .25],
 			[textureColors.tier2, textureColors.tier2Secondary, 10, .25],
-			[textureColors.water, textureColors.waterSecondary, 40, .5],
+			[textureColors.waterSecondary, textureColors.water, 40, .25],
 		][tier] as [string, string, number, number];
-		let sprite = new Sprite(generatedTextures.pumpTop.texture(colorColorSecondarySlowSize[0], colorColorSecondarySlowSize[1]));
-		Entity.rotateSprite(sprite, Rotation.UP);
-		sprite.position = new Vector(entity.size.x * 4);
-		entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, colorColorSecondarySlowSize[2], true));
-		entity.addOverlaySprites('pumpTop', [sprite]);
+		let particle = entity.addInitialOverlayParticle(generatedTextures.pumpTop.texture(colorColorSecondarySlowSize[0], colorColorSecondarySlowSize[1]), new Vector(2));
+		particle.rotation = 1;
+		particle.anchorX = .5;
+		particle.anchorY = .5;
+		entity.addAttribute(new EntityRotateParticleAttribute(particle, entity.size.scale(.5), timedAttribute, colorColorSecondarySlowSize[2], true));
 		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute, new Vector(colorColorSecondarySlowSize[3])));
 	}
 

@@ -27,6 +27,7 @@ let resourceSettings = [
 	{resource: Liquid.METHANE, scale: Scale.SMALL, threshold: 0.90, offset: 600, isLiquid: true},
 ];
 
+// todo rename file
 export let generateTerrain = (terrainLayer: GridWorldLayer<Entity>) => {
 	for (let x = 0; x < terrainLayer.size.x; x++)
 		for (let y = 0; y < terrainLayer.size.y; y++) {

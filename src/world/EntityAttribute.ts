@@ -1542,19 +1542,18 @@ export class EntityRotateSpriteAttribute extends EntityAttribute {
 	}
 }
 
-export class EntitySquarePathSpriteAttribute extends EntityAttribute {
-	private readonly sprite: Sprite;
-	private readonly corner: Vector;
-	private readonly area: Vector;
+export class EntityRotateParticleAttribute extends EntityAttribute {
+	private readonly particle: Particle;
+	// todo don't set position once we have multi-typed particle system that doesn't always clear position
+	private readonly position: Vector;
 	private readonly timedAttribute: EntityTimedAttribute;
 	private readonly slowFactor: number;
 	private readonly clockwise: boolean;
 
-	constructor(sprite: Sprite, corner: Vector, area: Vector, timedAttribute: EntityTimedAttribute, slowFactor: number, clockwise: boolean) {
+	constructor(particle: Particle, position: Vector, timedAttribute: EntityTimedAttribute, slowFactor: number, clockwise: boolean) {
 		super();
-		this.sprite = sprite;
-		this.corner = corner;
-		this.area = area;
+		this.particle = particle;
+		this.position = position;
 		this.timedAttribute = timedAttribute;
 		this.slowFactor = slowFactor;
 		this.clockwise = clockwise;
@@ -1563,8 +1562,10 @@ export class EntitySquarePathSpriteAttribute extends EntityAttribute {
 	tick(world: World, tile: Tile<Entity>): void {
 		let ratio = this.timedAttribute.counter.ratioFactored(this.slowFactor);
 		if (!this.clockwise) ratio = 1 - ratio;
-		let shift = util.perimeter(this.area, ratio);
-		this.sprite.position = this.corner.add(shift);
+		let position = tile.position.add(this.position);
+		this.particle.x = position.x;
+		this.particle.y = position.y;
+		this.particle.rotation = ratio * 2 * Math.PI;
 		this.tickResult = TickResult.DONE;
 	}
 }

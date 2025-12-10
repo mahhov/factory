@@ -108,6 +108,7 @@ export class Entity implements Tileable {
 	}
 
 	// positioned and sized with (8,8) being tile coordinate (1,1)
+	// todo deprecate
 	addOverlaySprites(label: string, sprites: Sprite[]) {
 		this.container!.getChildrenByLabel(label).forEach(child => child.removeFromParent());
 		sprites.forEach(sprite => {
