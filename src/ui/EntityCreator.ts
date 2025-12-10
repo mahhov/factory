@@ -1,4 +1,4 @@
-import {AnimatedSprite, Sprite} from 'pixi.js';
+import {AnimatedSprite} from 'pixi.js';
 import {generatedTextures, textureColors} from '../graphics/generatedTextures.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
@@ -39,7 +39,6 @@ import {
 	EntityPowerStorageAttribute,
 	EntityPowerStorageAttributePriority,
 	EntityRotateParticleAttribute,
-	EntityRotateSpriteAttribute,
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
 	EntityTransportAttribute,
@@ -278,14 +277,15 @@ export default class EntityCreator {
 			[[textureColors.tier3Secondary], 40],
 			[[textureColors.tier4, textureColors.tier4Secondary], 80],
 		][tier] as [string[], number];
-		let sprites = colorsSlow[0].map((color, i) => {
-			let sprite = new Sprite(generatedTextures.extractorTop.texture(entity.size.x * (i ? 4 : 8), color));
-			Entity.rotateSprite(sprite, Rotation.UP);
-			sprite.position = new Vector(entity.size.x * 4);
-			entity.addAttribute(new EntityRotateSpriteAttribute(sprite, timedAttribute, colorsSlow[1], true));
-			return sprite;
+		colorsSlow[0].forEach((color, i) => {
+			let center = entity.size.scale(.5);
+			let size = i ? center : entity.size;
+			let particle = entity.addInitialOverlayParticle(generatedTextures.extractorTop.texture(size.x * 8, color), size);
+			particle.anchorX = .5;
+			particle.anchorY = .5;
+			particle.rotation = 1;
+			entity.addAttribute(new EntityRotateParticleAttribute(particle, center, timedAttribute, colorsSlow[1], true));
 		});
-		entity.addOverlaySprites('extractorTop', sprites);
 		// todo add dust particles
 		return entity;
 	}
