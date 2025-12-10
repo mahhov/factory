@@ -1,7 +1,7 @@
 import {AnimatedSprite, Container, Particle, ParticleContainer, Sprite} from 'pixi.js';
 import Painter from '../graphics/Painter.js';
 import TextLine from '../ui/TextLine.js';
-import {generateTerrain} from '../util/Noise.js';
+import {generateTerrain} from '../util/generateTerrain.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
