@@ -256,10 +256,10 @@ export default class EntityCreator {
 			[textureColors.tier2, textureColors.tier2Secondary, 10, .25],
 			[textureColors.waterSecondary, textureColors.water, 40, .25],
 		][tier] as [string, string, number, number];
-		let particle = entity.addParticle(generatedTextures.pumpTop.texture(colorColorSecondarySlowSize[0], colorColorSecondarySlowSize[1]), ParticleType.ROTATE, new Vector(2));
-		particle.anchorX = .5;
-		particle.anchorY = .5;
-		entity.addAttribute(new EntityRotateParticleAttribute(particle, entity.size.scale(.5), timedAttribute, colorColorSecondarySlowSize[2], true));
+		let particleWrapper = entity.addParticle(generatedTextures.pumpTop.texture(colorColorSecondarySlowSize[0], colorColorSecondarySlowSize[1]), ParticleType.ROTATE, new Vector(2), entity.size.scale(.5));
+		particleWrapper.particle.anchorX = .5;
+		particleWrapper.particle.anchorY = .5;
+		entity.addAttribute(new EntityRotateParticleAttribute(particleWrapper, timedAttribute, colorColorSecondarySlowSize[2], true));
 		entity.addAttribute(new EntityLiquidOverlayAttribute(liquidStorageAttribute, new Vector(colorColorSecondarySlowSize[3])));
 	}
 
@@ -280,10 +280,10 @@ export default class EntityCreator {
 		colorsSlow[0].forEach((color, i) => {
 			let center = entity.size.scale(.5);
 			let size = i ? center : entity.size;
-			let particle = entity.addParticle(generatedTextures.extractorTop.texture(size.x * 8, color), ParticleType.ROTATE, size);
-			particle.anchorX = .5;
-			particle.anchorY = .5;
-			entity.addAttribute(new EntityRotateParticleAttribute(particle, center, timedAttribute, colorsSlow[1], true));
+			let particleWrapper = entity.addParticle(generatedTextures.extractorTop.texture(size.x * 8, color), ParticleType.ROTATE, size, center);
+			particleWrapper.particle.anchorX = .5;
+			particleWrapper.particle.anchorY = .5;
+			entity.addAttribute(new EntityRotateParticleAttribute(particleWrapper, timedAttribute, colorsSlow[1], true));
 		});
 		// todo add dust particles
 		return entity;
@@ -355,8 +355,8 @@ export default class EntityCreator {
 		let size = new Vector(colorSizeAreaSlow[1]);
 		let area = new Vector(colorSizeAreaSlow[2] - colorSizeAreaSlow[1]);
 		let centeredCorner = entity.size.subtract(size).scale(.5);
-		let particle = entity.addParticle(generatedTextures.fullRect.texture(colorSizeAreaSlow[0]), ParticleType.DEFAULT, size);
-		entity.addAttribute(new EntityCirclePathParticleAttribute(particle, centeredCorner, area, timedAttribute, colorSizeAreaSlow[3], true));
+		let particleWrapper = entity.addParticle(generatedTextures.fullRect.texture(colorSizeAreaSlow[0]), ParticleType.DEFAULT, size);
+		entity.addAttribute(new EntityCirclePathParticleAttribute(particleWrapper, centeredCorner, area, timedAttribute, colorSizeAreaSlow[3], true));
 		return entity;
 	}
 

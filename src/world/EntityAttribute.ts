@@ -1,4 +1,4 @@
-import {AnimatedSprite, Particle, Texture} from 'pixi.js';
+import {AnimatedSprite, Texture} from 'pixi.js';
 import {generatedTextures} from '../graphics/generatedTextures.js';
 import uiColors from '../graphics/uiColors.js';
 import TextLine from '../ui/TextLine.js';
@@ -8,7 +8,7 @@ import Vector from '../util/Vector.js';
 import {Empty, Entity, LiquidDeposit, MaterialDeposit, ParticleEntity, Projectile} from './Entity.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
-import {ParticleType, Tile, World} from './World.js';
+import {ParticleType, ParticleWrapper, Tile, World} from './World.js';
 
 export enum TooltipType {
 	PLACER, WORLD
@@ -193,7 +193,7 @@ export class EntityHealthAttribute extends EntityAttribute {
 	private lastHealth: number;
 	health: number;
 	readonly sourceFriendly: boolean;
-	private particle: Particle | null = null;
+	private particleWrapper: ParticleWrapper | null = null;
 
 	constructor(health: number, sourceFriendly: boolean) {
 		super();
@@ -216,12 +216,12 @@ export class EntityHealthAttribute extends EntityAttribute {
 
 		if (tile.tileable.container) {
 			if (this.health !== this.lastHealth) {
-				if (!this.particle)
-					this.particle = tile.tileable.addParticle(generatedTextures.fullRect.texture(uiColors.DAMAGED_RED), ParticleType.ON_TOP, tile.tileable.size, tile.position, world);
+				if (!this.particleWrapper)
+					this.particleWrapper = tile.tileable.addParticle(generatedTextures.fullRect.texture(uiColors.DAMAGED_RED), ParticleType.ON_TOP, tile.tileable.size, tile.position, world);
 				this.lastHealth = Math.max(this.lastHealth - .2, this.health);
-			} else if (this.health === this.lastHealth && this.particle) {
-				tile.tileable.removeOverlayParticle(this.particle, world);
-				this.particle = null;
+			} else if (this.health === this.lastHealth && this.particleWrapper) {
+				tile.tileable.removeOverlayParticle(this.particleWrapper, world);
+				this.particleWrapper = null;
 			}
 		}
 
@@ -769,7 +769,7 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 	private connections: [Vector | null, Vector | null, Vector | null, Vector | null] = [null, null, null, null];
 	private externalConnectionsPending: Entity[] = [];
 	allConnections: Entity[] = [];
-	private particles: [Particle | null, Particle | null, Particle | null, Particle | null] = [null, null, null, null];
+	private particleWrappers: [ParticleWrapper | null, ParticleWrapper | null, ParticleWrapper | null, ParticleWrapper | null] = [null, null, null, null];
 
 	constructor(range: number) {
 		super();
@@ -798,16 +798,16 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 			if (!connection && !this.connections[i]) return;
 			if (connection && this.connections[i] && connection.equals(this.connections[i])) return;
 
-			if (this.particles[i]) {
-				tile.tileable.removeOverlayParticle(this.particles[i], world);
-				this.particles[i] = null;
+			if (this.particleWrappers[i]) {
+				tile.tileable.removeOverlayParticle(this.particleWrappers[i], world);
+				this.particleWrappers[i] = null;
 			}
 
 			let cvs = connection && connectionVectors(connection.subtract(tile.position));
 			if (cvs) {
 				let texture = generatedTextures.fullRect.texture(uiColors.POWER_TEXT);
 				let position = tile.position.add(cvs[0]);
-				this.particles[i] = tile.tileable.addParticle(texture, ParticleType.ON_TOP, cvs[1], position, world);
+				this.particleWrappers[i] = tile.tileable.addParticle(texture, ParticleType.ON_TOP, cvs[1], position, world);
 			}
 		});
 
@@ -1052,7 +1052,7 @@ export class EntityLiquidBridgeConnectAttribute extends EntityAttribute {
 	readonly rotation: Rotation;
 	private readonly range: number;
 	connectedPosition: Vector | null = null;
-	private particle: Particle | null = null;
+	private particleWrapper: ParticleWrapper | null = null;
 
 	constructor(rotation: Rotation, range: number) {
 		super();
@@ -1069,16 +1069,16 @@ export class EntityLiquidBridgeConnectAttribute extends EntityAttribute {
 		if (connectedPosition && this.connectedPosition && connectedPosition.equals(this.connectedPosition)) return;
 		this.connectedPosition = connectedPosition;
 
-		if (this.particle) {
-			tile.tileable.removeOverlayParticle(this.particle, world);
-			this.particle = null;
+		if (this.particleWrapper) {
+			tile.tileable.removeOverlayParticle(this.particleWrapper, world);
+			this.particleWrapper = null;
 		}
 
 		let cvs = connectedPosition && connectionVectors(connectedPosition.subtract(tile.position));
 		if (cvs) {
 			let texture = generatedTextures.fullRect.texture(uiColors.LIQUID_TEXT);
 			let position = tile.position.add(cvs[0]);
-			this.particle = tile.tileable.addParticle(texture, ParticleType.ON_TOP, cvs[1], position, world);
+			this.particleWrapper = tile.tileable.addParticle(texture, ParticleType.ON_TOP, cvs[1], position, world);
 		}
 	}
 }
@@ -1398,7 +1398,7 @@ export class EntityMaterialOverlayAttribute extends EntityAttribute {
 	private readonly timedAttribute: EntityTimedAttribute;
 	private readonly rotation: Rotation;
 	private material: Material | null = null;
-	private particle: Particle | null = null;
+	private particleWrapper: ParticleWrapper | null = null;
 
 	constructor(materialStorageAttribute: EntityMaterialStorageAttribute, timedAttribute: EntityTimedAttribute, rotation: Rotation) {
 		super();
@@ -1409,25 +1409,25 @@ export class EntityMaterialOverlayAttribute extends EntityAttribute {
 
 	tick(world: World, tile: Tile<Entity>): void {
 		if (!this.materialStorageAttribute.atLeast1) {
-			if (this.particle) {
-				tile.tileable.removeOverlayParticle(this.particle, world);
+			if (this.particleWrapper) {
+				tile.tileable.removeOverlayParticle(this.particleWrapper, world);
 				this.material = null;
-				this.particle = null;
+				this.particleWrapper = null;
 			}
 		} else {
 			let material = this.materialStorageAttribute.quantityCounts[0].resource;
 			if (material !== this.material) {
 				this.material = material;
 				let color = ResourceUtils.materialColor(material);
-				this.particle = tile.tileable.addParticle(generatedTextures.fullRect.texture(color), ParticleType.ON_TOP, new Vector(.5), Vector.V0, world);
+				this.particleWrapper = tile.tileable.addParticle(generatedTextures.fullRect.texture(color), ParticleType.ON_TOP, new Vector(.5), Vector.V0, world);
 			}
 			let shiftRatio = this.timedAttribute.counter.ratio || 1;
 			let shift = RotationUtils.positionShift(this.rotation);
 			let position = tile.position
 				.add(shift.scale(shiftRatio - .5))
 				.add(new Vector(.25));
-			this.particle!.x = position.x;
-			this.particle!.y = position.y;
+			this.particleWrapper!.particle.x = position.x;
+			this.particleWrapper!.particle.y = position.y;
 		}
 		this.tickResult = TickResult.DONE;
 	}
@@ -1437,7 +1437,7 @@ export class EntityLiquidOverlayAttribute extends EntityAttribute {
 	private readonly liquidStorageAttribute: EntityLiquidStorageAttribute;
 	private readonly size: Vector;
 	private liquid: Liquid | null = null;
-	private particle: Particle | null = null;
+	private particleWrapper: ParticleWrapper | null = null;
 
 	constructor(liquidStorageAttribute: EntityLiquidStorageAttribute, size: Vector) {
 		super();
@@ -1448,10 +1448,10 @@ export class EntityLiquidOverlayAttribute extends EntityAttribute {
 
 	tick(world: World, tile: Tile<Entity>): void {
 		if (!this.liquidStorageAttribute.liquidCount.quantity) {
-			if (this.particle) {
-				tile.tileable.removeOverlayParticle(this.particle, world);
+			if (this.particleWrapper) {
+				tile.tileable.removeOverlayParticle(this.particleWrapper, world);
 				this.liquid = null;
-				this.particle = null;
+				this.particleWrapper = null;
 			}
 		} else {
 			let liquid = this.liquidStorageAttribute.liquidCount.resource;
@@ -1459,7 +1459,7 @@ export class EntityLiquidOverlayAttribute extends EntityAttribute {
 				this.liquid = liquid;
 				let color = ResourceUtils.liquidColor(liquid);
 				let position = tile.position.add(tile.tileable.size.subtract(this.size).scale(.5));
-				this.particle = tile.tileable.addParticle(generatedTextures.fullRect.texture(color), ParticleType.ON_TOP, this.size, position, world);
+				this.particleWrapper = tile.tileable.addParticle(generatedTextures.fullRect.texture(color), ParticleType.ON_TOP, this.size, position, world);
 			}
 		}
 		this.tickResult = TickResult.DONE;
@@ -1485,17 +1485,14 @@ export class EntityAnimateSpriteAttribute extends EntityAttribute {
 }
 
 export class EntityRotateParticleAttribute extends EntityAttribute {
-	private readonly particle: Particle;
-	// todo don't set position once we have multi-typed particle system that doesn't always clear position
-	private readonly position: Vector;
+	private readonly particleWrapper: ParticleWrapper;
 	private readonly timedAttribute: EntityTimedAttribute;
 	private readonly slowFactor: number;
 	private readonly clockwise: boolean;
 
-	constructor(particle: Particle, position: Vector, timedAttribute: EntityTimedAttribute, slowFactor: number, clockwise: boolean) {
+	constructor(particleWrapper: ParticleWrapper, timedAttribute: EntityTimedAttribute, slowFactor: number, clockwise: boolean) {
 		super();
-		this.particle = particle;
-		this.position = position;
+		this.particleWrapper = particleWrapper;
 		this.timedAttribute = timedAttribute;
 		this.slowFactor = slowFactor;
 		this.clockwise = clockwise;
@@ -1504,25 +1501,22 @@ export class EntityRotateParticleAttribute extends EntityAttribute {
 	tick(world: World, tile: Tile<Entity>): void {
 		let ratio = this.timedAttribute.counter.ratioFactored(this.slowFactor);
 		if (!this.clockwise) ratio = 1 - ratio;
-		let position = tile.position.add(this.position);
-		this.particle.x = position.x;
-		this.particle.y = position.y;
-		this.particle.rotation = ratio * 2 * Math.PI;
+		this.particleWrapper.particle.rotation = ratio * 2 * Math.PI;
 		this.tickResult = TickResult.DONE;
 	}
 }
 
 export class EntityCirclePathParticleAttribute extends EntityAttribute {
-	private readonly particle: Particle;
+	private readonly particleWrapper: ParticleWrapper;
 	private readonly center: Vector;
 	private readonly area: Vector;
 	private readonly timedAttribute: EntityTimedAttribute;
 	private readonly slowFactor: number;
 	private readonly clockwise: boolean;
 
-	constructor(particle: Particle, center: Vector, area: Vector, timedAttribute: EntityTimedAttribute, slowFactor: number, clockwise: boolean) {
+	constructor(particleWrapper: ParticleWrapper, center: Vector, area: Vector, timedAttribute: EntityTimedAttribute, slowFactor: number, clockwise: boolean) {
 		super();
-		this.particle = particle;
+		this.particleWrapper = particleWrapper;
 		this.center = center;
 		this.area = area;
 		this.timedAttribute = timedAttribute;
@@ -1537,8 +1531,8 @@ export class EntityCirclePathParticleAttribute extends EntityAttribute {
 		let position = tile.position
 			.add(this.center)
 			.add(Vector.fromAngle(angle).multiply(this.area).scale(.5));
-		this.particle.x = position.x;
-		this.particle.y = position.y;
+		this.particleWrapper.particle.x = position.x;
+		this.particleWrapper.particle.y = position.y;
 		this.tickResult = TickResult.DONE;
 	}
 }

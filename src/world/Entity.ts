@@ -31,7 +31,7 @@ import {
 } from './EntityAttribute.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation} from './Rotation.js';
-import {ParticleType, Tile, Tileable, World} from './World.js';
+import {ParticleType, ParticleWrapper, Tile, Tileable, World} from './World.js';
 
 export let standardDuration = 40;
 
@@ -46,7 +46,7 @@ export class Entity implements Tileable {
 	private readonly attribute = new EntityParallelAttribute([]);
 	private readonly attributesMap: Record<string, EntityAttribute[]> = {};
 	container: Container | null = null;
-	particles: Particle[] = [];
+	particleWrappers: ParticleWrapper[] = [];
 
 	constructor(name: string, description: string, size: Vector = Vector.V1, rotation: Rotation = Rotation.UP, tilingSize: Vector = size) {
 		this.name = name;
@@ -100,19 +100,17 @@ export class Entity implements Tileable {
 	// positioned and sized with tile coordinates
 	addParticle(texture: Texture, type: ParticleType, size: Vector, position = Vector.V0, world?: World) {
 		let particle = new Particle(texture);
-		texture.label = type;
-		particle.x = position.x;
-		particle.y = position.y;
 		particle.scaleX = size.x / texture.width;
 		particle.scaleY = size.y / texture.height;
-		this.particles.push(particle);
-		world?.live.addGraphicsParticle(particle, Vector.V0);
-		return particle;
+		let particleWrapper = new ParticleWrapper(particle, type, position);
+		this.particleWrappers.push(particleWrapper);
+		world?.live.addGraphicsParticle(particleWrapper, Vector.V0);
+		return particleWrapper;
 	}
 
-	removeOverlayParticle(particle: Particle, world: World) {
-		this.particles.splice(this.particles.indexOf(particle), 1);
-		world.live.removeGraphicsParticle(particle);
+	removeOverlayParticle(particleWrapper: ParticleWrapper, world: World) {
+		this.particleWrappers.splice(this.particleWrappers.indexOf(particleWrapper), 1);
+		world.live.removeGraphicsParticle(particleWrapper.particle);
 	}
 
 	tooltip(type: TooltipType): TextLine[] {
