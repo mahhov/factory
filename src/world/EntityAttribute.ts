@@ -67,55 +67,28 @@ let getLineDestinations = (origin: Vector, size: Vector, rotation: Rotation, ran
 	return destinations;
 };
 
-let connectionSprite = (sprite: Sprite, delta: Vector): Sprite | null => {
-	let s = 8;
-	let thickness = s / 16;
-	if (delta.x > 1) {
-		sprite.x = s;
-		sprite.y = s / 2 - thickness / 2;
-		sprite.width = s * (delta.x - 1);
-		sprite.height = thickness;
-	} else if (delta.x < -1) {
-		sprite.x = 0;
-		sprite.y = s / 2 - thickness / 2;
-		sprite.width = s * (delta.x + 1);
-		sprite.height = thickness;
-	} else if (delta.y > 1) {
-		sprite.x = s / 2 - thickness / 2;
-		sprite.y = s;
-		sprite.width = thickness;
-		sprite.height = s * (delta.y - 1);
-	} else if (delta.y < -1) {
-		sprite.x = s / 2 - thickness / 2;
-		sprite.y = 0;
-		sprite.width = thickness;
-		sprite.height = s * (delta.y + 1);
-	} else
-		return null;
-	return sprite;
-};
-
+// returns start and delta vectors
 let connectionVectors = (delta: Vector): [Vector, Vector] | null => {
 	let thickness = 1 / 16;
 	if (delta.x > 1) {
 		return [
 			new Vector(1, 1 / 2 - thickness / 2),
-			new Vector(1 * (delta.x - 1), thickness)];
+			new Vector(delta.x - 1, thickness)];
 	}
 	if (delta.x < -1) {
 		return [
 			new Vector(0, 1 / 2 - thickness / 2),
-			new Vector(1 * (delta.x + 1), thickness)];
+			new Vector(delta.x + 1, thickness)];
 	}
 	if (delta.y > 1) {
 		return [
 			new Vector(1 / 2 - thickness / 2, 1),
-			new Vector(thickness, 1 * (delta.y - 1))];
+			new Vector(thickness, delta.y - 1)];
 	}
 	if (delta.y < -1) {
 		return [
 			new Vector(1 / 2 - thickness / 2, 0),
-			new Vector(thickness, 1 * (delta.y + 1))];
+			new Vector(thickness, delta.y + 1)];
 	}
 	return null;
 };
@@ -1353,7 +1326,7 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 		} else {
 			let chunks = world.freeMobHerdPositionAttributeOverlay.chunkRange(position.subtract(rangeV), position.add(rangeV));
 			for (let chunk of chunks)
-				for (let [tile, mobHerdPositionAttribute] of chunk) {
+				for (let [tile, _] of chunk) {
 					let delta = tile.position.subtract(position);
 					if (delta.magnitude2 >= range2) continue;
 					let healthAttribute = tile.tileable.getAttribute(EntityHealthAttribute);
@@ -1516,28 +1489,6 @@ export class EntityAnimateSpriteAttribute extends EntityAttribute {
 
 	tick(world: World, tile: Tile<Entity>): void {
 		this.sprite.currentFrame = Math.floor(this.timedAttribute.counter.ratioFactored(this.slowFactor) * this.sprite.textures.length);
-		this.tickResult = TickResult.DONE;
-	}
-}
-
-export class EntityRotateSpriteAttribute extends EntityAttribute {
-	private readonly sprite: Sprite;
-	private readonly timedAttribute: EntityTimedAttribute;
-	private readonly slowFactor: number;
-	private readonly clockwise: boolean;
-
-	constructor(sprite: Sprite, timedAttribute: EntityTimedAttribute, slowFactor: number, clockwise: boolean) {
-		super();
-		this.sprite = sprite;
-		this.timedAttribute = timedAttribute;
-		this.slowFactor = slowFactor;
-		this.clockwise = clockwise;
-	}
-
-	tick(world: World, tile: Tile<Entity>): void {
-		let ratio = this.timedAttribute.counter.ratioFactored(this.slowFactor);
-		if (!this.clockwise) ratio = 1 - ratio;
-		this.sprite.angle = ratio * 360;
 		this.tickResult = TickResult.DONE;
 	}
 }
