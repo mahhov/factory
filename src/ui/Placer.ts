@@ -6,7 +6,7 @@ import Emitter from '../util/Emitter.js';
 import {toTitleCase} from '../util/stringCase.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Empty} from '../world/Entity.js';
+import {Empty, Entity} from '../world/Entity.js';
 import {EntityNameAttribute, TooltipType} from '../world/EntityAttribute.js';
 import {Rotation, RotationUtils} from '../world/Rotation.js';
 import {SpriteHolder, World} from '../world/World.js';
@@ -140,12 +140,12 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			// redraw top row
 			Object.values(toolTree).forEach((tools, i) => {
 				let coordinates = Placer.toolUiCoordinates(true, i);
-				let spriteContainer = EntityCreator.createToolEntity(tools[0]).container;
-				this.addToolUiButton(coordinates, this.toolGroupIconContainer, spriteContainer!, this.toolGroupTextContainer, '^' + (i + 1));
-				spriteContainer!.eventMode = 'static';
-				spriteContainer!.onclick = () => this.setToolGroupIndex(i);
-				spriteContainer!.onmouseenter = () => this.showToolGroupTooltip(i);
-				spriteContainer!.onmouseleave = () => this.hideTooltip();
+				let entity = EntityCreator.createToolEntity(tools[0]);
+				this.addToolUiButton(coordinates, this.toolGroupIconContainer, entity, this.toolGroupTextContainer, '^' + (i + 1));
+				entity.container!.eventMode = 'static';
+				entity.container!.onclick = () => this.setToolGroupIndex(i);
+				entity.container!.onmouseenter = () => this.showToolGroupTooltip(i);
+				entity.container!.onmouseleave = () => this.hideTooltip();
 			});
 		}
 
@@ -159,11 +159,12 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			this.toolTextContainer.removeChildren();
 			toolTree[toolGroup].forEach((tool, i) => {
 				let coordinates = Placer.toolUiCoordinates(false, i);
-				this.addToolUiButton(coordinates, this.toolIconContainer, EntityCreator.cachedToolEntities[tool].container!, this.toolTextContainer, String(i + 1));
-				EntityCreator.cachedToolEntities[tool].container!.eventMode = 'static';
-				EntityCreator.cachedToolEntities[tool].container!.onclick = () => this.toggleToolIndex(i);
-				EntityCreator.cachedToolEntities[tool].container!.onmouseenter = () => this.showToolTooltip(i);
-				EntityCreator.cachedToolEntities[tool].container!.onmouseleave = () => this.hideTooltip();
+				let entity = EntityCreator.cachedToolEntities[tool];
+				this.addToolUiButton(coordinates, this.toolIconContainer, entity, this.toolTextContainer, String(i + 1));
+				entity.container!.eventMode = 'static';
+				entity.container!.onclick = () => this.toggleToolIndex(i);
+				entity.container!.onmouseenter = () => this.showToolTooltip(i);
+				entity.container!.onmouseleave = () => this.hideTooltip();
 			});
 		}
 
@@ -186,8 +187,9 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 		}
 	}
 
-	private addToolUiButton(coordinates: [number, number][], iconContainer: Container, spriteContainer: Container, textContainer: Container, text: string) {
+	private addToolUiButton(coordinates: [number, number][], iconContainer: Container, entity: Entity, textContainer: Container, text: string) {
 		// todo support particles
+		let spriteContainer = entity.container!;
 		[spriteContainer.x, spriteContainer.y] = coordinates[0];
 		[spriteContainer.width, spriteContainer.height] = coordinates[1];
 		iconContainer.addChild(spriteContainer);
