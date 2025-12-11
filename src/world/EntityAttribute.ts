@@ -221,7 +221,7 @@ export class EntityHealthAttribute extends EntityAttribute {
 					this.particle.x = tile.position.x;
 					this.particle.y = tile.position.y;
 				}
-				this.lastHealth = Math.max(this.lastHealth - 3, this.health);
+				this.lastHealth = Math.max(this.lastHealth - .2, this.health);
 			} else if (this.health === this.lastHealth && this.particle) {
 				tile.tileable.removeOverlayParticle(this.particle, world);
 				this.particle = null;
