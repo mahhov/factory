@@ -1,4 +1,4 @@
-import {AnimatedSprite, Particle, Sprite, Texture} from 'pixi.js';
+import {AnimatedSprite, Particle, Texture} from 'pixi.js';
 import {generatedTextures} from '../graphics/generatedTextures.js';
 import uiColors from '../graphics/uiColors.js';
 import TextLine from '../ui/TextLine.js';
@@ -8,7 +8,7 @@ import Vector from '../util/Vector.js';
 import {Empty, Entity, LiquidDeposit, MaterialDeposit, ParticleEntity, Projectile} from './Entity.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
-import {Tile, World} from './World.js';
+import {ParticleType, Tile, World} from './World.js';
 
 export enum TooltipType {
 	PLACER, WORLD
@@ -216,11 +216,8 @@ export class EntityHealthAttribute extends EntityAttribute {
 
 		if (tile.tileable.container) {
 			if (this.health !== this.lastHealth) {
-				if (!this.particle) {
-					this.particle = tile.tileable.addOverlayParticle(generatedTextures.fullRect.texture(uiColors.DAMAGED_RED), tile.tileable.size, world);
-					this.particle.x = tile.position.x;
-					this.particle.y = tile.position.y;
-				}
+				if (!this.particle)
+					this.particle = tile.tileable.addParticle(generatedTextures.fullRect.texture(uiColors.DAMAGED_RED), ParticleType.ON_TOP, tile.tileable.size, tile.position, world);
 				this.lastHealth = Math.max(this.lastHealth - .2, this.health);
 			} else if (this.health === this.lastHealth && this.particle) {
 				tile.tileable.removeOverlayParticle(this.particle, world);
@@ -809,10 +806,8 @@ export class EntityPowerConductAttribute extends EntityAttribute {
 			let cvs = connection && connectionVectors(connection.subtract(tile.position));
 			if (cvs) {
 				let texture = generatedTextures.fullRect.texture(uiColors.POWER_TEXT);
-				this.particles[i] = tile.tileable.addOverlayParticle(texture, cvs[1], world);
 				let position = tile.position.add(cvs[0]);
-				this.particles[i].x = position.x;
-				this.particles[i].y = position.y;
+				this.particles[i] = tile.tileable.addParticle(texture, ParticleType.ON_TOP, cvs[1], position, world);
 			}
 		});
 
@@ -1082,10 +1077,8 @@ export class EntityLiquidBridgeConnectAttribute extends EntityAttribute {
 		let cvs = connectedPosition && connectionVectors(connectedPosition.subtract(tile.position));
 		if (cvs) {
 			let texture = generatedTextures.fullRect.texture(uiColors.LIQUID_TEXT);
-			this.particle = tile.tileable.addOverlayParticle(texture, cvs[1], world);
 			let position = tile.position.add(cvs[0]);
-			this.particle.x = position.x;
-			this.particle.y = position.y;
+			this.particle = tile.tileable.addParticle(texture, ParticleType.ON_TOP, cvs[1], position, world);
 		}
 	}
 }
@@ -1426,7 +1419,7 @@ export class EntityMaterialOverlayAttribute extends EntityAttribute {
 			if (material !== this.material) {
 				this.material = material;
 				let color = ResourceUtils.materialColor(material);
-				this.particle = tile.tileable.addOverlayParticle(generatedTextures.fullRect.texture(color), new Vector(.5), world);
+				this.particle = tile.tileable.addParticle(generatedTextures.fullRect.texture(color), ParticleType.ON_TOP, new Vector(.5), Vector.V0, world);
 			}
 			let shiftRatio = this.timedAttribute.counter.ratio || 1;
 			let shift = RotationUtils.positionShift(this.rotation);
@@ -1465,10 +1458,8 @@ export class EntityLiquidOverlayAttribute extends EntityAttribute {
 			if (liquid !== this.liquid) {
 				this.liquid = liquid;
 				let color = ResourceUtils.liquidColor(liquid);
-				this.particle = tile.tileable.addOverlayParticle(generatedTextures.fullRect.texture(color), this.size, world);
 				let position = tile.position.add(tile.tileable.size.subtract(this.size).scale(.5));
-				this.particle.x = position.x;
-				this.particle.y = position.y;
+				this.particle = tile.tileable.addParticle(generatedTextures.fullRect.texture(color), ParticleType.ON_TOP, this.size, position, world);
 			}
 		}
 		this.tickResult = TickResult.DONE;

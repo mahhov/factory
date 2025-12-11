@@ -1,11 +1,11 @@
-import {AnimatedSprite, Container, Particle, ParticleContainer, Sprite} from 'pixi.js';
+import {Container, Particle, ParticleContainer, Sprite} from 'pixi.js';
 import Painter from '../graphics/Painter.js';
 import TextLine from '../ui/TextLine.js';
 import {generateTerrain} from '../util/generateTerrain.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Empty, Entity} from './Entity.js';
-import {EntityAnimateSpriteAttribute, EntityBuildableAttribute, EntityMobHerdPositionAttribute, EntityTimedAttribute, TickResult, TooltipType} from './EntityAttribute.js';
+import {EntityBuildableAttribute, EntityMobHerdPositionAttribute, TickResult, TooltipType} from './EntityAttribute.js';
 import MobLogic from './MobLogic.js';
 import PlayerLogic from './PlayerLogic.js';
 import {Rotation} from './Rotation.js';
@@ -73,6 +73,12 @@ export class Tile<T extends Tileable> {
 	}
 }
 
+export enum ParticleType {
+	DEFAULT = 'DEFAULT',
+	ROTATE = 'ROTATE',
+	ON_TOP = 'ON_TOP',
+}
+
 abstract class WorldLayer {
 	readonly size: Vector;
 	readonly container = new Container();
@@ -84,46 +90,42 @@ abstract class WorldLayer {
 		this.container.addChild(this.spriteContainer);
 	}
 
-	protected addGraphics(tileable: Tileable, position: Vector, size: Vector) {
-		this.updateGraphics(tileable, position, size);
-		if (tileable.container)
-			this.spriteContainer.addChild(tileable.container);
-		tileable.particles.forEach(particle =>
-			this.addGraphicsParticle(particle));
-	}
-
-	addGraphicsParticle(particle: Particle) {
-		let key = particle.texture.uid;
-		if (!this.particleContainers[key]) {
-			// todo determine which particle containers need rotation. and correct their z-orders
-			this.particleContainers[key] = new ParticleContainer({dynamicProperties: {rotation: particle.rotation === 1}});
-			this.container.addChild(this.particleContainers[key]);
-		}
-		this.particleContainers[key].addParticle(particle);
-	}
-
-	removeGraphicsParticle(particle: Particle) {
-		let key = particle.texture.uid;
-		this.particleContainers[key].removeParticle(particle);
-	}
-
-	protected updateGraphics(tileable: Tileable, position: Vector, size: Vector) {
+	addGraphics(tileable: Tileable, position: Vector, size: Vector) {
 		if (tileable.container) {
 			tileable.container.position = position;
 			tileable.container.width = size.x;
 			tileable.container.height = size.y;
+			this.spriteContainer.addChild(tileable.container);
 		}
-		tileable.particles.forEach(particle => {
-			particle.x = position.x;
-			particle.y = position.y;
-		});
+		tileable.particles.forEach(particle => this.addGraphicsParticle(particle, position));
+	}
+
+	addGraphicsParticle(particle: Particle, position: Vector) {
+		let key = particle.texture.uid;
+		console.assert(!!particle.texture.label && particle.texture.label in ParticleType);
+
+		if (!this.particleContainers[key]) {
+			this.particleContainers[key] = new ParticleContainer({dynamicProperties: {rotation: particle.texture.label === ParticleType.ROTATE}});
+			if (particle.texture.label === ParticleType.ON_TOP)
+				this.container.addChild(this.particleContainers[key]);
+			else
+				this.container.addChildAt(this.particleContainers[key], 1);
+		}
+
+		particle.x += position.x;
+		particle.y += position.y;
+		this.particleContainers[key].addParticle(particle);
 	}
 
 	protected removeGraphics(tileable: Tileable) {
 		if (tileable.container)
 			this.spriteContainer.removeChild(tileable.container);
-		tileable.particles.forEach(particle =>
-			this.particleContainers[particle.texture.uid].removeParticle(particle));
+		tileable.particles.forEach(particle => this.removeGraphicsParticle(particle));
+	}
+
+	removeGraphicsParticle(particle: Particle) {
+		let key = particle.texture.uid;
+		this.particleContainers[key].removeParticle(particle);
 	}
 }
 
@@ -327,7 +329,11 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	updateTile(position: Vector, tile: Tile<T>) {
 		this.chunkOverlays.forEach(chunkOverlay => chunkOverlay.update(position, tile));
 		tile.position = position;
-		this.updateGraphics(tile.tileable, position, tile.tileable.size);
+		tile.tileable.particles.forEach(particle => {
+			position = position.subtract(tile.tileable.size.scale(.5));
+			particle.x = position.x;
+			particle.y = position.y;
+		});
 	}
 
 	removeTile(tile: Tile<T>) {
@@ -336,14 +342,6 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		this.tiles.splice(index, 1);
 		this.chunkOverlays.forEach(chunkOverlay => chunkOverlay.remove(tile));
 		this.removeGraphics(tile.tileable);
-	}
-
-	protected updateGraphics(tileable: Tileable, position: Vector, size: Vector) {
-		tileable.particles.forEach(particle => {
-			position = position.subtract(size.scale(.5));
-			particle.x = position.x;
-			particle.y = position.y;
-		});
 	}
 
 	inBounds(position: Vector, size: Vector) {
@@ -384,18 +382,6 @@ export class World {
 		this.live = new LiveGridWorldLayer(new Empty(), size);
 		this.container.addChild(this.live.container);
 		this.live.replaceTileable(size.scale(.5).floor, this.playerLogic.base);
-
-		([
-			['airVent', 1, 1],
-			['waterVent', 1, 1],
-			['methaneVent', 2, 1],
-		] as [string, number, number][]).forEach(([texture, size, slow], i) => {
-			let entity = new Entity(texture, '', new Vector(size));
-			let timedAttribute = new EntityTimedAttribute(40);
-			entity.addAttribute(timedAttribute);
-			entity.addAttribute(new EntityAnimateSpriteAttribute(entity.container!.children[0] as AnimatedSprite, timedAttribute, slow));
-			this.live.replaceTileable(new Vector(136 + 4 * i, 143), entity);
-		});
 
 		this.queue = new OrderedGridWorldLayer(new Empty(), size);
 		this.container.addChild(this.queue.container);

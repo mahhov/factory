@@ -31,7 +31,7 @@ import {
 } from './EntityAttribute.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation} from './Rotation.js';
-import {Tile, Tileable, World} from './World.js';
+import {ParticleType, Tile, Tileable, World} from './World.js';
 
 export let standardDuration = 40;
 
@@ -98,26 +98,15 @@ export class Entity implements Tileable {
 	}
 
 	// positioned and sized with tile coordinates
-	// todo merge with addInitialOverlayParticle & addOverlayParticle
-	setParticle(texture: Texture) {
-		console.assert(!this.particles.length);
+	addParticle(texture: Texture, type: ParticleType, size: Vector, position = Vector.V0, world?: World) {
 		let particle = new Particle(texture);
-		particle.scaleX = this.size.x / texture.width;
-		particle.scaleY = this.size.y / texture.height;
-		this.particles.push(particle);
-	}
-
-	addInitialOverlayParticle(texture: Texture, size: Vector) {
-		let particle = new Particle(texture);
+		texture.label = type;
+		particle.x = position.x;
+		particle.y = position.y;
 		particle.scaleX = size.x / texture.width;
 		particle.scaleY = size.y / texture.height;
 		this.particles.push(particle);
-		return particle;
-	}
-
-	addOverlayParticle(texture: Texture, size: Vector, world: World) {
-		let particle = this.addInitialOverlayParticle(texture, size);
-		world.live.addGraphicsParticle(particle);
+		world?.live.addGraphicsParticle(particle, Vector.V0);
 		return particle;
 	}
 
@@ -188,7 +177,7 @@ export class MaterialDeposit extends Entity {
 	constructor(material: Material) {
 		super('', '');
 		this.material = material;
-		this.setParticle(this.texture);
+		this.addParticle(this.texture, ParticleType.DEFAULT, Vector.V1);
 		this.addAttribute(new EntityMaterialDisplayAttribute(material));
 	}
 
@@ -233,7 +222,7 @@ export class LiquidDeposit extends Entity {
 	constructor(liquid: Liquid) {
 		super('', '');
 		this.liquid = liquid;
-		this.setParticle(this.texture);
+		this.addParticle(this.texture, ParticleType.DEFAULT, Vector.V1);
 		this.addAttribute(new EntityLiquidDisplayAttribute(liquid));
 	}
 
@@ -261,8 +250,9 @@ export class LiquidDeposit extends Entity {
 
 export class ProjectileMob extends Entity {
 	constructor(size: number, health: number, movementSpeed: number, visualRange: number, attackRange: number, projectileCount: number, projectileDamageSize: number, projectileSpeed: number, projectileCollisionSize: number, projectileDamage: number, projectileAttackLatency: number, projectileSpreadDegrees: number) {
-		super('Projectile Mob', '', new Vector(size));
-		this.setParticle(generatedTextures.swarmDrone.textures[0]);
+		let sizeV = new Vector(size);
+		super('Projectile Mob', '', sizeV);
+		this.addParticle(generatedTextures.swarmDrone.textures[0], ParticleType.ON_TOP, sizeV);
 		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(movementSpeed);
 		this.addAttribute(mobHerdPositionAttribute);
 		let findTargetAttribute = new EntityFindTargetAttribute(visualRange, 1, false, true);
@@ -284,8 +274,9 @@ export class ProjectileMob extends Entity {
 
 export class Projectile extends Entity {
 	constructor(velocity: Vector, damageSize: number, duration: number, collisionSize: number, damage: number, sourceFriendly: boolean) {
-		super('Projectile', '', new Vector(collisionSize));
-		this.setParticle(generatedTextures.fullRect.texture(sourceFriendly ? uiColors.PROJECTILE_BLUE : uiColors.PROJECTILE_RED));
+		let collisionSizeV = new Vector(collisionSize);
+		super('Projectile', '', collisionSizeV);
+		this.addParticle(generatedTextures.fullRect.texture(sourceFriendly ? uiColors.PROJECTILE_BLUE : uiColors.PROJECTILE_RED), ParticleType.ON_TOP, collisionSizeV);
 		// todo homing projectile
 		this.addAttribute(new EntityDirectionMovementAttribute(velocity));
 		let collisionFindTargetAttribute = new EntityFindTargetAttribute(collisionSize, 1, sourceFriendly, !sourceFriendly);
@@ -307,8 +298,9 @@ export class Projectile extends Entity {
 
 export class ParticleEntity extends Entity {
 	constructor(velocity: Vector, size: number, duration: number, texture: Texture) {
-		super('Particle', '', new Vector(size));
-		this.setParticle(texture);
+		let sizeV = new Vector(size);
+		super('Particle', '', sizeV);
+		this.addParticle(texture, ParticleType.ON_TOP, sizeV);
 		this.addAttribute(new EntityDirectionMovementAttribute(velocity));
 		this.addAttribute(new EntityChainAttribute([
 			new EntityTimedAttribute(duration),
