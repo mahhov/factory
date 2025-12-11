@@ -22,8 +22,8 @@ export default class Vector {
 		return new Vector(x, y);
 	}
 
-	static fromAngle(angle: number) {
-		return new Vector(util.cos(angle), util.sin(angle));
+	static fromAngle(degrees: number) {
+		return new Vector(util.cos(degrees), util.sin(degrees));
 	}
 
 	static rand(min: number, max: number) {
@@ -56,6 +56,10 @@ export default class Vector {
 
 	get invert() {
 		return this.invert_ ??= new Vector(1 / this.x, 1 / this.y);
+	}
+
+	get angle() {
+		return Math.atan2(this.y, this.x);
 	}
 
 	equals(v: Vector) {

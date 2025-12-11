@@ -1537,6 +1537,24 @@ export class EntityCirclePathParticleAttribute extends EntityAttribute {
 	}
 }
 
+export class EntityRotateTowardsParticleAttribute extends EntityAttribute {
+	private readonly particleWrapper: ParticleWrapper;
+	private readonly findTargetAttribute: EntityFindTargetAttribute;
+
+	constructor(particleWrapper: ParticleWrapper, findTargetAttribute: EntityFindTargetAttribute) {
+		super();
+		this.particleWrapper = particleWrapper;
+		this.findTargetAttribute = findTargetAttribute;
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		let target = this.findTargetAttribute.targets[0][0];
+		let delta = target.subtract(tile.position);
+		this.particleWrapper.particle.rotation = .5 * Math.PI + delta.angle;
+		this.tickResult = TickResult.DONE;
+	}
+}
+
 export class EntitySpawnParticleAttribute extends EntityAttribute {
 	private readonly count: number;
 	private readonly topLeft: Vector;

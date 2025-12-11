@@ -39,6 +39,7 @@ import {
 	EntityPowerStorageAttribute,
 	EntityPowerStorageAttributePriority,
 	EntityRotateParticleAttribute,
+	EntityRotateTowardsParticleAttribute,
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
 	EntityTransportAttribute,
@@ -483,9 +484,13 @@ export default class EntityCreator {
 		let materialStorageAttribute = new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, [new ResourceUtils.Count(Material.IRON, 10)], util.enumValues(Rotation), false);
 		entity.addAttribute(materialStorageAttribute);
 		let findTargetAttribute = new EntityFindTargetAttribute(16, 3, true, false);
+		let particleWrapper = entity.addParticle(generatedTextures.shrapnelTurretTop.textures[0], ParticleType.ROTATE, entity.size, entity.size.scale(.5));
+		particleWrapper.particle.anchorX = .5;
+		particleWrapper.particle.anchorY = .5;
 		entity.addAttribute(new EntityIfElseAttribute(
 			findTargetAttribute,
 			new EntityChainAttribute([
+				new EntityRotateTowardsParticleAttribute(particleWrapper, findTargetAttribute),
 				new EntityMaterialConsumeAttribute(materialStorageAttribute, [new ResourceUtils.Count(Material.IRON, 1)]),
 				new EntitySpawnProjectileAttribute(findTargetAttribute, 3, 0, .4, 40, .2, 10, 10, true),
 				new EntityTimedAttribute(40 / 4),

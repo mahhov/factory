@@ -655,6 +655,8 @@ export let generatedTextures = {
 		[11, 2, 3, 3, textureColors.cornerGrey],
 		[2, 11, 3, 3, textureColors.cornerGrey],
 		[11, 11, 3, 3, textureColors.cornerGrey],
+	]]),
+	shrapnelTurretTop: new AnimatedGeneratedTextures(16, [[
 		[3, 3, 10, 10, textureColors.wallGrey],
 		[4, 4, 8, 8, textureColors.tier1],
 		[6, 5, 1, 1, textureColors.wallGrey],
