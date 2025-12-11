@@ -1,7 +1,6 @@
 import {Application, Rectangle} from 'pixi.js';
 import Camera from './Camera.js';
 import Painter from './graphics/Painter.js';
-import SpriteLoader from './graphics/SpriteLoader.js';
 import Controller from './ui/Controller.js';
 import {Input} from './ui/Input.js';
 import MultilineText, {Anchor} from './ui/MultilineText.js';
@@ -53,7 +52,6 @@ let app = new Application();
 await app.init({background: 'black'});
 app.stage.eventMode = 'static';
 document.body.appendChild(app.canvas);
-await SpriteLoader.init(app.renderer);
 let painter = new Painter(app.stage);
 painter.addListener('resize', (size: Vector) => fpsText.position = new Vector(size.x / painter.minCanvasSize, 0));
 let camera = new Camera(painter, new Vector(.45), .1);

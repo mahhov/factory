@@ -456,8 +456,7 @@ export default class EntityCreator {
 	}
 
 	private static createToolWall(metadata: ParsedLine<typeof sectionFields.buildings>) {
-		let entity = this.createBuilding(metadata);
-		return entity;
+		return this.createBuilding(metadata);
 	}
 
 	private static createToolTurret(metadata: ParsedLine<typeof sectionFields.turrets>) {

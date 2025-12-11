@@ -42,12 +42,10 @@ class ParameterizedGeneratedTexture<T extends any[]> {
 
 class SizedParameterizedGeneratedTexture<T extends any[]> extends ParameterizedGeneratedTexture<T> {
 	protected readonly size: number;
-	private readonly rectsHandler: (...params: T) => [number, number, number, number, string][];
 
 	constructor(size: number, rectsHandler: (...params: T) => [number, number, number, number, string][]) {
 		super((...params: T) => rectToTexture(size, rectsHandler(...params)));
 		this.size = size;
-		this.rectsHandler = rectsHandler;
 	}
 }
 
@@ -647,6 +645,7 @@ export let generatedTextures = {
 		[11, 11, 2, 2, textureColors.axilGrey],
 		[6, 6, 4, 4, textureColors.plasteel],
 	]]),
+
 	shrapnelTurret: new AnimatedGeneratedTextures(16, [[
 		[1, 1, 5, 5, textureColors.wallGrey],
 		[10, 1, 5, 5, textureColors.wallGrey],
