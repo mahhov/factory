@@ -187,6 +187,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 	}
 
 	private addToolUiButton(coordinates: [number, number][], iconContainer: Container, spriteContainer: Container, textContainer: Container, text: string) {
+		// todo support particles
 		[spriteContainer.x, spriteContainer.y] = coordinates[0];
 		[spriteContainer.width, spriteContainer.height] = coordinates[1];
 		iconContainer.addChild(spriteContainer);

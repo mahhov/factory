@@ -45,7 +45,7 @@ export class Entity implements Tileable {
 	readonly rotation: Rotation;
 	private readonly attribute = new EntityParallelAttribute([]);
 	private readonly attributesMap: Record<string, EntityAttribute[]> = {};
-	container: Container | null = null;
+	container: Container | null = null; // todo only ever contains 1 sprite. maybe replace with sprite
 	particleWrappers: ParticleWrapper[] = [];
 
 	constructor(name: string, description: string, size: Vector = Vector.V1, rotation: Rotation = Rotation.UP, tilingSize: Vector = size) {

@@ -38,24 +38,23 @@ export interface Tileable {
 export class SpriteHolder implements Tileable {
 	private entity!: Entity;
 	rotation!: Rotation;
-	private sprite: Sprite | null = null;
 	readonly container = new Container();
-	readonly particleWrappers: ParticleWrapper[] = [];
+	particleWrappers: ParticleWrapper[] = [];
 
 	setEntity(entity: Entity, rotation: Rotation) {
 		if (this.entity?.name !== entity.name) {
 			this.entity = entity;
 			this.rotation = rotation;
-			this.sprite = this.entity.container?.children[0] ? new Sprite((this.entity.container.children[0] as Sprite).texture) : null;
-			if (this.sprite)
-				Entity.rotateSprite(this.sprite, rotation);
 			this.container.removeChildren();
-			if (this.sprite)
-				this.container.addChild(this.sprite);
+			this.entity.container?.children.forEach(sprite => {
+				let spriteCopy = new Sprite((sprite as Sprite).texture);
+				Entity.rotateSprite(spriteCopy, rotation);
+				this.container.addChild(spriteCopy);
+			});
+			this.particleWrappers = entity.particleWrappers.map(particleWrapper => new ParticleWrapper(new Particle(particleWrapper.particle), particleWrapper.type, particleWrapper.position));
 		} else if (this.rotation !== rotation) {
 			this.rotation = rotation;
-			if (this.sprite)
-				Entity.rotateSprite(this.sprite, rotation);
+			this.container.children.forEach(sprite => Entity.rotateSprite(sprite as Sprite, rotation));
 		}
 		return this;
 	}
@@ -95,7 +94,7 @@ abstract class WorldLayer {
 	readonly size: Vector;
 	readonly container = new Container();
 	readonly spriteContainer = new Container();
-	private readonly particleContainers: Record<string, ParticleContainer> = {};
+	protected readonly particleContainers: Record<string, ParticleContainer> = {};
 
 	constructor(size: Vector) {
 		this.size = size;
@@ -226,8 +225,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 	clearAllEntities() {
 		this.grid.forEach(column => column.forEach(tile => tile.tileable = this.defaultTileable));
 		this.spriteContainer.removeChildren();
-		// doesn't add default grid to `this.container`
-		// doesn't clear particle containers
+		Object.values(this.particleContainers).forEach(particleContainer => particleContainer.removeParticles());
 	}
 }
 
