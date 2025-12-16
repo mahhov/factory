@@ -1,4 +1,4 @@
-import {Container, Graphics, Text} from 'pixi.js';
+import {Container, Graphics, Sprite, Text} from 'pixi.js';
 import Camera from '../Camera.js';
 import Painter from '../graphics/Painter.js';
 import uiColors from '../graphics/uiColors.js';
@@ -141,11 +141,11 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			Object.values(toolTree).forEach((tools, i) => {
 				let coordinates = Placer.toolUiCoordinates(true, i);
 				let entity = EntityCreator.createToolEntity(tools[0]);
-				this.addToolUiButton(coordinates, this.toolGroupIconContainer, entity, this.toolGroupTextContainer, '^' + (i + 1));
-				entity.container!.eventMode = 'static';
-				entity.container!.onclick = () => this.setToolGroupIndex(i);
-				entity.container!.onmouseenter = () => this.showToolGroupTooltip(i);
-				entity.container!.onmouseleave = () => this.hideTooltip();
+				let container = this.addToolUiButton(coordinates, this.toolGroupIconContainer, entity, this.toolGroupTextContainer, '^' + (i + 1));
+				container.eventMode = 'static';
+				container.onclick = () => this.setToolGroupIndex(i);
+				container.onmouseenter = () => this.showToolGroupTooltip(i);
+				container.onmouseleave = () => this.hideTooltip();
 			});
 		}
 
@@ -160,11 +160,11 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			toolTree[toolGroup].forEach((tool, i) => {
 				let coordinates = Placer.toolUiCoordinates(false, i);
 				let entity = EntityCreator.cachedToolEntities[tool];
-				this.addToolUiButton(coordinates, this.toolIconContainer, entity, this.toolTextContainer, String(i + 1));
-				entity.container!.eventMode = 'static';
-				entity.container!.onclick = () => this.toggleToolIndex(i);
-				entity.container!.onmouseenter = () => this.showToolTooltip(i);
-				entity.container!.onmouseleave = () => this.hideTooltip();
+				let container = this.addToolUiButton(coordinates, this.toolIconContainer, entity, this.toolTextContainer, String(i + 1));
+				container.eventMode = 'static';
+				container.onclick = () => this.toggleToolIndex(i);
+				container.onmouseenter = () => this.showToolTooltip(i);
+				container.onmouseleave = () => this.hideTooltip();
 			});
 		}
 
@@ -188,11 +188,24 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 	}
 
 	private addToolUiButton(coordinates: [number, number][], iconContainer: Container, entity: Entity, textContainer: Container, text: string) {
-		// todo support particles
-		let spriteContainer = entity.container!;
-		[spriteContainer.x, spriteContainer.y] = coordinates[0];
-		[spriteContainer.width, spriteContainer.height] = coordinates[1];
-		iconContainer.addChild(spriteContainer);
+		let container = new Container();
+		[entity.container!.width, entity.container!.height] = [entity.size.x, entity.size.y];
+		container.addChild(entity.container!);
+		for (let i = entity.particleWrappers.length - 1; i >= 0; i--) {
+			let particleWrapper = entity.particleWrappers[i];
+			let particleSprite = new Sprite(particleWrapper.particle.texture);
+			let scale = new Vector(particleWrapper.particle.scaleX, particleWrapper.particle.scaleY);
+			let textureSize = new Vector(particleWrapper.particle.texture.width, particleWrapper.particle.texture.height);
+			let anchor = new Vector(particleWrapper.particle.anchorX, particleWrapper.particle.anchorY);
+			let particleSize = scale.multiply(textureSize);
+			particleSprite.position = particleWrapper.position.subtract(particleSize.multiply(anchor));
+			[particleSprite.width, particleSprite.height] = [particleSize.x, particleSize.y];
+			container.addChild(particleSprite);
+		}
+		[container.x, container.y] = coordinates[0];
+		[container.width, container.height] = coordinates[1];
+		iconContainer.addChild(container);
+
 		textContainer.addChild(new Text({
 			text,
 			style: {
@@ -203,6 +216,8 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 			x: coordinates[0][0] * 1000 + 1,
 			y: coordinates[0][1] * 1000 - 1,
 		}));
+
+		return container;
 	}
 
 	rotate(delta: number) {

@@ -98,7 +98,7 @@ export class Entity implements Tileable {
 	}
 
 	// positioned and sized with tile coordinates
-	addParticle(texture: Texture, type: ParticleType, size: Vector, position = Vector.V0, world?: World) {
+	addParticle(texture: Texture, type: ParticleType, size: Vector, position: Vector, world?: World) {
 		let particle = new Particle(texture);
 		particle.scaleX = size.x / texture.width;
 		particle.scaleY = size.y / texture.height;
@@ -175,7 +175,7 @@ export class MaterialDeposit extends Entity {
 	constructor(material: Material) {
 		super('', '');
 		this.material = material;
-		this.addParticle(this.texture, ParticleType.DEFAULT, Vector.V1);
+		this.addParticle(this.texture, ParticleType.DEFAULT, Vector.V1, Vector.V0);
 		this.addAttribute(new EntityMaterialDisplayAttribute(material));
 	}
 
@@ -220,7 +220,7 @@ export class LiquidDeposit extends Entity {
 	constructor(liquid: Liquid) {
 		super('', '');
 		this.liquid = liquid;
-		this.addParticle(this.texture, ParticleType.DEFAULT, Vector.V1);
+		this.addParticle(this.texture, ParticleType.DEFAULT, Vector.V1, Vector.V0);
 		this.addAttribute(new EntityLiquidDisplayAttribute(liquid));
 	}
 
@@ -250,7 +250,7 @@ export class ProjectileMob extends Entity {
 	constructor(size: number, health: number, movementSpeed: number, visualRange: number, attackRange: number, projectileCount: number, projectileDamageSize: number, projectileSpeed: number, projectileCollisionSize: number, projectileDamage: number, projectileAttackLatency: number, projectileSpreadDegrees: number) {
 		let sizeV = new Vector(size);
 		super('Projectile Mob', '', sizeV);
-		this.addParticle(generatedTextures.swarmDrone.textures[0], ParticleType.ON_TOP, sizeV);
+		this.addParticle(generatedTextures.swarmDrone.textures[0], ParticleType.ON_TOP, sizeV, Vector.V0);
 		let mobHerdPositionAttribute = new EntityMobHerdPositionAttribute(movementSpeed);
 		this.addAttribute(mobHerdPositionAttribute);
 		let findTargetAttribute = new EntityFindTargetAttribute(visualRange, 1, false, true);
@@ -274,7 +274,7 @@ export class Projectile extends Entity {
 	constructor(velocity: Vector, damageSize: number, duration: number, collisionSize: number, damage: number, sourceFriendly: boolean) {
 		let collisionSizeV = new Vector(collisionSize);
 		super('Projectile', '', collisionSizeV);
-		this.addParticle(generatedTextures.fullRect.texture(sourceFriendly ? uiColors.PROJECTILE_BLUE : uiColors.PROJECTILE_RED), ParticleType.ON_TOP, collisionSizeV);
+		this.addParticle(generatedTextures.fullRect.texture(sourceFriendly ? uiColors.PROJECTILE_BLUE : uiColors.PROJECTILE_RED), ParticleType.ON_TOP, collisionSizeV, Vector.V0);
 		// todo homing projectile
 		this.addAttribute(new EntityDirectionMovementAttribute(velocity));
 		let collisionFindTargetAttribute = new EntityFindTargetAttribute(collisionSize, 1, sourceFriendly, !sourceFriendly);
@@ -298,7 +298,7 @@ export class ParticleEntity extends Entity {
 	constructor(velocity: Vector, size: number, duration: number, texture: Texture) {
 		let sizeV = new Vector(size);
 		super('Particle', '', sizeV);
-		this.addParticle(texture, ParticleType.ON_TOP, sizeV);
+		this.addParticle(texture, ParticleType.ON_TOP, sizeV, Vector.V0);
 		this.addAttribute(new EntityDirectionMovementAttribute(velocity));
 		this.addAttribute(new EntityChainAttribute([
 			new EntityTimedAttribute(duration),

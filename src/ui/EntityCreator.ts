@@ -276,11 +276,11 @@ export default class EntityCreator {
 			[[textureColors.tier1Secondary], 10],
 			[[textureColors.tier2Secondary], 20],
 			[[textureColors.tier3Secondary], 40],
-			[[textureColors.tier4, textureColors.tier4Secondary], 80],
+			[[textureColors.tier4Secondary, textureColors.tier4], 80],
 		][tier] as [string[], number];
 		colorsSlow[0].forEach((color, i) => {
 			let center = entity.size.scale(.5);
-			let size = i ? center : entity.size;
+			let size = i === colorsSlow[0].length - 1 ? entity.size : center;
 			let particleWrapper = entity.addParticle(generatedTextures.extractorTop.texture(size.x * 8, color), ParticleType.ROTATE, size, center);
 			particleWrapper.particle.anchorX = .5;
 			particleWrapper.particle.anchorY = .5;
@@ -356,7 +356,7 @@ export default class EntityCreator {
 		let size = new Vector(colorSizeAreaSlow[1]);
 		let area = new Vector(colorSizeAreaSlow[2] - colorSizeAreaSlow[1]);
 		let centeredCorner = entity.size.subtract(size).scale(.5);
-		let particleWrapper = entity.addParticle(generatedTextures.fullRect.texture(colorSizeAreaSlow[0]), ParticleType.DEFAULT, size);
+		let particleWrapper = entity.addParticle(generatedTextures.fullRect.texture(colorSizeAreaSlow[0]), ParticleType.DEFAULT, size, centeredCorner);
 		entity.addAttribute(new EntityCirclePathParticleAttribute(particleWrapper, centeredCorner, area, timedAttribute, colorSizeAreaSlow[3], true));
 		return entity;
 	}
