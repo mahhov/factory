@@ -78,8 +78,8 @@ export default class Vector {
 		return this.x <= v.x && this.y <= v.y;
 	}
 
-	boundBy(minInclusive: Vector, maxExclusive: Vector) {
-		return this.atLeast(minInclusive) && this.lessThan(maxExclusive);
+	boundBy(minInclusive: Vector, maxInclusive: Vector) {
+		return this.atLeast(minInclusive) && this.atMost(maxInclusive);
 	}
 
 	min(v: Vector) {

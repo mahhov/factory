@@ -208,7 +208,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 	}
 
 	inBounds(position: Vector, size: Vector) {
-		return position.boundBy(Vector.V0, this.size.subtract(size).add(Vector.V1));
+		return position.boundBy(Vector.V0, this.size.subtract(size));
 	}
 
 	getTileUnchecked(position: Vector): Tile<T> {
@@ -340,7 +340,7 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 		this.chunkOverlays.forEach(chunkOverlay => chunkOverlay.update(position, tile));
 		tile.position = position;
 		tile.tileable.particleWrappers.forEach(particleWrapper => {
-			position = position.subtract(tile.tileable.size.scale(.5));
+			position = position.add(particleWrapper.position);
 			particleWrapper.particle.x = position.x;
 			particleWrapper.particle.y = position.y;
 		});
@@ -355,8 +355,7 @@ export class FreeWorldLayer<T extends Tileable> extends WorldLayer {
 	}
 
 	inBounds(position: Vector, size: Vector) {
-		let halfSize = size.scale(.5);
-		return position.boundBy(halfSize, this.size.subtract(halfSize));
+		return position.boundBy(Vector.V0, this.size.subtract(size));
 	}
 
 	addChunkOverlay<S>(chunkSize: number, mapper: (t: T) => S | undefined) {
@@ -476,6 +475,3 @@ export class World {
 		this.free.tiles.forEach(tile => tile.tileable.tick(this, tile));
 	}
 }
-
-// todo building animation
-// todo some blocks not taking damage

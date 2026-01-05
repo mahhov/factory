@@ -1291,7 +1291,8 @@ export class EntityMobMoveTowardsPositionAttribute extends EntityAttribute {
 
 	tick(world: World, tile: Tile<Entity>): void {
 		console.assert(this.findTargetAttribute.targets.length > 0);
-		let delta = this.findTargetAttribute.targets[0][0].subtract(tile.position);
+		let mobCenter = tile.position.add(tile.tileable.size.scale(.5));
+		let delta = this.findTargetAttribute.targets[0][0].subtract(mobCenter);
 		if (delta.magnitude2 <= this.distance2) {
 			this.tickResult = TickResult.DONE;
 			return;
@@ -1344,11 +1345,12 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 			let chunks = world.freeMobHerdPositionAttributeOverlay.chunkRange(position.subtract(rangeV), position.add(rangeV));
 			for (let chunk of chunks)
 				for (let [tile, _] of chunk) {
-					let delta = tile.position.subtract(position);
+					let targetCenterPosition = tile.position.add(tile.tileable.size.scale(.5));
+					let delta = targetCenterPosition.subtract(position);
 					if (delta.magnitude2 >= range2) continue;
 					let healthAttribute = tile.tileable.getAttribute(EntityHealthAttribute);
 					if (!healthAttribute || healthAttribute.sourceFriendly) continue;
-					targets.push([tile.position, tile.tileable]);
+					targets.push([targetCenterPosition, tile.tileable]);
 					if (targets.length === limit)
 						return targets;
 				}
@@ -1357,7 +1359,7 @@ export class EntityFindTargetAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		let position = this.sourceFriendly ? tile.position.add(tile.tileable.size.scale(.5)) : tile.position;
+		let position = tile.position.add(tile.tileable.size.scale(.5));
 		this.targets = EntityFindTargetAttribute.findTargetsWithinRange(position, this.range, this.numTargets, this.targetFriendly, world);
 		if (this.targets.length)
 			this.tickResult = TickResult.DONE;
