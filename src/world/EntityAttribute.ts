@@ -546,7 +546,7 @@ export class EntityMaterialStorageAttribute extends EntityAttribute {
 		let line = this.totalCapacity === Infinity ?
 			materialRatiosString(this.capacities
 				.filter(materialCount => this.quantities[materialCount.resource])
-				.map(materialCount => [materialCount.resource, this.quantities[materialCount.resource], materialCount.quantity])).join('\n') :
+				.map(materialCount => [materialCount.resource, Math.floor(this.quantities[materialCount.resource] * 100) / 100, materialCount.quantity])).join('\n') :
 			materialCountsString(this.quantityCounts);
 		return line ? [new TextLine(line)] : [];
 	}
