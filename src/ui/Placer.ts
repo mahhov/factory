@@ -253,6 +253,7 @@ export default class Placer extends Emitter<{ toolChanged: void }> {
 		if (!this.started) return;
 		this.started = false;
 		this.place(this.world, false, false);
+		this.endPosition = this.startPosition = this.position;
 		if (this.tool === Tool.CLEAR)
 			this.tool = Tool.EMPTY;
 	}

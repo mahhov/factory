@@ -478,5 +478,4 @@ export class World {
 }
 
 // todo building animation
-// todo fix bug with placer rotation
 // todo some blocks not taking damage
