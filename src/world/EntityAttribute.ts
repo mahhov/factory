@@ -191,7 +191,7 @@ export class EntityBuildableAttribute extends EntityAttribute {
 export class EntityHealthAttribute extends EntityAttribute {
 	private readonly maxHealth: number;
 	private lastHealth: number;
-	health: number;
+	private health: number;
 	readonly sourceFriendly: boolean;
 	private particleWrapper: ParticleWrapper | null = null;
 
@@ -236,6 +236,12 @@ export class EntityHealthAttribute extends EntityAttribute {
 
 	get selectable(): boolean {
 		return true;
+	}
+
+	changeHealth(amount: number) {
+		let oldHealth = this.health
+		this.health = util.clamp(this.health + amount, 0, this.maxHealth);
+		return oldHealth !== this.health
 	}
 }
 
@@ -1215,6 +1221,24 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 	}
 }
 
+export class EntityHealAttribute extends EntityAttribute {
+	private readonly healthAttribute: EntityHealthAttribute;
+	private readonly amount: number
+
+
+	constructor(healthAttribute: EntityHealthAttribute, amount: number) {
+		super();
+		console.assert(amount > 0);
+		this.healthAttribute = healthAttribute;
+		this.amount = amount;
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		if (this.healthAttribute.changeHealth(this.amount))
+			this.tickResult = TickResult.DONE;
+	}
+}
+
 // Mob attributes
 
 export class EntityMobHerdPositionAttribute extends EntityAttribute {
@@ -1378,7 +1402,7 @@ export class EntityDamageTargetAttribute extends EntityAttribute {
 		let targets = this.findTargetAttribute.targets;
 		targets.forEach(target => {
 			let healthAttribute = target[1].getAttribute(EntityHealthAttribute)!;
-			healthAttribute.health = Math.max(healthAttribute!.health - this.damage, 0);
+			healthAttribute.changeHealth(-this.damage);
 		});
 		this.tickResult = TickResult.DONE;
 	}

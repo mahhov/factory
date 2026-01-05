@@ -13,6 +13,7 @@ import {
 	EntityDirectionMovementAttribute,
 	EntityExpireProjectileAttribute,
 	EntityFindTargetAttribute,
+	EntityHealAttribute,
 	EntityHealthAttribute,
 	EntityIfElseAttribute,
 	EntityLiquidDisplayAttribute,
@@ -164,7 +165,13 @@ export class Clear extends Entity {
 export class Base extends Entity {
 	constructor() {
 		super('Base', '', new Vector(5));
-		this.addAttribute(new EntityHealthAttribute(4000, true));
+		let healthAttribute = new EntityHealthAttribute(4000, true);
+		this.addAttribute(healthAttribute);
+		this.addAttribute(new EntityChainAttribute([
+			new EntityTimedAttribute(standardDuration),
+			new EntityHealAttribute(healthAttribute, 10),
+		]));
+
 		this.addAttribute(new EntityMaterialStorageAttribute(EntityMaterialStorageAttributeType.NORMAL, Infinity, getMaterialCounts(util.debug ? 500000 : 2000), util.enumValues(Rotation), true));
 	}
 }
