@@ -267,6 +267,32 @@ export class EntityTimedAttribute extends EntityAttribute {
 	}
 }
 
+export class EntityRandomTimedAttribute extends EntityAttribute {
+	private readonly min: number;
+	private readonly max: number;
+	private readonly counter: Counter;
+
+	constructor(min: number, max: number) {
+		super();
+		console.assert(min >= 0);
+		console.assert(min < max);
+		this.min = min;
+		this.max = max;
+		this.counter = new Counter(this.rand);
+	}
+
+	private get rand() {
+		return util.randInt(this.min, this.max);
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		if (this.counter.tick()) {
+			this.counter.resize(this.rand);
+			this.tickResult = TickResult.DONE;
+		}
+	}
+}
+
 export class EntityRandomAttribute extends EntityAttribute {
 	private readonly frequency: number;
 
