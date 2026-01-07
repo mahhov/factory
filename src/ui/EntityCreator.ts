@@ -2,7 +2,7 @@ import {AnimatedSprite} from 'pixi.js';
 import {generatedTextures, textureColors} from '../graphics/generatedTextures.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
-import {Clear, Empty, Entity, getMaterialCounts, ProjectileMob, standardDuration} from '../world/Entity.js';
+import {Clear, Empty, Entity, getMaterialCounts, PortalMob, ProjectileMob, standardDuration} from '../world/Entity.js';
 import {
 	EntityAnimateSpriteAttribute,
 	EntityAttribute,
@@ -76,6 +76,7 @@ export enum MobType {
 	BEHEMOTH,
 	BOMBER,
 	HARVESTER,
+	PORTAL,
 }
 
 export default class EntityCreator {
@@ -521,6 +522,8 @@ export default class EntityCreator {
 				return EntityCreator.createProjectileMob(findEntityMetadata('mobs', 'Bomber')); // todo
 			case MobType.HARVESTER:
 				return EntityCreator.createProjectileMob(findEntityMetadata('mobs', 'Harvester')); // todo
+			case MobType.PORTAL:
+				return EntityCreator.createPortalMob(findEntityMetadata('mobs', 'Portal')); // todo
 		}
 	}
 
@@ -562,6 +565,10 @@ export default class EntityCreator {
 
 	private static createProjectileMob(metadata: ParsedLine<typeof sectionFields.mobs>) {
 		return new ProjectileMob(metadata.size, metadata.health, metadata.movementSpeed, 20, metadata.range, metadata.count, metadata.damageSize, metadata.projectileSpeed, metadata.collisionWidth, metadata.damage, metadata.attackLatency, 0);
+	}
+
+	private static createPortalMob(metadata: ParsedLine<typeof sectionFields.mobs>) {
+		return new PortalMob(metadata.size, metadata.health, .05, .05, .05);
 	}
 }
 

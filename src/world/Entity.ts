@@ -25,6 +25,8 @@ import {
 	EntityMobMoveTowardsPositionAttribute,
 	EntityNameAttribute,
 	EntityParallelAttribute,
+	EntityRandomAttribute,
+	EntitySpawnMobAttribute,
 	EntitySpawnParticleAttribute,
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
@@ -273,6 +275,22 @@ export class ProjectileMob extends Entity {
 				new EntityMobHerdPositionActivateAttribute(mobHerdPositionAttribute, true),
 				new EntityTimedAttribute(standardDuration),
 			])));
+		this.addAttribute(new EntityHealthAttribute(health, false));
+	}
+}
+
+export class PortalMob extends Entity {
+	// todo spread frequency, magnify frequency, spawn cluster attributes, and share with MobLayer
+	constructor(size: number, health: number, spawnFrequency: number, spreadFrequency: number, magnifyFrequency: number) {
+		let sizeV = new Vector(size);
+		super('Portal Mob', '', sizeV);
+		this.addParticle(generatedTextures.hive.textures[0], ParticleType.ON_TOP, sizeV, Vector.V0);
+		this.addAttribute(new EntityChainAttribute([
+			new EntityTimedAttribute(standardDuration),
+			new EntityRandomAttribute(spawnFrequency),
+			// todo use spawn mob attribute in MobLogic
+			new EntitySpawnMobAttribute(),
+		]))
 		this.addAttribute(new EntityHealthAttribute(health, false));
 	}
 }

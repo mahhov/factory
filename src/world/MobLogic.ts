@@ -62,8 +62,6 @@ class Spawner {
 			sleeps.push(sleep);
 		}
 
-		new SpawnerStage(300 * 100, 0, 0, 0);
-
 		this.stages = sleeps.map((sleep, i) => {
 			let mobs = Math.round(10 * i ** 1.1);
 			let clusters = 1 + Math.round(i ** .75);
@@ -78,6 +76,8 @@ class Spawner {
 		console.assert(delta.atLeast(Vector.V1));
 		for (let i = 0; i < stage.clusterCount; i++) {
 			let spawnCenter = min.add(util.perimeter(delta, util.rand(0, 1)));
+			if (stage.mobsPerCluster)
+				free.addTileable(spawnCenter, EntityCreator.createMobEntity(MobType.PORTAL))
 			for (let j = 0; j < stage.mobsPerCluster; j++) {
 				let offset = Vector.rand(-stage.clusterRadius, stage.clusterRadius);
 				free.addTileable(spawnCenter.add(offset), EntityCreator.createMobEntity(MobType.SWARM_DRONE));

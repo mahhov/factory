@@ -9,6 +9,7 @@ import {Empty, Entity, LiquidDeposit, MaterialDeposit, ParticleEntity, Projectil
 import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {ParticleType, ParticleWrapper, Tile, World} from './World.js';
+import EntityCreator, {MobType} from "../ui/EntityCreator.js";
 
 export enum TooltipType {
 	PLACER, WORLD
@@ -263,6 +264,21 @@ export class EntityTimedAttribute extends EntityAttribute {
 		return type === TooltipType.PLACER ?
 			[] :
 			[new TextLine(`Progress ${util.textPercent(this.counter.ratio)}`)];
+	}
+}
+
+export class EntityRandomAttribute extends EntityAttribute {
+	private readonly frequency: number;
+
+	constructor(frequency: number) {
+		super();
+		console.assert(frequency > 0 && frequency < 1);
+		this.frequency = frequency
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		if (util.rand(0, 1) < this.frequency)
+			this.tickResult = TickResult.DONE;
 	}
 }
 
@@ -1240,6 +1256,14 @@ export class EntityHealAttribute extends EntityAttribute {
 }
 
 // Mob attributes
+
+export class EntitySpawnMobAttribute extends EntityAttribute {
+	tick(world: World, tile: Tile<Entity>): void {
+		console.log('spawn')
+		world.free.addTileable(tile.position, EntityCreator.createMobEntity(MobType.SWARM_DRONE));
+		this.tickResult = TickResult.DONE;
+	}
+}
 
 export class EntityMobHerdPositionAttribute extends EntityAttribute {
 	newPosition: Vector = Vector.V0;
