@@ -290,7 +290,7 @@ export class PortalMob extends Entity {
 			new EntityTimedAttribute(standardDuration),
 			new EntityRandomAttribute(spawnFrequency),
 			new EntitySpawnMobAttribute(MobType.SWARM_DRONE, 10, 0),
-		]))
+		]));
 		this.addAttribute(new EntityHealthAttribute(health, false));
 	}
 }

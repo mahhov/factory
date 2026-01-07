@@ -1,6 +1,7 @@
 import {AnimatedSprite, Texture} from 'pixi.js';
 import {generatedTextures} from '../graphics/generatedTextures.js';
 import uiColors from '../graphics/uiColors.js';
+import EntityCreator, {MobType} from '../ui/EntityCreator.js';
 import TextLine from '../ui/TextLine.js';
 import Counter from '../util/Counter.js';
 import util from '../util/util.js';
@@ -9,7 +10,6 @@ import {Empty, Entity, LiquidDeposit, MaterialDeposit, ParticleEntity, Projectil
 import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
 import {FreeWorldLayer, ParticleType, ParticleWrapper, Tile, World} from './World.js';
-import EntityCreator, {MobType} from "../ui/EntityCreator.js";
 
 export enum TooltipType {
 	PLACER, WORLD
@@ -240,9 +240,9 @@ export class EntityHealthAttribute extends EntityAttribute {
 	}
 
 	changeHealth(amount: number) {
-		let oldHealth = this.health
+		let oldHealth = this.health;
 		this.health = util.clamp(this.health + amount, 0, this.maxHealth);
-		return oldHealth !== this.health
+		return oldHealth !== this.health;
 	}
 }
 
@@ -273,7 +273,7 @@ export class EntityRandomAttribute extends EntityAttribute {
 	constructor(frequency: number) {
 		super();
 		console.assert(frequency > 0 && frequency < 1);
-		this.frequency = frequency
+		this.frequency = frequency;
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
@@ -1239,7 +1239,7 @@ export class EntitySpawnProjectileAttribute extends EntityAttribute {
 
 export class EntityHealAttribute extends EntityAttribute {
 	private readonly healthAttribute: EntityHealthAttribute;
-	private readonly amount: number
+	private readonly amount: number;
 
 
 	constructor(healthAttribute: EntityHealthAttribute, amount: number) {

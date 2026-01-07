@@ -1,5 +1,5 @@
 import Painter from '../graphics/Painter.js';
-import EntityCreator, {MobType} from '../ui/EntityCreator.js';
+import {MobType} from '../ui/EntityCreator.js';
 import MultilineText, {Anchor} from '../ui/MultilineText.js';
 import TextLine from '../ui/TextLine.js';
 import Counter from '../util/Counter.js';
