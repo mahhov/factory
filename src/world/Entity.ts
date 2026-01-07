@@ -1,6 +1,7 @@
 import {AnimatedSprite, Container, Particle, Sprite, Texture} from 'pixi.js';
 import {AnimatedGeneratedTextures, generatedTextures} from '../graphics/generatedTextures.js';
 import uiColors from '../graphics/uiColors.js';
+import {MobType} from '../ui/EntityCreator.js';
 import TextLine from '../ui/TextLine.js';
 import {toCamelCase} from '../util/stringCase.js';
 import util from '../util/util.js';
@@ -288,8 +289,7 @@ export class PortalMob extends Entity {
 		this.addAttribute(new EntityChainAttribute([
 			new EntityTimedAttribute(standardDuration),
 			new EntityRandomAttribute(spawnFrequency),
-			// todo use spawn mob attribute in MobLogic
-			new EntitySpawnMobAttribute(),
+			new EntitySpawnMobAttribute(MobType.SWARM_DRONE, 10, 0),
 		]))
 		this.addAttribute(new EntityHealthAttribute(health, false));
 	}

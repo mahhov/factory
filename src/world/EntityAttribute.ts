@@ -8,7 +8,7 @@ import Vector from '../util/Vector.js';
 import {Empty, Entity, LiquidDeposit, MaterialDeposit, ParticleEntity, Projectile} from './Entity.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
-import {ParticleType, ParticleWrapper, Tile, World} from './World.js';
+import {FreeWorldLayer, ParticleType, ParticleWrapper, Tile, World} from './World.js';
 import EntityCreator, {MobType} from "../ui/EntityCreator.js";
 
 export enum TooltipType {
@@ -1258,9 +1258,26 @@ export class EntityHealAttribute extends EntityAttribute {
 // Mob attributes
 
 export class EntitySpawnMobAttribute extends EntityAttribute {
+	private readonly mobType: MobType;
+	private readonly count: number;
+	private readonly radius: number;
+
+	constructor(mobType: MobType, count: number, radius: number) {
+		super();
+		this.mobType = mobType;
+		this.count = count;
+		this.radius = radius;
+	}
+
+	static spawn(free: FreeWorldLayer<any>, position: Vector, mobType: MobType, count: number, radius: number) {
+		for (let j = 0; j < count; j++) {
+			let offset = Vector.rand(-radius, radius);
+			free.addTileable(position.add(offset), EntityCreator.createMobEntity(mobType));
+		}
+	}
+
 	tick(world: World, tile: Tile<Entity>): void {
-		console.log('spawn')
-		world.free.addTileable(tile.position, EntityCreator.createMobEntity(MobType.SWARM_DRONE));
+		EntitySpawnMobAttribute.spawn(world.free, tile.position, this.mobType, this.count, this.radius);
 		this.tickResult = TickResult.DONE;
 	}
 }

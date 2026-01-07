@@ -6,7 +6,7 @@ import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Entity} from './Entity.js';
-import {EntityMobHerdPositionAttribute} from './EntityAttribute.js';
+import {EntityMobHerdPositionAttribute, EntitySpawnMobAttribute} from './EntityAttribute.js';
 import {FreeWorldLayer, FreeWorldLayerChunkOverlay, World} from './World.js';
 
 export default class MobLogic {
@@ -77,11 +77,8 @@ class Spawner {
 		for (let i = 0; i < stage.clusterCount; i++) {
 			let spawnCenter = min.add(util.perimeter(delta, util.rand(0, 1)));
 			if (stage.mobsPerCluster)
-				free.addTileable(spawnCenter, EntityCreator.createMobEntity(MobType.PORTAL))
-			for (let j = 0; j < stage.mobsPerCluster; j++) {
-				let offset = Vector.rand(-stage.clusterRadius, stage.clusterRadius);
-				free.addTileable(spawnCenter.add(offset), EntityCreator.createMobEntity(MobType.SWARM_DRONE));
-			}
+				EntitySpawnMobAttribute.spawn(free, spawnCenter, MobType.PORTAL, 1, 0);
+			EntitySpawnMobAttribute.spawn(free, spawnCenter, MobType.SWARM_DRONE, stage.mobsPerCluster, stage.clusterRadius);
 		}
 	}
 
