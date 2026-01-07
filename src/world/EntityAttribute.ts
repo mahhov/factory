@@ -1297,8 +1297,8 @@ export class EntitySpawnMobAttribute extends EntityAttribute {
 
 	static spawn(free: FreeWorldLayer<any>, position: Vector, mobType: MobType, count: number, radius: number) {
 		for (let j = 0; j < count; j++) {
-			let offset = Vector.rand(-radius, radius);
-			free.addTileable(position.add(offset), EntityCreator.createMobEntity(mobType));
+			let p = position.add(Vector.rand(-radius, radius)).clamp(Vector.V0, free.size.subtract(Vector.V1));
+			free.addTileable(p, EntityCreator.createMobEntity(mobType));
 		}
 	}
 
