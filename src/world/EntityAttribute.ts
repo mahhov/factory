@@ -1283,38 +1283,41 @@ export class EntityHealAttribute extends EntityAttribute {
 
 // Mob attributes
 
-export class EntitySpawnLiveMobAttribute extends EntityAttribute {
-	private readonly mobType: MobType;
-
-	constructor(mobType: MobType) {
-		super();
-		this.mobType = mobType;
-	}
-
-	// todo don't allow player to deconstruct live layer mobs
-	static spawn(live: LiveGridWorldLayer<Entity>, position: Vector, mobType: MobType) {
-		live.replaceTileable(position, EntityCreator.createMobEntity(mobType));
-	}
-
-	tick(world: World, tile: Tile<Entity>): void {
-		EntitySpawnLiveMobAttribute.spawn(world.live, tile.position, this.mobType);
-		this.tickResult = TickResult.DONE;
-	}
-}
-
-export class EntitySpawnFreeClusterMobAttribute extends EntityAttribute {
-	private readonly mobType: MobType;
-	private readonly count: number;
-	private readonly radius: number;
+export class EntitySpawnLiveMobsAttribute extends EntityAttribute {
+	protected readonly mobType: MobType;
+	protected readonly count: number;
+	protected readonly radius: number;
 
 	constructor(mobType: MobType, count: number, radius: number) {
 		super();
+		console.assert(count > 0);
+		console.assert(radius >= 0);
 		this.mobType = mobType;
 		this.count = count;
 		this.radius = radius;
 	}
 
-	static spawn(free: FreeWorldLayer<Entity>, position: Vector, mobType: MobType, count: number, radius: number) {
+	// todo don't allow player to deconstruct live layer mobs
+	static spawnLiveMobs(live: LiveGridWorldLayer<Entity>, position: Vector, mobType: MobType, count: number, radius: number) {
+		for (let j = 0; j < count; j++) {
+			let p = position.add(Vector.rand(-radius, radius + 1).floor).clamp(Vector.V0, live.size.subtract(Vector.V1));
+			if (live.getTileUnchecked(p).tileable.name === live.defaultTileable.name)
+				live.replaceTileable(p, EntityCreator.createMobEntity(mobType));
+		}
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		EntitySpawnLiveMobsAttribute.spawnLiveMobs(world.live, tile.position, this.mobType, this.count, this.radius);
+		this.tickResult = TickResult.DONE;
+	}
+}
+
+export class EntitySpawnFreeClusterMobsAttribute extends EntitySpawnLiveMobsAttribute {
+	constructor(mobType: MobType, count: number, radius: number) {
+		super(mobType, count, radius);
+	}
+
+	static spawnFreeClusterMobs(free: FreeWorldLayer<Entity>, position: Vector, mobType: MobType, count: number, radius: number) {
 		for (let j = 0; j < count; j++) {
 			let p = position.add(Vector.rand(-radius, radius)).clamp(Vector.V0, free.size.subtract(Vector.V1));
 			free.addTileable(p, EntityCreator.createMobEntity(mobType));
@@ -1322,7 +1325,7 @@ export class EntitySpawnFreeClusterMobAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		EntitySpawnFreeClusterMobAttribute.spawn(world.free, tile.position, this.mobType, this.count, this.radius);
+		EntitySpawnFreeClusterMobsAttribute.spawnFreeClusterMobs(world.free, tile.position, this.mobType, this.count, this.radius);
 		this.tickResult = TickResult.DONE;
 	}
 }

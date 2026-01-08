@@ -568,7 +568,7 @@ export default class EntityCreator {
 	}
 
 	private static createPortalMob(metadata: ParsedLine<typeof sectionFields.mobs>) {
-		return new PortalMob(metadata.size, metadata.health, 400, 1600, 3000, 9000, 400, 1600);
+		return new PortalMob(metadata.size, metadata.health, 400, 1600, 2000, 6000, 400, 1600);
 	}
 }
 

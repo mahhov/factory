@@ -6,7 +6,7 @@ import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Entity} from './Entity.js';
-import {EntityMobHerdPositionAttribute, EntitySpawnFreeClusterMobAttribute, EntitySpawnLiveMobAttribute} from './EntityAttribute.js';
+import {EntityMobHerdPositionAttribute, EntitySpawnFreeClusterMobsAttribute, EntitySpawnLiveMobsAttribute} from './EntityAttribute.js';
 import {FreeWorldLayerChunkOverlay, World} from './World.js';
 
 export default class MobLogic {
@@ -77,8 +77,8 @@ class Spawner {
 		for (let i = 0; i < stage.clusterCount; i++) {
 			let spawnCenter = min.add(util.perimeter(delta, util.rand(0, 1))).floor; // todo floor will bias towards top left
 			if (stage.mobsPerCluster)
-				EntitySpawnLiveMobAttribute.spawn(world.live, spawnCenter, MobType.PORTAL);
-			EntitySpawnFreeClusterMobAttribute.spawn(world.free, spawnCenter, MobType.SWARM_DRONE, stage.mobsPerCluster, stage.clusterRadius);
+				EntitySpawnLiveMobsAttribute.spawnLiveMobs(world.live, spawnCenter, MobType.PORTAL, 1, 0);
+			EntitySpawnFreeClusterMobsAttribute.spawnFreeClusterMobs(world.free, spawnCenter, MobType.SWARM_DRONE, stage.mobsPerCluster, stage.clusterRadius);
 		}
 	}
 

@@ -27,8 +27,8 @@ import {
 	EntityNameAttribute,
 	EntityParallelAttribute,
 	EntityRandomTimedAttribute,
-	EntitySpawnFreeClusterMobAttribute,
-	EntitySpawnLiveMobAttribute,
+	EntitySpawnFreeClusterMobsAttribute,
+	EntitySpawnLiveMobsAttribute,
 	EntitySpawnParticleAttribute,
 	EntitySpawnProjectileAttribute,
 	EntityTimedAttribute,
@@ -288,12 +288,11 @@ export class PortalMob extends Entity {
 		this.addParticle(generatedTextures.hive.textures[0], ParticleType.ON_TOP, sizeV, Vector.V0);
 		this.addAttribute(new EntityChainAttribute([
 			new EntityRandomTimedAttribute(spawnPeriodMin, spawnPeriodMax),
-			new EntitySpawnFreeClusterMobAttribute(MobType.SWARM_DRONE, 10, 2),
+			new EntitySpawnFreeClusterMobsAttribute(MobType.SWARM_DRONE, 10, 2),
 		]));
 		this.addAttribute(new EntityChainAttribute([
 			new EntityRandomTimedAttribute(spreadPeriodMin, spreadPeriodMax),
-			new EntitySpawnLiveMobAttribute(MobType.PORTAL),
-			// todo verify spread is working
+			new EntitySpawnLiveMobsAttribute(MobType.PORTAL, 1, 8),
 		]));
 		this.addAttribute(new EntityChainAttribute([
 			new EntityRandomTimedAttribute(magnifyPeriodMin, magnifyPeriodMax),
