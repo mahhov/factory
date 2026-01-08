@@ -170,7 +170,7 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 		}
 
 		this.addGraphics(tileable, position, tileable.size);
-		this.addedTile(position);
+		this.addedTile(this.getTileUnchecked(position));
 	}
 
 	private removeTile(tile: Tile<T>) {
@@ -186,12 +186,12 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 				tile.tileable = this.defaultTileable;
 			}
 		}
-		this.removedTile(originalPosition);
+		this.removedTile(this.getTileUnchecked(originalPosition));
 	}
 
-	protected removedTile(position: Vector) {}
+	protected removedTile(tile: Tile<T>) {}
 
-	protected addedTile(position: Vector) {}
+	protected addedTile(tile: Tile<T>) {}
 
 	addTileableUnchecked(position: Vector, tileable: T) {
 		// caller must make sure position is in bounds and empty
@@ -230,32 +230,32 @@ export class GridWorldLayer<T extends Tileable> extends WorldLayer {
 }
 
 export class LiveGridWorldLayer<T extends Tileable> extends GridWorldLayer<T> {
-	readonly nonEmptyPositions: Set<Vector> = new Set();
+	readonly nonEmptyTiles: Set<Tile<T>> = new Set();
 
-	protected removedTile(position: Vector) {
-		this.nonEmptyPositions.delete(position);
+	protected removedTile(tile: Tile<T>) {
+		this.nonEmptyTiles.delete(tile);
 	}
 
-	protected addedTile(position: Vector) {
-		this.nonEmptyPositions.add(position);
+	protected addedTile(tile: Tile<T>) {
+		this.nonEmptyTiles.add(tile);
 	}
 }
 
 export class OrderedGridWorldLayer<T extends Tileable> extends GridWorldLayer<T> {
-	order: Vector[] = [];
+	order: Tile<T>[] = [];
 
-	protected removedTile(position: Vector) {
-		let index = this.order.findIndex(orderedPosition => orderedPosition.equals(position));
+	protected removedTile(tile: Tile<T>) {
+		let index = this.order.indexOf(tile);
 		console.assert(index >= 0);
 		this.order.splice(index, 1);
 	}
 
-	protected addedTile(position: Vector) {
-		this.order.push(position);
+	protected addedTile(tile: Tile<T>) {
+		this.order.push(tile);
 	}
 
 	removeOrdered(index: number) {
-		this.replaceTileable(this.order[index], this.defaultTileable);
+		this.replaceTileable(this.order[index].position, this.defaultTileable);
 	}
 }
 
@@ -427,18 +427,15 @@ export class World {
 	}
 
 	private tickLive() {
-		this.live.nonEmptyPositions.forEach(position => {
-			let tile = this.live.getTileUnchecked(position);
-			tile.tileable.tick(this, tile);
-		});
+		this.live.nonEmptyTiles.forEach(tile => tile.tileable.tick(this, tile));
 	}
 
 	private tickQueue() {
 		let i = 0;
 		while (i < this.queue.order.length) {
-			let position = this.queue.order[i];
+			let queueTile = this.queue.order[i];
+			let position = queueTile.position;
 			let liveTile = this.live.getTileUnchecked(position);
-			let queueTile = this.queue.getTileUnchecked(position);
 			let buildableAttribute = queueTile.tileable.getAttribute(EntityBuildableAttribute);
 			if (!buildableAttribute) {
 				console.assert(queueTile.tileable.name === 'Clear');

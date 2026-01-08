@@ -45,13 +45,11 @@ class ExtractorTutorial extends TutorialStep {
 	}
 
 	tick(world: World, camera: Camera): void {
-		for (let position of world.live.nonEmptyPositions) {
-			let tile = world.live.getTileUnchecked(position);
+		for (let tile of world.live.nonEmptyTiles)
 			if (tile.tileable.name === 'Extractor') {
 				this.done = true;
 				return;
 			}
-		}
 	}
 }
 
