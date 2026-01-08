@@ -6,8 +6,8 @@ import Counter from '../util/Counter.js';
 import util from '../util/util.js';
 import Vector from '../util/Vector.js';
 import {Entity} from './Entity.js';
-import {EntityMobHerdPositionAttribute, EntitySpawnMobAttribute} from './EntityAttribute.js';
-import {FreeWorldLayer, FreeWorldLayerChunkOverlay, World} from './World.js';
+import {EntityMobHerdPositionAttribute, EntitySpawnFreeClusterMobAttribute, EntitySpawnLiveMobAttribute} from './EntityAttribute.js';
+import {FreeWorldLayerChunkOverlay, World} from './World.js';
 
 export default class MobLogic {
 	private herdManager;
@@ -25,7 +25,7 @@ export default class MobLogic {
 	}
 
 	tick(world: World) {
-		this.spawner.tick(world.free);
+		this.spawner.tick(world);
 		this.multilineText.lines = this.spawner.textLines();
 		this.multilineText.tick();
 		this.herdManager.tick(world.freeMobHerdPositionAttributeOverlay);
@@ -70,15 +70,15 @@ class Spawner {
 		});
 	}
 
-	static spawn(free: FreeWorldLayer<any>, stage: SpawnerStage) {
+	private static spawn(world: World, stage: SpawnerStage) {
 		let min = new Vector(stage.clusterRadius);
-		let delta = free.size.subtract(Vector.V1).subtract(min.scale(2));
+		let delta = world.free.size.subtract(Vector.V1).subtract(min.scale(2));
 		console.assert(delta.atLeast(Vector.V1));
 		for (let i = 0; i < stage.clusterCount; i++) {
-			let spawnCenter = min.add(util.perimeter(delta, util.rand(0, 1)));
+			let spawnCenter = min.add(util.perimeter(delta, util.rand(0, 1))).floor; // todo floor will bias towards top left
 			if (stage.mobsPerCluster)
-				EntitySpawnMobAttribute.spawn(free, spawnCenter, MobType.PORTAL, 1, 0);
-			EntitySpawnMobAttribute.spawn(free, spawnCenter, MobType.SWARM_DRONE, stage.mobsPerCluster, stage.clusterRadius);
+				EntitySpawnLiveMobAttribute.spawn(world.live, spawnCenter, MobType.PORTAL);
+			EntitySpawnFreeClusterMobAttribute.spawn(world.free, spawnCenter, MobType.SWARM_DRONE, stage.mobsPerCluster, stage.clusterRadius);
 		}
 	}
 
@@ -93,11 +93,11 @@ class Spawner {
 		this.counter.reset(true);
 	}
 
-	tick(free: FreeWorldLayer<any>) {
+	tick(world: World) {
 		if (this.counter.tick()) {
 			this.stageIndex++;
 			let stage = this.stages[Math.min(this.stageIndex, this.stages.length - 1)];
-			Spawner.spawn(free, stage);
+			Spawner.spawn(world, stage);
 			this.counter.resize(stage.sleep);
 		}
 	}

@@ -9,7 +9,7 @@ import Vector from '../util/Vector.js';
 import {Empty, Entity, LiquidDeposit, MaterialDeposit, ParticleEntity, Projectile} from './Entity.js';
 import {Liquid, Material, ResourceUtils} from './Resource.js';
 import {Rotation, RotationUtils} from './Rotation.js';
-import {FreeWorldLayer, ParticleType, ParticleWrapper, Tile, World} from './World.js';
+import {FreeWorldLayer, LiveGridWorldLayer, ParticleType, ParticleWrapper, Tile, World} from './World.js';
 
 export enum TooltipType {
 	PLACER, WORLD
@@ -1283,7 +1283,26 @@ export class EntityHealAttribute extends EntityAttribute {
 
 // Mob attributes
 
-export class EntitySpawnMobAttribute extends EntityAttribute {
+export class EntitySpawnLiveMobAttribute extends EntityAttribute {
+	private readonly mobType: MobType;
+
+	constructor(mobType: MobType) {
+		super();
+		this.mobType = mobType;
+	}
+
+	// todo don't allow player to deconstruct live layer mobs
+	static spawn(live: LiveGridWorldLayer<Entity>, position: Vector, mobType: MobType) {
+		live.replaceTileable(position, EntityCreator.createMobEntity(mobType));
+	}
+
+	tick(world: World, tile: Tile<Entity>): void {
+		EntitySpawnLiveMobAttribute.spawn(world.live, tile.position, this.mobType);
+		this.tickResult = TickResult.DONE;
+	}
+}
+
+export class EntitySpawnFreeClusterMobAttribute extends EntityAttribute {
 	private readonly mobType: MobType;
 	private readonly count: number;
 	private readonly radius: number;
@@ -1295,7 +1314,7 @@ export class EntitySpawnMobAttribute extends EntityAttribute {
 		this.radius = radius;
 	}
 
-	static spawn(free: FreeWorldLayer<any>, position: Vector, mobType: MobType, count: number, radius: number) {
+	static spawn(free: FreeWorldLayer<Entity>, position: Vector, mobType: MobType, count: number, radius: number) {
 		for (let j = 0; j < count; j++) {
 			let p = position.add(Vector.rand(-radius, radius)).clamp(Vector.V0, free.size.subtract(Vector.V1));
 			free.addTileable(p, EntityCreator.createMobEntity(mobType));
@@ -1303,13 +1322,13 @@ export class EntitySpawnMobAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		EntitySpawnMobAttribute.spawn(world.free, tile.position, this.mobType, this.count, this.radius);
+		EntitySpawnFreeClusterMobAttribute.spawn(world.free, tile.position, this.mobType, this.count, this.radius);
 		this.tickResult = TickResult.DONE;
 	}
 }
 
 export class EntityMobHerdPositionAttribute extends EntityAttribute {
-	newPosition: Vector = Vector.V0;
+	newPosition: Vector | null = null;
 	velocity: Vector = Vector.V0;
 	readonly speed: number;
 	active = true;
@@ -1320,7 +1339,7 @@ export class EntityMobHerdPositionAttribute extends EntityAttribute {
 	}
 
 	tick(world: World, tile: Tile<Entity>): void {
-		if (!this.newPosition.equals(tile.position) && this.active)
+		if (this.newPosition && !this.newPosition.equals(tile.position) && this.active)
 			world.free.updateTile(this.newPosition, tile);
 		this.tickResult = TickResult.DONE;
 	}
