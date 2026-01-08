@@ -290,6 +290,7 @@ export class PortalMob extends Entity {
 			new EntitySpawnMobAttribute(MobType.SWARM_DRONE, 10, 2),
 		]));
 		this.addAttribute(new EntityChainAttribute([
+			// todo prefer to spread away from other portals
 			new EntityRandomTimedAttribute(spreadPeriodMin, spreadPeriodMax),
 			new EntitySpawnMobAttribute(MobType.PORTAL, 1, 20),
 		]));
